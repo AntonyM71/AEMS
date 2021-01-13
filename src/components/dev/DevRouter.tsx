@@ -1,9 +1,8 @@
-import React from "react";
 import { useRouteMatch, Switch, Route } from "react-router-dom";
 import Style from "./Style";
 
 function DevRouter(){
-    const { path, url } = useRouteMatch();
+    const { path } = useRouteMatch();
 
     return (
         <Switch>
