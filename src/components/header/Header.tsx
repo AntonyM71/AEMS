@@ -5,7 +5,6 @@ import { routes } from "../routes/Router";
 import { useRecoilState } from "recoil";
 import { preferDarkState } from "../../atoms";
 import Brightness4Icon from "@material-ui/icons/Brightness4";
-import React from "react";
 import IconButton from "@material-ui/core/IconButton";
 
 const Header = () => {
