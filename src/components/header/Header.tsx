@@ -28,11 +28,13 @@ const Header = () => <AppBar position="static" color="default" elevation={0}>
             <Link component={RouterLink} to={routes.dev.root}>Dev</Link>
           </Typography>
         </ListItemText>
+        <ListItemText inset>
+          <Typography color="inherit" variant="body1">
+            <Link component={RouterLink} to={routes.login.root}>Login</Link>
+          </Typography>
+        </ListItemText>
       </ListItem >
     </List>
-    <Button color="primary" variant="outlined">
-        Login
-    </Button>
   </Toolbar>
 </AppBar>;
 

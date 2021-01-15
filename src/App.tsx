@@ -8,7 +8,7 @@ const App = ()=> (
   <BrowserRouter>
     <Theme>
       <Header />
-      <Container>
+      <Container maxWidth={false}>
         <Router />
       </Container>
     </Theme>
