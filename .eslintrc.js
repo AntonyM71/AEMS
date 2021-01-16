@@ -57,7 +57,7 @@ module.exports = {
     "arrow-parens": [
       // Following this style will help you find arrow functions (=>) which may be mistakenly included in a condition when a comparison such as >= was the intent.
       "warn",
-      "as-needed",
+      "always",
     ],
     camelcase: "warn",
     "comma-dangle": "error",
@@ -158,7 +158,9 @@ module.exports = {
         next: "return",
       },
     ],
-    "prefer-arrow/prefer-arrow-functions": "warn",
+    "prefer-arrow/prefer-arrow-functions": ["warn", {
+      "singleReturnOnly": true
+    }],
     "quote-props": ["error", "as-needed"],
     radix: "off", // doesnt respect the fact that radix can be undefined
     "space-before-function-paren": [
