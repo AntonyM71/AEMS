@@ -10,13 +10,12 @@ const App = ()=> (
     <BrowserRouter>
       <Theme>
         <Header />
-        <Container>
+        <Container maxWidth={false}>
           <Router />
         </Container>
       </Theme>
     </BrowserRouter>
   </RecoilRoot>
-
 );
 
 export default App;

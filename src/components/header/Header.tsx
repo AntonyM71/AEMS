@@ -13,7 +13,7 @@ const Header = () => {
     setPreferDark(!preferDark);
   };
 
-  return(<AppBar position="static" color="default" elevation={0}>
+  return (<AppBar position="static" color="default" elevation={0}>
     <Toolbar>
       <img src={logo} alt="Hurley Foundation Events Logo" style={{ height: "70px" }}></img>
       <List component="nav">
@@ -38,15 +38,20 @@ const Header = () => {
               <Link component={RouterLink} to={routes.dev.root}>Dev</Link>
             </Typography>
           </ListItemText>
+          <ListItemText inset>
+            <Typography color="inherit" variant="body1">
+              <Link component={RouterLink} to={routes.login.root}>Login</Link>
+            </Typography>
+          </ListItemText>
+          <ListItemText inset>
+            <IconButton color="primary" onClick={handleDarkModePress}>
+              <Brightness4Icon />
+            </IconButton>
+          </ListItemText>
         </ListItem >
       </List>
-      <Button color="primary" variant="outlined">
-        Login
-      </Button>
-      <IconButton color="primary" onClick={handleDarkModePress}>
-        <Brightness4Icon/>
-      </IconButton>
     </Toolbar>
-  </AppBar>);};
+  </AppBar>);
+};
 
 export default Header;

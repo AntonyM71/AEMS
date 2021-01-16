@@ -1,4 +1,4 @@
-import { useMediaQuery } from "@material-ui/core";
+import { useMediaQuery, CssBaseline } from "@material-ui/core";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import { useLayoutEffect, useMemo } from "react";
 import { useRecoilState } from "recoil";
@@ -21,7 +21,10 @@ const Theme = ({ children }: { children: React.ReactNode }) => {
   }), [preferDark]);
 
   return (
-    <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
   );
 };
 
