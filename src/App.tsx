@@ -1,21 +1,21 @@
-import { Container } from "@material-ui/core";
-import Router from "./components/routes/Router";
-import { BrowserRouter } from "react-router-dom";
-import Theme from "./components/Theme";
-import Header from "./components/header/Header";
-import { RecoilRoot } from "recoil";
+import { Container } from "@material-ui/core"
+import Router from "./components/routes/Router"
+import { BrowserRouter } from "react-router-dom"
+import Theme from "./components/Theme"
+import Header from "./components/header/Header"
+import { RecoilRoot } from "recoil"
 
-const App = ()=> (
-  <RecoilRoot>
-    <BrowserRouter>
-      <Theme>
-        <Header />
-        <Container maxWidth={false}>
-          <Router />
-        </Container>
-      </Theme>
-    </BrowserRouter>
-  </RecoilRoot>
-);
+const App = () => (
+	<RecoilRoot>
+		<BrowserRouter>
+			<Theme>
+				<Header />
+				<Container maxWidth={false}>
+					<Router />
+				</Container>
+			</Theme>
+		</BrowserRouter>
+	</RecoilRoot>
+)
 
-export default App;
+export default App
