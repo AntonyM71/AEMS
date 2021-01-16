@@ -1,12 +1,18 @@
+import { useMediaQuery } from "@material-ui/core";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import { useRecoilState } from "recoil";
 import { preferDarkState } from "../atoms";
 
-const Theme =({ children }: { children: React.ReactNode }) => {
-  const [preferDark] = useRecoilState(preferDarkState);
+const Theme = ({ children }: { children: React.ReactNode }) => {
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [preferDark, setPreferDark] = useRecoilState(preferDarkState);
 
-  const theme = useMemo(() =>createMuiTheme({
+  useLayoutEffect(() => {
+    setPreferDark(prefersDarkMode);
+  }, [prefersDarkMode]);
+
+  const theme = useMemo(() => createMuiTheme({
     // TODO: Hugh: This is where the theme settings go
     // Check https://material-ui.com/customization/theming/
     palette: {
