@@ -33,47 +33,55 @@ const Header = () => {
 				<List component="nav">
 					<ListItem component="div">
 						<ListItemText inset>
-							<Typography color="inherit" variant="body1">
-								<Link component={RouterLink} to="/">
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to="/"
+									color="inherit"
+								>
 									Home
 								</Link>
 							</Typography>
 						</ListItemText>
 						<ListItemText inset>
-							<Typography color="inherit" variant="body1">
+							<Typography color="textPrimary" variant="body1">
 								<Link
 									component={RouterLink}
 									to={routes.score.root}
+									color="inherit"
 								>
 									Score
 								</Link>
 							</Typography>
 						</ListItemText>
 						<ListItemText inset>
-							<Typography color="inherit" variant="body1">
+							<Typography color="textPrimary" variant="body1">
 								<Link
 									component={RouterLink}
 									to={routes.upload.root}
+									color="inherit"
 								>
 									Upload
 								</Link>
 							</Typography>
 						</ListItemText>
 						<ListItemText inset>
-							<Typography color="inherit" variant="body1">
+							<Typography color="textPrimary" variant="body1">
 								<Link
 									component={RouterLink}
 									to={routes.dev.root}
+									color="inherit"
 								>
 									Dev
 								</Link>
 							</Typography>
 						</ListItemText>
 						<ListItemText inset>
-							<Typography color="inherit" variant="body1">
+							<Typography color="textPrimary" variant="body1">
 								<Link
 									component={RouterLink}
 									to={routes.login.root}
+									color="inherit"
 								>
 									Login
 								</Link>
@@ -81,7 +89,7 @@ const Header = () => {
 						</ListItemText>
 						<ListItemText inset>
 							<IconButton
-								color="primary"
+								color="default"
 								onClick={handleDarkModePress}
 							>
 								<Brightness4Icon />
