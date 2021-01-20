@@ -3,7 +3,7 @@ import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles"
 import { useLayoutEffect, useMemo } from "react"
 import { useRecoilState } from "recoil"
 import { preferDarkState } from "../atoms"
-import { orange, cyan } from "@material-ui/core/colors"
+import { orange, cyan, red } from "@material-ui/core/colors"
 
 function Theme({ children }: { children: React.ReactNode }) {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -27,6 +27,11 @@ function Theme({ children }: { children: React.ReactNode }) {
 						main: cyan[500],
 						light: cyan[300],
 						dark: cyan[700]
+					},
+					error: {
+						main: red[500],
+						light: red[300],
+						dark: red[700]
 					}
 				}
 			}),

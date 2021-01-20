@@ -3,7 +3,6 @@ import {
 	AppBar,
 	Typography,
 	Link,
-	Button,
 	List,
 	ListItem,
 	ListItemText
@@ -47,10 +46,10 @@ const Header = () => {
 							<Typography color="textPrimary" variant="body1">
 								<Link
 									component={RouterLink}
-									to={routes.score.root}
+									to={routes.judging.root}
 									color="inherit"
 								>
-									Score
+									Judging
 								</Link>
 							</Typography>
 						</ListItemText>

@@ -1,30 +1,34 @@
 import { Switch, Route } from "react-router-dom"
 import DevRouter from "../dev/DevRouter"
+import Judging from "../judging/Judging"
 import Login from "../login/Login"
-import Score from "../score/Score"
 import Upload from "../upload/Upload"
-
+import Scribe from "../judging/roles/Scribe"
 export const routes = {
 	dev: {
 		root: "/dev"
 	},
-	score: {
-		root: "/score"
+	judging: {
+		root: "/judging"
 	},
 	login: {
 		root: "/login"
 	},
 	upload: {
 		root: "/upload"
+	},
+	scribe: {
+		root: "/scribe/:scribe"
 	}
 }
 
 const Router = () => (
 	<Switch>
 		<Route path={routes.dev.root} component={DevRouter} />
-		<Route path={routes.score.root} component={Score} />
+		<Route path={routes.judging.root} component={Judging} />
 		<Route path={routes.login.root} component={Login} />
 		<Route path={routes.upload.root} component={Upload} />
+		<Route exact path={routes.scribe.root} component={Scribe} />
 	</Switch>
 )
 

@@ -22,18 +22,6 @@ module.exports = {
 				accessibility: "explicit"
 			}
 		],
-		"@typescript-eslint/indent": [
-			"error",
-			"tab",
-			{
-				FunctionDeclaration: {
-					parameters: "first"
-				},
-				FunctionExpression: {
-					parameters: "first"
-				}
-			}
-		],
 		"@typescript-eslint/interface-name-prefix": "off",
 		"@typescript-eslint/member-ordering": "error",
 		"@typescript-eslint/explicit-function-return-type": "off",
@@ -150,7 +138,7 @@ module.exports = {
 		"object-shorthand": "error",
 		"no-multi-spaces": "error",
 		"object-curly-spacing": ["error", "always"],
-		"no-mixed-spaces-and-tabs": "error",
+		"no-mixed-spaces-and-tabs": ["warn", "smart-tabs"], // smart-tabs stops it arguing with prettier
 		"one-var": ["error", "never"],
 		indent: "off", // because @typescript-eslint/indent is on
 		"padding-line-between-statements": [
