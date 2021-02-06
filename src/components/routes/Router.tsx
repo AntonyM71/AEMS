@@ -1,9 +1,9 @@
-import { Switch, Route } from "react-router-dom"
+import { Route, Switch } from "react-router-dom"
 import DevRouter from "../dev/DevRouter"
 import Judging from "../judging/Judging"
+import Scribe from "../judging/roles/Scribe"
 import Login from "../login/Login"
 import Upload from "../upload/Upload"
-import Scribe from "../judging/roles/Scribe"
 export const routes = {
 	dev: {
 		root: "/dev"

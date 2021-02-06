@@ -1,14 +1,10 @@
-import React, { Fragment } from "react";
-
+import React, { Fragment } from "react"
 
 interface judgePropsType {
-	competition: string;
+	competition: string
 }
 const Scribe = ({ competition }: judgePropsType) => (
-	<Fragment>
-        Scribe Sheet for {competition}
-	</Fragment>
-);
+	<Fragment>Scribe Sheet for {competition}</Fragment>
+)
 
-
-export default Scribe;
+export default Scribe

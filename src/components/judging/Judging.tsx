@@ -1,109 +1,129 @@
-import { Link } from "@material-ui/core"
+import { Button, Grid, Link, makeStyles, Paper } from "@material-ui/core"
+import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
 	selectedCompetitionState,
 	selectedEventState,
+	selectedHeatState,
 	selectedPhaseState
 } from "../../atoms"
-import {
-	competitionsType,
-	eventType,
-	getCompetitions,
-	phaseType
-} from "../../Competitions"
-import CompetitionSelector from "../competition/competitionSelector"
+import { competitionsType, getCompetitions } from "../../Competitions"
+import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
+import { HeatsSelector } from "../competition/HeatSelector"
 import PhaseSelector from "../competition/PhaseSelector"
-
 // eslint-disable-next-line complexity
+
+export const useStyles = makeStyles((theme) => ({
+	root: {
+		height: "100vh"
+	},
+	paper: {
+		padding: theme.spacing(4, 4),
+		marginTop: theme.spacing(2),
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center"
+	}
+}))
 const Judging = () => {
 	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+	const classes = useStyles()
 
 	const [selectedCompetition] = useRecoilState(selectedCompetitionState)
 	const [selectedEvent] = useRecoilState(selectedEventState)
 	const [selectedPhase] = useRecoilState(selectedPhaseState)
-
+	const [selectedHeat] = useRecoilState(selectedHeatState)
 	const competitions = getCompetitions()
 	const getCompetitionObject = () =>
 		competitions.filter((c) => c.id === selectedCompetition)[0]
 
 	// eslint-disable-next-line complexity
-	let result
-	const competition = selectedCompetition || selectedCompetition
-	const event = selectedEvent || selectedEvent
-	const phase = selectedPhase || selectedPhase
-	if (competition && event && phase) {
+	const competition = selectedCompetition
+	const event = selectedEvent
+	const phase = selectedPhase
+	const heat = selectedHeat
+	if (competition && event && phase && heat.name) {
 		const competitionObject: competitionsType = getCompetitionObject()
-		if (competitionObject) {
-			const eventObject: eventType = getEventObject(
-				competitionObject,
-				event
-			)
-			if (eventObject) {
-				const phaseObject = getPhaseObject(eventObject, phase)
-				if (phaseObject) {
-					result = (
-						<div className="mainContentPage">
-							<h1>Judging</h1>
-							<div className="mainContentContainer">
-								<div className="mainContentContainerItem flexGrowMost">
-									<h2>
-										{competitionObject.name},{" "}
-										{eventObject.name}
-									</h2>
-
-									<Link
-										component={RouterLink}
-										to="/scribe/1"
-										color="inherit"
-									>
-										{" "}
-										Judge 1
-									</Link>
-									<Link
-										component={RouterLink}
-										to="/scribe/2"
-										color="inherit"
-									>
-										Judge 2
-									</Link>
-									<Link
-										component={RouterLink}
-										to="/scribe/3"
-										color="inherit"
-									>
-										{" "}
-										Judge 3
-									</Link>
-								</div>
-							</div>
-						</div>
-					)
-				}
+		if (competition) {
+			if (event) {
+				return (
+					<Paper className={classes.paper}>
+						<Grid container spacing={2} alignItems={"stretch"}>
+							<Grid item xs={12}>
+								<h1>Scribes</h1>
+							</Grid>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									to="/scribe/1"
+									color="inherit"
+								>
+									<Button variant="contained" fullWidth>
+										Scribe 1
+									</Button>
+								</Link>
+							</Grid>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									to="/scribe/2"
+									color="inherit"
+								>
+									<Button variant="contained" fullWidth>
+										Scribe 2
+									</Button>
+								</Link>
+							</Grid>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									to="/scribe/3"
+									color="inherit"
+								>
+									<Button variant="contained" fullWidth>
+										Scribe 3
+									</Button>
+								</Link>
+							</Grid>
+						</Grid>
+					</Paper>
+				)
 			}
 		}
 	}
 
-	if (!result) {
-		result = (
-			<div className="mainContentPage">
-				<h1>No Competition Selected</h1>
-				<p>Please select a competition and event to get started</p>
-				<CompetitionSelector competitions={competitions} />
-				<EventSelector competitions={competitions} />
-				<PhaseSelector competitions={competitions} />
-			</div>
-		)
-	}
+	return (
+		<Paper className={classes.paper}>
+			<h1>No Competition Selected</h1>
 
-	return result
+			<p>Please select a competition and event to get started</p>
+
+			<SelectorDisplay />
+		</Paper>
+	)
 }
 
-const getEventObject = (competition: competitionsType, event: string) =>
-	competition.events.filter((e) => e.id === event)[0]
+export const SelectorDisplay = () => {
+	const competitions = getCompetitions()
 
-const getPhaseObject = (event: eventType, phase: string): phaseType[] =>
-	event.phases.filter((p: phaseType) => p.id === phase)
+	return (
+		<Grid container spacing={3} alignItems={"stretch"}>
+			<Grid item xs>
+				<CompetitionSelector competitions={competitions} />
+			</Grid>
+			<Grid item xs>
+				<EventSelector competitions={competitions} />
+			</Grid>
+			<Grid item xs>
+				<PhaseSelector competitions={competitions} />
+			</Grid>
+			<Grid item xs>
+				<HeatsSelector />
+			</Grid>
+		</Grid>
+	)
+}
 
 export default Judging

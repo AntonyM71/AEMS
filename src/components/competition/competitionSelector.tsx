@@ -1,4 +1,8 @@
-import React, { Fragment } from "react"
+import FormControl from "@material-ui/core/FormControl"
+import InputLabel from "@material-ui/core/InputLabel"
+import MenuItem from "@material-ui/core/MenuItem"
+import Select from "@material-ui/core/Select"
+import React from "react"
 import { useRecoilState } from "recoil"
 import { selectedCompetitionState } from "../../atoms"
 import { competitionsType } from "../../Competitions"
@@ -11,21 +15,31 @@ const CompetitionSelector = ({ competitions }: propsType) => {
 	const [selectedCompetition, setSelectedCompetition] = useRecoilState(
 		selectedCompetitionState
 	)
-	const onSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-		setSelectedCompetition(event.target.value)
+	const onSelect = (
+		event: React.ChangeEvent<{
+			name?: string | undefined
+			value: unknown
+		}>
+	) => {
+		setSelectedCompetition(event.target.value as string)
 	}
 
 	return (
-		<Fragment>
-			<select value={selectedCompetition} onChange={onSelect}>
-				<option value="">Select Competition</option>
+		<FormControl fullWidth={true}>
+			<InputLabel>Select Competition</InputLabel>
+			<Select
+				value={selectedCompetition}
+				onChange={onSelect}
+				variant="outlined"
+				// fullWidth={true}
+			>
 				{competitions.map((competition) => (
-					<option key={competition.id} value={competition.id}>
+					<MenuItem key={competition.id} value={competition.id}>
 						{competition.name}
-					</option>
+					</MenuItem>
 				))}
-			</select>
-		</Fragment>
+			</Select>
+		</FormControl>
 	)
 }
 

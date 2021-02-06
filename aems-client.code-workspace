@@ -4,8 +4,32 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		   "eslint.format.enable": true,
+    	"eslint.lintTask.enable": true,
+    	"editor.formatOnSave": true,
+    	"typescript.preferences.quoteStyle": "double",
+    	"eslint.alwaysShowStatus": true,
+    	"files.trimTrailingWhitespace": true,
+    	"editor.defaultFormatter": "vscode.npm",
+    	"editor.formatOnPaste": true,
+		"files.eol": "\n",
+		"editor.codeActionsOnSave": {
+			"source.fixAll": true,
+			"source.organizeImports": true
+		},
+		"emmet.excludeLanguages": [
+
+			"markdown"
+		],
+	},
 	"extensions": {
-		"recommendations": ["esbenp.prettier-vscode"]
+		"recommendations": [
+			"esbenp.prettier-vscode",
+			"dbaeumer.vscode-eslint",
+			"eamodio.gitlens",
+			"ms-vscode.vscode-typescript-next",
+			"orta.vscode-jest"
+		]
 	}
 }

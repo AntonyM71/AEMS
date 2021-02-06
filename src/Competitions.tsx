@@ -1,7 +1,11 @@
-import { StringDecoder } from "string_decoder";
-import { getEntriesForEvent, getEntriesForCompetition, getHeatsForEvent, athleteHeatType } from "./Athletes";
+import {
+	athleteHeatType,
+	getEntriesForCompetition,
+	getEntriesForEvent,
+	getHeatsForEvent
+} from "./Athletes"
 
-export const getCompetitions = () => competitions;
+export const getCompetitions = () => competitions
 
 const competitions: competitionsType[] = [
 	{
@@ -18,8 +22,14 @@ const competitions: competitionsType[] = [
 					{
 						id: "1",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1W"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "K1W")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1W"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1W"
+						)
 					}
 				]
 			},
@@ -32,8 +42,14 @@ const competitions: competitionsType[] = [
 					{
 						id: "2",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1M"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "K1M")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1M"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1M"
+						)
 					}
 				]
 			},
@@ -46,8 +62,14 @@ const competitions: competitionsType[] = [
 					{
 						id: "4",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "C1"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "C1")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"C1"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"C1"
+						)
 					}
 				]
 			},
@@ -55,13 +77,22 @@ const competitions: competitionsType[] = [
 				id: "5fb52d6032a4bb3e076be3ca",
 				name: "Junior Womens's Kayak",
 				format: "FLOAT",
-				athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1JW"),
+				athletes: getEntriesForEvent(
+					"5fb5312f81dcac1964685f06",
+					"K1JW"
+				),
 				phases: [
 					{
 						id: "6",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1JW"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "K1JW")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1JW"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1JW"
+						)
 					}
 				]
 			},
@@ -69,13 +100,22 @@ const competitions: competitionsType[] = [
 				id: "5fb52d5932a4bb3e076be3c9",
 				name: "Junior Men's Kayak",
 				format: "FLOAT",
-				athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1JM"),
+				athletes: getEntriesForEvent(
+					"5fb5312f81dcac1964685f06",
+					"K1JM"
+				),
 				phases: [
 					{
 						id: "5",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "K1JM"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "K1JM")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1JM"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"K1JM"
+						)
 					}
 				]
 			},
@@ -88,8 +128,14 @@ const competitions: competitionsType[] = [
 					{
 						id: "7",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "SW"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "SW")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"SW"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"SW"
+						)
 					}
 				]
 			},
@@ -102,8 +148,14 @@ const competitions: competitionsType[] = [
 					{
 						id: "8",
 						name: "Preliminaries",
-						athletes: getEntriesForEvent("5fb5312f81dcac1964685f06", "SM"),
-						heats: getHeatsForEvent("5fb5312f81dcac1964685f06", "SM")
+						athletes: getEntriesForEvent(
+							"5fb5312f81dcac1964685f06",
+							"SM"
+						),
+						heats: getHeatsForEvent(
+							"5fb5312f81dcac1964685f06",
+							"SM"
+						)
 					}
 				]
 			}
@@ -121,71 +173,70 @@ const competitions: competitionsType[] = [
 		athletes: [],
 		events: []
 	}
-];
-
+]
 
 export interface competitionsType {
-	id: string;
-	name?: string;
-	athletes: athleteHeatType[];
-	events: eventType[];
+	id: string
+	name?: string
+	athletes: athleteHeatType[]
+	events: eventType[]
 }
 export interface phaseType {
-	id: string;
-	name: string;
-	athletes: athleteHeatType[];
-	heats: heatsType[];
+	id: string
+	name: string
+	athletes: athleteHeatType[]
+	heats: heatsType[]
 }
 
 export interface eventType {
-	id: string;
-	name: string;
-	format: string;
-	athletes: athleteHeatType[];
-	phases: phaseType[];
+	id: string
+	name: string
+	format: string
+	athletes: athleteHeatType[]
+	phases: phaseType[]
 }
 export interface heatsType {
-	id: string;
-	name: string;
-	athletes: athleteHeatType[];
+	id: string
+	name: string
+	athletes: athleteHeatType[]
 }
 export interface athleteType {
-	Code: string;
-	Parent: string;
-	Status: string;
-	GivenName: string;
-	FamilyName: string;
-	PrintName: string;
-	PrintInitialName: string;
-	TVName: string;
-	TVInitialName: string;
-	Gender: string;
-	Organisation: string;
-	BirthDate: string;
-	Height: string;
-	Weight: string;
-	PlaceofBirth: string;
-	CountryofBirth: string;
-	PlaceofResidence: string;
-	CountryofResidence: string;
-	Nationality: string;
-	Current: string;
-	OlympicSolidarity: string;
-	MainFunctionId: string;
+	Code: string
+	Parent: string
+	Status: string
+	GivenName: string
+	FamilyName: string
+	PrintName: string
+	PrintInitialName: string
+	TVName: string
+	TVInitialName: string
+	Gender: string
+	Organisation: string
+	BirthDate: string
+	Height: string
+	Weight: string
+	PlaceofBirth: string
+	CountryofBirth: string
+	PlaceofResidence: string
+	CountryofResidence: string
+	Nationality: string
+	Current: string
+	OlympicSolidarity: string
+	MainFunctionId: string
 	Discipline: {
-		Code: string;
-		RegisteredEvent: registeredEventType[] | registeredEventType;
-	};
+		Code: string
+		RegisteredEvent: registeredEventType[] | registeredEventType
+	}
 }
 
 export interface registeredEventType {
-	Gender: string;
-	Event: string;
-	Bib: string;
+	Gender: string
+	Event: string
+	Bib: string
 	EventEntry: {
-		Code: string;
-		Pos: string;
-		Value: string;
-		Type: string;
-	};
+		Code: string
+		Pos: string
+		Value: string
+		Type: string
+	}
 }

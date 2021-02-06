@@ -1,9 +1,9 @@
 import { Container } from "@material-ui/core"
-import Router from "./components/routes/Router"
 import { BrowserRouter } from "react-router-dom"
-import Theme from "./components/Theme"
-import Header from "./components/header/Header"
 import { RecoilRoot } from "recoil"
+import Header from "./components/header/Header"
+import Router from "./components/routes/Router"
+import Theme from "./components/Theme"
 
 const App = () => (
 	<RecoilRoot>

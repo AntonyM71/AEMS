@@ -1,7 +1,6 @@
 import {
 	athleteType,
 	competitionsType,
-	eventType,
 	heatsType,
 	registeredEventType
 } from "./Competitions"

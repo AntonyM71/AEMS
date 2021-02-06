@@ -1,14 +1,10 @@
-import React, { Fragment } from "react";
-
+import React, { Fragment } from "react"
 
 interface controllerPropsType {
-	competition: string;
+	competition: string
 }
 const Scribe = ({ competition }: controllerPropsType) => (
-	<Fragment>
-        Scribe Sheet for {competition}
-	</Fragment>
-);
+	<Fragment>Scribe Sheet for {competition}</Fragment>
+)
 
-
-export default Scribe;
+export default Scribe

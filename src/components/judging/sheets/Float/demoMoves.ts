@@ -52,8 +52,8 @@ export const moves: movesType[] = [
 			R: 5,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -66,8 +66,8 @@ export const moves: movesType[] = [
 			R: 10,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -80,8 +80,8 @@ export const moves: movesType[] = [
 			R: 10,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -94,8 +94,8 @@ export const moves: movesType[] = [
 			R: 20,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB:0,
 			A: 0
 		}
 	},
@@ -108,8 +108,8 @@ export const moves: movesType[] = [
 			R: 50,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -122,8 +122,8 @@ export const moves: movesType[] = [
 			R: 70,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -136,8 +136,8 @@ export const moves: movesType[] = [
 			R: 110,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -150,8 +150,8 @@ export const moves: movesType[] = [
 			R: 130,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -164,8 +164,8 @@ export const moves: movesType[] = [
 			R: 90,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -178,8 +178,8 @@ export const moves: movesType[] = [
 			R: 140,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -192,8 +192,8 @@ export const moves: movesType[] = [
 			R: 40,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -206,8 +206,8 @@ export const moves: movesType[] = [
 			R: 90,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -220,8 +220,8 @@ export const moves: movesType[] = [
 			R: 150,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -234,8 +234,8 @@ export const moves: movesType[] = [
 			R: 25,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -248,8 +248,8 @@ export const moves: movesType[] = [
 			R: 30,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -262,8 +262,8 @@ export const moves: movesType[] = [
 			R: 40,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -276,22 +276,22 @@ export const moves: movesType[] = [
 			R: 120,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
 	{
 		id: "mf21",
-		name: "Trick Woo",
+		name: "Tricky Woo",
 		direction: "LR",
 		score: {
 			L: 160,
 			R: 160,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -318,8 +318,8 @@ export const moves: movesType[] = [
 			R: 90,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -332,8 +332,8 @@ export const moves: movesType[] = [
 			R: 120,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},
@@ -346,8 +346,8 @@ export const moves: movesType[] = [
 			R: 150,
 			F: 0,
 			B: 0,
-			LF: 100,
-			RB: 100,
+			LF: 0,
+			RB: 0,
 			A: 0
 		}
 	},

@@ -1,17 +1,23 @@
-import { Paper, Typography, Grid, Button } from "@material-ui/core"
+import Button from "@material-ui/core/Button"
+import Grid from "@material-ui/core/Grid"
+import Paper from "@material-ui/core/Paper"
+import Typography from "@material-ui/core/Typography"
 import React from "react"
+import { useFloatStyles } from "./FloatStyles"
 import { MovePropsType } from "./Interfaces"
 
-export const Move = (props: MovePropsType) => {
+export const Move = React.memo((props: MovePropsType) => {
+	const classes = useFloatStyles()
 	if (props.move.direction === "LR") {
 		return (
-			<Paper>
+			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1} alignItems="stretch">
 						<Grid item xs={6}>
 							<Button
 								variant="contained"
+								aria-label={"button1"}
 								fullWidth
 								color="primary"
 								onClick={() =>
@@ -25,6 +31,7 @@ export const Move = (props: MovePropsType) => {
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "R")
@@ -39,7 +46,7 @@ export const Move = (props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "FB") {
 		return (
-			<Paper>
+			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -47,6 +54,7 @@ export const Move = (props: MovePropsType) => {
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "F")
@@ -59,6 +67,7 @@ export const Move = (props: MovePropsType) => {
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "B")
@@ -73,7 +82,7 @@ export const Move = (props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "LRFB") {
 		return (
-			<Paper>
+			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -81,24 +90,26 @@ export const Move = (props: MovePropsType) => {
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "LF")
 								}
 							>
-								L or F
+								L/F
 							</Button>
 						</Grid>
 						<Grid item xs={6}>
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "RB")
 								}
 							>
-								R or B
+								R/B
 							</Button>
 						</Grid>
 					</Grid>
@@ -107,7 +118,7 @@ export const Move = (props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "SINGLE") {
 		return (
-			<Paper>
+			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -115,6 +126,7 @@ export const Move = (props: MovePropsType) => {
 							<Button
 								variant="contained"
 								fullWidth
+								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
 									props.addScoredMove(props.move.id, "A")
@@ -130,4 +142,4 @@ export const Move = (props: MovePropsType) => {
 	} else {
 		return <div>Unknown Move</div>
 	}
-}
+})

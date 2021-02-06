@@ -1,4 +1,4 @@
-import { useRouteMatch, Switch, Route } from "react-router-dom"
+import { Route, Switch, useRouteMatch } from "react-router-dom"
 import Style from "./Style"
 
 const DevRouter = () => {

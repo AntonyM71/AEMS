@@ -1,14 +1,17 @@
-import { Paper, Grid, Typography, Chip } from "@material-ui/core"
-import React, { useState } from "react"
+import Chip from "@material-ui/core/Chip"
+import Grid from "@material-ui/core/Grid"
+import Paper from "@material-ui/core/Paper"
+import Typography from "@material-ui/core/Typography"
+import React from "react"
+import { bonuses, moves } from "./demoMoves"
+import { useFloatStyles } from "./FloatStyles"
 import {
-	addScoredMoveType,
 	addScoredBonusType,
-	scoredMovesType,
+	addScoredMoveType,
+	movesType,
 	removeScoredMoveType,
-	movesType
+	scoredMovesType
 } from "./Interfaces"
-import { moves, bonuses } from "./demoMoves"
-import { useFloatStyles } from "./Float"
 
 interface ScoredMovePropsType {
 	scoredMove: scoredMovesType
@@ -18,7 +21,8 @@ interface ScoredMovePropsType {
 	scoredMoveIndex: number
 	key: string
 }
-const ScoredMove = (props: ScoredMovePropsType) => {
+
+const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const filteredMoves = moves.filter(
 		(move: movesType) => move.id === props.scoredMove.moveId
 	)
@@ -29,51 +33,46 @@ const ScoredMove = (props: ScoredMovePropsType) => {
 		return (
 			<Paper className={classes.moveBox}>
 				<Grid container spacing={1} justify="space-around">
-					<Grid item xs={3}>
+					<Grid item>
+						<Chip
+							onClick={() =>
+								props.removeScoredMove(props.scoredMove.id)
+							}
+							color="default"
+							label="X"
+						/>
+					</Grid>
+					<Grid item xs>
 						<Typography align="center">
 							{props.scoredMove.direction !== "A"
 								? props.scoredMove.direction
 								: "-"}
 						</Typography>
 					</Grid>
-					<Grid item xs={6}>
-						<Typography align="center">
+					<Grid item xs={4}>
+						<Typography align="center" display="inline">
 							{scoredMove.name}
 						</Typography>
 					</Grid>
-					<Grid item xs={3}>
-						<Chip
-							onClick={() =>
-								props.removeScoredMove(props.scoredMove.id)
-							}
-							color="default"
-							label="D"
-						/>
-					</Grid>
+
 					{bonuses.map((bonus) => {
 						const filteredBonuses = props.scoredMove.bonuses.filter(
 							(b) => b.bonusId === bonus.id
 						)
-						let className = "scoreableBonus"
-						if (filteredBonuses.length >= 1) {
-							className = "scoreableBonus scoredBonus"
-						}
-						const [isScored, setIsScored] = useState(false)
+
+						const isScored =
+							filteredBonuses.length === 1 ? true : false
 
 						return (
-							<Grid item xs={2}>
+							<Grid item xs>
 								<Chip
-									// variant="contained"
-									// fullWidth
 									color={isScored ? "primary" : "default"}
 									key={bonus.id}
-									className={className}
 									onClick={() => {
 										props.addScoredBonus(
 											props.scoredMove.id,
 											bonus.id
 										)
-										setIsScored(!isScored)
 									}}
 									label={bonus.shortName}
 								/>
@@ -86,5 +85,5 @@ const ScoredMove = (props: ScoredMovePropsType) => {
 	}
 
 	return <div className="scoredMove">Unknown Move</div>
-}
+})
 export default ScoredMove
