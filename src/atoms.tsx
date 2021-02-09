@@ -20,6 +20,14 @@ export const selectedPaddlerState = atom({
 	key: "selectedPaddler", // unique ID (with respect to other atoms/selectors)
 	default: 0 as number // default value (aka initial value)
 })
+export const selectedRunState = atom({
+	key: "selectedRun", // unique ID (with respect to other atoms/selectors)
+	default: 0 as number // default value (aka initial value)
+})
+export const numberOfRunsInHeatState = atom({
+	key: "numberOfRuns", // unique ID (with respect to other atoms/selectors)
+	default: 3 as number // default value (aka initial value)
+})
 export const selectedHeatState = atom({
 	key: "selectedHeat", // unique ID (with respect to other atoms/selectors)
 	default: {} as heatsType // default value (aka initial value)

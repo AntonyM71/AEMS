@@ -13,8 +13,10 @@ import {
 import { v4 as uuidv4 } from "uuid"
 import {
 	currentMoveState,
+	numberOfRunsInHeatState,
 	scoredMovesState,
-	selectedPaddlerState
+	selectedPaddlerState,
+	selectedRunState
 } from "../../../../atoms"
 import {
 	currentPaddlerInfo,
@@ -41,23 +43,29 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 		selectedPaddlerState
 	)
 	const numberOfPaddlers = useRecoilValue(numberOfPaddlersInHeat)
-	const paddlerInfo = useRecoilValue(currentPaddlerInfo)
+	const [currentRun, setCurrentRun] = useRecoilState(selectedRunState)
+	const numberOfRuns = useRecoilValue(numberOfRunsInHeatState)
 
-	const currentRun = 0
+	const paddlerInfo = useRecoilValue(currentPaddlerInfo)
 	const [scoredMoves, setScoredMoves] = useRecoilState(scoredMovesState)
 	const ressetScoredMoves = useResetRecoilState(scoredMovesState)
 	const setCurrentMove = useSetRecoilState(currentMoveState)
 
 	const changePaddler = (number: number) => {
-		const newPaddlerIndex = currentPaddler + number
-		if (newPaddlerIndex === -1) {
-			setCurrentPaddler(numberOfPaddlers - 1)
-		} else if (newPaddlerIndex === numberOfPaddlers) {
-			setCurrentPaddler(0)
-		} else {
-			setCurrentPaddler(newPaddlerIndex)
-		}
+		const newPaddlerIndex = calculateNewIndex(
+			currentPaddler + number,
+			number
+		)
+
+		setCurrentPaddler(newPaddlerIndex)
 	}
+
+	const changeRun = (number: number) => {
+		const newRun = calculateNewIndex(currentRun + number, number)
+
+		setCurrentRun(newRun)
+	}
+
 	const removeScoredMove: removeScoredMoveType = (id: string) => {
 		// eslint-disable-next-line no-console
 		console.log("Removing Move", id)
@@ -74,7 +82,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 
 	return (
 		<Grid container spacing={2} alignItems="flex-start">
-			<Grid item xs={3}>
+			<Grid item xs={2}>
 				<Paper className={classes.paperBox}>
 					<h4>Run Score </h4>
 					<div className="score" id="runScore">
@@ -98,11 +106,17 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					</div>
 				</Paper>
 			</Grid>
-			<Grid item xs={3}>
+			<Grid item xs={4}>
 				<Paper className={classes.paperBox}>
 					<h4>Run</h4>
 					<div className="score" id="heatScore">
-						{currentRun}
+						<IconButton onClick={() => changeRun(-1)}>
+							<ChevronLeft />
+						</IconButton>
+						{currentRun + 1}
+						<IconButton onClick={() => changeRun(1)}>
+							<ChevronRight />
+						</IconButton>
 					</div>
 				</Paper>
 			</Grid>
@@ -148,3 +162,5 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 		</Grid>
 	)
 }
+
+export const calculateNewIndex = (n: number, m: number) => ((n % m) + m) % m
