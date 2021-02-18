@@ -17,6 +17,10 @@ steps:
 
 - script: |
     npm install
-    npm run test
+  displayName: 'npm install'
+- script: |
     npm run lint
-  displayName: 'npm install, test and lint.'
+  displayName: 'npm run lint'
+- script: |
+    npm run test
+  displayName: 'npm run test'
