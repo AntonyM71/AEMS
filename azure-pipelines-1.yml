@@ -16,7 +16,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install
+    npm ci
   displayName: 'npm install'
 - script: |
     npm run lint
