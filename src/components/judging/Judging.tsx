@@ -9,7 +9,7 @@ import {
 	selectedPhaseState
 } from "../../atoms"
 import { competitionsType, getCompetitions } from "../../Competitions"
-import CompetitionSelector from "../competition/competitionSelector"
+import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
 import PhaseSelector from "../competition/PhaseSelector"
