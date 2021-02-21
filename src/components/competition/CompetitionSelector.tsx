@@ -11,7 +11,7 @@ interface propsType {
 	competitions: competitionsType[]
 }
 
-const CompetitionSelector = ({ competitions }: propsType) => {
+export const CompetitionSelector = ({ competitions }: propsType) => {
 	const [selectedCompetition, setSelectedCompetition] = useRecoilState(
 		selectedCompetitionState
 	)
