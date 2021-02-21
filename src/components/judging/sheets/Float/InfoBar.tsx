@@ -54,16 +54,18 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
 			currentPaddler + number,
-			number
+			numberOfPaddlers
 		)
 
 		setCurrentPaddler(newPaddlerIndex)
+		setScoredMoves([])
 	}
 
 	const changeRun = (number: number) => {
-		const newRun = calculateNewIndex(currentRun + number, number)
+		const newRun = calculateNewIndex(currentRun + number, numberOfRuns)
 
 		setCurrentRun(newRun)
+		setScoredMoves([])
 	}
 
 	const removeScoredMove: removeScoredMoveType = (id: string) => {
