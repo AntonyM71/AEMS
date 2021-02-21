@@ -1,10 +1,10 @@
 import { selector } from "recoil"
+import { calculateRunScore } from "../utils/scoringUtils"
 import {
 	scoredMovesState,
 	selectedHeatState,
 	selectedPaddlerState
 } from "./atoms"
-import { calculateRunScore } from "./scoringUtils"
 
 export const currentScore = selector({
 	key: "currentScore",

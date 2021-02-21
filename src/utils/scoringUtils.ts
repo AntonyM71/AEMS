@@ -1,5 +1,5 @@
-import { moves } from "./components/judging/sheets/Float/demoMoves"
-import { movesType, scoredMovesType } from "./components/judging/sheets/Float/Interfaces"
+import { moves } from "../components/judging/sheets/Float/demoMoves"
+import { movesType, scoredMovesType } from "../components/judging/sheets/Float/Interfaces"
 
 // TODO: This function doens't handle bonuses yet
 

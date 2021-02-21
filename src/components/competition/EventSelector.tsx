@@ -4,8 +4,11 @@ import MenuItem from "@material-ui/core/MenuItem"
 import Select from "@material-ui/core/Select"
 import React, { Fragment } from "react"
 import { useRecoilState, useRecoilValue } from "recoil"
-import { selectedCompetitionState, selectedEventState } from "../../atoms"
-import { competitionsType, eventType } from "../../Competitions"
+import { competitionsType, eventType } from "../../competitiondata/Competitions"
+import {
+	selectedCompetitionState,
+	selectedEventState
+} from "../../recoil/atoms"
 
 interface propsType {
 	competitions: competitionsType[]

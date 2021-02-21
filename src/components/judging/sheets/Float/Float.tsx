@@ -3,7 +3,7 @@ import { cloneDeep } from "lodash"
 import React from "react"
 import { useRecoilState, useSetRecoilState } from "recoil"
 import { v4 as uuidv4 } from "uuid"
-import { currentMoveState, scoredMovesState } from "../../../../atoms"
+import { currentMoveState, scoredMovesState } from "../../../../recoil/atoms"
 import { moves } from "./demoMoves"
 import { InfoBar } from "./InfoBar"
 import {

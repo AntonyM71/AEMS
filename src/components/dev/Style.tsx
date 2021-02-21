@@ -1,3 +1,6 @@
-const Style = () => <h1>Style</h1>
-
+const Style = () => (
+	<>
+		<h1>Style Guide</h1>
+	</>
+)
 export default Style

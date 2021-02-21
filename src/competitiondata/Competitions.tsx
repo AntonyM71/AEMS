@@ -3,7 +3,7 @@ import {
 	getEntriesForCompetition,
 	getEntriesForEvent,
 	getHeatsForEvent
-} from "./Athletes"
+} from "../components/Athletes/Athletes"
 
 export const getCompetitions = () => competitions
 

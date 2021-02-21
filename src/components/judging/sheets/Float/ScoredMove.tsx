@@ -3,8 +3,8 @@ import Grid from "@material-ui/core/Grid"
 import Paper from "@material-ui/core/Paper"
 import Typography from "@material-ui/core/Typography"
 import React from "react"
+import { useStyles } from "../../../../style/Styles"
 import { bonuses, moves } from "./demoMoves"
-import { useFloatStyles } from "./FloatStyles"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -26,7 +26,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const filteredMoves = moves.filter(
 		(move: movesType) => move.id === props.scoredMove.moveId
 	)
-	const classes = useFloatStyles()
+	const classes = useStyles()
 	if (filteredMoves.length === 1) {
 		const scoredMove = filteredMoves[0]
 

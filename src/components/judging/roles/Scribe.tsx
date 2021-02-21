@@ -3,20 +3,20 @@ import React from "react"
 import { Redirect } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
-	selectedCompetitionState,
-	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
-} from "../../../atoms"
-import {
 	competitionsType,
 	eventType,
 	getCompetitions,
 	phaseType
-} from "../../../Competitions"
+} from "../../../competitiondata/Competitions"
+import {
+	selectedCompetitionState,
+	selectedEventState,
+	selectedHeatState,
+	selectedPhaseState
+} from "../../../recoil/atoms"
+import { useStyles } from "../../../style/Styles"
 import { SelectorDisplay } from "../Judging"
 import Float from "../sheets/Float/Float"
-import { useFloatStyles } from "../sheets/Float/FloatStyles"
 import Squirt from "../sheets/Squirt/Squirt"
 
 // import Squirt from "../sheets/Squirt";
@@ -25,7 +25,7 @@ import Squirt from "../sheets/Squirt/Squirt"
 
 // eslint-disable-next-line complexity
 const Scribe = () => {
-	const classes = useFloatStyles()
+	const classes = useStyles()
 	const competitions = getCompetitions()
 	const [competition] = useRecoilState(selectedCompetitionState)
 	const [event] = useRecoilState(selectedEventState)
