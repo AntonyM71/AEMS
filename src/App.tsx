@@ -1,4 +1,4 @@
-import { Container } from "@material-ui/core"
+import Container from "@material-ui/core/Container/Container"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { ToastProvider } from "react-toast-notifications"

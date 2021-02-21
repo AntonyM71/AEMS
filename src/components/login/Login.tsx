@@ -6,11 +6,11 @@ import FormControlLabel from "@material-ui/core/FormControlLabel"
 import Grid from "@material-ui/core/Grid"
 import Link from "@material-ui/core/Link"
 import Paper from "@material-ui/core/Paper"
-import { makeStyles } from "@material-ui/core/styles"
 import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
+import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
 	<Typography variant="body2" color="textSecondary" align="center">
@@ -22,39 +22,6 @@ const Copyright = () => (
 		{"."}
 	</Typography>
 )
-
-const useStyles = makeStyles((theme) => ({
-	root: {
-		height: "100vh"
-	},
-	image: {
-		backgroundImage: "url(/images/HurleyClassic2018/IMGP6327.png)",
-		backgroundRepeat: "no-repeat",
-		backgroundColor:
-			theme.palette.type === "light"
-				? theme.palette.grey[50]
-				: theme.palette.grey[900],
-		backgroundSize: "cover",
-		backgroundPosition: "center"
-	},
-	paper: {
-		margin: theme.spacing(8, 4),
-		display: "flex",
-		flexDirection: "column",
-		alignItems: "center"
-	},
-	avatar: {
-		margin: theme.spacing(1),
-		backgroundColor: theme.palette.secondary.main
-	},
-	form: {
-		width: "100%", // Fix IE 11 issue.
-		marginTop: theme.spacing(1)
-	},
-	submit: {
-		margin: theme.spacing(3, 0, 2)
-	}
-}))
 
 export default () => {
 	const classes = useStyles()
