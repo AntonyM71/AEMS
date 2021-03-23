@@ -17,13 +17,13 @@ import {
 	scoredMovesState,
 	selectedPaddlerState,
 	selectedRunState
-} from "../../../../atoms"
+} from "../../../../recoil/atoms"
 import {
 	currentPaddlerInfo,
 	currentScore,
 	numberOfPaddlersInHeat
-} from "../../../../Selectors"
-import { useFloatStyles } from "./FloatStyles"
+} from "../../../../recoil/Selectors"
+import { useStyles } from "../../../../style/Styles"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -37,7 +37,7 @@ interface propsType {
 	addScoredBonus: addScoredBonusType
 }
 export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
-	const classes = useFloatStyles()
+	const classes = useStyles()
 
 	const [currentPaddler, setCurrentPaddler] = useRecoilState(
 		selectedPaddlerState
@@ -54,16 +54,18 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
 			currentPaddler + number,
-			number
+			numberOfPaddlers
 		)
 
 		setCurrentPaddler(newPaddlerIndex)
+		setScoredMoves([])
 	}
 
 	const changeRun = (number: number) => {
-		const newRun = calculateNewIndex(currentRun + number, number)
+		const newRun = calculateNewIndex(currentRun + number, numberOfRuns)
 
 		setCurrentRun(newRun)
+		setScoredMoves([])
 	}
 
 	const removeScoredMove: removeScoredMoveType = (id: string) => {

@@ -3,7 +3,7 @@ import {
 	competitionsType,
 	heatsType,
 	registeredEventType
-} from "./Competitions"
+} from "../../competitiondata/Competitions"
 
 const aems = ["K1W", "K1M", "OC1", "C1", "K1JW", "K1JM", "SW", "SM"]
 const icf = ["002", "001", "", "009", "004", "003", "008", "007"]

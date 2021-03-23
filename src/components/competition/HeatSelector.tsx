@@ -8,7 +8,7 @@ import {
 	heatsListState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../atoms"
+} from "../../recoil/atoms"
 
 export const HeatsSelector = () => {
 	const [selectedPhase] = useRecoilState(selectedPhaseState)

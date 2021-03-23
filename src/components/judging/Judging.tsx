@@ -1,32 +1,24 @@
-import { Button, Grid, Link, makeStyles, Paper } from "@material-ui/core"
+import { Button, Grid, Link, Paper } from "@material-ui/core"
 import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
+import {
+	competitionsType,
+	getCompetitions
+} from "../../competitiondata/Competitions"
 import {
 	selectedCompetitionState,
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../atoms"
-import { competitionsType, getCompetitions } from "../../Competitions"
+} from "../../recoil/atoms"
+import { useStyles } from "../../style/Styles"
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
 import PhaseSelector from "../competition/PhaseSelector"
 // eslint-disable-next-line complexity
 
-export const useStyles = makeStyles((theme) => ({
-	root: {
-		height: "100vh"
-	},
-	paper: {
-		padding: theme.spacing(4, 4),
-		marginTop: theme.spacing(2),
-		display: "flex",
-		flexDirection: "column",
-		alignItems: "center"
-	}
-}))
 const Judging = () => {
 	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
 	const classes = useStyles()
@@ -49,7 +41,7 @@ const Judging = () => {
 		if (competition) {
 			if (event) {
 				return (
-					<Paper className={classes.paper}>
+					<Paper className={classes.marginPaper}>
 						<Grid container spacing={2} alignItems={"stretch"}>
 							<Grid item xs={12}>
 								<h1>Scribes</h1>
@@ -95,7 +87,7 @@ const Judging = () => {
 	}
 
 	return (
-		<Paper className={classes.paper}>
+		<Paper className={classes.marginPaper}>
 			<h1>No Competition Selected</h1>
 
 			<p>Please select a competition and event to get started</p>

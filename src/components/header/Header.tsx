@@ -1,89 +1,110 @@
-import {
-	AppBar,
-	Link,
-	List,
-	ListItem,
-	ListItemText,
-	Toolbar,
-	Typography
-} from "@material-ui/core"
+import AppBar from "@material-ui/core/AppBar"
 import IconButton from "@material-ui/core/IconButton"
+import Link from "@material-ui/core/Link"
+import List from "@material-ui/core/List"
+import ListItem from "@material-ui/core/ListItem"
+import ListItemText from "@material-ui/core/ListItemText"
+import Toolbar from "@material-ui/core/Toolbar"
+import Typography from "@material-ui/core/Typography"
 import Brightness4Icon from "@material-ui/icons/Brightness4"
+import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
-import { preferDarkState } from "../../atoms"
+import conf from "../../config"
 import logo from "../../images/THFLogoWhiteOrange.png"
+import { preferDarkState } from "../../recoil/atoms"
 import { routes } from "../routes/Router"
 
-const Header = () => (
-	<AppBar position="static" color="default" elevation={0}>
-		<Toolbar>
-			<img
-				src={logo}
-				alt="Hurley Foundation Events Logo"
-				style={{ height: "70px" }}
-			></img>
-			<List component="nav">
-				<ListItem component="div">
-					<ListItemText inset>
-						<Typography color="textPrimary" variant="body1">
-							<Link component={RouterLink} to="/" color="inherit">
-								Home
-							</Link>
-						</Typography>
-					</ListItemText>
-					<ListItemText inset>
-						<Typography color="textPrimary" variant="body1">
-							<Link
-								component={RouterLink}
-								to={routes.judging.root}
-								color="inherit"
-							>
-								Judging
-							</Link>
-						</Typography>
-					</ListItemText>
-					<ListItemText inset>
-						<Typography color="textPrimary" variant="body1">
-							<Link
-								component={RouterLink}
-								to={routes.upload.root}
-								color="inherit"
-							>
-								Upload
-							</Link>
-						</Typography>
-					</ListItemText>
-					<ListItemText inset>
-						<Typography color="textPrimary" variant="body1">
-							<Link
-								component={RouterLink}
-								to={routes.dev.root}
-								color="inherit"
-							>
-								Dev
-							</Link>
-						</Typography>
-					</ListItemText>
-					<ListItemText inset>
-						<Typography color="textPrimary" variant="body1">
-							<Link
-								component={RouterLink}
-								to={routes.login.root}
-								color="inherit"
-							>
-								Login
-							</Link>
-						</Typography>
-					</ListItemText>
-					<ListItemText inset>
-						<DarkModeButton />
-					</ListItemText>
-				</ListItem>
-			</List>
-		</Toolbar>
-	</AppBar>
-)
+const Header = () => {
+	const env = conf.get("env")
+
+	return (
+		<AppBar position="static" color="default" elevation={0}>
+			<Toolbar>
+				<img
+					src={logo}
+					alt="Hurley Foundation Events Logo"
+					style={{ height: "70px" }}
+				></img>
+				<List component="nav">
+					<ListItem component="div">
+						<ListItemText inset>
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to="/"
+									color="inherit"
+								>
+									Home
+								</Link>
+							</Typography>
+						</ListItemText>
+						<ListItemText inset>
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to={routes.judging.root}
+									color="inherit"
+								>
+									Judging
+								</Link>
+							</Typography>
+						</ListItemText>
+						<ListItemText inset>
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to={routes.upload.root}
+									color="inherit"
+								>
+									Upload
+								</Link>
+							</Typography>
+						</ListItemText>
+						<ListItemText inset>
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to={routes.score.root}
+									color="inherit"
+								>
+									Score
+								</Link>
+							</Typography>
+						</ListItemText>
+						{env === "development" ? (
+							<ListItemText inset>
+								<Typography color="textPrimary" variant="body1">
+									<Link
+										component={RouterLink}
+										to={routes.dev.root}
+										color="inherit"
+									>
+										Dev
+									</Link>
+								</Typography>
+							</ListItemText>
+						) : null}
+						<ListItemText inset>
+							<Typography color="textPrimary" variant="body1">
+								<Link
+									component={RouterLink}
+									to={routes.login.root}
+									color="inherit"
+								>
+									Login
+								</Link>
+							</Typography>
+						</ListItemText>
+						<ListItemText inset>
+							<DarkModeButton />
+						</ListItemText>
+					</ListItem>
+				</List>
+			</Toolbar>
+		</AppBar>
+	)
+}
 
 export const DarkModeButton = () => {
 	const [preferDark, setPreferDark] = useRecoilState(preferDarkState)

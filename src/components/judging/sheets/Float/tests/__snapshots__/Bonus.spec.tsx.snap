@@ -6,7 +6,7 @@ Object {
   "baseElement": <body>
     <div>
       <div
-        class="MuiPaper-root makeStyles-moveBox-6 MuiPaper-elevation1 MuiPaper-rounded"
+        class="MuiPaper-root makeStyles-moveBox-7 MuiPaper-elevation1 MuiPaper-rounded"
       >
         <p
           class="MuiTypography-root MuiTypography-body1"
@@ -33,7 +33,7 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="MuiPaper-root makeStyles-moveBox-6 MuiPaper-elevation1 MuiPaper-rounded"
+      class="MuiPaper-root makeStyles-moveBox-7 MuiPaper-elevation1 MuiPaper-rounded"
     >
       <p
         class="MuiTypography-root MuiTypography-body1"

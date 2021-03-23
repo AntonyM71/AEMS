@@ -1,6 +1,6 @@
 import { atom } from "recoil"
-import { heatsType } from "./Competitions"
-import { scoredMovesType } from "./components/judging/sheets/Float/Interfaces"
+import { heatsType } from "../competitiondata/Competitions"
+import { scoredMovesType } from "../components/judging/sheets/Float/Interfaces"
 
 export const preferDarkState = atom({
 	key: "preferDarkState", // unique ID (with respect to other atoms/selectors)

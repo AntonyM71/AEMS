@@ -1,10 +1,10 @@
 import { useRecoilState, useRecoilValue } from "recoil"
+import { competitionsType } from "../../competitiondata/Competitions"
 import {
 	selectedCompetitionState,
 	selectedEventState,
 	selectedPhaseState
-} from "../../atoms"
-import { competitionsType } from "../../Competitions"
+} from "../../recoil/atoms"
 
 const CompetitionStatus = (competition: competitionsType) => {
 	const [selectedCompetition] = useRecoilState(selectedCompetitionState)

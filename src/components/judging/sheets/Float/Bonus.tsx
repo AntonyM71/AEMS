@@ -2,11 +2,11 @@ import Button from "@material-ui/core/Button"
 import Paper from "@material-ui/core/Paper"
 import Typography from "@material-ui/core/Typography"
 import React from "react"
-import { useFloatStyles } from "./FloatStyles"
+import { useStyles } from "../../../../style/Styles"
 import { BonusPropsType } from "./Interfaces"
 
 export const Bonus = (props: BonusPropsType) => {
-	const classes = useFloatStyles()
+	const classes = useStyles()
 
 	return (
 		<Paper className={classes.moveBox}>
