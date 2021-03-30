@@ -3,12 +3,18 @@ import InputLabel from "@material-ui/core/InputLabel"
 import MenuItem from "@material-ui/core/MenuItem"
 import Select from "@material-ui/core/Select"
 import React, { Fragment } from "react"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import {
+	useRecoilState,
+	useRecoilValue,
+	useResetRecoilState,
+	useSetRecoilState
+} from "recoil"
 import { competitionsType, phaseType } from "../../competitiondata/Competitions"
 import {
 	heatsListState,
 	selectedCompetitionState,
 	selectedEventState,
+	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms"
 
@@ -20,7 +26,7 @@ const PhaseSelector = ({ competitions }: propsType) => {
 	const selectedEvent = useRecoilValue(selectedEventState)
 	const [selectedPhase, setSelectedPhase] = useRecoilState(selectedPhaseState)
 	const setHeatsList = useSetRecoilState(heatsListState)
-
+	const resetSelectedHeat = useResetRecoilState(selectedHeatState)
 	if (selectedCompetition !== "" && selectedEvent !== "") {
 		const competitionObject = competitions.filter(
 			(c) => c.id === selectedCompetition
@@ -35,6 +41,7 @@ const PhaseSelector = ({ competitions }: propsType) => {
 					value: unknown
 				}>
 			) => {
+				resetSelectedHeat()
 				setSelectedPhase(event.target.value as string)
 				setHeatsList(
 					eventObject.phases.filter(
