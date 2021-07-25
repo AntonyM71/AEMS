@@ -83,85 +83,99 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	}
 
 	return (
-		<Grid container spacing={2} alignItems="flex-start">
-			<Grid item xs={2}>
-				<Paper className={classes.paperBox}>
-					<h4>Run Score </h4>
-					<div className="score" id="runScore">
-						{useRecoilValue(currentScore)}
-					</div>
-				</Paper>
-			</Grid>
-			<Grid item xs={6}>
-				<Paper className={classes.paperBox}>
-					<h4>Paddler</h4>
-					<div className="score" id="heatScore">
-						<IconButton onClick={() => changePaddler(-1)}>
-							<ChevronLeft />
-						</IconButton>
-						{paddlerInfo.GivenName}
-						{paddlerInfo.FamilyName}
-						{paddlerInfo.Bib}
-						<IconButton onClick={() => changePaddler(1)}>
-							<ChevronRight />
-						</IconButton>
-					</div>
-				</Paper>
-			</Grid>
-			<Grid item xs={4}>
-				<Paper className={classes.paperBox}>
-					<h4>Run</h4>
-					<div className="score" id="heatScore">
-						<IconButton onClick={() => changeRun(-1)}>
-							<ChevronLeft />
-						</IconButton>
-						{currentRun + 1}
-						<IconButton onClick={() => changeRun(1)}>
-							<ChevronRight />
-						</IconButton>
-					</div>
-				</Paper>
-			</Grid>
-			<Grid item xs={6} alignContent="center">
-				<h3>Move Listing</h3>
-			</Grid>
-			<Grid item xs={6}>
-				<Button onClick={clearRun} variant="contained">
-					Clear Run
-				</Button>
-			</Grid>
-			<Grid
-				item
-				xs={12}
-				alignContent={"flex-start"}
-				alignItems={"flex-start"}
-			>
-				<Grid
-					container
-					spacing={2}
-					// alignItems="flex-end"
-					// alignContent={"flex-end"}
-					direction="column-reverse"
-				>
-					{scoredMoves.map(
-						(scoredMove: scoredMovesType, index: number) => (
-							<Grid item>
-								<Paper>
-									<ScoredMove
-										key={scoredMove.id}
-										scoredMove={scoredMove}
-										scoredMoveIndex={index}
-										removeScoredMove={removeScoredMove}
-										addScoredMove={addScoredMove}
-										addScoredBonus={addScoredBonus}
-									/>
-								</Paper>
+		<div style={{ height: "100%" }}>
+			<Grid container spacing={2} alignItems="stretch">
+				<Grid item xs={2}>
+					<Paper className={classes.moveBox}>
+						<h4>Run Score </h4>
+						<div className="score" id="runScore">
+							{useRecoilValue(currentScore)}
+						</div>
+					</Paper>
+				</Grid>
+				<Grid item xs={6}>
+					<Paper className={classes.moveBox}>
+						<h4>Paddler No: {paddlerInfo.Bib}</h4>
+						<div className="score" id="heatScore">
+							<Grid
+								container
+								direction="row"
+								alignContent="space-between"
+							>
+								<Grid item xs={3}>
+									<IconButton
+										onClick={() => changePaddler(-1)}
+									>
+										<ChevronLeft />
+									</IconButton>
+								</Grid>
+								<Grid item xs={6}>
+									<div style={{ textAlign: "center" }}>
+										{paddlerInfo.GivenName}
+									</div>
+									<div style={{ textAlign: "center" }}>
+										{paddlerInfo.FamilyName.toUpperCase()}
+									</div>
+								</Grid>
+								<Grid item xs={3}>
+									<IconButton
+										onClick={() => changePaddler(1)}
+									>
+										<ChevronRight />
+									</IconButton>
+								</Grid>
 							</Grid>
-						)
-					)}
+						</div>
+					</Paper>
+				</Grid>
+				<Grid item xs={4}>
+					<Paper className={classes.moveBox}>
+						<h4>Run</h4>
+						<div className="score" id="heatScore">
+							<IconButton onClick={() => changeRun(-1)}>
+								<ChevronLeft />
+							</IconButton>
+							{currentRun + 1}
+							<IconButton onClick={() => changeRun(1)}>
+								<ChevronRight />
+							</IconButton>
+						</div>
+					</Paper>
+				</Grid>
+				<Grid item xs={6} alignContent="center">
+					<h2>Move Listing</h2>
+				</Grid>
+				<Grid item xs={6}>
+					<Button onClick={clearRun} variant="contained" fullWidth>
+						Clear Run
+					</Button>
 				</Grid>
 			</Grid>
-		</Grid>
+			<Grid
+				container
+				spacing={2}
+				direction="row"
+				style={{
+					maxHeight: "calc(100vh - 410px)", // this is a bit fragile,
+					overflow: "auto"
+				}}
+			>
+				{[...scoredMoves] // put these into a new array so that reverse works
+					.reverse()
+					.map((scoredMove: scoredMovesType, index: number) => (
+						<Grid item xs={12}>
+							<ScoredMove
+								key={scoredMove.id}
+								scoredMove={scoredMove}
+								scoredMoveIndex={index}
+								removeScoredMove={removeScoredMove}
+								addScoredMove={addScoredMove}
+								addScoredBonus={addScoredBonus}
+							/>
+						</Grid>
+					))}
+			</Grid>
+		</div>
 	)
 }
 
