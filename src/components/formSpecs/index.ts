@@ -1,2 +1,2 @@
-export { devSchema } from "./dev";
+export { devSchema, extendedDevSchema } from "./dev";
 
