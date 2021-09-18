@@ -66,7 +66,7 @@ module.exports = {
 		"guard-for-in": "error",
 		"id-blacklist": "off", // this conflicting with typescript. It bans Number, Boolean, String, number, boolean, undefined but we widely use it in typescript
 		"id-match": "error",
-		"import/order": "off", // too strict, turning it off 🙂
+		"import/order": 1, // too strict, turning it off 🙂
 		"linebreak-style": [1, "unix"],
 		"max-classes-per-file": ["error", 1],
 		"max-len": [
