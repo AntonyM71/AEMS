@@ -115,7 +115,7 @@ export const DarkModeButton = () => {
 	return (
 		<IconButton
 			color="default"
-			aria-label={"darkModeButton"}
+			data-testid="darkModeButton"
 			onClick={handleDarkModePress}
 		>
 			<Brightness4Icon />

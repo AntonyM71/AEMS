@@ -1,7 +1,14 @@
 module.exports = {
+	env: {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
 	extends: [
+		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking"
+
 	],
 	plugins: [
 		"@typescript-eslint",
@@ -9,9 +16,14 @@ module.exports = {
 		"prefer-arrow",
 		"import"
 	],
-	parserOptions: {
-		project: "tsconfig.json"
-	},
+	overrides: [
+		{
+		files: ['*.ts', '*.tsx'], // Your TypeScript files extension
+		parserOptions: {
+			project: ['./tsconfig.json'], // Specify it only for TypeScript files
+		},
+		}
+	],
 	rules: {
 		"@typescript-eslint/array-type": "error",
 		"@typescript-eslint/explicit-module-boundary-types": "off", // we're returning components, try and put return types on functions
