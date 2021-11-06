@@ -3,7 +3,7 @@ import { heatsType } from "../competitiondata/Competitions"
 import { scoredMovesType } from "../components/judging/sheets/Float/Interfaces"
 import { testHeat } from "../components/judging/sheets/Float/tests/TestData"
 
-const isTest = process.env.NODE_ENV == "test" ? true : false
+const isTest = process.env.NODE_ENV === "test" ? true : false
 
 export const preferDarkState = atom({
 	key: "preferDarkState", // unique ID (with respect to other atoms/selectors)
