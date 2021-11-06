@@ -40,6 +40,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 							}
 							color="default"
 							label="X"
+							data-testid={"scored-remove-" + props.scoredMove.id}
 						/>
 					</Grid>
 					<Grid item xs>
@@ -75,6 +76,12 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 										)
 									}}
 									label={bonus.shortName}
+									data-testid={
+										"scored-remove-" +
+										props.scoredMove.id +
+										"-" +
+										bonus.id
+									}
 								/>
 							</Grid>
 						)

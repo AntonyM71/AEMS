@@ -105,11 +105,16 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 								<Grid item xs={3}>
 									<IconButton
 										onClick={() => changePaddler(-1)}
+										data-testid={"button-prev-paddler"}
 									>
 										<ChevronLeft />
 									</IconButton>
 								</Grid>
-								<Grid item xs={6}>
+								<Grid
+									item
+									xs={6}
+									data-testid={"display-paddler-name"}
+								>
 									<div style={{ textAlign: "center" }}>
 										{paddlerInfo.GivenName}
 									</div>
@@ -120,6 +125,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 								<Grid item xs={3}>
 									<IconButton
 										onClick={() => changePaddler(1)}
+										data-testid={"button-next-paddler"}
 									>
 										<ChevronRight />
 									</IconButton>
@@ -132,21 +138,32 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					<Paper className={classes.moveBox}>
 						<h4>Run</h4>
 						<div className="score" id="heatScore">
-							<IconButton onClick={() => changeRun(-1)}>
+							<IconButton
+								onClick={() => changeRun(-1)}
+								data-testid={"button-prev-run"}
+							>
 								<ChevronLeft />
 							</IconButton>
 							{currentRun + 1}
-							<IconButton onClick={() => changeRun(1)}>
+							<IconButton
+								onClick={() => changeRun(1)}
+								data-testid={"button-next-run"}
+							>
 								<ChevronRight />
 							</IconButton>
 						</div>
 					</Paper>
 				</Grid>
-				<Grid item xs={6} alignContent="center">
+				<Grid item xs={6}>
 					<h2>Move Listing</h2>
 				</Grid>
 				<Grid item xs={6}>
-					<Button onClick={clearRun} variant="contained" fullWidth>
+					<Button
+						onClick={clearRun}
+						variant="contained"
+						fullWidth
+						data-testid={"button-clear-run"}
+					>
 						Clear Run
 					</Button>
 				</Grid>
@@ -171,6 +188,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 								removeScoredMove={removeScoredMove}
 								addScoredMove={addScoredMove}
 								addScoredBonus={addScoredBonus}
+								data-testid={"scored-move-" + scoredMove.id}
 							/>
 						</Grid>
 					))}

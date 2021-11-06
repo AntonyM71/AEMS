@@ -16,6 +16,7 @@ Object {
         <button
           aria-label="addBonus"
           class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-fullWidth"
+          data-testid="button-bonus-1234"
           tabindex="0"
           type="button"
         >
@@ -43,6 +44,7 @@ Object {
       <button
         aria-label="addBonus"
         class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-fullWidth"
+        data-testid="button-bonus-1234"
         tabindex="0"
         type="button"
       >

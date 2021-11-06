@@ -99,12 +99,13 @@ const Float = () => {
 			<Grid item xs={7}>
 				<Grid container spacing={2}>
 					{moves.map((move) => (
-						<Grid item xs={3}>
+						<Grid item xs={3} key={move.id}>
 							<Move
 								key={move.id}
 								move={move}
 								addScoredMove={addScoredMove}
 								addScoredBonus={addScoredBonus}
+								data-testid={"movecard-" + move.id}
 							/>
 						</Grid>
 					))}
@@ -114,6 +115,7 @@ const Float = () => {
 				<InfoBar
 					addScoredMove={addScoredMove}
 					addScoredBonus={addScoredBonus}
+					data-testid={"infobar"}
 				/>
 			</Grid>
 		</Grid>

@@ -6,7 +6,7 @@ import { preferDarkState } from "../../recoil/atoms"
 import { RecoilObserver } from "../../RecoilObserver"
 import Header from "./Header"
 
-describe("The form state should", () => {
+describe("The preferDark state should", () => {
 	test("change when the user enters a name.", () => {
 		const onChange = jest.fn()
 
