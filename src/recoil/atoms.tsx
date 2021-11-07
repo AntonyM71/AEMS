@@ -2,8 +2,9 @@ import { atom } from "recoil"
 import { heatsType } from "../competitiondata/Competitions"
 import { scoredMovesType } from "../components/judging/sheets/Float/Interfaces"
 import { testHeat } from "../components/judging/sheets/Float/tests/TestData"
+import conf from "../config"
 
-const isTest = process.env.NODE_ENV === "test" ? true : false
+const isTest = conf.get("env") === "test" ? true : false
 
 export const preferDarkState = atom({
 	key: "preferDarkState", // unique ID (with respect to other atoms/selectors)
