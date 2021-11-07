@@ -2,7 +2,10 @@ import { fireEvent, render, screen, within } from "@testing-library/react"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
-import { selectedPaddlerState } from "../../../../../recoil/atoms"
+import {
+	selectedPaddlerState,
+	selectedRunState
+} from "../../../../../recoil/atoms"
 import { RecoilObserver } from "../../../../../RecoilObserver"
 import Float from "../Float"
 
@@ -55,22 +58,103 @@ describe("The currentPaddler state should change when the user clicks the paddle
 		)
 
 		const component = screen.getByTestId("button-prev-paddler")
-		const { getByText } = within(screen.getByTestId("display-paddler-name"))
+		const paddlerNameDisplay = within(
+			screen.getByTestId("display-paddler-name")
+		)
+		const bibNumberDisplay = within(
+			screen.getByTestId("display-bib-number")
+		)
 		// assert it displays the right paddler initially
-		expect(getByText("Emily")).toBeTruthy()
-		expect(getByText("JACKSON")).toBeTruthy()
-
+		expect(paddlerNameDisplay.getByText("Emily")).toBeTruthy()
+		expect(paddlerNameDisplay.getByText("JACKSON")).toBeTruthy()
+		expect(bibNumberDisplay.getByText("70", { exact: false })).toBeTruthy()
 		// assert it moves to the last paddler on click
 		fireEvent.click(component)
 
-		expect(getByText("Jordan")).toBeTruthy()
-		expect(getByText("POFFENBERGER")).toBeTruthy()
+		expect(paddlerNameDisplay.getByText("Jordan")).toBeTruthy()
+		expect(paddlerNameDisplay.getByText("POFFENBERGER")).toBeTruthy()
+		expect(bibNumberDisplay.getByText("127", { exact: false })).toBeTruthy()
 		expect(onChange).toHaveBeenCalledWith(1) // New value on change.
 		// assert it increments back to the first paddler again
 		fireEvent.click(component)
 
-		expect(getByText("Emily")).toBeTruthy()
-		expect(getByText("JACKSON")).toBeTruthy()
+		expect(paddlerNameDisplay.getByText("Emily")).toBeTruthy()
+		expect(paddlerNameDisplay.getByText("JACKSON")).toBeTruthy()
+		expect(bibNumberDisplay.getByText("70", { exact: false })).toBeTruthy()
 		expect(onChange).toHaveBeenCalledWith(0) // original value again
+	})
+})
+
+describe("The currentRun state should change when the user clicks the run navigation buttons", () => {
+	it("updates the state and display upwards when  `Next Run` button is clicked", () => {
+		const onChange = jest.fn()
+		render(
+			<RecoilRoot>
+				<BrowserRouter>
+					<RecoilObserver
+						node={selectedRunState}
+						onChange={onChange}
+					/>
+					<Float />
+				</BrowserRouter>
+			</RecoilRoot>
+		)
+
+		const component = screen.getByTestId("button-next-run")
+		const { getByText } = within(screen.getByTestId("display-run-box"))
+		// assert it displays the right run initially
+		expect(getByText("1")).toBeTruthy()
+
+		// assert it moves to the next run on click
+		fireEvent.click(component)
+
+		expect(getByText("2")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(1)
+		// assert it increments to the last Run
+		fireEvent.click(component)
+
+		expect(getByText("3")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(2)
+
+		fireEvent.click(component)
+
+		expect(getByText("1")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(0) // original value again
+	})
+	it("updates the state and display upwards when `Previous Run` button is clicked", () => {
+		const onChange = jest.fn()
+		render(
+			<RecoilRoot>
+				<BrowserRouter>
+					<RecoilObserver
+						node={selectedRunState}
+						onChange={onChange}
+					/>
+					<Float />
+				</BrowserRouter>
+			</RecoilRoot>
+		)
+
+		const component = screen.getByTestId("button-prev-run")
+		const { getByText } = within(screen.getByTestId("display-run-box"))
+		// assert it displays the right paddler initially
+		expect(getByText("1")).toBeTruthy()
+
+		// assert it moves to the last run on click
+		fireEvent.click(component)
+
+		expect(getByText("3")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(2) // New value on change.
+		// assert it increments back to the second run
+		fireEvent.click(component)
+
+		expect(getByText("2")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(1)
+		// back to the original value
+
+		fireEvent.click(component)
+
+		expect(getByText("1")).toBeTruthy()
+		expect(onChange).toHaveBeenCalledWith(0)
 	})
 })

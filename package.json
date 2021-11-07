@@ -7,7 +7,6 @@
     "@material-ui/icons": "^4.11.2",
     "@rjsf/core": "^2.5.1",
     "@rjsf/material-ui": "^2.5.1",
-    "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
     "@testing-library/user-event": "^12.6.0",
     "@types/convict": "^5.2.2",

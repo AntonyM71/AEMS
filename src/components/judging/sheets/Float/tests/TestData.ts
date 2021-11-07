@@ -99,7 +99,8 @@ export const testHeat: heatsType = {
 							Type: "E_ENTRY"
 						}
 					}
-				}
+				},
+				Bib: "70"
 			},
 			{
 				Code: "39271",
@@ -137,7 +138,8 @@ export const testHeat: heatsType = {
 							Type: "E_ENTRY"
 						}
 					}
-				}
+				},
+				Bib: "127"
 			}
 	]
 }

@@ -95,7 +95,9 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				</Grid>
 				<Grid item xs={6}>
 					<Paper className={classes.moveBox}>
-						<h4>Paddler No: {paddlerInfo.Bib}</h4>
+						<h4 data-testid="display-bib-number">
+							Paddler No: {paddlerInfo.Bib}
+						</h4>
 						<div className="score" id="heatScore">
 							<Grid
 								container
@@ -137,7 +139,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				<Grid item xs={4}>
 					<Paper className={classes.moveBox}>
 						<h4>Run</h4>
-						<div className="score" id="heatScore">
+						<div className="score" id="heatScore" data-testid="display-run-box">
 							<IconButton
 								onClick={() => changeRun(-1)}
 								data-testid={"button-prev-run"}
