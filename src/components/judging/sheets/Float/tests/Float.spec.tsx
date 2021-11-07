@@ -86,6 +86,7 @@ describe("The currentPaddler state should change when the user clicks the paddle
 })
 
 describe("The currentRun state should change when the user clicks the run navigation buttons", () => {
+	// Based on the default of 3 runs per paddler, for other events we can change this and test that seperately.
 	it("updates the state and display upwards when  `Next Run` button is clicked", () => {
 		const onChange = jest.fn()
 		render(
