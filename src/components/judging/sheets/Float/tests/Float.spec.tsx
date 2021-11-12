@@ -130,9 +130,6 @@ describe("Deletemoves", () => {
 					mockUuid.mockReturnValue(move.id + "-" + index.toString())
 					fireEvent.click(component)
 					addedMoveIDs.push(move.id + "-" + index.toString())
-					console.log(
-						"scored-move-" + move.id + "-" + index.toString()
-					)
 					const scoredMoveCard = screen.getByTestId(
 						"scored-move-" + move.id + "-" + index.toString()
 					)
@@ -143,7 +140,6 @@ describe("Deletemoves", () => {
 		})
 
 		addedMoveIDs.forEach((moveId: string) => {
-			console.log("scored-move-" + moveId)
 			const scoredMoveCard = screen.getByTestId("scored-move-" + moveId)
 			// Assert there is a card for the move before deleting
 			expect(scoredMoveCard).toBeTruthy()
