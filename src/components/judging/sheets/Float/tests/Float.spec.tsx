@@ -39,9 +39,6 @@ describe("The test-move cards are rendered", () => {
 	})
 })
 
-// We access moves by their UUID in the infobar, make a spy so we can hard code these each test
-// const mockUuid = jest.fn().mockImplementation(() => "000-000-000")
-// jest.mock("uuid", () => mockUuid
 jest.mock("uuid")
 const mockUuid = jest.spyOn(uuid, "v4")
 describe("Add moves", () => {
@@ -73,7 +70,6 @@ describe("Add moves", () => {
 					index: number
 				) => {
 					mockUuid.mockReturnValue(move.id + "-" + index.toString())
-					// uuidSpy.mockImplementation(() => mockMoveUUID)
 					fireEvent.click(component)
 
 					// Assert the state has been updated
@@ -98,6 +94,77 @@ describe("Add moves", () => {
 					// Assert the card has the right name
 				}
 			)
+		})
+	})
+})
+
+describe("Deletemoves", () => {
+	it("adds moves to the state and displays, then removes them when the delete button is pressed", () => {
+		const addedMoveIDs: string[] = []
+		const onChange = jest.fn()
+		render(
+			<RecoilRoot>
+				<BrowserRouter>
+					<RecoilObserver
+						node={scoredMovesState}
+						onChange={onChange}
+					/>
+					<Float />
+				</BrowserRouter>
+			</RecoilRoot>
+		)
+		// Assert initial setup
+		expect(onChange).toHaveBeenCalledWith([])
+
+		testMoves.forEach((move: movesType) => {
+			// get all buttons wiht the move id in their test id
+			const components = screen.getAllByTestId("button-" + move.id, {
+				exact: false
+			})
+
+			components.forEach(
+				(
+					component: Document | Node | Element | Window,
+					index: number
+				) => {
+					mockUuid.mockReturnValue(move.id + "-" + index.toString())
+					fireEvent.click(component)
+					addedMoveIDs.push(move.id + "-" + index.toString())
+					console.log(
+						"scored-move-" + move.id + "-" + index.toString()
+					)
+					const scoredMoveCard = screen.getByTestId(
+						"scored-move-" + move.id + "-" + index.toString()
+					)
+					// Assert there is a card for the move
+					expect(scoredMoveCard).toBeTruthy()
+				}
+			)
+		})
+
+		addedMoveIDs.forEach((moveId: string) => {
+			console.log("scored-move-" + moveId)
+			const scoredMoveCard = screen.getByTestId("scored-move-" + moveId)
+			// Assert there is a card for the move before deleting
+			expect(scoredMoveCard).toBeTruthy()
+
+			// Find and click delete button
+			const deleteButton = screen.getByTestId("scored-remove-" + moveId)
+			fireEvent.click(deleteButton)
+
+			// Assert that the move is not in the state after delete is clicked
+			expect(onChange).toHaveBeenCalledWith(
+				expect.not.arrayContaining([
+					expect.objectContaining({
+						id: moveId
+					})
+				])
+			)
+			// Assert the component has been removed
+			const deletedMoveCard = screen.queryByTestId(
+				"scored-move-" + moveId
+			)
+			expect(deletedMoveCard).toBeFalsy()
 		})
 	})
 })
