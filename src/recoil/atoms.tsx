@@ -1,9 +1,12 @@
 import { atom } from "recoil"
 import { heatsType } from "../competitiondata/Competitions"
+import { moves as demoMoves } from "../components/judging/sheets/Float/demoMoves"
 import { scoredMovesType } from "../components/judging/sheets/Float/Interfaces"
-import { testHeat } from "../components/judging/sheets/Float/tests/TestData"
+import {
+	testHeat,
+	testMoves
+} from "../components/judging/sheets/Float/tests/TestData"
 import conf from "../config"
-
 const isTest = conf.get("env") === "test" ? true : false
 
 export const preferDarkState = atom({
@@ -51,4 +54,8 @@ export const selectedPhaseState = atom({
 export const scoredMovesState = atom({
 	key: "scoredMovesState", // unique ID (with respect to other atoms/selectors)
 	default: [] as scoredMovesType[] // default value (aka initial value)
+})
+export const availableMovesListState = atom({
+	key: "availableMovesListState", // unique ID (with respect to other atoms/selectors)
+	default: isTest ? testMoves : demoMoves // default value (aka initial value)
 })

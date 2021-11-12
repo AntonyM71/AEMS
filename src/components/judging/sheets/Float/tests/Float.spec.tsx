@@ -2,160 +2,102 @@ import { fireEvent, render, screen, within } from "@testing-library/react"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
+import * as uuid from "uuid"
 import {
-	selectedPaddlerState,
-	selectedRunState
+	availableMovesListState,
+	scoredMovesState
 } from "../../../../../recoil/atoms"
 import { RecoilObserver } from "../../../../../RecoilObserver"
 import Float from "../Float"
+import { movesType } from "../Interfaces"
+import { testMoves } from "./TestData"
 
-describe("The currentPaddler state should change when the user clicks the paddler navigation buttons", () => {
-	it("updates the state and display upwards when  `Next Paddler` button is clicked", () => {
+describe("The test-move cards are rendered", () => {
+	it("updates the state with the list of available moves, and renders them", () => {
 		const onChange = jest.fn()
 		render(
 			<RecoilRoot>
 				<BrowserRouter>
 					<RecoilObserver
-						node={selectedPaddlerState}
+						node={availableMovesListState}
 						onChange={onChange}
 					/>
 					<Float />
 				</BrowserRouter>
 			</RecoilRoot>
 		)
+		// Assert initial setup
+		expect(onChange).toHaveBeenCalledWith(testMoves)
 
-		const component = screen.getByTestId("button-next-paddler")
-		const { getByText } = within(screen.getByTestId("display-paddler-name"))
-		// assert it displays the right paddler initially
-		expect(getByText("Emily")).toBeTruthy()
-		expect(getByText("JACKSON")).toBeTruthy()
-
-		// assertit moves to the next paddler on click
-		fireEvent.click(component)
-
-		expect(getByText("Jordan")).toBeTruthy()
-		expect(getByText("POFFENBERGER")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(1) // New value on change.
-		// assert it circles round to the first paddler again
-		fireEvent.click(component)
-
-		expect(getByText("Emily")).toBeTruthy()
-		expect(getByText("JACKSON")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(0) // original value again
-	})
-	it("updates the state and display upwards when `Previous Paddler` button is clicked", () => {
-		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedPaddlerState}
-						onChange={onChange}
-					/>
-					<Float />
-				</BrowserRouter>
-			</RecoilRoot>
-		)
-
-		const component = screen.getByTestId("button-prev-paddler")
-		const paddlerNameDisplay = within(
-			screen.getByTestId("display-paddler-name")
-		)
-		const bibNumberDisplay = within(
-			screen.getByTestId("display-bib-number")
-		)
-		// assert it displays the right paddler initially
-		expect(paddlerNameDisplay.getByText("Emily")).toBeTruthy()
-		expect(paddlerNameDisplay.getByText("JACKSON")).toBeTruthy()
-		expect(bibNumberDisplay.getByText("70", { exact: false })).toBeTruthy()
-		// assert it moves to the last paddler on click
-		fireEvent.click(component)
-
-		expect(paddlerNameDisplay.getByText("Jordan")).toBeTruthy()
-		expect(paddlerNameDisplay.getByText("POFFENBERGER")).toBeTruthy()
-		expect(bibNumberDisplay.getByText("127", { exact: false })).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(1) // New value on change.
-		// assert it increments back to the first paddler again
-		fireEvent.click(component)
-
-		expect(paddlerNameDisplay.getByText("Emily")).toBeTruthy()
-		expect(paddlerNameDisplay.getByText("JACKSON")).toBeTruthy()
-		expect(bibNumberDisplay.getByText("70", { exact: false })).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(0) // original value again
+		testMoves.forEach((move: movesType) => {
+			// get all buttons wiht the move id in their test id
+			const components = screen.getAllByTestId("button-" + move.id, {
+				exact: false
+			})
+			expect(components).toBeTruthy()
+		})
 	})
 })
 
-describe("The currentRun state should change when the user clicks the run navigation buttons", () => {
-	// Based on the default of 3 runs per paddler, for other events we can change this and test that seperately.
-	it("updates the state and display upwards when  `Next Run` button is clicked", () => {
+// We access moves by their UUID in the infobar, make a spy so we can hard code these each test
+// const mockUuid = jest.fn().mockImplementation(() => "000-000-000")
+// jest.mock("uuid", () => mockUuid
+jest.mock("uuid")
+const mockUuid = jest.spyOn(uuid, "v4")
+describe("Add moves", () => {
+	it("adds moves to the state and displays them in the infobar when the move card buttons are pressed", () => {
 		const onChange = jest.fn()
 		render(
 			<RecoilRoot>
 				<BrowserRouter>
 					<RecoilObserver
-						node={selectedRunState}
+						node={scoredMovesState}
 						onChange={onChange}
 					/>
 					<Float />
 				</BrowserRouter>
 			</RecoilRoot>
 		)
+		// Assert initial setup
+		expect(onChange).toHaveBeenCalledWith([])
 
-		const component = screen.getByTestId("button-next-run")
-		const { getByText } = within(screen.getByTestId("display-run-box"))
-		// assert it displays the right run initially
-		expect(getByText("1")).toBeTruthy()
+		testMoves.forEach((move: movesType) => {
+			// get all buttons wiht the move id in their test id
+			const components = screen.getAllByTestId("button-" + move.id, {
+				exact: false
+			})
 
-		// assert it moves to the next run on click
-		fireEvent.click(component)
+			components.forEach(
+				(
+					component: Document | Node | Element | Window,
+					index: number
+				) => {
+					mockUuid.mockReturnValue(move.id + "-" + index.toString())
+					// uuidSpy.mockImplementation(() => mockMoveUUID)
+					fireEvent.click(component)
 
-		expect(getByText("2")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(1)
-		// assert it increments to the last Run
-		fireEvent.click(component)
+					// Assert the state has been updated
+					expect(onChange).toHaveBeenCalledWith(
+						expect.arrayContaining([
+							expect.objectContaining({
+								bonuses: [],
+								id: move.id + "-" + index.toString(),
+								moveId: move.id,
+								status: "active"
+							})
+						])
+					)
+					const scoredMoveCard = screen.getByTestId(
+						"scored-move-" + move.id + "-" + index.toString()
+					)
+					// Assert there is a card for the move
+					expect(scoredMoveCard).toBeTruthy()
 
-		expect(getByText("3")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(2)
-
-		fireEvent.click(component)
-
-		expect(getByText("1")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(0) // original value again
-	})
-	it("updates the state and display upwards when `Previous Run` button is clicked", () => {
-		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedRunState}
-						onChange={onChange}
-					/>
-					<Float />
-				</BrowserRouter>
-			</RecoilRoot>
-		)
-
-		const component = screen.getByTestId("button-prev-run")
-		const { getByText } = within(screen.getByTestId("display-run-box"))
-		// assert it displays the right paddler initially
-		expect(getByText("1")).toBeTruthy()
-
-		// assert it moves to the last run on click
-		fireEvent.click(component)
-
-		expect(getByText("3")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(2) // New value on change.
-		// assert it increments back to the second run
-		fireEvent.click(component)
-
-		expect(getByText("2")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(1)
-		// back to the original value
-
-		fireEvent.click(component)
-
-		expect(getByText("1")).toBeTruthy()
-		expect(onChange).toHaveBeenCalledWith(0)
+					const { getByText } = within(scoredMoveCard)
+					expect(getByText(move.name)).toBeTruthy()
+					// Assert the card has the right name
+				}
+			)
+		})
 	})
 })

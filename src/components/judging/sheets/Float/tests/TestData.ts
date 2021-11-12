@@ -1,7 +1,7 @@
 import { heatsType } from "../../../../../competitiondata/Competitions";
 import { movesType } from "../Interfaces";
 
-export const moves: movesType[] = [
+export const testMoves: movesType[] = [
 	{
 		id: "mf01",
 		name: "Single Test",

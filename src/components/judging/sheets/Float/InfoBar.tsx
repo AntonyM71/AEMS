@@ -139,7 +139,11 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				<Grid item xs={4}>
 					<Paper className={classes.moveBox}>
 						<h4>Run</h4>
-						<div className="score" id="heatScore" data-testid="display-run-box">
+						<div
+							className="score"
+							id="heatScore"
+							data-testid="display-run-box"
+						>
 							<IconButton
 								onClick={() => changeRun(-1)}
 								data-testid={"button-prev-run"}
@@ -190,7 +194,6 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 								removeScoredMove={removeScoredMove}
 								addScoredMove={addScoredMove}
 								addScoredBonus={addScoredBonus}
-								data-testid={"scored-move-" + scoredMove.id}
 							/>
 						</Grid>
 					))}

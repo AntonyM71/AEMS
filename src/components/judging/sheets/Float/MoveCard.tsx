@@ -6,7 +6,7 @@ import React from "react"
 import { useStyles } from "../../../../style/Styles"
 import { MovePropsType } from "./Interfaces"
 
-export const Move = React.memo((props: MovePropsType) => {
+export const MoveCard = React.memo((props: MovePropsType) => {
 	const classes = useStyles()
 	if (props.move.direction === "LR") {
 		return (

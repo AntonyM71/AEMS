@@ -3,8 +3,10 @@ import Grid from "@material-ui/core/Grid"
 import Paper from "@material-ui/core/Paper"
 import Typography from "@material-ui/core/Typography"
 import React from "react"
+import { useRecoilValue } from "recoil"
+import { availableMovesListState } from "../../../../recoil/atoms"
 import { useStyles } from "../../../../style/Styles"
-import { bonuses, moves } from "./demoMoves"
+import { bonuses } from "./demoMoves"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -23,15 +25,19 @@ interface ScoredMovePropsType {
 }
 
 const ScoredMove = React.memo((props: ScoredMovePropsType) => {
-	const filteredMoves = moves.filter(
+	const movesList = useRecoilValue(availableMovesListState)
+	const filteredMoves = movesList.filter(
 		(move: movesType) => move.id === props.scoredMove.moveId
 	)
 	const classes = useStyles()
 	if (filteredMoves.length === 1) {
-		const scoredMove = filteredMoves[0]
+		const moveData = filteredMoves[0]
 
 		return (
-			<Paper className={classes.moveBox}>
+			<Paper
+				className={classes.moveBox}
+				data-testid={"scored-move-" + props.scoredMove.id}
+			>
 				<Grid container spacing={1} justify="space-around">
 					<Grid item>
 						<Chip
@@ -52,7 +58,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 					</Grid>
 					<Grid item xs={4}>
 						<Typography align="center" display="inline">
-							{scoredMove.name}
+							{moveData.name}
 						</Typography>
 					</Grid>
 
