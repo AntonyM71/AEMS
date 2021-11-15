@@ -146,7 +146,5 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else {
-		return <div>Unknown Move</div>
 	}
 })
