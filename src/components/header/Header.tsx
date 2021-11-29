@@ -10,21 +10,23 @@ import Typography from "@material-ui/core/Typography"
 import Brightness4Icon from "@material-ui/icons/Brightness4"
 import React from "react"
 import { Link as RouterLink } from "react-router-dom"
-import { useRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import conf from "../../config"
-import logo from "../../images/THFLogoWhiteOrange.png"
+import darkLogo from "../../images/THFLogoBlackOrange.png"
+import lightLogo from "../../images/THFLogoWhiteOrange.png"
 import { preferDarkState } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
 import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = conf.get("env")
+	const preferDark = useRecoilValue(preferDarkState)
 
 	return (
 		<AppBar position="static" color="default" elevation={0}>
 			<Toolbar>
 				<Box display="flex" flexGrow={1}>
 					<img
-						src={logo}
+						src={preferDark ? lightLogo : darkLogo}
 						alt="Hurley Foundation Events Logo"
 						style={{ height: "70px" }}
 					></img>
