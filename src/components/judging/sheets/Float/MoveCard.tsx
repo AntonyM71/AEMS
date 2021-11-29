@@ -6,7 +6,7 @@ import React from "react"
 import { useStyles } from "../../../../style/Styles"
 import { MovePropsType } from "./Interfaces"
 
-export const Move = React.memo((props: MovePropsType) => {
+export const MoveCard = React.memo((props: MovePropsType) => {
 	const classes = useStyles()
 	if (props.move.direction === "LR") {
 		return (
@@ -23,6 +23,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "L")
 								}
+								data-testid={"button-" + props.move.id + "-l"}
 							>
 								L
 							</Button>
@@ -36,6 +37,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "R")
 								}
+								data-testid={"button-" + props.move.id + "-r"}
 							>
 								R
 							</Button>
@@ -59,6 +61,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "F")
 								}
+								data-testid={"button-" + props.move.id + "-f"}
 							>
 								F
 							</Button>
@@ -72,6 +75,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "B")
 								}
+								data-testid={"button-" + props.move.id + "-b"}
 							>
 								B
 							</Button>
@@ -95,6 +99,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "LF")
 								}
+								data-testid={"button-" + props.move.id + "-lf"}
 							>
 								L/F
 							</Button>
@@ -108,6 +113,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "RB")
 								}
+								data-testid={"button-" + props.move.id + "-rb"}
 							>
 								R/B
 							</Button>
@@ -116,7 +122,7 @@ export const Move = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else if (props.move.direction === "SINGLE") {
+	} else {
 		return (
 			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
@@ -131,6 +137,7 @@ export const Move = React.memo((props: MovePropsType) => {
 								onClick={() =>
 									props.addScoredMove(props.move.id, "A")
 								}
+								data-testid={"button-" + props.move.id + "-a"}
 							>
 								Any
 							</Button>
@@ -139,7 +146,5 @@ export const Move = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else {
-		return <div>Unknown Move</div>
 	}
 })

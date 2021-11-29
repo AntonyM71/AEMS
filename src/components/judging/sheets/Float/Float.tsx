@@ -1,10 +1,13 @@
 import Grid from "@material-ui/core/Grid"
 import { cloneDeep } from "lodash"
 import React from "react"
-import { useRecoilState, useSetRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { v4 as uuidv4 } from "uuid"
-import { currentMoveState, scoredMovesState } from "../../../../recoil/atoms"
-import { moves } from "./demoMoves"
+import {
+	availableMovesListState,
+	currentMoveState,
+	scoredMovesState
+} from "../../../../recoil/atoms/scoring"
 import { InfoBar } from "./InfoBar"
 import {
 	addScoredBonusType,
@@ -12,14 +15,14 @@ import {
 	directionType,
 	scoredMovesType
 } from "./Interfaces"
-import { Move } from "./Move"
+import { MoveCard } from "./MoveCard"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 const Float = () => {
 	const [scoredMoves, setScoredMoves] = useRecoilState(scoredMovesState)
 	const setCurrentMove = useSetRecoilState(currentMoveState)
-
+	const movesList = useRecoilValue(availableMovesListState)
 	const addScoredMove: addScoredMoveType = (
 		id: string,
 		direction: directionType
@@ -98,13 +101,14 @@ const Float = () => {
 		<Grid container spacing={3}>
 			<Grid item xs={7}>
 				<Grid container spacing={2}>
-					{moves.map((move) => (
-						<Grid item xs={3}>
-							<Move
+					{movesList.map((move) => (
+						<Grid item xs={3} key={move.id}>
+							<MoveCard
 								key={move.id}
 								move={move}
 								addScoredMove={addScoredMove}
 								addScoredBonus={addScoredBonus}
+								data-testid={"movecard-" + move.id}
 							/>
 						</Grid>
 					))}
@@ -114,6 +118,7 @@ const Float = () => {
 				<InfoBar
 					addScoredMove={addScoredMove}
 					addScoredBonus={addScoredBonus}
+					data-testid={"infobar"}
 				/>
 			</Grid>
 		</Grid>

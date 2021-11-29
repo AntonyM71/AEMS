@@ -11,12 +11,12 @@ import {
 } from "recoil"
 import { competitionsType, phaseType } from "../../competitiondata/Competitions"
 import {
-	heatsListState,
 	selectedCompetitionState,
 	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
-} from "../../recoil/atoms"
+	selectedPhaseState,
+	heatsListState,
+	selectedHeatState
+} from "../../recoil/atoms/competitions"
 
 interface propsType {
 	competitions: competitionsType[]

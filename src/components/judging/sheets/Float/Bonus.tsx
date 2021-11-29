@@ -19,6 +19,7 @@ export const Bonus = (props: BonusPropsType) => {
 				onClick={() =>
 					props.addScoredBonus(props.bonus.name, props.bonus.id)
 				}
+				data-testid={"button-bonus-" + props.bonus.id}
 			>
 				Any
 			</Button>

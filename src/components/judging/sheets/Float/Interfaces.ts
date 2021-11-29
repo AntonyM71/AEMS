@@ -12,7 +12,7 @@ export interface bonusesType {
 export interface movesType {
 	id: string
 	name: string
-	direction: string
+	direction: "SINGLE" | "LR" | "FB" | "LRFB"
 	score: {
 		L: number
 		R: number

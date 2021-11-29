@@ -2,11 +2,11 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
-import { preferDarkState } from "../../recoil/atoms"
+import { preferDarkState } from "../../recoil/atoms/utilities"
 import { RecoilObserver } from "../../RecoilObserver"
 import Header from "./Header"
 
-describe("The form state should", () => {
+describe("The preferDark state should", () => {
 	test("change when the user enters a name.", () => {
 		const onChange = jest.fn()
 

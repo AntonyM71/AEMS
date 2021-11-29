@@ -1,8 +1,7 @@
-import React from "react"
 import { fireEvent, render } from "@testing-library/react"
-import { Bonus } from "../Bonus"
+import React from "react"
 import { MovePropsType } from "../Interfaces"
-import { Move } from "../Move"
+import { MoveCard } from "../MoveCard"
 
 test.each([
 	["LR", 1, "L"],
@@ -34,7 +33,7 @@ test.each([
 		addScoredBonus: addScoredBonusSpy
 	}
 
-	const wrapper = render(<Move {...MoveProps} />)
+	const wrapper = render(<MoveCard {...MoveProps} />)
 	const wantedCall = ["1234", expected]
 	expect(addScoredBonusSpy).toHaveBeenCalledTimes(0)
 
