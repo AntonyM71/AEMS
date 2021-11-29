@@ -14,7 +14,7 @@ import conf from "../../config"
 import logo from "../../images/THFLogoWhiteOrange.png"
 import { preferDarkState } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
-
+import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = conf.get("env")
 
@@ -99,6 +99,7 @@ const Header = () => {
 						<ListItemText inset>
 							<DarkModeButton />
 						</ListItemText>
+						<UserCard />
 					</ListItem>
 				</List>
 			</Toolbar>
