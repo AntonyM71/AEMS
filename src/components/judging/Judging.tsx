@@ -11,12 +11,13 @@ import {
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../recoil/atoms/scoring"
+} from "../../recoil/atoms/competitions"
 import { useStyles } from "../../style/Styles"
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
 import PhaseSelector from "../competition/PhaseSelector"
+
 // eslint-disable-next-line complexity
 
 const Judging = () => {

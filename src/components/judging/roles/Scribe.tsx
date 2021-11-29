@@ -13,7 +13,7 @@ import {
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../../recoil/atoms/scoring"
+} from "../../../recoil/atoms/competitions"
 import { useStyles } from "../../../style/Styles"
 import { SelectorDisplay } from "../Judging"
 import Float from "../sheets/Float/Float"
