@@ -95,6 +95,8 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 				</Grid>
 			</Paper>
 		)
+	} else {
+		return <div>Unknown</div>
 	}
 })
 export default ScoredMove

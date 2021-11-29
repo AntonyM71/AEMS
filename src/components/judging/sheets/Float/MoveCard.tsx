@@ -122,7 +122,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else if (props.move.direction === "SINGLE") {
+	} else {
 		return (
 			<Paper className={classes.moveBox}>
 				<Typography align="center">{props.move.name}</Typography>
