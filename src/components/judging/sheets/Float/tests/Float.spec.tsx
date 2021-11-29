@@ -6,7 +6,7 @@ import * as uuid from "uuid"
 import {
 	availableMovesListState,
 	scoredMovesState
-} from "../../../../../recoil/atoms"
+} from "../../../../../recoil/atoms/scoring"
 import { RecoilObserver } from "../../../../../RecoilObserver"
 import Float from "../Float"
 import { movesType } from "../Interfaces"

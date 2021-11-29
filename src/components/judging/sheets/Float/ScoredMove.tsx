@@ -4,7 +4,7 @@ import Paper from "@material-ui/core/Paper"
 import Typography from "@material-ui/core/Typography"
 import React from "react"
 import { useRecoilValue } from "recoil"
-import { availableMovesListState } from "../../../../recoil/atoms"
+import { availableMovesListState } from "../../../../recoil/atoms/scoring"
 import { useStyles } from "../../../../style/Styles"
 import { bonuses } from "./demoMoves"
 import {

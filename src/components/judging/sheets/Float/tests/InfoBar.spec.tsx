@@ -5,7 +5,7 @@ import { RecoilRoot } from "recoil"
 import {
 	selectedPaddlerState,
 	selectedRunState
-} from "../../../../../recoil/atoms"
+} from "../../../../../recoil/atoms/scoring"
 import { RecoilObserver } from "../../../../../RecoilObserver"
 import { calculateNewIndex, InfoBar } from "../InfoBar"
 

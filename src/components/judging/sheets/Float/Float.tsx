@@ -7,7 +7,7 @@ import {
 	availableMovesListState,
 	currentMoveState,
 	scoredMovesState
-} from "../../../../recoil/atoms"
+} from "../../../../recoil/atoms/scoring"
 import { InfoBar } from "./InfoBar"
 import {
 	addScoredBonusType,

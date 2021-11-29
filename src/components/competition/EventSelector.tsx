@@ -10,7 +10,7 @@ import {
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../recoil/atoms"
+} from "../../recoil/atoms/scoring"
 
 interface propsType {
 	competitions: competitionsType[]

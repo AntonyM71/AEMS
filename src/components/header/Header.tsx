@@ -12,7 +12,7 @@ import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import conf from "../../config"
 import logo from "../../images/THFLogoWhiteOrange.png"
-import { preferDarkState } from "../../recoil/atoms"
+import { preferDarkState } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
 
 const Header = () => {

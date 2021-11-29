@@ -11,7 +11,7 @@ import {
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
-} from "../../recoil/atoms"
+} from "../../recoil/atoms/scoring"
 import { useStyles } from "../../style/Styles"
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"

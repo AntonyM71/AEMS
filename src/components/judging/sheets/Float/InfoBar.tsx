@@ -11,13 +11,13 @@ import {
 	useSetRecoilState
 } from "recoil"
 import { v4 as uuidv4 } from "uuid"
+import { numberOfRunsInHeatState } from "../../../../recoil/atoms/competitions"
 import {
 	currentMoveState,
-	numberOfRunsInHeatState,
 	scoredMovesState,
 	selectedPaddlerState,
 	selectedRunState
-} from "../../../../recoil/atoms"
+} from "../../../../recoil/atoms/scoring"
 import {
 	currentPaddlerInfo,
 	currentScore,
