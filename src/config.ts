@@ -9,6 +9,10 @@ const conf = convict({
     format: ["production", "development", "staging", "test"],
     default: "development",
     env: "NODE_ENV"
+  },
+  apiBaseURL: {
+    doc: "The base URL for the API",
+    default: "https://aems.eu.ngrok.io/v5/"
   }
 });
 

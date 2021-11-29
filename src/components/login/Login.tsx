@@ -10,6 +10,8 @@ import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
+import { useSetRecoilState } from "recoil"
+import { currentUser } from "../../recoil/atoms/auth"
 import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
@@ -25,6 +27,12 @@ const Copyright = () => (
 
 export default () => {
 	const classes = useStyles()
+
+	const setCurrentUser = useSetRecoilState(currentUser)
+
+	const handleSignin = () => {
+		setCurrentUser("Test User")
+	}
 
 	return (
 		<Grid container component="main" className={classes.root}>
@@ -51,7 +59,7 @@ export default () => {
 							margin="normal"
 							required
 							fullWidth
-							id="email"
+							// id="email"
 							label="Email Address"
 							name="email"
 							autoComplete="email"
@@ -65,7 +73,7 @@ export default () => {
 							name="password"
 							label="Password"
 							type="password"
-							id="password"
+							// id="password"
 							autoComplete="current-password"
 						/>
 						<FormControlLabel
@@ -75,11 +83,12 @@ export default () => {
 							label="Remember me"
 						/>
 						<Button
-							type="submit"
+							// type="submit"
 							fullWidth
 							variant="contained"
 							color="primary"
 							className={classes.submit}
+							onClick={handleSignin}
 						>
 							Sign In
 						</Button>
