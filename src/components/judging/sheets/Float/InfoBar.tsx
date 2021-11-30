@@ -3,7 +3,7 @@ import Grid from "@material-ui/core/Grid/Grid"
 import IconButton from "@material-ui/core/IconButton"
 import Paper from "@material-ui/core/Paper/Paper"
 import { ChevronLeft, ChevronRight } from "@material-ui/icons"
-import React from "react"
+import React, { useEffect } from "react"
 import {
 	useRecoilState,
 	useRecoilValue,
@@ -38,6 +38,13 @@ interface propsType {
 }
 export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	const classes = useStyles()
+
+	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
+	useEffect(() => {
+		fetchedMoves = fetchedScoredMoves()
+	}, [])
+
+	const fetchedScoredMoves = () => []
 
 	const [currentPaddler, setCurrentPaddler] = useRecoilState(
 		selectedPaddlerState
@@ -79,6 +86,10 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	}
 	const clearRun = () => {
 		ressetScoredMoves()
+		setCurrentMove("")
+	}
+	const resetRun = () => {
+		setScoredMoves(fetchedMoves)
 		setCurrentMove("")
 	}
 
@@ -160,10 +171,20 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 						</div>
 					</Paper>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid item xs={4}>
 					<h2>Move Listing</h2>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid item xs={4}>
+					<Button
+						onClick={resetRun}
+						variant="contained"
+						fullWidth
+						data-testid={"button-clear-run"}
+					>
+						Reset Run
+					</Button>
+				</Grid>
+				<Grid item xs={4}>
 					<Button
 						onClick={clearRun}
 						variant="contained"

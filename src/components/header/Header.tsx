@@ -1,4 +1,5 @@
 import AppBar from "@material-ui/core/AppBar"
+import Box from "@material-ui/core/Box/Box"
 import IconButton from "@material-ui/core/IconButton"
 import Link from "@material-ui/core/Link"
 import List from "@material-ui/core/List"
@@ -14,93 +15,100 @@ import conf from "../../config"
 import logo from "../../images/THFLogoWhiteOrange.png"
 import { preferDarkState } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
-
+import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = conf.get("env")
 
 	return (
 		<AppBar position="static" color="default" elevation={0}>
 			<Toolbar>
-				<img
-					src={logo}
-					alt="Hurley Foundation Events Logo"
-					style={{ height: "70px" }}
-				></img>
-				<List component="nav">
-					<ListItem component="div">
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									to="/"
-									color="inherit"
-								>
-									Home
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									to={routes.judging.root}
-									color="inherit"
-								>
-									Judging
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									to={routes.upload.root}
-									color="inherit"
-								>
-									Upload
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									to={routes.score.root}
-									color="inherit"
-								>
-									Score
-								</Link>
-							</Typography>
-						</ListItemText>
-						{env === "development" ? (
+				<Box display="flex" flexGrow={1}>
+					<img
+						src={logo}
+						alt="Hurley Foundation Events Logo"
+						style={{ height: "70px" }}
+					></img>
+
+					<List component="nav">
+						<ListItem component="div">
 							<ListItemText inset>
 								<Typography color="textPrimary" variant="body1">
 									<Link
 										component={RouterLink}
-										to={routes.dev.root}
+										to="/"
 										color="inherit"
 									>
-										Dev
+										Home
 									</Link>
 								</Typography>
 							</ListItemText>
-						) : null}
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									to={routes.login.root}
-									color="inherit"
-								>
-									Login
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<DarkModeButton />
-						</ListItemText>
-					</ListItem>
-				</List>
+							<ListItemText inset>
+								<Typography color="textPrimary" variant="body1">
+									<Link
+										component={RouterLink}
+										to={routes.judging.root}
+										color="inherit"
+									>
+										Judging
+									</Link>
+								</Typography>
+							</ListItemText>
+							<ListItemText inset>
+								<Typography color="textPrimary" variant="body1">
+									<Link
+										component={RouterLink}
+										to={routes.upload.root}
+										color="inherit"
+									>
+										Upload
+									</Link>
+								</Typography>
+							</ListItemText>
+							<ListItemText inset>
+								<Typography color="textPrimary" variant="body1">
+									<Link
+										component={RouterLink}
+										to={routes.score.root}
+										color="inherit"
+									>
+										Score
+									</Link>
+								</Typography>
+							</ListItemText>
+							{env === "development" ? (
+								<ListItemText inset>
+									<Typography
+										color="textPrimary"
+										variant="body1"
+									>
+										<Link
+											component={RouterLink}
+											to={routes.dev.root}
+											color="inherit"
+										>
+											Dev
+										</Link>
+									</Typography>
+								</ListItemText>
+							) : null}
+							<ListItemText inset>
+								<Typography color="textPrimary" variant="body1">
+									<Link
+										component={RouterLink}
+										to={routes.login.root}
+										color="inherit"
+									>
+										Login
+									</Link>
+								</Typography>
+							</ListItemText>
+							<ListItemText inset>
+								<DarkModeButton />
+							</ListItemText>
+						</ListItem>
+					</List>
+				</Box>
+				<UserCard />
 			</Toolbar>
 		</AppBar>
 	)
