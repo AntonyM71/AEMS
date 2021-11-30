@@ -10,8 +10,17 @@ import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
+import { useHistory } from "react-router-dom"
+import { useToasts } from "react-toast-notifications"
 import { useSetRecoilState } from "recoil"
-import { currentUser } from "../../recoil/atoms/auth"
+import {
+	currentToken,
+	currentTokenExpiry,
+	currentUser,
+	currentUserInitials,
+	refreshToken
+} from "../../recoil/atoms/auth"
+import { getuserToken } from "../../services/api"
 import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
@@ -27,11 +36,43 @@ const Copyright = () => (
 
 export default () => {
 	const classes = useStyles()
+	const { addToast } = useToasts()
+	const [username, setUsername] = React.useState("")
+	const [password, setPassword] = React.useState("")
 
-	const setCurrentUser = useSetRecoilState(currentUser)
+	const setRecoilUsername = useSetRecoilState(currentUser)
+	const setUserInitial = useSetRecoilState(currentUserInitials)
+	const setCurrentToken = useSetRecoilState(currentToken)
+	const setCurrentTokenExpiry = useSetRecoilState(currentTokenExpiry)
+	const setRefreshToken = useSetRecoilState(refreshToken)
+	const history = useHistory()
 
-	const handleSignin = () => {
-		setCurrentUser("Test User")
+	const handleSignin = async () => {
+		const currentTimestamp = Date.now()
+		if (!username) {
+			addToast("No Username Supplied", { appearance: "error" })
+		} else if (!password) {
+			addToast("No Password Supplied", { appearance: "error" })
+		} else {
+			const response = await getuserToken(
+				username,
+				password,
+				currentTimestamp
+			)
+
+			// Add useful info to the store
+			setRecoilUsername(response.data.user.fullName)
+			setUserInitial(response.data.user.initials)
+			setCurrentToken(response.data.access_token)
+			setCurrentTokenExpiry(
+				response.data.expires_in * 1000 + currentTimestamp - 10
+			)
+			setRefreshToken(response.data.refresh_token)
+
+			// redirect to home
+
+			history.push("/")
+		}
 	}
 
 	return (
@@ -64,6 +105,9 @@ export default () => {
 							name="email"
 							autoComplete="email"
 							autoFocus
+							onChange={(event) =>
+								setUsername(event.target.value)
+							}
 						/>
 						<TextField
 							variant="outlined"
@@ -73,6 +117,9 @@ export default () => {
 							name="password"
 							label="Password"
 							type="password"
+							onChange={(event) =>
+								setPassword(event.target.value)
+							}
 							// id="password"
 							autoComplete="current-password"
 						/>

@@ -4,21 +4,29 @@ import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilValue, useResetRecoilState } from "recoil"
 import {
-	currentJwt,
 	currentToken,
 	currentTokenExpiry,
-	currentUser
+	currentUser,
+	currentUserInitials,
+	refreshToken
 } from "../../recoil/atoms/auth"
 import { routes } from "../routes/Router"
 
 export const UserCard = () => {
 	const currentUserName = useRecoilValue(currentUser)
+	const resetUser = useResetRecoilState(currentUser)
+	const resetToken = useResetRecoilState(currentToken)
+	const resetTokenExpiry = useResetRecoilState(currentTokenExpiry)
+	const resetUserInitials = useResetRecoilState(currentUserInitials)
+	const resetRefreshToken = useResetRecoilState(refreshToken)
 
 	const handleLogout = () => {
-		useResetRecoilState(currentUser)
-		useResetRecoilState(currentToken)
-		useResetRecoilState(currentTokenExpiry)
-		useResetRecoilState(currentJwt)
+		resetUser()
+		resetToken()
+		resetTokenExpiry()
+		resetUserInitials()
+		resetRefreshToken()
+		localStorage.clear()
 	}
 
 	if (!currentUserName) {
