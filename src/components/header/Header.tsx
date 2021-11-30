@@ -10,27 +10,34 @@ import Typography from "@material-ui/core/Typography"
 import Brightness4Icon from "@material-ui/icons/Brightness4"
 import React from "react"
 import { Link as RouterLink } from "react-router-dom"
-import { useRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import conf from "../../config"
-import logo from "../../images/THFLogoWhiteOrange.png"
+import darkLogo from "../../images/THFLogoBlackOrange.png"
+import lightLogo from "../../images/THFLogoWhiteOrange.png"
 import { preferDarkState } from "../../recoil/atoms/utilities"
+import { useStyles } from "../../style/Styles"
 import { routes } from "../routes/Router"
 import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = conf.get("env")
+	const preferDark = useRecoilValue(preferDarkState)
+	const classes = useStyles()
 
 	return (
-		<AppBar position="static" color="default" elevation={0}>
-			<Toolbar>
-				<Box display="flex" flexGrow={1}>
+		<AppBar position="sticky" color="default" elevation={0}>
+			<Toolbar variant="dense" className={classes.header}>
+				<Box display="flex" flexGrow={1} className={classes.header}>
 					<img
-						src={logo}
+						src={preferDark ? lightLogo : darkLogo}
 						alt="Hurley Foundation Events Logo"
-						style={{ height: "70px" }}
+						style={{ height: "40px" }}
 					></img>
 
-					<List component="nav">
-						<ListItem component="div">
+					<List component="nav" className={classes.headerList}>
+						<ListItem
+							component="div"
+							className={classes.headerList}
+						>
 							<ListItemText inset>
 								<Typography color="textPrimary" variant="body1">
 									<Link
@@ -91,17 +98,6 @@ const Header = () => {
 									</Typography>
 								</ListItemText>
 							) : null}
-							<ListItemText inset>
-								<Typography color="textPrimary" variant="body1">
-									<Link
-										component={RouterLink}
-										to={routes.login.root}
-										color="inherit"
-									>
-										Login
-									</Link>
-								</Typography>
-							</ListItemText>
 							<ListItemText inset>
 								<DarkModeButton />
 							</ListItemText>

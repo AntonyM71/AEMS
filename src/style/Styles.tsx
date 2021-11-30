@@ -4,6 +4,9 @@ export const useStyles = makeStyles((theme) => ({
 	root: {
 		height: "100vh"
 	},
+	headerAvatar: {
+		paddingTop: theme.spacing(1)
+	},
 	paper: {
 		padding: theme.spacing(4, 4),
 		display: "flex",
@@ -59,5 +62,12 @@ export const useStyles = makeStyles((theme) => ({
 	},
 	submit: {
 		margin: theme.spacing(3, 0, 2)
+	},
+	header: {
+		height: 40
+	},
+	headerList: {
+		height: 40,
+		paddingTop: theme.spacing(0.25)
 	}
 }))
