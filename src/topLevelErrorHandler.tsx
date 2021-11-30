@@ -19,8 +19,6 @@ export const handleErrors = (e: any, addToast: AddToast) => {
 			: e.reason
 			? e.reason
 			: "Undefined Error"
-		console.log(e)
-		console.log(message)
 		addToast(message, { appearance: "error", autoDismiss: true })
 	} else {
 		addToast("Something Went Wrong :(")
