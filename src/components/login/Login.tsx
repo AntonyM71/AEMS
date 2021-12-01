@@ -54,11 +54,7 @@ export default () => {
 		} else if (!password) {
 			addToast("No Password Supplied", { appearance: "error" })
 		} else {
-			const response = await getuserToken(
-				username,
-				password,
-				currentTimestamp
-			)
+			const response = await getuserToken(username, password)
 
 			// Add useful info to the store
 			setRecoilUsername(response.data.user.fullName)
