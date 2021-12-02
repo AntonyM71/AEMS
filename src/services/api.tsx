@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import axios, { AxiosResponse } from "axios"
-import { useRecoilValue } from "recoil"
+import { getRecoil, setRecoil } from "recoil-nexus"
 import config from "../config"
 import {
 	currentToken,
@@ -24,27 +24,46 @@ export const getuserToken = async (
 }
 
 export const tokenHelper = async (): Promise<void> => {
-	const token = useRecoilValue(currentToken)
-	const tokenExpiry = useRecoilValue(currentTokenExpiry)
-	const currentRefreshToken = useRecoilValue(refreshToken)
+	const tokenExpiry = getRecoil(currentTokenExpiry)
+	const currentRefreshToken = getRecoil(refreshToken)
 
 	const currentTime = Date.now()
 	if (currentTime > tokenExpiry) {
-		const response: AxiosResponse<any> = await axios.post(
+		const response: AxiosResponse<TokenResponseType> = await axios.post(
 			apiBaseURL + "auth/refresh",
 			// eslint-disable-next-line camelcase
 			{ refresh_token: currentRefreshToken }
 		)
+		// update tokens in state
+		setRecoil(currentToken, response.data.access_token)
+		setRecoil(refreshToken, response.data.refresh_token)
 	}
 }
 
-export const httpWithAuth = () => {
-	axios.create({
-		baseURL: apiBaseURL,
-		headers: {}
+export const postWithAuth = async (
+	endpoint: string,
+	data?: Record<string, unknown>
+) => {
+	await tokenHelper()
+	const token = getRecoil(currentToken)
+
+	return await axios.post(apiBaseURL + endpoint, {
+		headers: { Authorization: "Bearer " + token },
+		data
 	})
 }
+export const getWithAuth = async (
+	endpoint: string,
+	data?: Record<string, unknown>
+) => {
+	await tokenHelper()
+	const token = getRecoil(currentToken)
 
+	return await axios.get(apiBaseURL + endpoint, {
+		headers: { Authorization: "Bearer " + token },
+		data
+	})
+}
 export interface TokenResponseType {
 	user: {
 		passwordExpired: boolean

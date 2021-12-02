@@ -3,10 +3,6 @@ import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
-	competitionsType,
-	getCompetitions
-} from "../../competitiondata/Competitions"
-import {
 	selectedCompetitionState,
 	selectedEventState,
 	selectedHeatState,
@@ -16,10 +12,13 @@ import { useStyles } from "../../style/Styles"
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
-import PhaseSelector from "../competition/PhaseSelector"
-
 // eslint-disable-next-line complexity
 
+// const competitionsThing = getCompetitionsFromServer()
+
+// const CompetitionSelector = React.lazy(
+// 	() => import("../competition/CompetitionSelector")
+// )
 const Judging = () => {
 	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
 	const classes = useStyles()
@@ -28,9 +27,6 @@ const Judging = () => {
 	const [selectedEvent] = useRecoilState(selectedEventState)
 	const [selectedPhase] = useRecoilState(selectedPhaseState)
 	const [selectedHeat] = useRecoilState(selectedHeatState)
-	const competitions = getCompetitions()
-	const getCompetitionObject = () =>
-		competitions.filter((c) => c.id === selectedCompetition)[0]
 
 	// eslint-disable-next-line complexity
 	const competition = selectedCompetition
@@ -38,7 +34,6 @@ const Judging = () => {
 	const phase = selectedPhase
 	const heat = selectedHeat
 	if (competition && event && phase && heat.name) {
-		const competitionObject: competitionsType = getCompetitionObject()
 		if (competition) {
 			if (event) {
 				return (
@@ -98,25 +93,20 @@ const Judging = () => {
 	)
 }
 
-export const SelectorDisplay = () => {
-	const competitions = getCompetitions()
-
-	return (
-		<Grid container spacing={3} alignItems={"stretch"}>
-			<Grid item xs>
-				<CompetitionSelector competitions={competitions} />
-			</Grid>
-			<Grid item xs>
-				<EventSelector competitions={competitions} />
-			</Grid>
-			<Grid item xs>
-				<PhaseSelector competitions={competitions} />
-			</Grid>
-			<Grid item xs>
-				<HeatsSelector />
-			</Grid>
+export const SelectorDisplay = () => (
+	<Grid container spacing={3} alignItems={"stretch"}>
+		<Grid item xs>
+			<CompetitionSelector />
 		</Grid>
-	)
-}
-
+		<Grid item xs>
+			<EventSelector />
+		</Grid>
+		{/* <Grid item xs>
+			<PhaseSelector />
+		</Grid> */}
+		<Grid item xs>
+			<HeatsSelector />
+		</Grid>
+	</Grid>
+)
 export default Judging
