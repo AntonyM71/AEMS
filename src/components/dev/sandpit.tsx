@@ -1,11 +1,13 @@
 import { Button, Paper } from "@material-ui/core"
 import { IChangeEvent, withTheme } from "@rjsf/core"
 import { Theme as MaterialUITheme } from "@rjsf/material-ui"
+import { JSONSchema7 } from "json-schema"
 import React from "react"
 import { useToasts } from "react-toast-notifications"
 import { useStyles } from "../../style/Styles"
 import { handleErrors } from "../../topLevelErrorHandler"
-import { devSchema, extendedDevSchema } from "../formSpecs"
+import { extendedDevSchema } from "../formSpecs"
+import devSchema from "../formSpecs/jsonschemas/test.json"
 import { ExampleJsonSchemaForm } from "../formSpecs/typescript/test"
 
 export const SandpitPage = () => {
@@ -54,7 +56,10 @@ export const SandpitPage = () => {
 				</Button>
 			</Paper>
 			<Paper className={classes.paper}>
-				<Form schema={devSchema} onSubmit={handleFormSubmit}></Form>
+				<Form
+					schema={devSchema as JSONSchema7}
+					onSubmit={handleFormSubmit}
+				></Form>
 			</Paper>
 			<Paper className={classes.paper}>
 				<Form
