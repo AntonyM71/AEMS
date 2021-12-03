@@ -6,13 +6,15 @@ import { useToasts } from "react-toast-notifications"
 import { useStyles } from "../../style/Styles"
 import { handleErrors } from "../../topLevelErrorHandler"
 import { devSchema, extendedDevSchema } from "../formSpecs"
-import { DevType } from "../formSpecs/dev"
+import { ExampleJsonSchemaForm } from "../formSpecs/typescript/test"
 
 export const SandpitPage = () => {
 	const classes = useStyles()
 	const { addToast } = useToasts()
 	const Form = withTheme(MaterialUITheme)
-	const handleFormSubmit = ({ formData }: IChangeEvent<DevType>) => {
+	const handleFormSubmit = ({
+		formData
+	}: IChangeEvent<ExampleJsonSchemaForm>) => {
 		addToast(JSON.stringify(formData), { appearance: "success" })
 	}
 
