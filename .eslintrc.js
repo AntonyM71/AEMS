@@ -3,7 +3,8 @@ module.exports = {
         "browser": true,
         "es2021": true,
         "node": true
-    },
+	},
+	"ignorePatterns": ["src/components/formSpecs/typescript/**"],
 	extends: [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",

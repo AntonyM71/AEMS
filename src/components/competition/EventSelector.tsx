@@ -23,7 +23,6 @@ const EventSelector = () => {
 	const [events, setEvents] = useState<eventType[]>([])
 	useEffect(() => {
 		const getComps = async () => {
-			console.log(selectedCompetition)
 			const competitionInfo: competitionsType = (
 				await getWithAuth("competitions/" + selectedCompetition)
 			).data

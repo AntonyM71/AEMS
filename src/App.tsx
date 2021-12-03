@@ -12,7 +12,11 @@ const App = () => (
 		<RecoilNexus />
 		<BrowserRouter>
 			<Theme>
-				<ToastProvider autoDismiss autoDismissTimeout={3000}>
+				<ToastProvider
+					autoDismiss
+					autoDismissTimeout={3000}
+					placement="bottom-right"
+				>
 					<Header />
 					<Container maxWidth={false}>
 						<Router />
