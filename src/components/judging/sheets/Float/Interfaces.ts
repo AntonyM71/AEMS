@@ -12,7 +12,7 @@ export interface bonusesType {
 export interface movesType {
 	id: string
 	name: string
-	direction: "SINGLE" | "LR" | "FB" | "LRFB"
+	direction: AvailableMoveDirections
 	score: {
 		L: number
 		R: number
@@ -23,6 +23,8 @@ export interface movesType {
 		A: number
 	}
 }
+
+export type AvailableMoveDirections = "SINGLE" | "LR" | "FB" | "LRFB"
 export type directionType = "L" | "R" | "F" | "B" | "LF" | "RB" | "A"
 export type removeScoredMoveType = (id: string) => void
 export interface scoredMovesType {

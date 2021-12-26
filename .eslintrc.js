@@ -8,14 +8,18 @@ module.exports = {
 	extends: [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
-		"plugin:@typescript-eslint/recommended-requiring-type-checking"
+		"plugin:@typescript-eslint/recommended-requiring-type-checking",
+		"plugin:jest-dom/recommended",
+		"plugin:testing-library/react"
 
 	],
 	plugins: [
 		"@typescript-eslint",
 		"@typescript-eslint/tslint",
 		"prefer-arrow",
-		"import"
+		"import",
+		"testing-library",
+		"jest-dom"
 	],
 	overrides: [
 		{
@@ -26,6 +30,10 @@ module.exports = {
 		}
 	],
 	rules: {
+		    "jest-dom/prefer-checked": "error",
+    "jest-dom/prefer-enabled-disabled": "error",
+    "jest-dom/prefer-required": "error",
+    "jest-dom/prefer-to-have-attribute": "error",
 		"@typescript-eslint/array-type": "error",
 		"@typescript-eslint/explicit-module-boundary-types": "off", // we're returning components, try and put return types on functions
 		"@typescript-eslint/consistent-type-definitions": "error",
@@ -57,6 +65,10 @@ module.exports = {
 		"@typescript-eslint/prefer-function-type": "error",
 		"@typescript-eslint/quotes": ["warn", "double"],
 		"@typescript-eslint/unified-signatures": "error",
+					    "testing-library/await-async-query": "error",
+    "testing-library/no-await-sync-query": "error",
+    "testing-library/no-debugging-utils": "warn",
+    "testing-library/no-dom-import": "off",
 		"arrow-body-style": "error",
 		"arrow-parens": [
 			// Following this style will help you find arrow functions (=>) which may be mistakenly included in a condition when a comparison such as >= was the intent.

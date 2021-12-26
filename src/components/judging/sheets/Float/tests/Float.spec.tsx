@@ -30,11 +30,13 @@ describe("The test-move cards are rendered", () => {
 		expect(onChange).toHaveBeenCalledWith(testMoves)
 
 		testMoves.forEach((move: movesType) => {
-			// get all buttons wiht the move id in their test id
+			// get all buttons with the move id in their test id
 			const components = screen.getAllByTestId("button-" + move.id, {
 				exact: false
 			})
-			expect(components).toBeTruthy()
+
+			const expectedNumber = move.direction === "SINGLE" ? 1 : 2
+			expect(components.length).toEqual(expectedNumber)
 		})
 	})
 })
@@ -87,10 +89,10 @@ describe("Add moves", () => {
 						"scored-move-" + move.id + "-" + index.toString()
 					)
 					// Assert there is a card for the move
-					expect(scoredMoveCard).toBeTruthy()
+					expect(scoredMoveCard).toBeInTheDocument()
 
 					const { getByText } = within(scoredMoveCard)
-					expect(getByText(move.name)).toBeTruthy()
+					expect(getByText(move.name)).toBeInTheDocument()
 					// Assert the card has the right name
 				}
 			)
@@ -134,7 +136,7 @@ describe("Deletemoves", () => {
 						"scored-move-" + move.id + "-" + index.toString()
 					)
 					// Assert there is a card for the move
-					expect(scoredMoveCard).toBeTruthy()
+					expect(scoredMoveCard).toBeInTheDocument()
 				}
 			)
 		})
@@ -142,7 +144,7 @@ describe("Deletemoves", () => {
 		addedMoveIDs.forEach((moveId: string) => {
 			const scoredMoveCard = screen.getByTestId("scored-move-" + moveId)
 			// Assert there is a card for the move before deleting
-			expect(scoredMoveCard).toBeTruthy()
+			expect(scoredMoveCard).toBeInTheDocument()
 
 			// Find and click delete button
 			const deleteButton = screen.getByTestId("scored-remove-" + moveId)
@@ -160,7 +162,7 @@ describe("Deletemoves", () => {
 			const deletedMoveCard = screen.queryByTestId(
 				"scored-move-" + moveId
 			)
-			expect(deletedMoveCard).toBeFalsy()
+			expect(deletedMoveCard).not.toBeInTheDocument()
 		})
 	})
 })
