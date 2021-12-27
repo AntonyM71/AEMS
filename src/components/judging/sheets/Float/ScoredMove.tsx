@@ -38,7 +38,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 				className={classes.moveBox}
 				data-testid={"scored-move-" + props.scoredMove.id}
 			>
-				<Grid container spacing={1} justify="space-around">
+				<Grid container spacing={1} justifyContent="space-around">
 					<Grid item>
 						<Chip
 							onClick={() =>
