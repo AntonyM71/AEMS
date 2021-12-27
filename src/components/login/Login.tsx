@@ -8,8 +8,8 @@ import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
+import { toast } from "react-hot-toast"
 import { useHistory } from "react-router-dom"
-import { useToasts } from "react-toast-notifications"
 import { useSetRecoilState } from "recoil"
 import {
 	currentToken,
@@ -34,7 +34,7 @@ const Copyright = () => (
 
 export default () => {
 	const classes = useStyles()
-	const { addToast } = useToasts()
+
 	const [username, setUsername] = React.useState("")
 	const [password, setPassword] = React.useState("")
 
@@ -48,9 +48,9 @@ export default () => {
 	const handleSignin = async () => {
 		const currentTimestamp = Date.now()
 		if (!username) {
-			addToast("No Username Supplied", { appearance: "error" })
+			toast.error("No Username Supplied")
 		} else if (!password) {
-			addToast("No Password Supplied", { appearance: "error" })
+			toast.error("No Password Supplied")
 		} else {
 			const response = await getuserToken(username, password)
 

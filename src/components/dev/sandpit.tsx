@@ -3,7 +3,7 @@ import { IChangeEvent, withTheme } from "@rjsf/core"
 import { Theme as MaterialUITheme } from "@rjsf/material-ui"
 import { JSONSchema7 } from "json-schema"
 import React from "react"
-import { useToasts } from "react-toast-notifications"
+import { toast } from "react-hot-toast"
 import { useStyles } from "../../style/Styles"
 import { handleErrors } from "../../topLevelErrorHandler"
 import { extendedDevSchema } from "../formSpecs"
@@ -12,12 +12,12 @@ import { ExampleJsonSchemaForm } from "../formSpecs/typescript/test"
 
 export const SandpitPage = () => {
 	const classes = useStyles()
-	const { addToast } = useToasts()
+
 	const Form = withTheme(MaterialUITheme)
 	const handleFormSubmit = ({
 		formData
 	}: IChangeEvent<ExampleJsonSchemaForm>) => {
-		addToast(JSON.stringify(formData), { appearance: "success" })
+		toast.success(JSON.stringify(formData))
 	}
 
 	return (
@@ -27,7 +27,7 @@ export const SandpitPage = () => {
 					fullWidth
 					variant="outlined"
 					onClick={() => {
-						addToast("test error", { appearance: "error" })
+						toast.error("test error")
 					}}
 				>
 					{"Throw Test Error Directly"}
@@ -39,7 +39,7 @@ export const SandpitPage = () => {
 						try {
 							throw Error("Intentional Error")
 						} catch (e) {
-							handleErrors(e, addToast)
+							handleErrors(e)
 						}
 					}}
 				>
