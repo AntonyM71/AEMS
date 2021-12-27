@@ -2,6 +2,14 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+
+## IDE setup
+
+### IDE integration
+ - Editor Integration: install the shell code commands to allow you to click through to from chrome (https://code.visualstudio.com/docs/setup/mac) typically this is done with `Cmd + Shift + P`, typing `shell` and selecting `Shell Command: Install code command in PATH`
+### Extensions
+We provide a workspace file with recommended extensions
+
 ## Available Scripts
 
 In the project directory, you can run:
