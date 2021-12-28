@@ -27,8 +27,6 @@ const Float = () => {
 		id: string,
 		direction: directionType
 	) => {
-		// eslint-disable-next-line no-console
-		console.log("Move", id, direction)
 		const newMoveId = uuidv4()
 		const newScoredMoves: scoredMovesType[] = [
 			...scoredMoves,

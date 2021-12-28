@@ -46,9 +46,8 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 
 	const fetchedScoredMoves = () => []
 
-	const [currentPaddler, setCurrentPaddler] = useRecoilState(
-		selectedPaddlerState
-	)
+	const [currentPaddler, setCurrentPaddler] =
+		useRecoilState(selectedPaddlerState)
 	const numberOfPaddlers = useRecoilValue(numberOfPaddlersInHeat)
 	const [currentRun, setCurrentRun] = useRecoilState(selectedRunState)
 	const numberOfRuns = useRecoilValue(numberOfRunsInHeatState)
@@ -76,8 +75,6 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	}
 
 	const removeScoredMove: removeScoredMoveType = (id: string) => {
-		// eslint-disable-next-line no-console
-		console.log("Removing Move", id)
 		const newMoveId = uuidv4()
 		const newScoredMoves: scoredMovesType[] = scoredMoves.filter(
 			(scoredMove: scoredMovesType) => scoredMove.id !== id

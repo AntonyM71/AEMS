@@ -10,7 +10,7 @@ import {
 
 const apiBaseURL = config.get("apiBaseURL")
 
-export const getuserToken = async (
+export const getUserToken = async (
 	username: string,
 	password: string
 ): Promise<AxiosResponse<TokenResponseType>> => {

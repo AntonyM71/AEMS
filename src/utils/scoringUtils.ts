@@ -14,8 +14,6 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 		)
 		if (filteredMoves.length === 1) {
 			const scoredMoveObject = filteredMoves[0]
-			// eslint-disable-next-line no-console
-            console.log(alreadyScoredMoves)
             const index = alreadyScoredMoves.indexOf(
 					scoredMove.moveId + "|" + scoredMove.direction)
 			if (

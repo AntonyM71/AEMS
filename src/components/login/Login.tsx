@@ -8,7 +8,6 @@ import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
-import { toast } from "react-hot-toast"
 import { useHistory } from "react-router-dom"
 import { useSetRecoilState } from "recoil"
 import {
@@ -18,7 +17,7 @@ import {
 	currentUserInitials,
 	refreshToken
 } from "../../recoil/atoms/auth"
-import { getuserToken } from "../../services/api"
+import { getUserToken } from "../../services/api"
 import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
@@ -45,28 +44,23 @@ export default () => {
 	const setRefreshToken = useSetRecoilState(refreshToken)
 	const history = useHistory()
 
-	const handleSignin = async () => {
+	const handleSignIn = async () => {
 		const currentTimestamp = Date.now()
-		if (!username) {
-			toast.error("No Username Supplied")
-		} else if (!password) {
-			toast.error("No Password Supplied")
-		} else {
-			const response = await getuserToken(username, password)
 
-			// Add useful info to the store
-			setRecoilUsername(response.data.user.fullName)
-			setUserInitial(response.data.user.initials)
-			setCurrentToken(response.data.access_token)
-			setCurrentTokenExpiry(
-				response.data.expires_in * 1000 + currentTimestamp - 10
-			)
-			setRefreshToken(response.data.refresh_token)
+		const response = await getUserToken(username, password)
 
-			// redirect to home
+		// Add useful info to the store
+		setRecoilUsername(response.data.user.fullName)
+		setUserInitial(response.data.user.initials)
+		setCurrentToken(response.data.access_token)
+		setCurrentTokenExpiry(
+			response.data.expires_in * 1000 + currentTimestamp - 10
+		)
+		setRefreshToken(response.data.refresh_token)
 
-			history.push("/")
-		}
+		// redirect to home
+
+		history.push("/")
 	}
 
 	return (
@@ -94,7 +88,7 @@ export default () => {
 							margin="normal"
 							required
 							fullWidth
-							// id="email"
+							data-testid="input-login-email"
 							label="Email Address"
 							name="email"
 							autoComplete="email"
@@ -109,21 +103,22 @@ export default () => {
 							required
 							fullWidth
 							name="password"
+							data-testid="input-login-password"
 							label="Password"
 							type="password"
 							onChange={(event) =>
 								setPassword(event.target.value)
 							}
-							// id="password"
 							autoComplete="current-password"
 						/>
 						<Button
-							// type="submit"
 							fullWidth
 							variant="contained"
 							color="primary"
+							data-testid="input-login-submit"
+							disabled={!(username && password) ? true : false}
 							className={classes.submit}
-							onClick={handleSignin}
+							onClick={handleSignIn}
 						>
 							Sign In
 						</Button>
