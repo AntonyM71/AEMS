@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
@@ -52,5 +52,24 @@ describe("Login Page", () => {
 		const submitButton = await screen.findByTestId("input-login-submit")
 		expect(submitButton).toBeInTheDocument()
 		expect(submitButton).toBeDisabled()
+	})
+	test("it submits when both fields are populated", async () => {
+		await navigateToLoginPage()
+		const inputEmail = await screen.findByTestId("input-login-email")
+		userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
+		// set password
+		const inputPassword = await screen.findByTestId("input-login-password")
+		userEvent.type(inputPassword, "RiotDisco123")
+
+		// assert submit button enabled
+		const submitButton = await screen.findByTestId("input-login-submit")
+
+		// assert submit button disabled
+		expect(submitButton).toBeInTheDocument()
+		await waitFor(() => {
+			expect(submitButton).toBeEnabled()
+		})
+		// Submit login request
+		userEvent.click(submitButton)
 	})
 })
