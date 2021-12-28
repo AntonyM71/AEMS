@@ -204,7 +204,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				{[...scoredMoves] // put these into a new array so that reverse works
 					.reverse()
 					.map((scoredMove: scoredMovesType, index: number) => (
-						<Grid item xs={12}>
+						<Grid item xs={12} key={scoredMove.id}>
 							<ScoredMove
 								key={scoredMove.id}
 								scoredMove={scoredMove}

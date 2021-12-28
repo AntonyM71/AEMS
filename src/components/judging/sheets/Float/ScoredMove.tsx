@@ -71,7 +71,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 							filteredBonuses.length === 1 ? true : false
 
 						return (
-							<Grid item xs>
+							<Grid item key={bonus.id}>
 								<Chip
 									color={isScored ? "primary" : "default"}
 									key={bonus.id}
