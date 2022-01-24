@@ -6,7 +6,7 @@ import { RecoilRoot } from "recoil"
 import App from "../../App"
 import { currentUser } from "../../recoil/atoms/auth"
 import { RecoilObserver } from "../../RecoilObserver"
-
+jest.mock("axios")
 const navigateToLoginPage = async () => {
 	// Helper function to navigate to the login page and assert the default elements are there
 	const onChange = jest.fn()
@@ -53,23 +53,35 @@ describe("Login Page", () => {
 		expect(submitButton).toBeInTheDocument()
 		expect(submitButton).toBeDisabled()
 	})
-	test("it submits when both fields are populated", async () => {
+	test("it activates the submit button when both fields are populated", async () => {
 		await navigateToLoginPage()
 		const inputEmail = await screen.findByTestId("input-login-email")
 		userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
 		// set password
 		const inputPassword = await screen.findByTestId("input-login-password")
 		userEvent.type(inputPassword, "RiotDisco123")
-
-		// assert submit button enabled
-		const submitButton = await screen.findByTestId("input-login-submit")
-
-		// assert submit button disabled
-		expect(submitButton).toBeInTheDocument()
-		await waitFor(() => {
-			expect(submitButton).toBeEnabled()
+		// Assert button is enabled
+		await waitFor(async () => {
+			expect(await screen.findByText("Sign In")).toBeEnabled()
 		})
-		// Submit login request
-		userEvent.click(submitButton)
 	})
+
+	// test("it activates the submit button when both fields are populated", async () => {
+	// 	// const axiosMock = jest.spyOn(axios, "post")
+	// 	await navigateToLoginPage()
+	// 	const inputEmail = await screen.findByTestId("input-login-email")
+	// 	userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
+	// 	// set password
+	// 	const inputPassword = await screen.findByTestId("input-login-password")
+	// 	userEvent.type(inputPassword, "RiotDisco123")
+
+	// 	await waitFor(async () => {
+	// 		expect(await screen.findByText("Sign In")).toBeEnabled()
+	// 	})
+	// 	// Submit login request
+	// 	userEvent.click(screen.getByTestId("input-login-submit"))
+	// 	await waitFor(() => {
+	// 		expect(axios.post).toHaveBeenCalledWith({})
+	// 	})
+	// })
 })

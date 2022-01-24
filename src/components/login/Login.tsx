@@ -45,6 +45,7 @@ export default () => {
 	const history = useHistory()
 
 	const handleSignIn = async () => {
+		console.log("CLICK!")
 		const currentTimestamp = Date.now()
 
 		const response = await getUserToken(username, password)
