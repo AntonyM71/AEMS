@@ -1,11 +1,5 @@
 
 import convict from "convict";
-import json5 from "json5";
-
-// Use this only if you have a .json configuration file in JSON5 format
-// (i.e. with comments, etc.).
-convict.addParser({ extension: "json", parse: json5.parse })
-
 
 // Define a schema
 
