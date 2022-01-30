@@ -1,15 +1,19 @@
-import { render, screen, waitFor } from "@testing-library/react"
+/* eslint-disable camelcase */
+import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import axios, { AxiosResponse } from "axios"
 import React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 import App from "../../App"
 import { currentUser } from "../../recoil/atoms/auth"
 import { RecoilObserver } from "../../RecoilObserver"
-jest.mock("axios")
+
+const onChange = jest.fn()
 const navigateToLoginPage = async () => {
 	// Helper function to navigate to the login page and assert the default elements are there
-	const onChange = jest.fn()
+	cleanup()
+	jest.resetModules()
 	render(
 		<RecoilRoot>
 			<BrowserRouter>
@@ -41,19 +45,23 @@ describe("Login Page", () => {
 		await navigateToLoginPage()
 		expect(await screen.findByTestId("input-login-submit")).toBeDisabled()
 	})
-	test("it the submit button is disabled if there is no password", async () => {
+	test("the submit button is disabled if there is no password", async () => {
 		await navigateToLoginPage()
 
 		// enter an email in the email input
-		const inputEmail = await screen.findByTestId("input-login-email")
+		const inputEmail = (await screen.findByTestId(
+			"input-login-email"
+		)) as HTMLInputElement
 		userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
 
+		// assert value change
+		expect(inputEmail.value).toBe("corran.addison@soulwaterman.com")
 		// assert submit button disabled
 		const submitButton = await screen.findByTestId("input-login-submit")
 		expect(submitButton).toBeInTheDocument()
 		expect(submitButton).toBeDisabled()
 	})
-	test("it activates the submit button when both fields are populated", async () => {
+	test("activates the submit button when both fields are populated", async () => {
 		await navigateToLoginPage()
 		const inputEmail = await screen.findByTestId("input-login-email")
 		userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
@@ -61,27 +69,68 @@ describe("Login Page", () => {
 		const inputPassword = await screen.findByTestId("input-login-password")
 		userEvent.type(inputPassword, "RiotDisco123")
 		// Assert button is enabled
+		// console.log((await screen.findByTestId("input-login-submit")).debug())
 		await waitFor(async () => {
-			expect(await screen.findByText("Sign In")).toBeEnabled()
+			expect(
+				await screen.findByTestId("input-login-submit")
+			).toBeEnabled()
 		})
 	})
+	const axiosMock = jest.spyOn(axios, "post").mockImplementation(jest.fn())
 
-	// test("it activates the submit button when both fields are populated", async () => {
-	// 	// const axiosMock = jest.spyOn(axios, "post")
-	// 	await navigateToLoginPage()
-	// 	const inputEmail = await screen.findByTestId("input-login-email")
-	// 	userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
-	// 	// set password
-	// 	const inputPassword = await screen.findByTestId("input-login-password")
-	// 	userEvent.type(inputPassword, "RiotDisco123")
+	test("it activates the submit button when both fields are populated", async () => {
+		await navigateToLoginPage()
 
-	// 	await waitFor(async () => {
-	// 		expect(await screen.findByText("Sign In")).toBeEnabled()
-	// 	})
-	// 	// Submit login request
-	// 	userEvent.click(screen.getByTestId("input-login-submit"))
-	// 	await waitFor(() => {
-	// 		expect(axios.post).toHaveBeenCalledWith({})
-	// 	})
-	// })
+		axiosMock.mockImplementation(
+			// @ts-ignore
+			() =>
+				({
+					status: 201,
+					data: {
+						user: {
+							passwordExpired: false,
+							lastLogin: "1234",
+							dflg: true,
+							_id: "string",
+							firstName: "Corran",
+							lastName: "Addison",
+							emailAddress: "Corran.addison@soulwaterman.com",
+							permissionLevel: 111,
+							lupt: "string",
+							lupu: "string",
+							crtt: "string",
+							crtu: "string",
+							__v: 111,
+							fullName: "Corran Addison",
+							initials: "CA",
+							crttDisplay: "string",
+							luptDisplay: "string",
+							id: "string"
+						},
+						access_token: "abc123",
+						refresh_token: "def456",
+						expires_in: 50
+					}
+				} as AxiosResponse)
+		)
+		// set email
+		const inputEmail = await screen.findByTestId("input-login-email")
+		userEvent.type(inputEmail, "corran.addison@soulwaterman.com")
+		// set password
+		const inputPassword = await screen.findByTestId("input-login-password")
+		userEvent.type(inputPassword, "RiotDisco123")
+		// Assert button is enabled
+
+		await waitFor(async () => {
+			expect(
+				await screen.findByTestId("input-login-submit")
+			).toBeEnabled()
+		})
+		// Submit login request
+		userEvent.click(screen.getByTestId("input-login-submit"))
+
+		// Assert
+		expect(await screen.findByText("Corran Addison")).toBeInTheDocument()
+		expect(await screen.findByText("Log Out")).toBeInTheDocument()
+	})
 })

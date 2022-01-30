@@ -45,7 +45,6 @@ export default () => {
 	const history = useHistory()
 
 	const handleSignIn = async () => {
-		console.log("CLICK!")
 		const currentTimestamp = Date.now()
 
 		const response = await getUserToken(username, password)
@@ -89,7 +88,7 @@ export default () => {
 							margin="normal"
 							required
 							fullWidth
-							data-testid="input-login-email"
+							inputProps={{ "data-testid": "input-login-email" }}
 							label="Email Address"
 							name="email"
 							autoComplete="email"
@@ -104,7 +103,9 @@ export default () => {
 							required
 							fullWidth
 							name="password"
-							data-testid="input-login-password"
+							inputProps={{
+								"data-testid": "input-login-password"
+							}}
 							label="Password"
 							type="password"
 							onChange={(event) =>
