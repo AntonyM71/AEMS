@@ -14,7 +14,6 @@ export const getUserToken = async (
 	username: string,
 	password: string
 ): Promise<AxiosResponse<TokenResponseType>> => {
-	console.log("I am about to axiosify")
 	const response: AxiosResponse<TokenResponseType> = await axios.post(
 		apiBaseURL + "auth",
 		{ username, password }

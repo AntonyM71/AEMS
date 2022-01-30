@@ -62,6 +62,7 @@ module.exports = {
 		"@typescript-eslint/await-thenable": "off", // this not working properly
 		"@typescript-eslint/unbound-method": "off", // functional programing and preferring arrow functions leads us to the state where all functions are unbound by definition
 		"@typescript-eslint/prefer-for-of": "error",
+		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/prefer-function-type": "error",
 		"@typescript-eslint/quotes": ["warn", "double"],
 		"@typescript-eslint/unified-signatures": "error",
