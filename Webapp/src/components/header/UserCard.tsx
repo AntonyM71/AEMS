@@ -2,12 +2,7 @@ import { Avatar, Button, Grid } from "@material-ui/core"
 import Link from "@material-ui/core/Link"
 import React from "react"
 import { Link as RouterLink } from "react-router-dom"
-import {
-	useRecoilState,
-	useRecoilValue,
-	useResetRecoilState,
-	useSetRecoilState
-} from "recoil"
+import { useRecoilValue, useResetRecoilState } from "recoil"
 import {
 	currentToken,
 	currentTokenExpiry,
@@ -21,21 +16,7 @@ import { routes } from "../routes/Router"
 export const UserCard = () => {
 	const classes = useStyles()
 
-	const setUser = useSetRecoilState(currentUser)
-	const setToken = useSetRecoilState(currentToken)
-	const setTokenExpiry = useSetRecoilState(currentTokenExpiry)
-	const [userInitials, setUserInitials] = useRecoilState(currentUserInitials)
-	const setRefreshToken = useSetRecoilState(refreshToken)
-	// Rehydrate recoil auth state from local storage on mount
-	React.useEffect(() => {
-		const expiryTimeString = localStorage.getItem("userAccessTokenExpiry")
-		const expiryTime = expiryTimeString ? parseInt(expiryTimeString) : null
-		setUser(localStorage.getItem("userName") || "")
-		setToken(localStorage.getItem("userAccessToken") || "")
-		setTokenExpiry(expiryTime || 0)
-		setUserInitials(localStorage.getItem("userInitial") || "")
-		setRefreshToken(localStorage.getItem("userRefreshToken") || "")
-	})
+	const userInitials = useRecoilValue(currentUserInitials)
 
 	const currentUserName = useRecoilValue(currentUser)
 	const resetUser = useResetRecoilState(currentUser)
@@ -50,7 +31,7 @@ export const UserCard = () => {
 		resetTokenExpiry()
 		resetUserInitials()
 		resetRefreshToken()
-		localStorage.clear()
+		// localStorage.clear()
 	}
 
 	if (!currentUserName) {

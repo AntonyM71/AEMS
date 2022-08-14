@@ -5,18 +5,8 @@ const apiBaseURL = config.get("apiBaseURL");
 
 export const getuserToken = async (
     username: string,
-    password: string,
-    currentTimestamp: number): Promise<AxiosResponse<TokenResponseType>> => {
+    password: string): Promise<AxiosResponse<TokenResponseType>> => {
      const response: AxiosResponse<TokenResponseType> = await axios.post(apiBaseURL + "auth", { username, password })
-
-     // write to localStorage
-    localStorage.setItem("userName",response.data.user.fullName)
-	localStorage.setItem("userInitial",response.data.user.initials)
-	localStorage.setItem("userAccessToken",response.data.access_token)
-	localStorage.setItem("userAccessTokenExpiry",(
-				response.data.expires_in * 1000 + currentTimestamp - 10).toString()
-			)
-	localStorage.setItem("userRefreshToken",response.data.refresh_token)
 
     // rejected promises are automatically handled at the top topLevelErrorHandler
     return response
