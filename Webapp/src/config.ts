@@ -16,6 +16,7 @@ const conf = convict({
   }
 });
 
+
 conf.validate();
 
 export default conf;

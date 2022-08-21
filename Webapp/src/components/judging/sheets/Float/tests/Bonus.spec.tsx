@@ -1,5 +1,5 @@
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
-import { fireEvent, render } from "@testing-library/react"
 import { Bonus } from "../Bonus"
 import { BonusPropsType } from "../Interfaces"
 
@@ -16,15 +16,15 @@ describe("Bonus", () => {
 		addScoredBonus: addScoredBonusSpy
 	}
 	it("matches the SnapShot", () => {
-		const wrapper = render(<Bonus {...BonusProps} />)
-		expect(wrapper).toMatchSnapshot()
+		const view = render(<Bonus {...BonusProps} />)
+		expect(view).toMatchSnapshot()
 	})
 	it("calls addScoredBonus when clicked", () => {
-		const wrapper = render(<Bonus {...BonusProps} />)
+		const view = render(<Bonus {...BonusProps} />)
 		const wantedCall = ["Air", "1234"]
 		expect(addScoredBonusSpy).toHaveBeenCalledTimes(0)
 
-		fireEvent.click(wrapper.getByLabelText("addBonus"), {
+		fireEvent.click(screen.getByLabelText("addBonus"), {
 			button: 1
 		})
 		expect(addScoredBonusSpy).toHaveBeenCalledTimes(1)

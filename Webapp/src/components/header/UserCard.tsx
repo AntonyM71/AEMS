@@ -39,7 +39,7 @@ export const UserCard = () => {
 			<Grid
 				container
 				direction="row"
-				justify="flex-end"
+				justifyContent="flex-end"
 				alignItems="baseline"
 				spacing={0}
 			>
@@ -63,7 +63,7 @@ export const UserCard = () => {
 		<Grid
 			container
 			direction="row"
-			justify="flex-end"
+			justifyContent="flex-end"
 			alignItems="baseline"
 			className={classes.header}
 		>
