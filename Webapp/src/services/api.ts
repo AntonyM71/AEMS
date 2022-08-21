@@ -48,6 +48,7 @@ export const postWithAuth = async (
 	const token = getRecoil(currentToken)
 
 	return await axios.post(apiBaseURL + endpoint, {
+		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 		headers: { Authorization: "Bearer " + token },
 		data
 	})
@@ -60,6 +61,7 @@ export const getWithAuth = async (
 	const token = getRecoil(currentToken)
 
 	return await axios.get(apiBaseURL + endpoint, {
+		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 		headers: { Authorization: "Bearer " + token },
 		data
 	})

@@ -19,10 +19,11 @@ import {
 	currentUserInitials,
 	refreshToken
 } from "../../recoil/atoms/auth"
+import { getUserToken } from "../../services/api"
 import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
-	<Typograpy variant="body2" color="textSecondary" align="center">
+	<Typography variant="body2" color="textSecondary" align="center">
 		{"Copyright © "}
 		<Link color="inherit" href="https://material-ui.com/">
 			Hurley Foundation
