@@ -20,7 +20,7 @@ pipelines:
             caches:
               - node
             script:
-              - cd webapp
+              - cd Webapp
               - npm install
               - npm test
         - step:
@@ -29,7 +29,7 @@ pipelines:
               - linux.shell
             name: Lint the node package
             script:
-              - cd webapp
+              - cd Webapp
               - npm install eslint
               - npx eslint .
             caches:
@@ -45,6 +45,6 @@ pipelines:
               caches:
                 - node
               script:
-                - cd webapp
+                - cd Webapp
                 - npm install
                 - npm test
