@@ -1,3 +1,4 @@
+import { Checkbox, FormControlLabel } from "@material-ui/core"
 import Avatar from "@material-ui/core/Avatar"
 import Box from "@material-ui/core/Box"
 import Button from "@material-ui/core/Button"
@@ -8,6 +9,7 @@ import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined"
 import React from "react"
+import { toast } from "react-hot-toast"
 import { useHistory } from "react-router-dom"
 import { useSetRecoilState } from "recoil"
 import {
@@ -17,11 +19,10 @@ import {
 	currentUserInitials,
 	refreshToken
 } from "../../recoil/atoms/auth"
-import { getuserToken } from "../../services/api"
 import { useStyles } from "../../style/Styles"
 
 const Copyright = () => (
-	<Typography variant="body2" color="textSecondary" align="center">
+	<Typograpy variant="body2" color="textSecondary" align="center">
 		{"Copyright © "}
 		<Link color="inherit" href="https://material-ui.com/">
 			Hurley Foundation
@@ -47,11 +48,11 @@ export default () => {
 	const handleSignIn = async () => {
 		const currentTimestamp = Date.now()
 		if (!username) {
-			addToast("No Username Supplied", { appearance: "error" })
+			toast.error("No Username Supplied")
 		} else if (!password) {
-			addToast("No Password Supplied", { appearance: "error" })
+			toast.error("No Password Supplied")
 		} else {
-			const response = await getuserToken(username, password)
+			const response = await getUserToken(username, password)
 
 			// Add useful info to the store
 			setRecoilUsername(response.data.user.fullName)
@@ -128,7 +129,7 @@ export default () => {
 							variant="contained"
 							color="primary"
 							className={classes.submit}
-							onClick={handleSignin}
+							onClick={handleSignIn}
 						>
 							Sign In
 						</Button>
