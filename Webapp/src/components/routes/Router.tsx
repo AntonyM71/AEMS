@@ -1,5 +1,4 @@
 import { Route, Switch } from "react-router-dom"
-import { useToasts } from "react-toast-notifications"
 import { registerRejectedPromise } from "../../topLevelErrorHandler"
 import { DevRouterPage } from "../dev/DevRouter"
 import Judging from "../judging/Judging"
@@ -30,8 +29,7 @@ export const routes = {
 }
 
 const Router = () => {
-	const { addToast } = useToasts()
-	registerRejectedPromise(addToast)
+	registerRejectedPromise()
 
 	return (
 		<Switch>

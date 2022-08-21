@@ -3,7 +3,7 @@ import Grid from "@material-ui/core/Grid/Grid"
 import IconButton from "@material-ui/core/IconButton"
 import Paper from "@material-ui/core/Paper/Paper"
 import { ChevronLeft, ChevronRight } from "@material-ui/icons"
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import {
 	useRecoilState,
 	useRecoilValue,
@@ -46,9 +46,8 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 
 	const fetchedScoredMoves = () => []
 
-	const [currentPaddler, setCurrentPaddler] = useRecoilState(
-		selectedPaddlerState
-	)
+	const [currentPaddler, setCurrentPaddler] =
+		useRecoilState(selectedPaddlerState)
 	const numberOfPaddlers = useRecoilValue(numberOfPaddlersInHeat)
 	const [currentRun, setCurrentRun] = useRecoilState(selectedRunState)
 	const numberOfRuns = useRecoilValue(numberOfRunsInHeatState)
@@ -76,8 +75,6 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	}
 
 	const removeScoredMove: removeScoredMoveType = (id: string) => {
-		// eslint-disable-next-line no-console
-		console.log("Removing Move", id)
 		const newMoveId = uuidv4()
 		const newScoredMoves: scoredMovesType[] = scoredMoves.filter(
 			(scoredMove: scoredMovesType) => scoredMove.id !== id
@@ -207,7 +204,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				{[...scoredMoves] // put these into a new array so that reverse works
 					.reverse()
 					.map((scoredMove: scoredMovesType, index: number) => (
-						<Grid item xs={12}>
+						<Grid item xs={12} key={scoredMove.id}>
 							<ScoredMove
 								key={scoredMove.id}
 								scoredMove={scoredMove}

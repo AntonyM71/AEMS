@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AddToast } from "react-toast-notifications"
+import { toast } from "react-hot-toast"
 import conf from "./config"
-export const registerRejectedPromise = (addToast: AddToast) => {
+export const registerRejectedPromise = () => {
 	window.onunhandledrejection = (err: any) => {
-		handleErrors(err, addToast)
+		handleErrors(err)
 	}
 }
 
-export const handleErrors = (e: any, addToast: AddToast) => {
+export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
 	if (env === "development" || "staging") {
 		const message = e.statusText
@@ -19,9 +19,9 @@ export const handleErrors = (e: any, addToast: AddToast) => {
 			: e.reason
 			? e.reason
 			: "Undefined Error"
-		addToast(message, { appearance: "error", autoDismiss: true })
+		toast.error(message)
 	} else {
-		addToast("Something Went Wrong :(")
+		toast.error("Something Went Wrong :(")
 	}
 }
 const env = conf.get("env")

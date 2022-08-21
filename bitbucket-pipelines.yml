@@ -11,40 +11,28 @@ image: node:16
 
 pipelines:
   default:
-    - parallel:
-        - step:
-            runs-on:
-              - self.hosted
-              - linux.shell
-            name: Build and Test
-            caches:
-              - node
-            script:
-              - cd webapp
-              - npm install
-              - npm test
-        - step:
-            runs-on:
-              - self.hosted
-              - linux.shell
-            name: Lint the node package
-            script:
-              - cd webapp
-              - npm install eslint
-              - npx eslint .
-            caches:
-              - node
+    - step:
+        runs-on:
+          - self.hosted
+          - linux.shell
+        name: Build and Test
+        caches:
+          - node
+        script:
+          - cd Webapp
+          - npm install
+          - npm test
+          - npm run lint
   branches:
     master:
-      - parallel:
-          - step:
-              runs-on:
-                - self.hosted
-                - linux.shell
-              name: Build and Test
-              caches:
-                - node
-              script:
-                - cd webapp
-                - npm install
-                - npm test
+      - step:
+          runs-on:
+            - self.hosted
+            - linux.shell
+          name: Build and Test
+          caches:
+            - node
+          script:
+            - cd Webapp
+            - npm install
+            - npm test

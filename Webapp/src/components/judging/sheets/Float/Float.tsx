@@ -1,6 +1,5 @@
 import Grid from "@material-ui/core/Grid"
 import { cloneDeep } from "lodash"
-import React from "react"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -27,8 +26,6 @@ const Float = () => {
 		id: string,
 		direction: directionType
 	) => {
-		// eslint-disable-next-line no-console
-		console.log("Move", id, direction)
 		const newMoveId = uuidv4()
 		const newScoredMoves: scoredMovesType[] = [
 			...scoredMoves,
@@ -47,9 +44,6 @@ const Float = () => {
 	}
 
 	const addScoredBonus: addScoredBonusType = (moveId: string, id: string) => {
-		// eslint-disable-next-line no-console
-		console.log("Bonus", moveId, id)
-
 		const scoredMovesFiltered = scoredMoves.filter((sm) => sm.id === moveId)
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -79,9 +73,6 @@ const Float = () => {
 				newScoredMoves[index].bonuses = newBonuses
 				setScoredMoves(newScoredMoves)
 			} else {
-				// eslint-disable-next-line no-console
-				console.log("Bonus already exists - removing")
-
 				// remove bonus from list
 				const newBonuses = bonusMoves.bonuses.filter(
 					(b) => b.bonusId !== id

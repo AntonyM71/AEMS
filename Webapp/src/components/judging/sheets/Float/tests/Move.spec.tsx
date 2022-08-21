@@ -1,6 +1,6 @@
-import { fireEvent, render } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
-import { MovePropsType } from "../Interfaces"
+import { AvailableMoveDirections, MovePropsType } from "../Interfaces"
 import { MoveCard } from "../MoveCard"
 
 test.each([
@@ -18,7 +18,7 @@ test.each([
 		move: {
 			id: "1234",
 			name: "",
-			direction: a,
+			direction: a as AvailableMoveDirections,
 			score: {
 				L: 0,
 				R: 0,
@@ -33,11 +33,11 @@ test.each([
 		addScoredBonus: addScoredBonusSpy
 	}
 
-	const wrapper = render(<MoveCard {...MoveProps} />)
+	const view = render(<MoveCard {...MoveProps} />)
 	const wantedCall = ["1234", expected]
 	expect(addScoredBonusSpy).toHaveBeenCalledTimes(0)
 
-	fireEvent.click(wrapper.getByLabelText("button" + b.toString()), {
+	fireEvent.click(screen.getByLabelText("button" + b.toString()), {
 		button: 1
 	})
 	expect(addScoredMoveSpy).toHaveBeenCalledTimes(1)
