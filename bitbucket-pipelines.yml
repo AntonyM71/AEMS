@@ -22,17 +22,7 @@ pipelines:
           - cd Webapp
           - npm install
           - npm test
-    - step:
-        runs-on:
-          - self.hosted
-          - linux.shell
-        name: Lint the node package
-        script:
-          - cd Webapp
-          - npm install eslint
-          - npx eslint .
-        caches:
-          - node
+          - npm run lint
   branches:
     master:
       - step:
