@@ -11,40 +11,48 @@ image: node:16
 
 pipelines:
   default:
-    - parallel:
         - step:
-            runs-on:
-              - self.hosted
-              - linux.shell
-            name: Build and Test
-            caches:
-              - node
-            script:
-              - cd Webapp
-              - npm install
-              - npm test
-        - step:
-            runs-on:
-              - self.hosted
-              - linux.shell
-            name: Lint the node package
-            script:
-              - cd Webapp
-              - npm install eslint
-              - npx eslint .
-            caches:
-              - node
+        runs-on:
+          - self.hosted
+          - linux.shell
+        name: Conda
+        script:
+          - cd Server
+          - conda env create -f conda/env.yml
+          - python -m pytest .
+          - python -m black . --check
+    - step:
+        runs-on:
+          - self.hosted
+          - linux.shell
+        name: Build and Test
+        caches:
+          - node
+        script:
+          - cd Webapp
+          - npm install
+          - npm test
+    - step:
+        runs-on:
+          - self.hosted
+          - linux.shell
+        name: Lint the node package
+        script:
+          - cd Webapp
+          - npm install eslint
+          - npx eslint .
+        caches:
+          - node
   branches:
     master:
-      - parallel:
-          - step:
-              runs-on:
-                - self.hosted
-                - linux.shell
-              name: Build and Test
-              caches:
-                - node
-              script:
-                - cd Webapp
-                - npm install
-                - npm test
+      - step:
+          runs-on:
+            - self.hosted
+            - linux.shell
+          name: Build and Test
+          caches:
+            - node
+          script:
+            - cd Webapp
+            - npm install
+            - npm test
