@@ -147,5 +147,4 @@ export default () => {
 			</Grid>
 		</Grid>
 	)
-	}
 }

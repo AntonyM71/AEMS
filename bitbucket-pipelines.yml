@@ -11,16 +11,6 @@ image: node:16
 
 pipelines:
   default:
-        - step:
-        runs-on:
-          - self.hosted
-          - linux.shell
-        name: Conda
-        script:
-          - cd Server
-          - conda env create -f conda/env.yml
-          - python -m pytest .
-          - python -m black . --check
     - step:
         runs-on:
           - self.hosted
