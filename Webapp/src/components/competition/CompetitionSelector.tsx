@@ -20,10 +20,7 @@ export const CompetitionSelector = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	useEffect(() => {
 		const getComps = async () => {
-			setCompetitions(
-				(await getWithAuth("competitions"))
-					.data as competitionsListType[]
-			)
+			setCompetitions((await getWithAuth("competitions")).data)
 		}
 
 		void getComps()
