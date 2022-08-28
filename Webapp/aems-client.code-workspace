@@ -22,7 +22,8 @@
 			"source.organizeImports": true
 		},
 		"emmet.excludeLanguages": ["markdown"],
-		"eslint.workingDirectories": ["./Webapp"]
+		"eslint.workingDirectories": ["./Webapp"],
+		"python.terminal.activateEnvironment": true
 	},
 	"extensions": {
 		"recommendations": [
