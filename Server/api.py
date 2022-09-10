@@ -20,7 +20,7 @@ app = FastAPI()
 
 @app.get("/", tags=["child"])
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Go to /docs to see the swagger documentation"}
 
 import uvicorn
 
