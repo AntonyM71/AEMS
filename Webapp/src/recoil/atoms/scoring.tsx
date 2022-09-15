@@ -1,3 +1,4 @@
+import { createAction, createReducer, PayloadAction } from "@reduxjs/toolkit"
 import { atom } from "recoil"
 import { moves as demoMoves } from "../../components/judging/sheets/Float/demoMoves"
 import { scoredMovesType } from "../../components/judging/sheets/Float/Interfaces"
@@ -26,4 +27,30 @@ export const scoredMovesState = atom({
 export const availableMovesListState = atom({
 	key: "availableMovesListState", // unique ID (with respect to other atoms/selectors)
 	default: isTest ? testMoves : demoMoves // default value (aka initial value)
+})
+
+export interface ScoringStateType {
+	selectedPaddler: number
+	selectedRun: number
+}
+
+const initialState = {
+	selectedPaddler: 0,
+	selectedRun: 0
+}
+
+
+const changePaddler = createAction<number>("updatePaddler")
+const changeRun = createAction<number>("updateRun")
+export const scoringReducer = createReducer(initialState, (builder) => {
+  builder
+    .addCase(changePaddler, (state, action) => {
+      // "mutate" the array by calling push()
+      state.selectedPaddler = action.payload
+    })
+    .addCase(changeRun, (state, action) => {
+      // "mutate" the array by calling push()
+      state.selectedRun = action.payload
+    })
+
 })

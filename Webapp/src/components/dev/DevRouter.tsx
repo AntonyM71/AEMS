@@ -1,6 +1,6 @@
-import { Button, Grid } from "@material-ui/core"
-import Link from "@material-ui/core/Link"
-import Paper from "@material-ui/core/Paper"
+import { Button, Grid } from "@mui/material"
+import Link from "@mui/material/Link"
+import Paper from "@mui/material/Paper"
 import React from "react"
 import {
 	Link as RouterLink,
@@ -8,28 +8,24 @@ import {
 	Switch,
 	useRouteMatch
 } from "react-router-dom"
-import { useStyles } from "../../style/Styles"
+
 import { SandpitPage } from "./sandpit"
 import Style from "./Style"
 
-export const DevRouterPage = () => {
-	const classes = useStyles()
-
-	return (
+export const DevRouterPage = () => (
 		<Grid container alignItems="stretch">
 			<Grid item xs={2}>
-				<Paper className={classes.marginPaper}>
+				<Paper >
 					<DevLinks />
 				</Paper>
 			</Grid>
 			<Grid item xs={10}>
-				<Paper className={classes.marginPaper}>
+				<Paper >
 					<DevRouter />
 				</Paper>
 			</Grid>
 		</Grid>
 	)
-}
 const DevRouter = () => {
 	const { path } = useRouteMatch()
 

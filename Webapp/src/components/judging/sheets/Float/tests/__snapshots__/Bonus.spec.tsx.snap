@@ -6,27 +6,23 @@ Object {
   "baseElement": <body>
     <div>
       <div
-        class="MuiPaper-root makeStyles-moveBox-8 MuiPaper-elevation1 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
       >
         <p
-          class="MuiTypography-root MuiTypography-body1"
+          class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         >
           Air
         </p>
         <button
           aria-label="addBonus"
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-fullWidth"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-fullWidth css-1fu7jd5-MuiButtonBase-root-MuiButton-root"
           data-testid="button-bonus-1234"
           tabindex="0"
           type="button"
         >
+          Any
           <span
-            class="MuiButton-label"
-          >
-            Any
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </div>
@@ -34,27 +30,23 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="MuiPaper-root makeStyles-moveBox-8 MuiPaper-elevation1 MuiPaper-rounded"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
     >
       <p
-        class="MuiTypography-root MuiTypography-body1"
+        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
       >
         Air
       </p>
       <button
         aria-label="addBonus"
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-fullWidth"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-fullWidth css-1fu7jd5-MuiButtonBase-root-MuiButton-root"
         data-testid="button-bonus-1234"
         tabindex="0"
         type="button"
       >
+        Any
         <span
-          class="MuiButton-label"
-        >
-          Any
-        </span>
-        <span
-          class="MuiTouchRipple-root"
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
         />
       </button>
     </div>

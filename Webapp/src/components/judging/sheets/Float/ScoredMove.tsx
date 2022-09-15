@@ -1,11 +1,11 @@
-import Chip from "@material-ui/core/Chip"
-import Grid from "@material-ui/core/Grid"
-import Paper from "@material-ui/core/Paper"
-import Typography from "@material-ui/core/Typography"
+import Chip from "@mui/material/Chip"
+import Grid from "@mui/material/Grid"
+import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import React from "react"
 import { useRecoilValue } from "recoil"
 import { availableMovesListState } from "../../../../recoil/atoms/scoring"
-import { useStyles } from "../../../../style/Styles"
+
 import { bonuses } from "./demoMoves"
 import {
 	addScoredBonusType,
@@ -29,13 +29,13 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const filteredMoves = movesList.filter(
 		(move: movesType) => move.id === props.scoredMove.moveId
 	)
-	const classes = useStyles()
+
 	if (filteredMoves.length === 1) {
 		const moveData = filteredMoves[0]
 
 		return (
 			<Paper
-				className={classes.moveBox}
+
 				data-testid={"scored-move-" + props.scoredMove.id}
 			>
 				<Grid container spacing={1} justifyContent="space-around">
