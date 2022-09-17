@@ -3,7 +3,10 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import axios, { AxiosResponse } from "axios"
 import { BrowserRouter } from "react-router-dom"
+import { RecoilRoot } from "recoil"
+import App from "../../App"
 import { currentUser } from "../../recoil/atoms/auth"
+import { RecoilObserver } from "../../RecoilObserver"
 
 const mockSuccessfulLoginResponse = {
 	status: 201,
@@ -57,11 +60,9 @@ const navigateToLoginPage = async () => {
 	userEvent.click(loginPageLink)
 
 	// Assert login page has an email box and password box and submit button
-	expect(await screen.findByTestId("input-login-email")).toBeInTheDocument()
-	expect(
-		await screen.findByTestId("input-login-password")
-	).toBeInTheDocument()
-	expect(await screen.findByTestId("input-login-submit")).toBeInTheDocument()
+	expect(await screen.findByLabelText("Email Address")).toBeInTheDocument()
+	expect(await await screen.findByLabelText("Password")).toBeInTheDocument()
+	expect(await screen.findByLabelText("Submit")).toBeInTheDocument()
 }
 
 describe("Login Page", () => {
@@ -70,7 +71,7 @@ describe("Login Page", () => {
 	})
 	test("the user can navigate to the login page from the home page, and the submit button is disabled", async () => {
 		await navigateToLoginPage()
-		expect(await screen.findByTestId("input-login-submit")).toBeDisabled()
+		expect(await screen.findByLabelText("Submit")).toBeDisabled()
 	})
 	test("the submit button is disabled if there is no password", async () => {
 		await navigateToLoginPage()
@@ -84,7 +85,7 @@ describe("Login Page", () => {
 		// assert value change
 		expect(inputEmail.value).toBe("corran.addison@soulwaterman.com")
 		// assert submit button disabled
-		const submitButton = await screen.findByTestId("input-login-submit")
+		const submitButton = await screen.findByLabelText("Submit")
 		expect(submitButton).toBeInTheDocument()
 		expect(submitButton).toBeDisabled()
 	})
