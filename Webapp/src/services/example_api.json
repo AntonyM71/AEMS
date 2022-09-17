@@ -1,8 +1,8 @@
 {
-	"schemaFile": "https://petstore3.swagger.io/api/v3/openapi.json",
+	"schemaFile": "../../../Common/openapi.json",
 	"apiFile": "./emptyApi.ts",
 	"apiImport": "emptySplitApi",
-	"outputFile": "./petApi.ts",
-	"exportName": "petApi",
+	"outputFile": "./aemsApi.ts",
+	"exportName": "aemsApi",
 	"hooks": true
 }

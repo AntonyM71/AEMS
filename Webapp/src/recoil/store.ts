@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit"
 import { scoringReducer } from "./atoms/scoring"
 
 export const store = configureStore({
-	reducer: { score: scoringReducer, exampleApi: exampleApi }
+	reducer: { score: scoringReducer, exampleApi }
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

@@ -4,7 +4,7 @@ from fastapi.openapi.utils import get_openapi
 
 from api import app
 
-with open("openapi.json", "w") as f:
+with open("../Common/openapi.json", "w") as f:
     json.dump(
         get_openapi(
             title=app.title,
