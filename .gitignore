@@ -1,2 +1,4 @@
 node_modules
 Server/db/__pycache__
+Server/alembic/__pycache__
+Server/db/__pycache__
