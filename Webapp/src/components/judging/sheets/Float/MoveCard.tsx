@@ -1,16 +1,16 @@
-import Button from "@material-ui/core/Button"
-import Grid from "@material-ui/core/Grid"
-import Paper from "@material-ui/core/Paper"
-import Typography from "@material-ui/core/Typography"
+import Button from "@mui/material/Button"
+import Grid from "@mui/material/Grid"
+import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import React from "react"
-import { useStyles } from "../../../../style/Styles"
+
 import { MovePropsType } from "./Interfaces"
 
 export const MoveCard = React.memo((props: MovePropsType) => {
-	const classes = useStyles()
+
 	if (props.move.direction === "LR") {
 		return (
-			<Paper className={classes.moveBox}>
+			<Paper >
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1} alignItems="stretch">
@@ -48,7 +48,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "FB") {
 		return (
-			<Paper className={classes.moveBox}>
+			<Paper >
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -86,7 +86,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "LRFB") {
 		return (
-			<Paper className={classes.moveBox}>
+			<Paper >
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -124,7 +124,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 		)
 	} else {
 		return (
-			<Paper className={classes.moveBox}>
+			<Paper >
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>

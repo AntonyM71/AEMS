@@ -1,4 +1,4 @@
-import Grid from "@material-ui/core/Grid"
+import Grid from "@mui/material/Grid"
 import { cloneDeep } from "lodash"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { v4 as uuidv4 } from "uuid"

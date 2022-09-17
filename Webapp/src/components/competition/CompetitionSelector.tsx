@@ -1,7 +1,7 @@
-import FormControl from "@material-ui/core/FormControl"
-import InputLabel from "@material-ui/core/InputLabel"
-import MenuItem from "@material-ui/core/MenuItem"
-import Select from "@material-ui/core/Select"
+import FormControl from "@mui/material/FormControl"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
+import Select from "@mui/material/Select"
 import Skeleton from "@material-ui/lab/Skeleton"
 import React, { useEffect, useState } from "react"
 import { useRecoilState, useResetRecoilState } from "recoil"
@@ -34,14 +34,12 @@ export const CompetitionSelector = () => {
 	const resetSelectedEvent = useResetRecoilState(selectedEventState)
 	const resetSelectedHeat = useResetRecoilState(selectedHeatState)
 	const onSelect = (
-		event: React.ChangeEvent<{
-			name?: string | undefined
-			value: unknown
-		}>
+		event: any
 	) => {
 		resetSelectedHeat()
 		resetSelectedEvent()
 		resetSelectedPhase()
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		setSelectedCompetition(event.target.value as string)
 	}
 	if (isLoading) {

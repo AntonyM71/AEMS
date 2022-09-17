@@ -1,7 +1,8 @@
-import FormControl from "@material-ui/core/FormControl"
-import InputLabel from "@material-ui/core/InputLabel"
-import MenuItem from "@material-ui/core/MenuItem"
-import Select from "@material-ui/core/Select"
+import FormControl from "@mui/material/FormControl"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
+import Select from "@mui/material/Select"
+import { SelectChangeEvent } from "@mui/material"
 import React, { Fragment } from "react"
 import { useRecoilState, useRecoilValue } from "recoil"
 import {
@@ -9,6 +10,7 @@ import {
 	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms/competitions"
+import { heatsType } from "../../competitiondata/Competitions"
 
 export const HeatsSelector = () => {
 	const [selectedPhase] = useRecoilState(selectedPhaseState)
@@ -17,10 +19,7 @@ export const HeatsSelector = () => {
 	if (selectedPhase !== "") {
 		if (heatsList) {
 			const onSelect = (
-				event: React.ChangeEvent<{
-					name?: string | undefined
-					value: unknown
-				}>
+				event: SelectChangeEvent<string>
 			) => {
 				const currentHeatDetails = heatsList.find(
 					(heat) => heat.id === event.target.value
@@ -36,7 +35,7 @@ export const HeatsSelector = () => {
 						value={selectedHeat.id}
 						onChange={onSelect}
 						variant="outlined"
-						defaultValue={{ label: "Select Heat", value: "" }}
+						defaultValue={""}
 						fullWidth
 					>
 						<option value="">Select Heat</option>
