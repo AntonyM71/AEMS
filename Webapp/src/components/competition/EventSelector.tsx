@@ -68,8 +68,3 @@ const EventSelector = () => {
 		return <> </>
 	}
 }
-
-export default EventSelector
-function uuid4(): string {
-	throw new Error("Function not implemented.")
-}
