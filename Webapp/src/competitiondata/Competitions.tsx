@@ -177,9 +177,9 @@ const competitions: competitionsType[] = [
 export interface competitionsListType {
 	id: string
 	name?: string
-	venue: string
-	startDate: string
-	endDate: string
+	venue?: string
+	startDate?: string
+	endDate?: string
 }
 export interface competitionsType {
 	id: string

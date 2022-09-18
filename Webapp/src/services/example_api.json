@@ -1,0 +1,8 @@
+{
+	"schemaFile": "../../../Common/openapi.json",
+	"apiFile": "./emptyApi.ts",
+	"apiImport": "emptySplitApi",
+	"outputFile": "./aemsApi.ts",
+	"exportName": "aemsApi",
+	"hooks": true
+}

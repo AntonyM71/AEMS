@@ -1,17 +1,16 @@
 module.exports = {
 	env: {
-        "browser": true,
-        "es2021": true,
-        "node": true
+		browser: true,
+		es2021: true,
+		node: true
 	},
-	"ignorePatterns": ["src/components/formSpecs/typescript/**"],
+	ignorePatterns: ["src/components/formSpecs/typescript/**"],
 	extends: [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"plugin:jest-dom/recommended",
 		"plugin:testing-library/react"
-
 	],
 	plugins: [
 		"@typescript-eslint",
@@ -23,14 +22,14 @@ module.exports = {
 	],
 	overrides: [
 		{
-		files: ['*.ts', '*.tsx'], // Your TypeScript files extension
-		parserOptions: {
-			project: ['./tsconfig.json'], // Specify it only for TypeScript files
-		},
+			files: ["*.ts", "*.tsx"], // Your TypeScript files extension
+			parserOptions: {
+				project: ["./tsconfig.json"] // Specify it only for TypeScript files
+			}
 		}
 	],
 	rules: {
-		    "jest-dom/prefer-checked": "error",
+		"jest-dom/prefer-checked": "error",
 		"jest-dom/prefer-enabled-disabled": "error",
 		"jest-dom/prefer-required": "error",
 		"jest-dom/prefer-to-have-attribute": "error",
@@ -193,6 +192,18 @@ module.exports = {
 		"spaced-comment": "error",
 		"use-isnan": "error",
 		"valid-typeof": "error",
+		"no-restricted-imports": [
+			"error",
+			{
+				name: "@mui/material",
+				message:
+					"Importing from @mui/material is slow, please import from the module i.e. `@mui/material/grid` instead"
+			},
+			{
+				name: "underscore",
+				message: "Please use lodash instead."
+			}
+		],
 		"@typescript-eslint/tslint/config": [
 			"error",
 			{

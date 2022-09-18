@@ -1,8 +1,9 @@
-import FormControl from "@material-ui/core/FormControl"
-import InputLabel from "@material-ui/core/InputLabel"
-import MenuItem from "@material-ui/core/MenuItem"
-import Select from "@material-ui/core/Select"
-import React, { Fragment } from "react"
+import FormControl from "@mui/material/FormControl"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
+
+import { Fragment } from "react"
 import {
 	useRecoilState,
 	useRecoilValue,
@@ -11,11 +12,11 @@ import {
 } from "recoil"
 import { competitionsType, phaseType } from "../../competitiondata/Competitions"
 import {
+	heatsListState,
 	selectedCompetitionState,
 	selectedEventState,
-	selectedPhaseState,
-	heatsListState,
-	selectedHeatState
+	selectedHeatState,
+	selectedPhaseState
 } from "../../recoil/atoms/competitions"
 
 interface propsType {
@@ -35,14 +36,9 @@ const PhaseSelector = ({ competitions }: propsType) => {
 			const eventObject = competitionObject.events.filter(
 				(e) => e.id === selectedEvent
 			)[0]
-			const onSelect = (
-				event: React.ChangeEvent<{
-					name?: string | undefined
-					value: unknown
-				}>
-			) => {
+			const onSelect = (event: SelectChangeEvent) => {
 				resetSelectedHeat()
-				setSelectedPhase(event.target.value as string)
+				setSelectedPhase(event.target.value)
 				setHeatsList(
 					eventObject.phases.filter(
 						(p: phaseType) => p.id === event.target.value

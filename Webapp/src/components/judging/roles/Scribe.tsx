@@ -1,5 +1,5 @@
-import { Grid, Paper } from "@material-ui/core"
-import React from "react"
+import Grid from "@mui/material/Grid"
+import Paper from "@mui/material/Paper"
 import { Redirect } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
@@ -14,7 +14,7 @@ import {
 	selectedHeatState,
 	selectedPhaseState
 } from "../../../recoil/atoms/competitions"
-import { useStyles } from "../../../style/Styles"
+
 import { SelectorDisplay } from "../Judging"
 import Float from "../sheets/Float/Float"
 import Squirt from "../sheets/Squirt/Squirt"
@@ -25,7 +25,6 @@ import Squirt from "../sheets/Squirt/Squirt"
 
 // eslint-disable-next-line complexity
 const Scribe = () => {
-	const classes = useStyles()
 	const competitions = getCompetitions()
 	const [competition] = useRecoilState(selectedCompetitionState)
 	const [event] = useRecoilState(selectedEventState)
@@ -48,14 +47,9 @@ const Scribe = () => {
 				const phaseObject = getPhaseObject(eventObject)
 				if (phaseObject) {
 					return (
-						<Grid
-							container
-							spacing={2}
-							className={classes.main}
-							alignContent="stretch"
-						>
+						<Grid container spacing={2} alignContent="stretch">
 							<Grid item xs={12}>
-								<Paper className={classes.headerPaper}>
+								<Paper>
 									<SelectorDisplay />
 								</Paper>
 							</Grid>

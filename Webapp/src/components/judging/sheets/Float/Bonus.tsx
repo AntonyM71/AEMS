@@ -1,15 +1,12 @@
-import Button from "@material-ui/core/Button"
-import Paper from "@material-ui/core/Paper"
-import Typography from "@material-ui/core/Typography"
+import Button from "@mui/material/Button"
+import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import React from "react"
-import { useStyles } from "../../../../style/Styles"
+
 import { BonusPropsType } from "./Interfaces"
 
-export const Bonus = (props: BonusPropsType) => {
-	const classes = useStyles()
-
-	return (
-		<Paper className={classes.moveBox}>
+export const Bonus = (props: BonusPropsType) => (
+		<Paper >
 			<Typography>{props.bonus.name}</Typography>
 			<Button
 				variant="contained"
@@ -25,4 +22,3 @@ export const Bonus = (props: BonusPropsType) => {
 			</Button>
 		</Paper>
 	)
-}

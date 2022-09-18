@@ -1,13 +1,13 @@
-import AppBar from "@material-ui/core/AppBar"
-import Box from "@material-ui/core/Box/Box"
-import IconButton from "@material-ui/core/IconButton"
-import Link from "@material-ui/core/Link"
-import List from "@material-ui/core/List"
-import ListItem from "@material-ui/core/ListItem"
-import ListItemText from "@material-ui/core/ListItemText"
-import Toolbar from "@material-ui/core/Toolbar"
-import Typography from "@material-ui/core/Typography"
-import Brightness4Icon from "@material-ui/icons/Brightness4"
+import AppBar from "@mui/material/AppBar"
+import Box from "@mui/material/Box/Box"
+import IconButton from "@mui/material/IconButton"
+import Link from "@mui/material/Link"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemText from "@mui/material/ListItemText"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import Brightness4Icon from "@mui/icons-material/Brightness4"
 import React from "react"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState, useRecoilValue } from "recoil"
@@ -15,28 +15,29 @@ import conf from "../../config"
 import darkLogo from "../../images/THFLogoBlackOrange.png"
 import lightLogo from "../../images/THFLogoWhiteOrange.png"
 import { preferDarkState } from "../../recoil/atoms/utilities"
-import { useStyles } from "../../style/Styles"
+
 import { routes } from "../routes/Router"
 import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = conf.get("env")
 	const preferDark = useRecoilValue(preferDarkState)
-	const classes = useStyles()
+
 
 	return (
 		<AppBar position="sticky" color="default" elevation={0}>
-			<Toolbar variant="dense" className={classes.header}>
-				<Box display="flex" flexGrow={1} className={classes.header}>
+			<Toolbar variant="dense" >
+				<Box display="flex" flexGrow={1} >
 					<img
 						src={preferDark ? lightLogo : darkLogo}
 						alt="Hurley Foundation Events Logo"
 						style={{ height: "40px" }}
 					></img>
 
-					<List component="nav" className={classes.headerList}>
+					<List component="nav"
+				>
 						<ListItem
 							component="div"
-							className={classes.headerList}
+
 						>
 							<ListItemText inset>
 								<Typography color="textPrimary" variant="body1">

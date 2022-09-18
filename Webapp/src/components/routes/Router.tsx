@@ -3,7 +3,6 @@ import { registerRejectedPromise } from "../../topLevelErrorHandler"
 import { DevRouterPage } from "../dev/DevRouter"
 import Judging from "../judging/Judging"
 import Scribe from "../judging/roles/Scribe"
-import Login from "../login/Login"
 import Score from "../score/Score"
 import Upload from "../upload/Upload"
 
@@ -35,7 +34,6 @@ const Router = () => {
 		<Switch>
 			<Route path={routes.dev.root} component={DevRouterPage} />
 			<Route path={routes.judging.root} component={Judging} />
-			<Route path={routes.login.root} component={Login} />
 			<Route path={routes.upload.root} component={Upload} />
 			<Route exact path={routes.scribe.root} component={Scribe} />
 			<Route path={routes.score.root} component={Score} />

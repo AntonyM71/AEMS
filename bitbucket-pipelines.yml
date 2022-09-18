@@ -36,3 +36,4 @@ pipelines:
             - cd Webapp
             - npm install
             - npm test
+            - npm run lint

@@ -1,16 +1,23 @@
-import uuid
-
-from sqlalchemy import Column, DateTime, String, func
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_utils.types import uuid as SQLAUUID
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
 
-class Bug(Base):
-    __tablename__ = 'bug'
-    id = Column(SQLAUUID.uuid, primary_key=True, default=uuid.uuid4())
-    bug_tracker_url = Column(String, unique=True)
-    root_cause = Column(String)
-    who = Column(String)
-    when = Column(DateTime, default=func.now())
+class Parent(Base):
+    __tablename__ = "parent_o2o"
+    id = Column(Integer, primary_key=True, comment="test-test-test")
+    name = Column(String, default="ok", unique=True)
+    children = relationship("Child", back_populates="parent")
+
+
+class Child(Base):
+    __tablename__ = "child_o2o"
+    id = Column(Integer, primary_key=True, comment="child_pk_test")
+    parent_id = Column(
+        Integer,
+        ForeignKey("parent_o2o.id"),
+        info=({"description": "child_parent_id_test"}),
+    )
+    parent = relationship("Parent", back_populates="children")

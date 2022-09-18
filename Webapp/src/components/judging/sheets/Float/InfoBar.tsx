@@ -1,8 +1,8 @@
-import Button from "@material-ui/core/Button"
-import Grid from "@material-ui/core/Grid/Grid"
-import IconButton from "@material-ui/core/IconButton"
-import Paper from "@material-ui/core/Paper/Paper"
-import { ChevronLeft, ChevronRight } from "@material-ui/icons"
+import Button from "@mui/material/Button"
+import Grid from "@mui/material/Grid/Grid"
+import IconButton from "@mui/material/IconButton"
+import Paper from "@mui/material/Paper/Paper"
+import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { useEffect } from "react"
 import {
 	useRecoilState,
@@ -23,7 +23,7 @@ import {
 	currentScore,
 	numberOfPaddlersInHeat
 } from "../../../../recoil/Selectors"
-import { useStyles } from "../../../../style/Styles"
+
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -37,7 +37,6 @@ interface propsType {
 	addScoredBonus: addScoredBonusType
 }
 export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
-	const classes = useStyles()
 
 	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
 	useEffect(() => {
@@ -94,7 +93,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 		<div style={{ height: "100%" }}>
 			<Grid container spacing={2} alignItems="stretch">
 				<Grid item xs={2}>
-					<Paper className={classes.moveBox}>
+					<Paper >
 						<h4>Run Score </h4>
 						<div className="score" id="runScore">
 							{useRecoilValue(currentScore)}
@@ -102,7 +101,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
-					<Paper className={classes.moveBox}>
+					<Paper >
 						<h4 data-testid="display-bib-number">
 							Paddler No: {paddlerInfo.Bib}
 						</h4>
@@ -145,7 +144,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					</Paper>
 				</Grid>
 				<Grid item xs={4}>
-					<Paper className={classes.moveBox}>
+					<Paper >
 						<h4>Run</h4>
 						<div
 							className="score"

@@ -1,5 +1,7 @@
-import { Button, Grid, Link, Paper } from "@material-ui/core"
-import React from "react"
+import Button from "@mui/material/Button"
+import Grid from "@mui/material/Grid"
+import Link from "@mui/material/Link"
+import Paper from "@mui/material/Paper"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
@@ -8,7 +10,7 @@ import {
 	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms/competitions"
-import { useStyles } from "../../style/Styles"
+
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
@@ -21,7 +23,6 @@ import { HeatsSelector } from "../competition/HeatSelector"
 // )
 const Judging = () => {
 	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
-	const classes = useStyles()
 
 	const [selectedCompetition] = useRecoilState(selectedCompetitionState)
 	const [selectedEvent] = useRecoilState(selectedEventState)
@@ -37,7 +38,7 @@ const Judging = () => {
 		if (competition) {
 			if (event) {
 				return (
-					<Paper className={classes.marginPaper}>
+					<Paper>
 						<Grid container spacing={2} alignItems={"stretch"}>
 							<Grid item xs={12}>
 								<h1>Scribes</h1>
@@ -83,7 +84,7 @@ const Judging = () => {
 	}
 
 	return (
-		<Paper className={classes.marginPaper}>
+		<Paper>
 			<h1>No Competition Selected</h1>
 
 			<p>Please select a competition and event to get started</p>

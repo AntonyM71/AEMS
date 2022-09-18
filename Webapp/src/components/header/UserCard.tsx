@@ -1,6 +1,7 @@
-import { Avatar, Button, Grid } from "@material-ui/core"
-import Link from "@material-ui/core/Link"
-import React from "react"
+import Avatar from "@mui/material/Avatar"
+import Button from "@mui/material/Button"
+import Grid from "@mui/material/Grid"
+import Link from "@mui/material/Link"
 import { Link as RouterLink } from "react-router-dom"
 import { useRecoilValue, useResetRecoilState } from "recoil"
 import {
@@ -10,12 +11,9 @@ import {
 	currentUserInitials,
 	refreshToken
 } from "../../recoil/atoms/auth"
-import { useStyles } from "../../style/Styles"
 import { routes } from "../routes/Router"
 
 export const UserCard = () => {
-	const classes = useStyles()
-
 	const userInitials = useRecoilValue(currentUserInitials)
 
 	const currentUserName = useRecoilValue(currentUser)
@@ -43,8 +41,8 @@ export const UserCard = () => {
 				alignItems="baseline"
 				spacing={0}
 			>
-				<Grid item xs={2} className={classes.header}>
-					<Avatar className={classes.avatar}>?</Avatar>
+				<Grid item xs={2}>
+					<Avatar>?</Avatar>
 				</Grid>
 				<Grid item xs={5}>
 					<Link
@@ -65,18 +63,15 @@ export const UserCard = () => {
 			direction="row"
 			justifyContent="flex-end"
 			alignItems="baseline"
-			className={classes.header}
 		>
-			<Grid item xs={2} className={classes.header}>
-				<Avatar className={classes.avatar} style={{ marginTop: "0px" }}>
-					{userInitials}
-				</Avatar>
+			<Grid item xs={2}>
+				<Avatar style={{ marginTop: "0px" }}>{userInitials}</Avatar>
 			</Grid>
 			<Grid item xs={3} alignItems="center">
 				<h4 style={{ marginTop: "0px" }}>{currentUserName}</h4>
 			</Grid>
 			<Grid item xs={2}>
-				<Button onClick={handleLogout} className={classes.header}>
+				<Button onClick={handleLogout}>
 					<h4>Log Out</h4>
 				</Button>
 			</Grid>
