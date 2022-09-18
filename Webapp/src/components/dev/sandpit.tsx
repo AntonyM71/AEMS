@@ -1,6 +1,6 @@
 import { Button, Paper } from "@mui/material"
 import { IChangeEvent, withTheme } from "@rjsf/core"
-import { Theme as MaterialUITheme } from "@rjsf/material-ui"
+import { Theme as MaterialUITheme } from "@rjsf/mui"
 import { JSONSchema7 } from "json-schema"
 import { toast } from "react-hot-toast"
 import { handleErrors } from "../../topLevelErrorHandler"
@@ -9,7 +9,6 @@ import devSchema from "../formSpecs/jsonschemas/test.json"
 import { ExampleJsonSchemaForm } from "../formSpecs/typescript/test"
 
 export const SandpitPage = () => {
-
 	const Form = withTheme(MaterialUITheme)
 	const handleFormSubmit = ({
 		formData
@@ -19,7 +18,7 @@ export const SandpitPage = () => {
 
 	return (
 		<div>
-			<Paper >
+			<Paper>
 				<Button
 					fullWidth
 					variant="outlined"
@@ -52,13 +51,13 @@ export const SandpitPage = () => {
 					{"Mock Rejected Promise "}
 				</Button>
 			</Paper>
-			<Paper >
+			<Paper>
 				<Form
 					schema={devSchema as JSONSchema7}
 					onSubmit={handleFormSubmit}
 				></Form>
 			</Paper>
-			<Paper >
+			<Paper>
 				<Form
 					schema={extendedDevSchema}
 					onSubmit={handleFormSubmit}

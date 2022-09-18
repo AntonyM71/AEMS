@@ -1,19 +1,18 @@
+import { SelectChangeEvent } from "@mui/material"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
-import Skeleton from "@material-ui/lab/Skeleton"
-import { SelectChangeEvent } from "@mui/material"
-import React, { Fragment, useEffect, useState } from "react"
+import Skeleton from "@mui/material/Skeleton"
+import { Fragment, useEffect, useState } from "react"
 import { useRecoilState, useRecoilValue, useResetRecoilState } from "recoil"
-import { competitionsType, eventType } from "../../competitiondata/Competitions"
+import { eventType, getCompetitions } from "../../competitiondata/Competitions"
 import {
 	selectedCompetitionState,
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms/competitions"
-import { getWithAuth } from "../../services/api"
 
 const EventSelector = () => {
 	const selectedCompetition = useRecoilValue(selectedCompetitionState)
@@ -23,27 +22,27 @@ const EventSelector = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [events, setEvents] = useState<eventType[]>([])
 	useEffect(() => {
-		const getComps = async () => {
-			const competitionInfo: competitionsType = (
-				await getWithAuth("competitions/" + selectedCompetition)
-			).data
-			setEvents(competitionInfo.events)
+		const getComps = () => {
+			const comps = getCompetitions()
+			const selectedCompetitionData = comps.find(
+				(c) => c.id === selectedCompetition
+			)
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			setEvents(selectedCompetitionData!.events)
 		}
 
 		void getComps()
 		setIsLoading(false)
 	}, [selectedCompetition])
 
-	const onSelect = (
-		event: SelectChangeEvent<string>
-	) => {
+	const onSelect = (event: SelectChangeEvent<string>) => {
 		resetSelectedHeat()
 		resetSelectedPhase()
 		setSelectedEvent(event.target.value)
 	}
 
 	if (isLoading) {
-		return <Skeleton variant="rect" />
+		return <Skeleton variant="rectangular" />
 	}
 	if (selectedCompetition !== "") {
 		if (events) {
@@ -72,3 +71,6 @@ const EventSelector = () => {
 }
 
 export default EventSelector
+function uuid4(): string {
+	throw new Error("Function not implemented.")
+}

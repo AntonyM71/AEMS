@@ -2,25 +2,28 @@ import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
-import Skeleton from "@material-ui/lab/Skeleton"
-import React, { useEffect, useState } from "react"
+import Skeleton from "@mui/material/Skeleton"
+import { useEffect, useState } from "react"
 import { useRecoilState, useResetRecoilState } from "recoil"
-import { competitionsListType } from "../../competitiondata/Competitions"
+import {
+	competitionsListType,
+	getCompetitions
+} from "../../competitiondata/Competitions"
 import {
 	selectedCompetitionState,
 	selectedEventState,
 	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms/competitions"
-import { getWithAuth } from "../../services/api"
 
 export const CompetitionSelector = () => {
 	// const competitions = getCompetitions()
 	const [competitions, setCompetitions] = useState<competitionsListType[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	useEffect(() => {
-		const getComps = async () => {
-			setCompetitions((await getWithAuth("competitions")).data)
+		const getComps = () => {
+			const comps = getCompetitions()
+			setCompetitions(comps)
 		}
 
 		void getComps()
@@ -33,9 +36,7 @@ export const CompetitionSelector = () => {
 	const resetSelectedPhase = useResetRecoilState(selectedPhaseState)
 	const resetSelectedEvent = useResetRecoilState(selectedEventState)
 	const resetSelectedHeat = useResetRecoilState(selectedHeatState)
-	const onSelect = (
-		event: any
-	) => {
+	const onSelect = (event: any) => {
 		resetSelectedHeat()
 		resetSelectedEvent()
 		resetSelectedPhase()
@@ -43,7 +44,7 @@ export const CompetitionSelector = () => {
 		setSelectedCompetition(event.target.value as string)
 	}
 	if (isLoading) {
-		return <Skeleton variant="rect" />
+		return <Skeleton variant="rectangular" />
 	} else {
 		return (
 			<FormControl fullWidth={true}>
