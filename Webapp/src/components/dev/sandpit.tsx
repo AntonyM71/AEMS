@@ -1,4 +1,5 @@
-import { Button, Paper } from "@mui/material"
+import Button from "@mui/material/Button"
+import Paper from "@mui/material/Paper"
 import { IChangeEvent, withTheme } from "@rjsf/core"
 import { Theme as MaterialUITheme } from "@rjsf/mui"
 import { JSONSchema7 } from "json-schema"

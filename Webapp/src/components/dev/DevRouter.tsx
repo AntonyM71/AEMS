@@ -1,7 +1,7 @@
-import { Button, Grid } from "@mui/material"
+import Button from "@mui/material/Button"
+import Grid from "@mui/material/Grid"
 import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
-import React from "react"
 import {
 	Link as RouterLink,
 	Route,
@@ -13,19 +13,19 @@ import { SandpitPage } from "./sandpit"
 import Style from "./Style"
 
 export const DevRouterPage = () => (
-		<Grid container alignItems="stretch">
-			<Grid item xs={2}>
-				<Paper >
-					<DevLinks />
-				</Paper>
-			</Grid>
-			<Grid item xs={10}>
-				<Paper >
-					<DevRouter />
-				</Paper>
-			</Grid>
+	<Grid container alignItems="stretch">
+		<Grid item xs={2}>
+			<Paper>
+				<DevLinks />
+			</Paper>
 		</Grid>
-	)
+		<Grid item xs={10}>
+			<Paper>
+				<DevRouter />
+			</Paper>
+		</Grid>
+	</Grid>
+)
 const DevRouter = () => {
 	const { path } = useRouteMatch()
 

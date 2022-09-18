@@ -1,5 +1,5 @@
-import { Grid, Paper } from "@mui/material"
-import React from "react"
+import Grid from "@mui/material/Grid"
+import Paper from "@mui/material/Paper"
 import { Redirect } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import {
@@ -25,7 +25,6 @@ import Squirt from "../sheets/Squirt/Squirt"
 
 // eslint-disable-next-line complexity
 const Scribe = () => {
-
 	const competitions = getCompetitions()
 	const [competition] = useRecoilState(selectedCompetitionState)
 	const [event] = useRecoilState(selectedEventState)
@@ -48,14 +47,9 @@ const Scribe = () => {
 				const phaseObject = getPhaseObject(eventObject)
 				if (phaseObject) {
 					return (
-						<Grid
-							container
-							spacing={2}
-
-							alignContent="stretch"
-						>
+						<Grid container spacing={2} alignContent="stretch">
 							<Grid item xs={12}>
-								<Paper >
+								<Paper>
 									<SelectorDisplay />
 								</Paper>
 							</Grid>

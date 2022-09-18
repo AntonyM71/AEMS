@@ -1,6 +1,7 @@
-import { CssBaseline, useMediaQuery } from "@mui/material"
 import { cyan, orange, red } from "@mui/material/colors"
+import CssBaseline from "@mui/material/CssBaseline"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
+import useMediaQuery from "@mui/material/useMediaQuery"
 import { useLayoutEffect, useMemo } from "react"
 import { useRecoilState } from "recoil"
 import { preferDarkState } from "../recoil/atoms/utilities"

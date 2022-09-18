@@ -1,16 +1,15 @@
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
-import Select from "@mui/material/Select"
-import { SelectChangeEvent } from "@mui/material"
-import React, { Fragment } from "react"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
+
+import { Fragment } from "react"
 import { useRecoilState, useRecoilValue } from "recoil"
 import {
 	heatsListState,
 	selectedHeatState,
 	selectedPhaseState
 } from "../../recoil/atoms/competitions"
-import { heatsType } from "../../competitiondata/Competitions"
 
 export const HeatsSelector = () => {
 	const [selectedPhase] = useRecoilState(selectedPhaseState)
@@ -18,9 +17,7 @@ export const HeatsSelector = () => {
 	const heatsList = useRecoilValue(heatsListState)
 	if (selectedPhase !== "") {
 		if (heatsList) {
-			const onSelect = (
-				event: SelectChangeEvent<string>
-			) => {
+			const onSelect = (event: SelectChangeEvent<string>) => {
 				const currentHeatDetails = heatsList.find(
 					(heat) => heat.id === event.target.value
 				)
