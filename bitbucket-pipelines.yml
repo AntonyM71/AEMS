@@ -10,19 +10,20 @@
 image: node:16
 
 pipelines:
-  default:
-    - step:
-        runs-on:
-          - self.hosted
-          - linux.shell
-        name: Build and Test
-        caches:
-          - node
-        script:
-          - cd Webapp
-          - npm install
-          - npm test
-          - npm run lint
+  pull-requests:
+    "**":
+      - step:
+          runs-on:
+            - self.hosted
+            - linux.shell
+          name: Build and Test
+          caches:
+            - node
+          script:
+            - cd Webapp
+            - npm install
+            - npm test
+            - npm run lint
   branches:
     master:
       - step:
