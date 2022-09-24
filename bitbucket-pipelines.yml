@@ -11,7 +11,7 @@ image: node:16
 
 pipelines:
   pull-requests:
-    master:
+    "**":
       - step:
           runs-on:
             - self.hosted
