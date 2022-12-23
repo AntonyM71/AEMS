@@ -1,29 +1,18 @@
+import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid/Grid"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper/Paper"
-import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { useEffect } from "react"
-import {
-	useRecoilState,
-	useRecoilValue,
-	useResetRecoilState,
-	useSetRecoilState
-} from "recoil"
 import { v4 as uuidv4 } from "uuid"
-import { numberOfRunsInHeatState } from "../../../../recoil/atoms/competitions"
 import {
-	currentMoveState,
-	scoredMovesState,
-	selectedPaddlerState,
-	selectedRunState
+	getScoredMoves,
+	updateCurrentMove,
+	updateScoredMoves
 } from "../../../../recoil/atoms/scoring"
-import {
-	currentPaddlerInfo,
-	currentScore,
-	numberOfPaddlersInHeat
-} from "../../../../recoil/Selectors"
 
+import { useDispatch, useSelector } from "react-redux"
+import { getNumberOfPaddlersInCurrentHeat } from "../../../../recoil/atoms/competitions"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -37,7 +26,7 @@ interface propsType {
 	addScoredBonus: addScoredBonusType
 }
 export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
-
+	const dispatch = useDispatch()
 	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
 	useEffect(() => {
 		fetchedMoves = fetchedScoredMoves()
@@ -45,16 +34,15 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 
 	const fetchedScoredMoves = () => []
 
-	const [currentPaddler, setCurrentPaddler] =
-		useRecoilState(selectedPaddlerState)
-	const numberOfPaddlers = useRecoilValue(numberOfPaddlersInHeat)
-	const [currentRun, setCurrentRun] = useRecoilState(selectedRunState)
-	const numberOfRuns = useRecoilValue(numberOfRunsInHeatState)
+	const currentPaddler = useSelector(getCurrentPaddler)
+	const numberOfPaddlers = useSelector(getNumberOfPaddlersInCurrentHeat)
+	const currentRun = useSelector(currentRun)
+	const numberOfRuns = useSelector(getNumberOfRunsInHeat)
 
-	const paddlerInfo = useRecoilValue(currentPaddlerInfo)
-	const [scoredMoves, setScoredMoves] = useRecoilState(scoredMovesState)
-	const ressetScoredMoves = useResetRecoilState(scoredMovesState)
-	const setCurrentMove = useSetRecoilState(currentMoveState)
+	const paddlerInfo = useSelector(getCurrentPaddlerInfo)
+	const scoredMoves = useSelector(getScoredMoves)
+	const ressetScoredMoves = dispatch(updateScoredMoves([]))
+	const setCurrentMove = dispatch(updateCurrentMove)
 
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
@@ -93,7 +81,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 		<div style={{ height: "100%" }}>
 			<Grid container spacing={2} alignItems="stretch">
 				<Grid item xs={2}>
-					<Paper >
+					<Paper>
 						<h4>Run Score </h4>
 						<div className="score" id="runScore">
 							{useRecoilValue(currentScore)}
@@ -101,7 +89,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
-					<Paper >
+					<Paper>
 						<h4 data-testid="display-bib-number">
 							Paddler No: {paddlerInfo.Bib}
 						</h4>
@@ -144,7 +132,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					</Paper>
 				</Grid>
 				<Grid item xs={4}>
-					<Paper >
+					<Paper>
 						<h4>Run</h4>
 						<div
 							className="score"
