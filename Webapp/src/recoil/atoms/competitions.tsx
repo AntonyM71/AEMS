@@ -1,30 +1,68 @@
-import { atom } from "recoil"
+import { createAction, createReducer } from "@reduxjs/toolkit"
 import { heatsType } from "../../competitiondata/Competitions"
-import { testHeat } from "../../components/judging/sheets/Float/tests/TestData"
-import { isTest } from "./scoring"
+import { RootState } from "../store"
 
-export const selectedCompetitionState = atom({
-	key: "selectedCompetition", // unique ID (with respect to other atoms/selectors)
-	default: "" as string // default value (aka initial value)
+interface competitionsStateType {
+	heatsList: heatsType[]
+	selectedPhase: string
+	selectedHeat: string
+	numberOfRuns: number
+	selectedEvent: string
+	selectedCompetition: string
+}
+
+const initialState: competitionsStateType = {
+	heatsList: [],
+	selectedPhase: "",
+	selectedHeat: "",
+	numberOfRuns: 3,
+	selectedEvent: "",
+	selectedCompetition: ""
+}
+export const updateSelectedEvent = createAction<string>("updateSelectedEvent")
+export const updateHeatsList = createAction<heatsType[]>("updateHeatsList")
+export const updateSelectedHeat = createAction<string>("updateSelectedHeat")
+export const updateSelectedPhase = createAction<string>("updateSelectedPhase")
+export const updateSelectedCompetition = createAction<string>(
+	"updateSelectedCompetition"
+)
+export const competitionsReducer = createReducer(initialState, (builder) => {
+	builder.addCase(updateHeatsList, (state, action) => {
+		state.heatsList = action.payload
+	})
+	builder.addCase(updateSelectedHeat, (state, action) => {
+		state.selectedHeat = action.payload
+	})
+	builder.addCase(updateSelectedEvent, (state, action) => {
+		state.selectedEvent = action.payload
+	})
+	builder.addCase(updateSelectedPhase, (state, action) => {
+		state.selectedPhase = action.payload
+	})
+	builder.addCase(updateSelectedCompetition, (state, action) => {
+		state.selectedCompetition = action.payload
+	})
 })
 
-export const selectedEventState = atom({
-	key: "selectedEvent", // unique ID (with respect to other atoms/selectors)
-	default: "" as string // default value (aka initial value)
-})
-export const numberOfRunsInHeatState = atom({
-	key: "numberOfRuns", // unique ID (with respect to other atoms/selectors)
-	default: 3 as number // default value (aka initial value)
-})
-export const selectedHeatState = atom({
-	key: "selectedHeat", // unique ID (with respect to other atoms/selectors)
-	default: isTest ? testHeat : ({} as heatsType) // default value (aka initial value)
-})
-export const heatsListState = atom({
-	key: "heatsList", // unique ID (with respect to other atoms/selectors)
-	default: [] as heatsType[] // default value (aka initial value)
-})
-export const selectedPhaseState = atom({
-	key: "selectedPhase", // unique ID (with respect to other atoms/selectors)
-	default: "" as string // default value (aka initial value)
-})
+export const getHeatsList = (state: RootState) => state.competitions.heatsList
+export const getSelectedHeat = (state: RootState) =>
+	state.competitions.selectedHeat
+export const getSelectedEvent = (state: RootState) =>
+	state.competitions.selectedEvent
+export const getSelectedPhase = (state: RootState) =>
+	state.competitions.selectedPhase
+export const getSelectedCompetition = (state: RootState): string =>
+	state.competitions.selectedCompetition
+export const getCurrentHeatInfo = (state: RootState) =>
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	state.competitions.heatsList.find(
+		(h) => h.id === state.competitions.selectedHeat
+	)!
+export const getNumberOfPaddlersInCurrentHeat = (state: RootState) => {
+	const currentHeat = getCurrentHeatInfo(state)
+
+	return currentHeat.athletes.length
+}
+
+export const getNumberOfRunsInCurrentHeat = (state: RootState) =>
+	state.competitions.numberOfRuns

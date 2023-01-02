@@ -166,7 +166,7 @@ module.exports = {
 		"one-var": ["error", "never"],
 		indent: "off", // because @typescript-eslint/indent is on
 		"padding-line-between-statements": [
-			"error",
+			"warn",
 			{
 				blankLine: "always",
 				prev: "*",

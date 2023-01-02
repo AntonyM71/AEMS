@@ -1,12 +1,7 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
-import React from "react"
+import { fireEvent, screen, within } from "@testing-library/react"
 import { BrowserRouter } from "react-router-dom"
-import { RecoilRoot } from "recoil"
-import {
-	selectedPaddlerState,
-	selectedRunState
-} from "../../../../../recoil/atoms/scoring"
-import { RecoilObserver } from "../../../../../RecoilObserver"
+import { renderWithProviders } from "../../../../../testUtils"
+
 import { calculateNewIndex, InfoBar } from "../InfoBar"
 
 test.each([
@@ -23,19 +18,13 @@ const mockAddScoredBonus = jest.fn
 describe("The currentPaddler state should change when the user clicks the paddler navigation buttons", () => {
 	it("updates the state and display upwards when  `Next Paddler` button is clicked", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedPaddlerState}
-						onChange={onChange}
-					/>
-					<InfoBar
-						addScoredBonus={mockAddScoredBonus}
-						addScoredMove={mockAddscoredMove}
-					/>
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<InfoBar
+					addScoredBonus={mockAddScoredBonus}
+					addScoredMove={mockAddscoredMove}
+				/>
+			</BrowserRouter>
 		)
 
 		const component = screen.getByTestId("button-next-paddler")
@@ -59,19 +48,13 @@ describe("The currentPaddler state should change when the user clicks the paddle
 	})
 	it("updates the state and display upwards when `Previous Paddler` button is clicked", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedPaddlerState}
-						onChange={onChange}
-					/>
-					<InfoBar
-						addScoredBonus={mockAddScoredBonus}
-						addScoredMove={mockAddscoredMove}
-					/>
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<InfoBar
+					addScoredBonus={mockAddScoredBonus}
+					addScoredMove={mockAddscoredMove}
+				/>
+			</BrowserRouter>
 		)
 
 		const component = screen.getByTestId("button-prev-paddler")
@@ -112,19 +95,14 @@ describe("The currentRun state should change when the user clicks the run naviga
 	// Based on the default of 3 runs per paddler, for other events we can change this and test that seperately.
 	it("updates the state and display upwards when  `Next Run` button is clicked", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedRunState}
-						onChange={onChange}
-					/>
-					<InfoBar
-						addScoredBonus={mockAddScoredBonus}
-						addScoredMove={mockAddscoredMove}
-					/>
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<InfoBar
+					addScoredBonus={mockAddScoredBonus}
+					addScoredMove={mockAddscoredMove}
+				/>
+			</BrowserRouter>,
+			{}
 		)
 
 		const component = screen.getByTestId("button-next-run")
@@ -150,19 +128,14 @@ describe("The currentRun state should change when the user clicks the run naviga
 	})
 	it("updates the state and display upwards when `Previous Run` button is clicked", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={selectedRunState}
-						onChange={onChange}
-					/>
-					<InfoBar
-						addScoredBonus={mockAddScoredBonus}
-						addScoredMove={mockAddscoredMove}
-					/>
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<InfoBar
+					addScoredBonus={mockAddScoredBonus}
+					addScoredMove={mockAddscoredMove}
+				/>
+			</BrowserRouter>,
+			{}
 		)
 
 		const component = screen.getByTestId("button-prev-run")

@@ -1,5 +1,6 @@
+import Brightness4Icon from "@mui/icons-material/Brightness4"
 import AppBar from "@mui/material/AppBar"
-import Box from "@mui/material/Box/Box"
+import Box from "@mui/material/Box"
 import IconButton from "@mui/material/IconButton"
 import Link from "@mui/material/Link"
 import List from "@mui/material/List"
@@ -7,38 +8,30 @@ import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
-import Brightness4Icon from "@mui/icons-material/Brightness4"
-import React from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { Link as RouterLink } from "react-router-dom"
-import { useRecoilState, useRecoilValue } from "recoil"
-import conf from "../../config"
 import darkLogo from "../../images/THFLogoBlackOrange.png"
 import lightLogo from "../../images/THFLogoWhiteOrange.png"
-import { preferDarkState } from "../../recoil/atoms/utilities"
-
+import { getPreferDark, updatePreferDark } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
 import { UserCard } from "./UserCard"
 const Header = () => {
-	const env = conf.get("env")
-	const preferDark = useRecoilValue(preferDarkState)
-
+	const env = "development"
+	const dispatch = useDispatch()
+	const preferDark = useSelector(getPreferDark)
 
 	return (
 		<AppBar position="sticky" color="default" elevation={0}>
-			<Toolbar variant="dense" >
-				<Box display="flex" flexGrow={1} >
+			<Toolbar variant="dense">
+				<Box display="flex" flexGrow={1}>
 					<img
 						src={preferDark ? lightLogo : darkLogo}
 						alt="Hurley Foundation Events Logo"
 						style={{ height: "40px" }}
 					></img>
 
-					<List component="nav"
-				>
-						<ListItem
-							component="div"
-
-						>
+					<List component="nav">
+						<ListItem component="div">
 							<ListItemText inset>
 								<Typography color="textPrimary" variant="body1">
 									<Link
@@ -110,12 +103,14 @@ const Header = () => {
 		</AppBar>
 	)
 }
-
 export const DarkModeButton = () => {
-	const [preferDark, setPreferDark] = useRecoilState(preferDarkState)
+	const dispatch = useDispatch()
+	const preferDark = useSelector(getPreferDark)
 	const handleDarkModePress = () => {
 		setPreferDark(!preferDark)
 	}
+	const setPreferDark = (newPreferDark: boolean) =>
+		dispatch(updatePreferDark(newPreferDark))
 
 	return (
 		<IconButton

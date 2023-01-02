@@ -1,18 +1,27 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid/Grid"
+import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
-import Paper from "@mui/material/Paper/Paper"
+import Paper from "@mui/material/Paper"
 import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuidv4 } from "uuid"
 import {
+	getCurrentPaddlerIndex,
+	getCurrentRun,
+	getCurrentScore,
 	getScoredMoves,
 	updateCurrentMove,
+	updatePaddler,
+	updateRun,
 	updateScoredMoves
 } from "../../../../recoil/atoms/scoring"
 
-import { useDispatch, useSelector } from "react-redux"
-import { getNumberOfPaddlersInCurrentHeat } from "../../../../recoil/atoms/competitions"
+import {
+	getCurrentHeatInfo,
+	getNumberOfPaddlersInCurrentHeat,
+	getNumberOfRunsInCurrentHeat
+} from "../../../../recoil/atoms/competitions"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -34,16 +43,22 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 
 	const fetchedScoredMoves = () => []
 
-	const currentPaddler = useSelector(getCurrentPaddler)
+	const currentPaddler = useSelector(getCurrentPaddlerIndex)
 	const numberOfPaddlers = useSelector(getNumberOfPaddlersInCurrentHeat)
-	const currentRun = useSelector(currentRun)
-	const numberOfRuns = useSelector(getNumberOfRunsInHeat)
-
-	const paddlerInfo = useSelector(getCurrentPaddlerInfo)
+	const currentRun = useSelector(getCurrentRun)
+	const numberOfRuns = useSelector(getNumberOfRunsInCurrentHeat)
+	const paddlersInHeat = useSelector(getCurrentHeatInfo)
+	const paddlerInfo = paddlersInHeat.athletes[currentPaddler]
 	const scoredMoves = useSelector(getScoredMoves)
-	const ressetScoredMoves = dispatch(updateScoredMoves([]))
-	const setCurrentMove = dispatch(updateCurrentMove)
-
+	const ressetScoredMoves = () => dispatch(updateScoredMoves([]))
+	const setCurrentMove = (newMove: string) =>
+		dispatch(updateCurrentMove(newMove))
+	const setCurrentPaddler = (newPaddler: number) =>
+		dispatch(updatePaddler(newPaddler))
+	const setCurrentRun = (newRun: number) => dispatch(updateRun(newRun))
+	const currentScore = useSelector(getCurrentScore)
+	const setScoredMoves = (movesList: scoredMovesType[]) =>
+		dispatch(updateScoredMoves(movesList))
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
 			currentPaddler + number,
@@ -84,7 +99,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 					<Paper>
 						<h4>Run Score </h4>
 						<div className="score" id="runScore">
-							{useRecoilValue(currentScore)}
+							{currentScore}
 						</div>
 					</Paper>
 				</Grid>

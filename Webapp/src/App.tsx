@@ -1,37 +1,28 @@
 import Container from "@mui/material/Container/Container"
-import React from "react"
 import { Toaster } from "react-hot-toast"
-import { BrowserRouter } from "react-router-dom"
-import { RecoilRoot } from "recoil"
-import RecoilNexus from "recoil-nexus"
 import { Provider } from "react-redux"
+import { BrowserRouter } from "react-router-dom"
 import Header from "./components/header/Header"
 import Router from "./components/routes/Router"
 import Theme from "./components/Theme"
-import { store } from "./recoil/store"
+import { setupStore } from "./recoil/store"
+const store = setupStore()
 const App = () => (
-
-	<RecoilRoot>
-
-		<RecoilNexus />
-		<BrowserRouter>
-			<Theme>
-				<Header />
-				<Toaster />
-				<Container maxWidth={false}>
-					<Router />
-				</Container>
-			</Theme>
-		</BrowserRouter>
-
-		</RecoilRoot>
-
+	<BrowserRouter>
+		<Theme>
+			<Header />
+			<Toaster />
+			<Container maxWidth={false}>
+				<Router />
+			</Container>
+		</Theme>
+	</BrowserRouter>
 )
 
-const WrappedApp = () => {
-	<Provider store={store} >
-	<App />
-		</Provider>
-}
+const WrappedApp = () => (
+	<Provider store={store}>
+		<App />
+	</Provider>
+)
 
 export default WrappedApp

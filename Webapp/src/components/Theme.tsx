@@ -3,13 +3,15 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { useLayoutEffect, useMemo } from "react"
-import { useRecoilState } from "recoil"
-import { preferDarkState } from "../recoil/atoms/utilities"
+import { useDispatch, useSelector } from "react-redux"
+import { getPreferDark, updatePreferDark } from "../recoil/atoms/utilities"
 
 function Theme({ children }: { children: React.ReactNode }) {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
-	const [preferDark, setPreferDark] = useRecoilState(preferDarkState)
-
+	const dispatch = useDispatch()
+	const setPreferDark = (newPreferDark: boolean) =>
+		dispatch(updatePreferDark(newPreferDark))
+	const preferDark = useSelector(getPreferDark)
 	useLayoutEffect(() => {
 		setPreferDark(prefersDarkMode)
 	}, [prefersDarkMode])

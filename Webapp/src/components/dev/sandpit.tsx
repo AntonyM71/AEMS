@@ -2,6 +2,7 @@ import Button from "@mui/material/Button"
 import Paper from "@mui/material/Paper"
 import { IChangeEvent, withTheme } from "@rjsf/core"
 import { Theme as MaterialUITheme } from "@rjsf/mui"
+import validator from "@rjsf/validator-ajv8"
 import { JSONSchema7 } from "json-schema"
 import { toast } from "react-hot-toast"
 import { handleErrors } from "../../topLevelErrorHandler"
@@ -56,12 +57,14 @@ export const SandpitPage = () => {
 				<Form
 					schema={devSchema as JSONSchema7}
 					onSubmit={handleFormSubmit}
+					validator={validator}
 				></Form>
 			</Paper>
 			<Paper>
 				<Form
 					schema={extendedDevSchema}
 					onSubmit={handleFormSubmit}
+					validator={validator}
 				></Form>
 			</Paper>
 		</div>

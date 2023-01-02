@@ -4,30 +4,37 @@ import MenuItem from "@mui/material/MenuItem"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import { Fragment, useEffect, useState } from "react"
-import { useRecoilState, useRecoilValue, useResetRecoilState } from "recoil"
+import { useDispatch, useSelector } from "react-redux"
 import { eventType, getCompetitions } from "../../competitiondata/Competitions"
 import {
-	selectedCompetitionState,
-	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
+	getSelectedCompetition,
+	getSelectedEvent,
+	updateSelectedEvent,
+	updateSelectedHeat,
+	updateSelectedPhase
 } from "../../recoil/atoms/competitions"
 
 const EventSelector = () => {
-	const selectedCompetition = useRecoilValue(selectedCompetitionState)
-	const [selectedEvent, setSelectedEvent] = useRecoilState(selectedEventState)
-	const resetSelectedPhase = useResetRecoilState(selectedPhaseState)
-	const resetSelectedHeat = useResetRecoilState(selectedHeatState)
+	const dispatch = useDispatch()
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const setSelectedEvent = (newevent: string) =>
+		dispatch(updateSelectedEvent(newevent))
+	const selectedEvent = useSelector(getSelectedEvent)
+	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
+
+	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
 	const [isLoading, setIsLoading] = useState<boolean>(true)
 	const [events, setEvents] = useState<eventType[]>([])
 	useEffect(() => {
 		const getComps = () => {
 			const comps = getCompetitions()
-			const selectedCompetitionData = comps.find(
-				(c) => c.id === selectedCompetition
-			)
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			setEvents(selectedCompetitionData!.events)
+			if (selectedCompetition) {
+				const selectedCompetitionData = comps.find(
+					(c) => c.id === selectedCompetition
+				)
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				setEvents(selectedCompetitionData!.events)
+			}
 		}
 
 		void getComps()

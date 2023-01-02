@@ -2,36 +2,13 @@ import Avatar from "@mui/material/Avatar"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Link from "@mui/material/Link"
+import toast from "react-hot-toast"
 import { Link as RouterLink } from "react-router-dom"
-import { useRecoilValue, useResetRecoilState } from "recoil"
-import {
-	currentToken,
-	currentTokenExpiry,
-	currentUser,
-	currentUserInitials,
-	refreshToken
-} from "../../recoil/atoms/auth"
+
 import { routes } from "../routes/Router"
 
 export const UserCard = () => {
-	const userInitials = useRecoilValue(currentUserInitials)
-
-	const currentUserName = useRecoilValue(currentUser)
-	const resetUser = useResetRecoilState(currentUser)
-	const resetToken = useResetRecoilState(currentToken)
-	const resetTokenExpiry = useResetRecoilState(currentTokenExpiry)
-	const resetUserInitials = useResetRecoilState(currentUserInitials)
-	const resetRefreshToken = useResetRecoilState(refreshToken)
-
-	const handleLogout = () => {
-		resetUser()
-		resetToken()
-		resetTokenExpiry()
-		resetUserInitials()
-		resetRefreshToken()
-		// localStorage.clear()
-	}
-
+	const currentUserName = ""
 	if (!currentUserName) {
 		return (
 			<Grid
@@ -65,13 +42,13 @@ export const UserCard = () => {
 			alignItems="baseline"
 		>
 			<Grid item xs={2}>
-				<Avatar style={{ marginTop: "0px" }}>{userInitials}</Avatar>
+				<Avatar style={{ marginTop: "0px" }}>{"TU"}</Avatar>
 			</Grid>
 			<Grid item xs={3} alignItems="center">
-				<h4 style={{ marginTop: "0px" }}>{currentUserName}</h4>
+				<h4 style={{ marginTop: "0px" }}>{"Test User"}</h4>
 			</Grid>
 			<Grid item xs={2}>
-				<Button onClick={handleLogout}>
+				<Button onClick={() => toast.success("Logged Out")}>
 					<h4>Log Out</h4>
 				</Button>
 			</Grid>

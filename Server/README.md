@@ -19,3 +19,11 @@ alembic upgrade head
 ```
 alembic revision --autogenerate
 ```
+
+## Build openapi.json
+
+```
+python buildOpenApiJson.py
+
+ctrl + c
+```

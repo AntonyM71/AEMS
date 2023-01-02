@@ -1,15 +1,15 @@
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useSelector } from "react-redux"
 import { competitionsType } from "../../competitiondata/Competitions"
 import {
-	selectedCompetitionState,
-	selectedEventState,
-	selectedPhaseState
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedPhase
 } from "../../recoil/atoms/competitions"
 
 const CompetitionStatus = (competition: competitionsType) => {
-	const [selectedCompetition] = useRecoilState(selectedCompetitionState)
-	const selectedEvent = useRecoilValue(selectedEventState)
-	const selectedPhase = useRecoilValue(selectedPhaseState)
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const selectedPhase = useSelector(getSelectedPhase)
 
 	return (
 		<div className="mainContentContainerItem flexGrowLeast">

@@ -1,13 +1,8 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
-import React from "react"
+import { fireEvent, screen, within } from "@testing-library/react"
 import { BrowserRouter } from "react-router-dom"
-import { RecoilRoot } from "recoil"
 import * as uuid from "uuid"
-import {
-	availableMovesListState,
-	scoredMovesState
-} from "../../../../../recoil/atoms/scoring"
-import { RecoilObserver } from "../../../../../RecoilObserver"
+
+import { renderWithProviders } from "../../../../../testUtils"
 import Float from "../Float"
 import { movesType } from "../Interfaces"
 import { testMoves } from "./TestData"
@@ -15,16 +10,11 @@ import { testMoves } from "./TestData"
 describe("The test-move cards are rendered", () => {
 	it("updates the state with the list of available moves, and renders them", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={availableMovesListState}
-						onChange={onChange}
-					/>
-					<Float />
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<Float />
+			</BrowserRouter>,
+			{}
 		)
 		// Assert initial setup
 		expect(onChange).toHaveBeenCalledWith(testMoves)
@@ -46,16 +36,10 @@ const mockUuid = jest.spyOn(uuid, "v4")
 describe("Add moves", () => {
 	it("adds moves to the state and displays them in the infobar when the move card buttons are pressed", () => {
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={scoredMovesState}
-						onChange={onChange}
-					/>
-					<Float />
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<Float />
+			</BrowserRouter>
 		)
 		// Assert initial setup
 		expect(onChange).toHaveBeenCalledWith([])
@@ -104,16 +88,10 @@ describe("Deletemoves", () => {
 	it("adds moves to the state and displays, then removes them when the delete button is pressed", () => {
 		const addedMoveIDs: string[] = []
 		const onChange = jest.fn()
-		render(
-			<RecoilRoot>
-				<BrowserRouter>
-					<RecoilObserver
-						node={scoredMovesState}
-						onChange={onChange}
-					/>
-					<Float />
-				</BrowserRouter>
-			</RecoilRoot>
+		renderWithProviders(
+			<BrowserRouter>
+				<Float />
+			</BrowserRouter>
 		)
 		// Assert initial setup
 		expect(onChange).toHaveBeenCalledWith([])

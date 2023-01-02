@@ -1,11 +1,12 @@
 import Grid from "@mui/material/Grid"
 import { cloneDeep } from "lodash"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuidv4 } from "uuid"
 import {
-	availableMovesListState,
-	currentMoveState,
-	scoredMovesState
+	getAvailableMoves,
+	getScoredMoves,
+	updateCurrentMove,
+	updateScoredMoves
 } from "../../../../recoil/atoms/scoring"
 import { InfoBar } from "./InfoBar"
 import {
@@ -19,9 +20,13 @@ import { MoveCard } from "./MoveCard"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 const Float = () => {
-	const [scoredMoves, setScoredMoves] = useRecoilState(scoredMovesState)
-	const setCurrentMove = useSetRecoilState(currentMoveState)
-	const movesList = useRecoilValue(availableMovesListState)
+	const dispatch = useDispatch()
+	const setScoredMoves = (newMoves: scoredMovesType[]) =>
+		dispatch(updateScoredMoves(newMoves))
+	const scoredMoves = useSelector(getScoredMoves)
+	const setCurrentMove = (newMove: string) =>
+		dispatch(updateCurrentMove(newMove))
+	const movesList = useSelector(getAvailableMoves)
 	const addScoredMove: addScoredMoveType = (
 		id: string,
 		direction: directionType

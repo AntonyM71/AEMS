@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react"
-import React from "react"
+import { fireEvent, screen } from "@testing-library/react"
+import { renderWithProviders } from "../../../../../testUtils"
 import { AvailableMoveDirections, MovePropsType } from "../Interfaces"
 import { MoveCard } from "../MoveCard"
 
@@ -33,7 +33,7 @@ test.each([
 		addScoredBonus: addScoredBonusSpy
 	}
 
-	const view = render(<MoveCard {...MoveProps} />)
+	const view = renderWithProviders(<MoveCard {...MoveProps} />)
 	const wantedCall = ["1234", expected]
 	expect(addScoredBonusSpy).toHaveBeenCalledTimes(0)
 

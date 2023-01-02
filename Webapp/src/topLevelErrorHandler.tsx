@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { toast } from "react-hot-toast"
-import conf from "./config"
 export const registerRejectedPromise = () => {
 	window.onunhandledrejection = (err: any) => {
 		handleErrors(err)
@@ -24,4 +23,4 @@ export const handleErrors = (e: any) => {
 		toast.error("Something Went Wrong :(")
 	}
 }
-const env = conf.get("env")
+const env = "development"

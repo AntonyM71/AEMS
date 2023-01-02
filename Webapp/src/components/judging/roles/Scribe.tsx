@@ -1,7 +1,8 @@
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
+import { useSelector } from "react-redux"
 import { Redirect } from "react-router-dom"
-import { useRecoilState } from "recoil"
+
 import {
 	competitionsType,
 	eventType,
@@ -9,10 +10,10 @@ import {
 	phaseType
 } from "../../../competitiondata/Competitions"
 import {
-	selectedCompetitionState,
-	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedHeat,
+	getSelectedPhase
 } from "../../../recoil/atoms/competitions"
 
 import { SelectorDisplay } from "../Judging"
@@ -26,10 +27,10 @@ import Squirt from "../sheets/Squirt/Squirt"
 // eslint-disable-next-line complexity
 const Scribe = () => {
 	const competitions = getCompetitions()
-	const [competition] = useRecoilState(selectedCompetitionState)
-	const [event] = useRecoilState(selectedEventState)
-	const [phase] = useRecoilState(selectedPhaseState)
-	const [selectedHeat] = useRecoilState(selectedHeatState)
+	const competition = useSelector(getSelectedCompetition)
+	const event = useSelector(getSelectedEvent)
+	const phase = useSelector(getSelectedPhase)
+	const selectedHeat = useSelector(getSelectedHeat)
 	const getCompetitionObject = (): competitionsType =>
 		competitions.filter((c) => c.id === competition)[0]
 
@@ -39,7 +40,7 @@ const Scribe = () => {
 	const getPhaseObject = (eventObject: eventType): phaseType =>
 		eventObject.phases.filter((p) => p.id === phase)[0]
 
-	if (competition && event && phase && selectedHeat.id) {
+	if (competition && event && phase && selectedHeat) {
 		const competitionObject = getCompetitionObject()
 		if (competitionObject) {
 			const eventObject = getEventObject(competitionObject)

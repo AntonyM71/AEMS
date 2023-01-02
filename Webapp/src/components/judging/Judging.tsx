@@ -2,18 +2,19 @@ import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
+import { useSelector } from "react-redux"
 import { Link as RouterLink } from "react-router-dom"
-import { useRecoilState } from "recoil"
 import {
-	selectedCompetitionState,
-	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedHeat,
+	getSelectedPhase
 } from "../../recoil/atoms/competitions"
 
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"
 import { HeatsSelector } from "../competition/HeatSelector"
+import PhaseSelector from "../competition/PhaseSelector"
 // eslint-disable-next-line complexity
 
 // const competitionsThing = getCompetitionsFromServer()
@@ -24,17 +25,17 @@ import { HeatsSelector } from "../competition/HeatSelector"
 const Judging = () => {
 	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
 
-	const [selectedCompetition] = useRecoilState(selectedCompetitionState)
-	const [selectedEvent] = useRecoilState(selectedEventState)
-	const [selectedPhase] = useRecoilState(selectedPhaseState)
-	const [selectedHeat] = useRecoilState(selectedHeatState)
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const selectedPhase = useSelector(getSelectedPhase)
+	const selectedHeat = useSelector(getSelectedHeat)
 
 	// eslint-disable-next-line complexity
 	const competition = selectedCompetition
 	const event = selectedEvent
 	const phase = selectedPhase
 	const heat = selectedHeat
-	if (competition && event && phase && heat.name) {
+	if (competition && event && phase && heat) {
 		if (competition) {
 			if (event) {
 				return (
@@ -102,9 +103,9 @@ export const SelectorDisplay = () => (
 		<Grid item xs>
 			<EventSelector />
 		</Grid>
-		{/* <Grid item xs>
+		<Grid item xs>
 			<PhaseSelector />
-		</Grid> */}
+		</Grid>
 		<Grid item xs>
 			<HeatsSelector />
 		</Grid>

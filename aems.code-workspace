@@ -1,0 +1,92 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "mui-snippets.importPaths": "second level",
+    "mui-snippets.showNotesOnStartup": false,
+    "eslint.workingDirectories": ["Webapp"],
+    "editor.formatOnPaste": true,
+    "editor.fontLigatures": false,
+    "editor.fontVariations": false,
+
+    "editor.guides.bracketPairs": "active",
+    "editor.matchBrackets": "always",
+    "editor.bracketPairColorization.enabled": true,
+    "eslint.format.enable": true,
+    "eslint.lintTask.enable": true,
+    "editor.formatOnSave": true,
+    "typescript.preferences.quoteStyle": "double",
+    "eslint.alwaysShowStatus": true,
+    "files.trimTrailingWhitespace": true,
+    "eslint.migration.2_x": "off",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+      "source.organizeImports": true
+    },
+    "[scss]": {
+      "editor.suggest.insertMode": "replace",
+      "gitlens.codeLens.scopes": ["document"]
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "emmet.excludeLanguages": ["markdown"],
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "tabnine.experimentalAutoImports": true,
+    "yaml.schemas": {
+      "file:///Users/antonymitchell/.vscode/extensions/atlassian.atlascode-2.10.12/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
+    },
+    "atlascode.jira.jqlList": [
+      {
+        "id": "be37e193-410d-4c0b-a0db-7f2266a9bf0f",
+        "enabled": true,
+        "name": "My thehurleyfoundation Issues",
+        "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY lastViewed DESC",
+        "siteId": "7fdf6b8a-8a76-47e0-a1ec-a06272366187",
+        "monitor": true
+      }
+    ],
+    "git.autofetch": true,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+    "editor.minimap.enabled": false,
+    "git.confirmSync": false,
+    "launch": {
+      "configurations": [],
+      "compounds": []
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnType": true,
+    "atlascode.jira.lastCreateSiteAndProject": {
+      "siteId": "7fdf6b8a-8a76-47e0-a1ec-a06272366187",
+      "projectKey": ""
+    },
+    "terminal.integrated.inheritEnv": false,
+    "python.diagnostics.sourceMapsEnabled": true,
+    "python.formatting.provider": "black",
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "eslint.configFile": "Webapp/.eslintrc.js",
+    "python.envFile": "${workspaceFolder}/Server/.env",
+    "python.experiments.enabled": false,
+    "material-ui-snippets.showNotesOnStartup": false,
+    "material-ui-snippets.importPaths": "second level",
+    "atlascode.jira.enabled": false,
+    "atlascode.helpExplorerEnabled": false,
+    "breadcrumbs.showMethods": false,
+    "zenMode.hideLineNumbers": false,
+    "zenMode.hideStatusBar": false,
+    "zenMode.hideTabs": false,
+    "zenMode.silentNotifications": false,
+    "workbench.settings.editor": "json"
+  }
+}

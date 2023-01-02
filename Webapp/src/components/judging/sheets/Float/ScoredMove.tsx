@@ -3,8 +3,8 @@ import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
-import { useRecoilValue } from "recoil"
-import { availableMovesListState } from "../../../../recoil/atoms/scoring"
+import { useSelector } from "react-redux"
+import { getAvailableMoves } from "../../../../recoil/atoms/scoring"
 
 import { bonuses } from "./demoMoves"
 import {
@@ -25,7 +25,7 @@ interface ScoredMovePropsType {
 }
 
 const ScoredMove = React.memo((props: ScoredMovePropsType) => {
-	const movesList = useRecoilValue(availableMovesListState)
+	const movesList = useSelector(getAvailableMoves)
 	const filteredMoves = movesList.filter(
 		(move: movesType) => move.id === props.scoredMove.moveId
 	)
@@ -34,10 +34,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 		const moveData = filteredMoves[0]
 
 		return (
-			<Paper
-
-				data-testid={"scored-move-" + props.scoredMove.id}
-			>
+			<Paper data-testid={"scored-move-" + props.scoredMove.id}>
 				<Grid container spacing={1} justifyContent="space-around">
 					<Grid item>
 						<Chip

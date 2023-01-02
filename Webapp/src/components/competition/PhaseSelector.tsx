@@ -4,43 +4,48 @@ import MenuItem from "@mui/material/MenuItem"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 
 import { Fragment } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import {
-	useRecoilState,
-	useRecoilValue,
-	useResetRecoilState,
-	useSetRecoilState
-} from "recoil"
-import { competitionsType, phaseType } from "../../competitiondata/Competitions"
+	getCompetitions,
+	heatsType,
+	phaseType
+} from "../../competitiondata/Competitions"
 import {
-	heatsListState,
-	selectedCompetitionState,
-	selectedEventState,
-	selectedHeatState,
-	selectedPhaseState
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedPhase,
+	updateHeatsList,
+	updateSelectedHeat,
+	updateSelectedPhase
 } from "../../recoil/atoms/competitions"
+const PhaseSelector = () => {
+	const dispatch = useDispatch()
+	const competitions = getCompetitions()
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const selectedPhase = useSelector(getSelectedPhase)
+	const setSelectedPhase = (newPhase: string) =>
+		dispatch(updateSelectedPhase(newPhase))
 
-interface propsType {
-	competitions: competitionsType[]
-}
-const PhaseSelector = ({ competitions }: propsType) => {
-	const selectedCompetition = useRecoilValue(selectedCompetitionState)
-	const selectedEvent = useRecoilValue(selectedEventState)
-	const [selectedPhase, setSelectedPhase] = useRecoilState(selectedPhaseState)
-	const setHeatsList = useSetRecoilState(heatsListState)
-	const resetSelectedHeat = useResetRecoilState(selectedHeatState)
+	const setHeatsList = (newHeats: heatsType[]) =>
+		dispatch(updateHeatsList(newHeats))
+	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
 	if (selectedCompetition !== "" && selectedEvent !== "") {
 		const competitionObject = competitions.filter(
 			(c) => c.id === selectedCompetition
 		)[0]
 		if (competitionObject) {
-			const eventObject = competitionObject.events.filter(
+			console.log(competitionObject)
+			const eventObject = competitionObject.events.find(
 				(e) => e.id === selectedEvent
-			)[0]
+			)
+			console.log(eventObject)
+
 			const onSelect = (event: SelectChangeEvent) => {
 				resetSelectedHeat()
 				setSelectedPhase(event.target.value)
 				setHeatsList(
-					eventObject.phases.filter(
+					eventObject!.phases.filter(
 						(p: phaseType) => p.id === event.target.value
 					)[0].heats
 				)
@@ -54,12 +59,17 @@ const PhaseSelector = ({ competitions }: propsType) => {
 						onChange={onSelect}
 						variant="outlined"
 						fullWidth
+						disabled={!!selectedEvent}
 					>
-						{eventObject.phases.map((phase) => (
-							<MenuItem key={phase.id} value={phase.id}>
-								{phase.name}
-							</MenuItem>
-						))}
+						{eventObject!.phases.map((phase) => {
+							console.log(phase)
+
+							return (
+								<MenuItem key={phase.id} value={phase.id}>
+									{phase.name}
+								</MenuItem>
+							)
+						})}
 					</Select>
 				</FormControl>
 			)
