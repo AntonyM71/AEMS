@@ -14,7 +14,6 @@ import darkLogo from "../../images/THFLogoBlackOrange.png"
 import lightLogo from "../../images/THFLogoWhiteOrange.png"
 import { getPreferDark, updatePreferDark } from "../../recoil/atoms/utilities"
 import { routes } from "../routes/Router"
-import { UserCard } from "./UserCard"
 const Header = () => {
 	const env = "development"
 	const dispatch = useDispatch()
@@ -98,7 +97,7 @@ const Header = () => {
 						</ListItem>
 					</List>
 				</Box>
-				<UserCard />
+				{/* <UserCard /> */}
 			</Toolbar>
 		</AppBar>
 	)

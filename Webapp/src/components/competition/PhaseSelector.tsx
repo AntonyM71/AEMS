@@ -35,11 +35,10 @@ const PhaseSelector = () => {
 			(c) => c.id === selectedCompetition
 		)[0]
 		if (competitionObject) {
-			console.log(competitionObject)
+			// console.log(competitionObject)
 			const eventObject = competitionObject.events.find(
 				(e) => e.id === selectedEvent
 			)
-			console.log(eventObject)
 
 			const onSelect = (event: SelectChangeEvent) => {
 				resetSelectedHeat()
@@ -59,7 +58,7 @@ const PhaseSelector = () => {
 						onChange={onSelect}
 						variant="outlined"
 						fullWidth
-						disabled={!!selectedEvent}
+						disabled={!selectedEvent}
 					>
 						{eventObject!.phases.map((phase) => {
 							console.log(phase)

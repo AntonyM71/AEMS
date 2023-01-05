@@ -63,6 +63,7 @@ export const getNumberOfPaddlersInCurrentHeat = (state: RootState) => {
 
 	return currentHeat.athletes.length
 }
-
+export const getAvailableMoves = (state: RootState) =>
+	state.score.availableMoves
 export const getNumberOfRunsInCurrentHeat = (state: RootState) =>
 	state.competitions.numberOfRuns

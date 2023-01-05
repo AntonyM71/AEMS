@@ -1,4 +1,5 @@
 import { createAction, createReducer } from "@reduxjs/toolkit"
+import { RootState } from "../store"
 
 interface utilitiesStateType {
 	preferDarkState: boolean
@@ -14,5 +15,5 @@ export const utilitiesReducer = createReducer(initialState, (builder) => {
 	})
 })
 
-export const getPreferDark = (state: utilitiesStateType) =>
-	state.preferDarkState
+export const getPreferDark = (state: RootState) =>
+	state.utilities.preferDarkState

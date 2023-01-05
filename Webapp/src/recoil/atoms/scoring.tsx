@@ -4,6 +4,7 @@ import {
 	scoredMovesType
 } from "../../components/judging/sheets/Float/Interfaces"
 import { calculateRunScore } from "../../utils/scoringUtils"
+import { RootState } from "../store"
 export const isTest = false
 
 export interface ScoringStateType {
@@ -17,7 +18,9 @@ export interface ScoringStateType {
 const initialState: ScoringStateType = {
 	selectedPaddler: 0,
 	selectedRun: 0,
-	availableMoves: [],
+	availableMoves: [
+		{ id: "1234", name: "test move", direction: "FB", score: 20 }
+	],
 	scoredMoves: [],
 	currentMove: ""
 }
@@ -53,13 +56,13 @@ export const scoringReducer = createReducer(initialState, (builder) => {
 		})
 })
 
-export const getScoredMoves = (state: ScoringStateType) => state.scoredMoves
-export const getAvailableMoves = (state: ScoringStateType) =>
-	state.availableMoves
-export const getCurrentPaddlerIndex = (state: ScoringStateType) =>
-	state.selectedPaddler
-export const getCurrentRun = (state: ScoringStateType) => state.selectedRun
-export const getCurrentScore = (state: ScoringStateType) => {
+export const getScoredMoves = (state: RootState) => state.score.scoredMoves
+export const getAvailableMoves = (state: RootState) =>
+	state.score.availableMoves
+export const getCurrentPaddlerIndex = (state: RootState) =>
+	state.score.selectedPaddler
+export const getCurrentRun = (state: RootState) => state.score.selectedRun
+export const getCurrentScore = (state: RootState) => {
 	const scoredMoves = getScoredMoves(state)
 
 	return calculateRunScore(scoredMoves)

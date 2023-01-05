@@ -13,15 +13,7 @@ export interface movesType {
 	id: string
 	name: string
 	direction: AvailableMoveDirections
-	score: {
-		L: number
-		R: number
-		F: number
-		B: number
-		LF: number
-		RB: number
-		A: number
-	}
+	score: number
 }
 
 export type AvailableMoveDirections = "SINGLE" | "LR" | "FB" | "LRFB"

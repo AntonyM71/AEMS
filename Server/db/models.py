@@ -18,7 +18,7 @@ class Event(Base):
     id = Column(UUID(), primary_key=True)
     competition_id = Column(
         UUID(),
-        ForeignKey("Competition.id"),
+        ForeignKey("Competition.id"), nullable=False
     )
     # competition = relationship("Competition", foreign_keys=[competition_id])
     name = Column(String)

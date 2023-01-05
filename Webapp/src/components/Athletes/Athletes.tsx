@@ -1,7 +1,8 @@
 import {
 	athleteType,
 	competitionsType,
-	heatsType
+	heatsType,
+	registeredEventType
 } from "../../competitiondata/Competitions"
 
 const aems = ["K1W", "K1M", "OC1", "C1", "K1JW", "K1JM", "SW", "SM"]
@@ -92,7 +93,7 @@ export const getHeatsForEvent = (
 		athletes: ha
 	}))
 
-	return []
+	return heats
 }
 
 export const getEntriesForEvent = (
@@ -100,106 +101,107 @@ export const getEntriesForEvent = (
 	event: string
 ): athleteHeatType[] => {
 	const indexOfAems = aems.indexOf(event)
-	// const athletes: athleteHeatType[] = competitions.filter(
-	// 	(c) => c.id === competition
-	// )[0].athletes
+	const athletes: athleteHeatType[] = competitions.filter(
+		(c) => c.id === competition
+	)[0].athletes
 
-	// const athleteEntries: athleteHeatType[] = athletes.reduce(
-	// 	(result: athleteHeatType[], athlete: athleteHeatType) => {
-	// 		if (athlete.Discipline.Code === "CF") {
-	// 			// Must be Canoe Freestyle CF
-	// 			if (Array.isArray(athlete.Discipline.RegisteredEvent)) {
-	// 				// If RegisteredEvent is an array then must include a registration that is for this event
-	// 				const filteredEvents = athlete.Discipline.RegisteredEvent.filter(
-	// 					(re) => re.Event === icf[indexOfAems]
-	// 				)
-	// 				if (filteredEvents.length === 1) {
-	// 					result = [
-	// 						...result,
-	// 						{ ...athlete, Bib: filteredEvents[0].Bib }
-	// 					]
+	const athleteEntries: athleteHeatType[] = athletes.reduce(
+		(result: athleteHeatType[], athlete: athleteHeatType) => {
+			if (athlete.Discipline.Code === "CF") {
+				// Must be Canoe Freestyle CF
+				if (Array.isArray(athlete.Discipline.RegisteredEvent)) {
+					// If RegisteredEvent is an array then must include a registration that is for this event
+					const filteredEvents =
+						athlete.Discipline.RegisteredEvent.filter(
+							(re) => re.Event === icf[indexOfAems]
+						)
+					if (filteredEvents.length === 1) {
+						result = [
+							...result,
+							{ ...athlete, Bib: filteredEvents[0].Bib }
+						]
 
-	// 					return result
-	// 				}
-	// 			} else {
-	// 				if (
-	// 					athlete.Discipline.RegisteredEvent.Event ===
-	// 					icf[indexOfAems]
-	// 				) {
-	// 					result = [
-	// 						...result,
-	// 						{
-	// 							...athlete,
-	// 							Bib: athlete.Discipline.RegisteredEvent.Bib
-	// 						}
-	// 					]
+						return result
+					}
+				} else {
+					if (
+						athlete.Discipline.RegisteredEvent.Event ===
+						icf[indexOfAems]
+					) {
+						result = [
+							...result,
+							{
+								...athlete,
+								Bib: athlete.Discipline.RegisteredEvent.Bib
+							}
+						]
 
-	// 					return result
-	// 				}
-	// 			}
-	// 		}
+						return result
+					}
+				}
+			}
 
-	// 		return result
-	// 	},
-	// 	[]
-	// )
+			return result
+		},
+		[]
+	)
 
-	// // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	// return athleteEntries.sort(
-	// 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	// 	(a, b) => parseInt(a.Bib!, 10) - parseInt(b.Bib!, 10)
-	// )
-	return []
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return athleteEntries.sort(
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		(a, b) => parseInt(a.Bib!, 10) - parseInt(b.Bib!, 10)
+	)
 }
 
-export const getEntriesForCompetition = (): // competition: string
-athleteHeatType[] =>
-	// const athletes: athleteHeatType[] = competitions.filter(
-	// 	(c) => c.id === competition
-	// )[0].athletes
+export const getEntriesForCompetition = (
+	competition: string
+): athleteHeatType[] => {
+	const athletes: athleteHeatType[] = competitions.filter(
+		(c) => c.id === competition
+	)[0].athletes
 
-	// const result = athletes.map((athlete: athleteHeatType) => {
-	// 	if (athlete.Discipline.Code === "CF") {
-	// 		// Must be Canoe Freestyle CF
-	// 		if (Array.isArray(athlete.Discipline.RegisteredEvent)) {
-	// 			// If RegisteredEvent is an array then must include a registration that is for this event
-	// 			athlete.Bib = athlete.Discipline.RegisteredEvent[0].Bib
-	// 			athlete.EventsShort = athlete.Discipline.RegisteredEvent.reduce(
-	// 				(events, event) => {
-	// 					const indexOfIcf = icf.indexOf(event.Event)
+	const result = athletes.map((athlete: athleteHeatType) => {
+		if (athlete.Discipline.Code === "CF") {
+			// Must be Canoe Freestyle CF
+			if (Array.isArray(athlete.Discipline.RegisteredEvent)) {
+				// If RegisteredEvent is an array then must include a registration that is for this event
+				athlete.Bib = athlete.Discipline.RegisteredEvent[0].Bib
+				athlete.EventsShort = athlete.Discipline.RegisteredEvent.reduce(
+					(events, event) => {
+						const indexOfIcf = icf.indexOf(event.Event)
 
-	// 					return events + names[indexOfIcf] + ", "
-	// 				},
-	// 				""
-	// 			)
-	// 			if (athlete.EventsShort.length > 2) {
-	// 				athlete.EventsShort = athlete.EventsShort.substr(
-	// 					0,
-	// 					athlete.EventsShort.length - 2
-	// 				)
-	// 			}
-	// 			athletes.push(athlete)
-	// 		} else {
-	// 			athlete.Bib = athlete.Discipline.RegisteredEvent.Bib
-	// 			const indexOfIcf = icf.indexOf(
-	// 				athlete.Discipline.RegisteredEvent.Event
-	// 			)
-	// 			athlete.EventsShort = names[indexOfIcf]
-	// 			athletes.push(athlete)
-	// 		}
-	// 	}
+						return events + names[indexOfIcf] + ", "
+					},
+					""
+				)
+				if (athlete.EventsShort.length > 2) {
+					athlete.EventsShort = athlete.EventsShort.substr(
+						0,
+						athlete.EventsShort.length - 2
+					)
+				}
+				athletes.push(athlete)
+			} else {
+				athlete.Bib = athlete.Discipline.RegisteredEvent.Bib
+				const indexOfIcf = icf.indexOf(
+					athlete.Discipline.RegisteredEvent.Event
+				)
+				athlete.EventsShort = names[indexOfIcf]
+				athletes.push(athlete)
+			}
+		}
 
-	// 	return athlete
-	// })
+		return athlete
+	})
 
-	// result.sort((a, b) =>
-	// 	a.Nationality.localeCompare(b.Nationality, "en", {
-	// 		sensitivity: "base"
-	// 	})
-	// )
+	result.sort((a, b) =>
+		a.Nationality.localeCompare(b.Nationality, "en", {
+			sensitivity: "base"
+		})
+	)
 
-	// return result
-	[]
+	return result
+}
 
 const competitions: competitionsType[] = [
 	{
@@ -209,7 +211,7 @@ const competitions: competitionsType[] = [
 	},
 	{
 		id: "5fb52d7081dcac1964685f05",
-		// athletes: [],
+		athletes: [],
 		events: []
 	},
 	{

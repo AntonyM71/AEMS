@@ -1,5 +1,6 @@
 import {
 	athleteHeatType,
+	getEntriesForCompetition,
 	getEntriesForEvent,
 	getHeatsForEvent
 } from "../components/Athletes/Athletes"
@@ -10,7 +11,7 @@ const competitions: competitionsType[] = [
 	{
 		id: "5fb5312f81dcac1964685f06",
 		name: "ICF Test Competition",
-		// athletes: getEntriesForCompetition("5fb5312f81dcac1964685f06"),
+		athletes: getEntriesForCompetition("5fb5312f81dcac1964685f06"),
 		events: [
 			{
 				id: "5fb52d3032a4bb3e076be3c5",
@@ -163,32 +164,22 @@ const competitions: competitionsType[] = [
 	{
 		id: "5fb5020d81dcac1964685f02",
 		name: "Jon's Competition",
-		// athletes: [],
+		athletes: [],
 		events: []
 	},
 	{
 		id: "5fb52d7081dcac1964685f05",
 		name: "Jacko's Competition",
-		// athletes: [],
+		athletes: [],
 		events: []
 	}
 ]
 
-export interface competitionsListType {
-	id: string
-	name?: string
-	venue?: string
-	startDate?: string
-	endDate?: string
-}
 export interface competitionsType {
 	id: string
 	name?: string
+	athletes: athleteHeatType[]
 	events: eventType[]
-	venue?: string
-	startDate?: string
-	endDate?: string
-	sponsors?: any[]
 }
 export interface phaseType {
 	id: string
