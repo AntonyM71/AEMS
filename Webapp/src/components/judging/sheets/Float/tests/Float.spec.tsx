@@ -39,7 +39,8 @@ describe("Add moves", () => {
 		renderWithProviders(
 			<BrowserRouter>
 				<Float />
-			</BrowserRouter>
+			</BrowserRouter>,
+			{}
 		)
 		// Assert initial setup
 		expect(onChange).toHaveBeenCalledWith([])
