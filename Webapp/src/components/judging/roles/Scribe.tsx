@@ -14,7 +14,7 @@ import {
 	getSelectedEvent,
 	getSelectedHeat,
 	getSelectedPhase
-} from "../../../recoil/atoms/competitions"
+} from "../../../redux/atoms/competitions"
 
 import { SelectorDisplay } from "../Judging"
 import Float from "../sheets/Float/Float"

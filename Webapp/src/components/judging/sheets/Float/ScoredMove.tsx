@@ -4,9 +4,8 @@ import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { useSelector } from "react-redux"
-import { getAvailableMoves } from "../../../../recoil/atoms/scoring"
+import { getAvailableMoves } from "../../../../redux/atoms/scoring"
 
-import { bonuses } from "./demoMoves"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -14,6 +13,7 @@ import {
 	removeScoredMoveType,
 	scoredMovesType
 } from "./Interfaces"
+import { bonuses } from "./demoMoves"
 
 interface ScoredMovePropsType {
 	scoredMove: scoredMovesType

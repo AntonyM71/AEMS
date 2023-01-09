@@ -4,34 +4,21 @@ import MenuItem from "@mui/material/MenuItem"
 
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
-import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	competitionsListType,
-	getCompetitions
-} from "../../competitiondata/Competitions"
 import {
 	getSelectedCompetition,
 	updateSelectedCompetition,
 	updateSelectedEvent,
 	updateSelectedHeat,
 	updateSelectedPhase
-} from "../../recoil/atoms/competitions"
+} from "../../redux/atoms/competitions"
+import { useGetManyCompetitionGetQuery } from "../../redux/services/aemsApi"
 
 export const CompetitionSelector = () => {
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
-	const [competitions, setCompetitions] = useState<competitionsListType[]>([])
-	const [isLoading, setIsLoading] = useState<boolean>(true)
-	useEffect(() => {
-		const getComps = () => {
-			const comps = getCompetitions()
-			setCompetitions(comps)
-		}
 
-		void getComps()
-		setIsLoading(false)
-	}, [])
+	const { data, isLoading } = useGetManyCompetitionGetQuery({})
 
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
@@ -50,6 +37,8 @@ export const CompetitionSelector = () => {
 	}
 	if (isLoading) {
 		return <Skeleton variant="rectangular" />
+	} else if (!data || data.length === 0) {
+		return <h4>No Competitions</h4>
 	} else {
 		return (
 			<>
@@ -61,7 +50,7 @@ export const CompetitionSelector = () => {
 						variant="outlined"
 						fullWidth={true}
 					>
-						{competitions.map((competition) => (
+						{data.map((competition) => (
 							<MenuItem
 								key={competition.id}
 								value={competition.id}

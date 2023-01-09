@@ -12,7 +12,7 @@ import {
 	updateSelectedEvent,
 	updateSelectedHeat,
 	updateSelectedPhase
-} from "../../recoil/atoms/competitions"
+} from "../../redux/atoms/competitions"
 
 const EventSelector = () => {
 	const dispatch = useDispatch()

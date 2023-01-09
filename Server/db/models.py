@@ -7,65 +7,65 @@ Base = declarative_base()
 
 
 class Competition(Base):
-    __tablename__ = "Competition"
+    __tablename__ = "competition"
     id = Column(UUID(), primary_key=True, comment="Competition ID")
     name = Column(String)
     users = ARRAY(String)
+    events = relationship("Event")
 
 
 class Event(Base):
-    __tablename__ = "Event"
+    __tablename__ = "event"
     id = Column(UUID(), primary_key=True)
     competition_id = Column(
         UUID(),
-        ForeignKey("Competition.id"), nullable=False
+        ForeignKey("competition.id"), nullable=False
     )
-    # competition = relationship("Competition", foreign_keys=[competition_id])
+    competition = relationship("Competition", back_populates="events")
+    phases = relationship("Phase", back_populates="event")
     name = Column(String)
 
 
 class Phase(Base):
-    __tablename__ = "Phase"
+    __tablename__ = "phase"
     id = Column(UUID(), primary_key=True)
     event_id = Column(
         UUID(),
-        ForeignKey("Event.id"),
+        ForeignKey("event.id"),
     )
-    # event = relationship("Event", foreign_keys=[event_id])
+    event = relationship("Event", back_populates="phases")
+    heats = relationship("Heat", back_populates="phase")
     name = Column(String)
     number_of_runs = Column(Integer)
 
 
 class Heat(Base):
-    __tablename__ = "Heat"
+    __tablename__ = "heat"
     id = Column(UUID(), primary_key=True)
     phase_id = Column(
         UUID(),
-        ForeignKey("Phase.id"),
+        ForeignKey("phase.id"),
     )
-    # phase = relationship("Phase", foreign_keys=[phase_id])
+    phase = relationship("Phase", back_populates="heats")
+    runs = relationship("Run", back_populates="heat")
     name = Column(String)
 
 
 class Run(Base):
-    __tablename__ = "Run"
+    __tablename__ = "run"
     id = Column(UUID(), primary_key=True)
     heat_id = Column(
         UUID(),
-        ForeignKey("Heat.id"),
+        ForeignKey("heat.id"),
     )
-    run = relationship("Heat", foreign_keys=[heat_id])
+    heat = relationship("Heat", back_populates="runs")
     name = Column(String)
-    paddler_ids = Column(
-        ARRAY(
-            UUID(),
-        )
-    )
+
     # paddlers = relationship("Athlete", foreign_keys=[paddler_ids])
 
 
 class Athlete(Base):
-    __tablename__ = "Athlete"
+    __tablename__ = "athlete"
     id = Column(UUID(), primary_key=True)
 
     first_name = Column(String)
@@ -73,17 +73,17 @@ class Athlete(Base):
 
 
 class ScoreSheet(Base):
-    __tablename__ = "ScoreSheet"
+    __tablename__ = "scoreSheet"
     id = Column(UUID(), primary_key=True, comment="Competition ID")
     name = Column(String)
 
 
 class AvailableMoves(Base):
-    __tablename__ = "AvailableMoves"
+    __tablename__ = "availableMoves"
     id = Column(UUID(), primary_key=True)
     sheet_id = Column(
         UUID(),
-        ForeignKey("ScoreSheet.id"),
+        ForeignKey("scoreSheet.id"),
     )
     # run = relationship("ScoreSheet", foreign_keys=[sheet_id])
     name = Column(String)
@@ -91,15 +91,15 @@ class AvailableMoves(Base):
 
 
 class AvailableBonuses(Base):
-    __tablename__ = "AvailableBonuses"
+    __tablename__ = "availableBonuses"
     id = Column(UUID(), primary_key=True)
     sheet_id = Column(
         UUID(),
-        ForeignKey("ScoreSheet.id"),
+        ForeignKey("scoreSheet.id"),
     )
     move_id = Column(
         UUID(),
-        ForeignKey("AvailableMoves.id"),
+        ForeignKey("availableMoves.id"),
     )
     run = relationship("ScoreSheet", foreign_keys=[sheet_id])
     move = relationship("AvailableMoves", foreign_keys=[move_id])
@@ -108,20 +108,20 @@ class AvailableBonuses(Base):
 
 
 class ScoredMoves(Base):
-    __tablename__ = "ScoredMoves"
+    __tablename__ = "scoredMoves"
     id = Column(UUID(), primary_key=True, comment="Competition ID")
-    move_id = Column(UUID(), ForeignKey("AvailableMoves.id"))
-    run_id = Column(UUID(), ForeignKey("Run.id"))
+    move_id = Column(UUID(), ForeignKey("availableMoves.id"))
+    run_id = Column(UUID(), ForeignKey("run.id"))
     run = relationship("Run", foreign_keys=[run_id])
     move = relationship("AvailableMoves", foreign_keys=[move_id])
     judge_id = Column(String)
 
 
 class ScoredBonuses(Base):
-    __tablename__ = "ScoredBonuses"
+    __tablename__ = "scoredBonuses"
     id = Column(UUID(), primary_key=True, comment="Competition ID")
-    bonus_id = Column(UUID(), ForeignKey("AvailableBonuses.id"))
-    move_id = Column(UUID(), ForeignKey("ScoredMoves.id"))
+    bonus_id = Column(UUID(), ForeignKey("availableBonuses.id"))
+    move_id = Column(UUID(), ForeignKey("scoredMoves.id"))
     bonus = relationship("AvailableBonuses", foreign_keys=[bonus_id])
     move = relationship("ScoredMoves", foreign_keys=[move_id])
     judge_id = Column(String)

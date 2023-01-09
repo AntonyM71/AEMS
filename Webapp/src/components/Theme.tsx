@@ -1,10 +1,10 @@
-import { cyan, orange, red } from "@mui/material/colors"
 import CssBaseline from "@mui/material/CssBaseline"
-import { createTheme, ThemeProvider } from "@mui/material/styles"
+import { cyan, orange, red } from "@mui/material/colors"
+import { ThemeProvider, createTheme } from "@mui/material/styles"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { useLayoutEffect, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { getPreferDark, updatePreferDark } from "../recoil/atoms/utilities"
+import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 
 function Theme({ children }: { children: React.ReactNode }) {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")

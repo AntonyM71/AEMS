@@ -4,7 +4,7 @@ import {
 	getSelectedCompetition,
 	getSelectedEvent,
 	getSelectedPhase
-} from "../../recoil/atoms/competitions"
+} from "../../redux/atoms/competitions"
 
 const CompetitionStatus = (competition: competitionsType) => {
 	const selectedCompetition = useSelector(getSelectedCompetition)

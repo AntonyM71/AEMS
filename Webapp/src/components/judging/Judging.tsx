@@ -9,7 +9,7 @@ import {
 	getSelectedEvent,
 	getSelectedHeat,
 	getSelectedPhase
-} from "../../recoil/atoms/competitions"
+} from "../../redux/atoms/competitions"
 
 import CompetitionSelector from "../competition/CompetitionSelector"
 import EventSelector from "../competition/EventSelector"

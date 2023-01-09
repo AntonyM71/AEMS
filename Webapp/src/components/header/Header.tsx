@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { Link as RouterLink } from "react-router-dom"
 import darkLogo from "../../images/THFLogoBlackOrange.png"
 import lightLogo from "../../images/THFLogoWhiteOrange.png"
-import { getPreferDark, updatePreferDark } from "../../recoil/atoms/utilities"
+import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 import { routes } from "../routes/Router"
 const Header = () => {
 	const env = "development"

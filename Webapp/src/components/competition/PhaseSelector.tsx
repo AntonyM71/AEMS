@@ -17,7 +17,7 @@ import {
 	updateHeatsList,
 	updateSelectedHeat,
 	updateSelectedPhase
-} from "../../recoil/atoms/competitions"
+} from "../../redux/atoms/competitions"
 const PhaseSelector = () => {
 	const dispatch = useDispatch()
 	const competitions = getCompetitions()

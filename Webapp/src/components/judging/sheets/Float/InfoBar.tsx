@@ -15,13 +15,13 @@ import {
 	updatePaddler,
 	updateRun,
 	updateScoredMoves
-} from "../../../../recoil/atoms/scoring"
+} from "../../../../redux/atoms/scoring"
 
 import {
 	getCurrentHeatInfo,
 	getNumberOfPaddlersInCurrentHeat,
 	getNumberOfRunsInCurrentHeat
-} from "../../../../recoil/atoms/competitions"
+} from "../../../../redux/atoms/competitions"
 import {
 	addScoredBonusType,
 	addScoredMoveType,

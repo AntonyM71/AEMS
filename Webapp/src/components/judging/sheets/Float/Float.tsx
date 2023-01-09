@@ -7,7 +7,7 @@ import {
 	getScoredMoves,
 	updateCurrentMove,
 	updateScoredMoves
-} from "../../../../recoil/atoms/scoring"
+} from "../../../../redux/atoms/scoring"
 import { InfoBar } from "./InfoBar"
 import {
 	addScoredBonusType,

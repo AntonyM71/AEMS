@@ -4,10 +4,10 @@ import { render, RenderOptions } from "@testing-library/react"
 
 import React, { PropsWithChildren } from "react"
 import { Provider } from "react-redux"
-import { competitionsReducer } from "./recoil/atoms/competitions"
-import { scoringReducer } from "./recoil/atoms/scoring"
-import { utilitiesReducer } from "./recoil/atoms/utilities"
-import { AppStore, RootState } from "./recoil/store"
+import { competitionsReducer } from "./redux/atoms/competitions"
+import { scoringReducer } from "./redux/atoms/scoring"
+import { utilitiesReducer } from "./redux/atoms/utilities"
+import { AppStore, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {

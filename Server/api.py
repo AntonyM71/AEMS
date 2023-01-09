@@ -1,4 +1,4 @@
-from db.models import Competition, Event
+from db.models import Competition, Event, Heat, Phase, Run
 from fastapi import FastAPI
 from fastapi_quickcrud.crud_router import (SqlType,
                                            generic_sql_crud_router_builder)
@@ -24,6 +24,7 @@ crud_route_competition = generic_sql_crud_router_builder(
     tags=["competition"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
+    foreign_include=[Event]
 )
 
 crud_route_event = generic_sql_crud_router_builder(
@@ -32,12 +33,36 @@ crud_route_event = generic_sql_crud_router_builder(
     tags=["event"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Competition]
+    foreign_include=[Phase]
 )
 
+crud_route_phase = generic_sql_crud_router_builder(
+    db_model=Phase,
+    prefix="/phase",
+    tags=["phase"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    foreign_include=[Heat]
+)
 
+crud_route_heat = generic_sql_crud_router_builder(
+    db_model=Heat,
+    prefix="/heat",
+    tags=["heat"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    foreign_include=[Run]
+)
+crud_route_run = generic_sql_crud_router_builder(
+    db_model=Run,
+    prefix="/run",
+    tags=["run"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
 app = FastAPI()
-[app.include_router(i) for i in [crud_route_competition, crud_route_event]]
+[app.include_router(i) for i in [crud_route_competition, crud_route_event, crud_route_phase, crud_route_heat, crud_route_run]]
 
 
 @app.get("/")

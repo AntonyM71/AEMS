@@ -2,10 +2,10 @@ import Container from "@mui/material/Container/Container"
 import { Toaster } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { BrowserRouter } from "react-router-dom"
+import Theme from "./components/Theme"
 import Header from "./components/header/Header"
 import Router from "./components/routes/Router"
-import Theme from "./components/Theme"
-import { setupStore } from "./recoil/store"
+import { setupStore } from "./redux/store"
 const store = setupStore()
 const App = () => (
 	<BrowserRouter>

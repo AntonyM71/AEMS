@@ -1,8 +1,8 @@
-import { moves } from "../components/judging/sheets/Float/demoMoves"
 import {
 	movesType,
 	scoredMovesType
 } from "../components/judging/sheets/Float/Interfaces"
+import { moves } from "../components/judging/sheets/Float/demoMoves"
 
 // TODO: This function doens't handle bonuses yet
 
@@ -21,10 +21,7 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 				scoredMove.moveId + "|" + scoredMove.direction
 			)
 			if (index !== -1) {
-				const recentMove = calculateScoreWithBonuses(
-					scoredMoveObject,
-					scoredMove
-				)
+				const recentMove = calculateScoreWithBonuses(scoredMoveObject)
 				const earlierMove = scoresArray[index]
 
 				if (recentMove > earlierMove) {
@@ -32,9 +29,9 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 					scoresArray.push(recentMove)
 				}
 			} else {
-				if (scoredMoveObject.score[scoredMove.direction]) {
+				if (scoredMoveObject.score) {
 					scoresArray.push(
-						calculateScoreWithBonuses(scoredMoveObject, scoredMove)
+						calculateScoreWithBonuses(scoredMoveObject)
 					)
 					alreadyScoredMoves.push(
 						scoredMove.moveId + "|" + scoredMove.direction
@@ -47,12 +44,9 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 	return scoresArray.reduce((a, b) => a + b, 0)
 }
 // TODO add in bonus values and calculate from them
-const calculateScoreWithBonuses = (
-	scoredMoveObject: movesType,
-	scoredMove: scoredMovesType
-) => {
+const calculateScoreWithBonuses = (scoredMoveObject: movesType) => {
 	const score = []
-	score.push(scoredMoveObject.score[scoredMove.direction])
+	score.push(scoredMoveObject.score)
 
 	return score.reduce((a, b) => a + b, 0)
 }

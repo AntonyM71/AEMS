@@ -1,19 +1,21 @@
 import {
-	combineReducers,
-	configureStore,
 	DeepPartial,
 	EnhancedStore,
-	PreloadedState
+	PreloadedState,
+	combineReducers,
+	configureStore
 } from "@reduxjs/toolkit"
 import { cloneDeep } from "lodash"
 import { competitionsReducer } from "./atoms/competitions"
 import { scoringReducer } from "./atoms/scoring"
 import { utilitiesReducer } from "./atoms/utilities"
+import { emptySplitApi } from "./services/emptyApi"
 
 export const rootReducer = combineReducers({
 	score: scoringReducer,
 	competitions: competitionsReducer,
-	utilities: utilitiesReducer
+	utilities: utilitiesReducer,
+	[emptySplitApi.reducerPath]: emptySplitApi.reducer
 })
 export const setupStore = (
 	preloadedState: DeepPartial<PreloadedState<RootState>> = {}
@@ -21,7 +23,9 @@ export const setupStore = (
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	configureStore({
 		reducer: rootReducer,
-		preloadedState: cloneDeep(preloadedState)
+		preloadedState: cloneDeep(preloadedState),
+		middleware: (getDefaultMiddleware) =>
+			getDefaultMiddleware().concat(emptySplitApi.middleware)
 	})
 export type RootState = ReturnType<typeof rootReducer>
 export type AppStore = ReturnType<typeof setupStore>
