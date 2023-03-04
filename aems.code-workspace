@@ -7,7 +7,8 @@
   "settings": {
     "mui-snippets.importPaths": "second level",
     "mui-snippets.showNotesOnStartup": false,
-    "eslint.workingDirectories": ["Webapp"],
+    "eslint.workingDirectories": ["./Webapp"],
+    "eslint."
     "editor.formatOnPaste": true,
     "editor.fontLigatures": false,
     "editor.fontVariations": false,
@@ -75,7 +76,7 @@
     "python.formatting.provider": "black",
     "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,
-    "eslint.configFile": "Webapp/.eslintrc.js",
+    "eslint.configFile": "./Webapp/.eslintrc.js",
     "python.envFile": "${workspaceFolder}/Server/.env",
     "python.experiments.enabled": false,
     "material-ui-snippets.showNotesOnStartup": false,

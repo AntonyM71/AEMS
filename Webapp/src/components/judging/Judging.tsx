@@ -11,10 +11,8 @@ import {
 	getSelectedPhase
 } from "../../redux/atoms/competitions"
 
-import CompetitionSelector from "../competition/CompetitionSelector"
-import EventSelector from "../competition/EventSelector"
-import { HeatsSelector } from "../competition/HeatSelector"
-import PhaseSelector from "../competition/PhaseSelector"
+import { HeatSummaryTable } from "../competition/HeatSummaryTable"
+import { SelectorDisplay } from "../competition/MainSelector"
 // eslint-disable-next-line complexity
 
 // const competitionsThing = getCompetitionsFromServer()
@@ -39,7 +37,7 @@ const Judging = () => {
 		if (competition) {
 			if (event) {
 				return (
-					<Paper>
+					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={2} alignItems={"stretch"}>
 							<Grid item xs={12}>
 								<h1>Scribes</h1>
@@ -77,6 +75,9 @@ const Judging = () => {
 									</Button>
 								</Link>
 							</Grid>
+							<Grid item xs={12}>
+								<HeatSummaryTable />
+							</Grid>
 						</Grid>
 					</Paper>
 				)
@@ -85,30 +86,19 @@ const Judging = () => {
 	}
 
 	return (
-		<Paper>
-			<h1>No Competition Selected</h1>
+		<Grid container>
+			<Grid item xs={12}>
+				<Paper sx={{ margin: "1em", padding: "1em" }}>
+					<h1>No Competition Selected</h1>
 
-			<p>Please select a competition and event to get started</p>
-
-			<SelectorDisplay />
-		</Paper>
+					<p>Please select a competition and event to get started</p>
+				</Paper>
+			</Grid>
+			<Grid item xs={12}>
+				<SelectorDisplay />
+			</Grid>
+		</Grid>
 	)
 }
 
-export const SelectorDisplay = () => (
-	<Grid container spacing={3} alignItems={"stretch"}>
-		<Grid item xs>
-			<CompetitionSelector />
-		</Grid>
-		<Grid item xs>
-			<EventSelector />
-		</Grid>
-		<Grid item xs>
-			<PhaseSelector />
-		</Grid>
-		<Grid item xs>
-			<HeatsSelector />
-		</Grid>
-	</Grid>
-)
 export default Judging

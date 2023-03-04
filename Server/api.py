@@ -1,13 +1,19 @@
-from db.models import Competition, Event, Heat, Phase, Run
+from db.models import (Athlete, AthleteHeat, AvailableBonuses, AvailableMoves,
+                       Competition, Event, Heat, Phase, Run, ScoredBonuses,
+                       ScoredMoves, ScoreSheet)
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_quickcrud.crud_router import (SqlType,
                                            generic_sql_crud_router_builder)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine("postgresql://pi:kayak1@192.168.0.28/aems")
+database_address = "postgresql://pi:kayak1@192.168.0.28/aems"
+frontend_url = "http://localhost:3000"
+engine = create_engine(database_address)
 # TODO: Update to use dotenv
 session = sessionmaker(engine)
+request_origins = [frontend_url]
 
 
 def get_transaction_session():
@@ -24,7 +30,7 @@ crud_route_competition = generic_sql_crud_router_builder(
     tags=["competition"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Event]
+    foreign_include=[Event],
 )
 
 crud_route_event = generic_sql_crud_router_builder(
@@ -33,7 +39,7 @@ crud_route_event = generic_sql_crud_router_builder(
     tags=["event"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Phase]
+    foreign_include=[Phase],
 )
 
 crud_route_phase = generic_sql_crud_router_builder(
@@ -42,7 +48,7 @@ crud_route_phase = generic_sql_crud_router_builder(
     tags=["phase"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Heat]
+    foreign_include=[Heat],
 )
 
 crud_route_heat = generic_sql_crud_router_builder(
@@ -51,7 +57,7 @@ crud_route_heat = generic_sql_crud_router_builder(
     tags=["heat"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Run]
+    foreign_include=[Run],
 )
 crud_route_run = generic_sql_crud_router_builder(
     db_model=Run,
@@ -61,14 +67,104 @@ crud_route_run = generic_sql_crud_router_builder(
     sql_type=SqlType("postgresql"),
     # foreign_include=[Run]
 )
+
+crud_route_athlete = generic_sql_crud_router_builder(
+    db_model=Athlete,
+    prefix="/athlete",
+    tags=["athlete"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+
+crud_route_scoresheet = generic_sql_crud_router_builder(
+    db_model=ScoreSheet,
+    prefix="/scoresheet",
+    tags=["scoresheet"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+crud_route_availablemoves = generic_sql_crud_router_builder(
+    db_model=AvailableMoves,
+    prefix="/availablemoves",
+    tags=["availablemoves"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+crud_route_availablebonuses = generic_sql_crud_router_builder(
+    db_model=AvailableBonuses,
+    prefix="/availablebonuses",
+    tags=["availablebonuses"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+
+crud_route_scoredmoves = generic_sql_crud_router_builder(
+    db_model=ScoredMoves,
+    prefix="/scoredmoves",
+    tags=["scoredmoves"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+crud_route_scoredbonuses = generic_sql_crud_router_builder(
+    db_model=ScoredBonuses,
+    prefix="/scoredbonuses",
+    tags=["scoredbonuses"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
+crud_route_athleteheat = generic_sql_crud_router_builder(
+    db_model=AthleteHeat,
+    prefix="/athleteheat",
+    tags=["athleteheat"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+    # foreign_include=[Run]
+)
 app = FastAPI()
-[app.include_router(i) for i in [crud_route_competition, crud_route_event, crud_route_phase, crud_route_heat, crud_route_run]]
+[
+    app.include_router(i)
+    for i in [
+        crud_route_competition,
+        crud_route_event,
+        crud_route_phase,
+        crud_route_heat,
+        crud_route_run,
+        crud_route_athlete,
+        crud_route_scoresheet,
+        crud_route_availablemoves,
+        crud_route_availablebonuses,
+        crud_route_scoredmoves,
+        crud_route_scoredbonuses,
+        crud_route_athleteheat
+    ]
+]
 
 
 @app.get("/")
 async def root():
     return {"message": "Go to /docs to see the swagger documentation"}
 
+
+@app.get("/")
+
+@app.get("/athleteheat/athlete/{athlete_id}", tags=["athleteheat"])
+async def getAthleteHeatsByAthleteId(athlete_id: str):
+
+    session.query(AthleteHeat).filter(AthleteHeat.athlete_id == athlete_id )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=request_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 import uvicorn
 

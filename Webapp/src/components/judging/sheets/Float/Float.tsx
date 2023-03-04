@@ -27,7 +27,6 @@ const Float = () => {
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
 	const movesList = useSelector(getAvailableMoves)
-	console.log(movesList)
 	const addScoredMove: addScoredMoveType = (
 		id: string,
 		direction: directionType

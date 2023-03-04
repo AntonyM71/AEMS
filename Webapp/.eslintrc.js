@@ -193,11 +193,11 @@ module.exports = {
 		"use-isnan": "error",
 		"valid-typeof": "error",
 		"no-restricted-imports": [
-			"error",
+			1,
 			{
 				name: "@mui/material",
 				message:
-					"Importing from @mui/material is slow, please import from the module i.e. `@mui/material/grid` instead"
+					"Importing from @mui/material is slow, please import from the corresponding module i.e. `@mui/material/grid` instead"
 			},
 			{
 				name: "underscore",

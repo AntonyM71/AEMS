@@ -7,6 +7,7 @@ import { Provider } from "react-redux"
 import { competitionsReducer } from "./redux/atoms/competitions"
 import { scoringReducer } from "./redux/atoms/scoring"
 import { utilitiesReducer } from "./redux/atoms/utilities"
+import { emptySplitApi } from "./redux/services/emptyApi"
 import { AppStore, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
@@ -24,7 +25,8 @@ export const renderWithProviders = (
 			reducer: {
 				score: scoringReducer,
 				competitions: competitionsReducer,
-				utilities: utilitiesReducer
+				utilities: utilitiesReducer,
+				[emptySplitApi.reducerPath]: emptySplitApi.reducer
 			},
 			preloadedState
 		}),

@@ -1,5 +1,5 @@
 {
-	"schemaFile": "../../../Common/openapi.json",
+	"schemaFile": "../../../../Common/openapi.json",
 	"apiFile": "./emptyApi.ts",
 	"apiImport": "emptySplitApi",
 	"outputFile": "./aemsApi.ts",
