@@ -1,13 +1,19 @@
 import Grid from "@mui/material/Grid"
-import { cloneDeep } from "lodash"
+import { cloneDeep, flatten } from "lodash"
+import { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuidv4 } from "uuid"
+import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
-	getAvailableMoves,
+	getCurrentPaddlerIndex,
 	getScoredMoves,
 	updateCurrentMove,
 	updateScoredMoves
 } from "../../../../redux/atoms/scoring"
+import {
+	useGetManyAthleteheatGetQuery,
+	useGetManyAvailablemovesGetQuery
+} from "../../../../redux/services/aemsApi"
 import { InfoBar } from "./InfoBar"
 import {
 	addScoredBonusType,
@@ -17,16 +23,50 @@ import {
 } from "./Interfaces"
 import { MoveCard } from "./MoveCard"
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-
 const Float = () => {
 	const dispatch = useDispatch()
+
 	const setScoredMoves = (newMoves: scoredMovesType[]) =>
 		dispatch(updateScoredMoves(newMoves))
 	const scoredMoves = useSelector(getScoredMoves)
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
-	const movesList = useSelector(getAvailableMoves)
+	const selectedHeat = useSelector(getSelectedHeat)
+
+	const athletes = useGetManyAthleteheatGetQuery({
+		heatIdListComparisonOperator: "Equal",
+		heatIdList: [selectedHeat],
+		joinForeignTable: ["athlete"]
+	})
+
+	const athleteList = useMemo(() => {
+		if (athletes.data) {
+			const filteredList = flatten(
+				athletes.data.map((a) => [
+					{
+						...a.athlete_foreign![0],
+						scoresheetId: a.scoresheet!
+					}
+				])
+			)
+
+			return filteredList
+		}
+
+		return []
+	}, [athletes])
+
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const currentAthlete = athleteList[currentPaddlerIndex]
+	// const athleteList
+	// 	? flatten(athletes.data.map((a) => a.athlete_foreign))
+	// 	: []
+
+	// const paddlerInfo = useGetOneByPrimaryKeyAthleteIdGetQuery({})
+	const movesList = useGetManyAvailablemovesGetQuery({
+		sheetIdListComparisonOperator: "Equal",
+		sheetIdList: [currentAthlete.scoresheetId]
+	})
 	const addScoredMove: addScoredMoveType = (
 		id: string,
 		direction: directionType
@@ -51,11 +91,9 @@ const Float = () => {
 	const addScoredBonus: addScoredBonusType = (moveId: string, id: string) => {
 		const scoredMovesFiltered = scoredMoves.filter((sm) => sm.id === moveId)
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const newScoredMoves: scoredMovesType[] = cloneDeep(scoredMoves)
 		if (scoredMovesFiltered.length === 1) {
 			const bonusMoves = { ...scoredMovesFiltered[0] }
-			// eslint-disable-next-line no-console
 
 			const currentBonusesFiltered = bonusMoves.bonuses.filter(
 				(b) => b.bonusId === id
@@ -92,33 +130,45 @@ const Float = () => {
 			}
 		}
 	}
-
-	return (
-		<Grid container spacing={3}>
-			<Grid item xs={7}>
-				<Grid container spacing={2}>
-					{movesList.map((move) => (
-						<Grid item xs={3} key={move.id}>
-							<MoveCard
-								key={move.id}
-								move={move}
-								addScoredMove={addScoredMove}
-								addScoredBonus={addScoredBonus}
-								data-testid={"movecard-" + move.id}
-							/>
-						</Grid>
-					))}
+	if (
+		currentAthlete &&
+		currentAthlete.id &&
+		currentAthlete.first_name &&
+		currentAthlete.last_name &&
+		currentAthlete.bib
+	) {
+		return (
+			<Grid container spacing={3}>
+				<Grid item xs={7}>
+					<Grid container spacing={2}>
+						{movesList.data?.map((move) => (
+							<Grid item xs={3} key={move.id}>
+								<MoveCard
+									key={move.id}
+									move={move}
+									addScoredMove={addScoredMove}
+									addScoredBonus={addScoredBonus}
+									data-testid={
+										"movecard-" + move.id!.toString()
+									}
+								/>
+							</Grid>
+						))}
+					</Grid>
+				</Grid>
+				<Grid item xs={5}>
+					<InfoBar
+						paddlerInfo={currentAthlete}
+						addScoredMove={addScoredMove}
+						addScoredBonus={addScoredBonus}
+						data-testid={"infobar"}
+					/>
 				</Grid>
 			</Grid>
-			<Grid item xs={5}>
-				<InfoBar
-					addScoredMove={addScoredMove}
-					addScoredBonus={addScoredBonus}
-					data-testid={"infobar"}
-				/>
-			</Grid>
-		</Grid>
-	)
+		)
+	}
+
+	return <h4>Couldn't get current athlete</h4>
 }
 
 export default Float

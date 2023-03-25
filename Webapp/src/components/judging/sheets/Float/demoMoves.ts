@@ -5,13 +5,15 @@ export const moves: movesType[] = [
 		id: "mf01",
 		name: "Entry 1",
 		direction: "SINGLE",
-		score: 30
+		fl_score: 30,
+		rb_score: 30
 	},
 	{
 		id: "mf02",
 		name: "Entry 2",
 		direction: "SINGLE",
-		score: 50
+		fl_score: 50,
+		rb_score: 30
 	}
 ]
 

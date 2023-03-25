@@ -4,7 +4,7 @@ import { DevRouterPage } from "../dev/DevRouter"
 import Judging from "../judging/Judging"
 import Scribe from "../judging/roles/Scribe"
 import Score from "../score/Score"
-import Upload from "../upload/Upload"
+import ScoresheetBuilderPage from "../upload/ScoresheetBuilderPage"
 
 export const routes = {
 	dev: {
@@ -16,8 +16,8 @@ export const routes = {
 	login: {
 		root: "/login"
 	},
-	upload: {
-		root: "/upload"
+	scoreSheetBuilder: {
+		root: "/scoresheetBuilder"
 	},
 	scribe: {
 		root: "/scribe/:scribe"
@@ -34,7 +34,10 @@ const Router = () => {
 		<Switch>
 			<Route path={routes.dev.root} component={DevRouterPage} />
 			<Route path={routes.judging.root} component={Judging} />
-			<Route path={routes.upload.root} component={Upload} />
+			<Route
+				path={routes.scoreSheetBuilder.root}
+				component={ScoresheetBuilderPage}
+			/>
 			<Route exact path={routes.scribe.root} component={Scribe} />
 			<Route path={routes.score.root} component={Score} />
 		</Switch>

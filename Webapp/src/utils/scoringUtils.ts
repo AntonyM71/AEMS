@@ -29,7 +29,7 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 					scoresArray.push(recentMove)
 				}
 			} else {
-				if (scoredMoveObject.score) {
+				if (scoredMoveObject.fl_score) {
 					scoresArray.push(
 						calculateScoreWithBonuses(scoredMoveObject)
 					)
@@ -46,7 +46,7 @@ export function calculateRunScore(scoredMoves: scoredMovesType[]): number {
 // TODO add in bonus values and calculate from them
 const calculateScoreWithBonuses = (scoredMoveObject: movesType) => {
 	const score = []
-	score.push(scoredMoveObject.score)
+	score.push(scoredMoveObject.fl_score)
 
 	return score.reduce((a, b) => a + b, 0)
 }

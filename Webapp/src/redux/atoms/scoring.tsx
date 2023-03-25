@@ -10,7 +10,7 @@ export const isTest = false
 export interface ScoringStateType {
 	selectedPaddler: number
 	selectedRun: number
-	availableMoves: movesType[]
+
 	scoredMoves: scoredMovesType[]
 	currentMove: string
 }
@@ -18,9 +18,7 @@ export interface ScoringStateType {
 const initialState: ScoringStateType = {
 	selectedPaddler: 0,
 	selectedRun: 0,
-	availableMoves: [
-		{ id: "1234", name: "test move", direction: "FB", score: 20 }
-	],
+
 	scoredMoves: [],
 	currentMove: ""
 }
@@ -42,10 +40,7 @@ export const scoringReducer = createReducer(initialState, (builder) => {
 			// "mutate" the array by calling push()
 			state.selectedRun = action.payload
 		})
-		.addCase(updateAvailableMoves, (state, action) => {
-			// "mutate" the array by calling push()
-			state.availableMoves = action.payload
-		})
+
 		.addCase(updateScoredMoves, (state, action) => {
 			// "mutate" the array by calling push()
 			state.scoredMoves = action.payload
@@ -57,8 +52,7 @@ export const scoringReducer = createReducer(initialState, (builder) => {
 })
 
 export const getScoredMoves = (state: RootState) => state.score.scoredMoves
-export const getAvailableMoves = (state: RootState) =>
-	state.score.availableMoves
+
 export const getCurrentPaddlerIndex = (state: RootState) =>
 	state.score.selectedPaddler
 export const getCurrentRun = (state: RootState) => state.score.selectedRun

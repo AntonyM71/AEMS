@@ -22,8 +22,8 @@ function Theme({ children }: { children: React.ReactNode }) {
 				palette: {
 					mode: preferDark ? "dark" : "light",
 					primary: {
-						main: orange[800],
-						light: orange[500],
+						main: orange[500],
+						light: orange[300],
 						dark: orange[900]
 					},
 					secondary: {

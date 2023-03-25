@@ -53,17 +53,3 @@ export const getSelectedPhase = (state: RootState) =>
 	state.competitions.selectedPhase
 export const getSelectedCompetition = (state: RootState): string =>
 	state.competitions.selectedCompetition
-export const getCurrentHeatInfo = (state: RootState) =>
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	state.competitions.heatsList.find(
-		(h) => h.id === state.competitions.selectedHeat
-	)!
-export const getNumberOfPaddlersInCurrentHeat = (state: RootState) => {
-	const currentHeat = getCurrentHeatInfo(state)
-
-	return currentHeat.athletes.length
-}
-export const getAvailableMoves = (state: RootState) =>
-	state.score.availableMoves
-export const getNumberOfRunsInCurrentHeat = (state: RootState) =>
-	state.competitions.numberOfRuns

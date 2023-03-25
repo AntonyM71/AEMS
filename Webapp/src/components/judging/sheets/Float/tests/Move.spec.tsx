@@ -19,7 +19,8 @@ test.each([
 			id: "1234",
 			name: "",
 			direction: a as AvailableMoveDirections,
-			score: 10
+			fl_score: 10,
+			rb_score: 10
 		},
 		addScoredMove: addScoredMoveSpy,
 		addScoredBonus: addScoredBonusSpy

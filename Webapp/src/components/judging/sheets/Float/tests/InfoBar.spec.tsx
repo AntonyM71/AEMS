@@ -4,6 +4,13 @@ import { renderWithProviders } from "../../../../../testUtils"
 
 import { calculateNewIndex, InfoBar } from "../InfoBar"
 
+const testPaddlerInfo = {
+	id: "123456789",
+	first_name: "Emily",
+	last_name: "Jackson",
+	bib: "69",
+	scoresheetId: "123"
+}
 test.each([
 	[1, 2, 1],
 	[-1, 2, 1],
@@ -21,6 +28,7 @@ describe("The currentPaddler state should change when the user clicks the paddle
 		renderWithProviders(
 			<BrowserRouter>
 				<InfoBar
+					paddlerInfo={testPaddlerInfo}
 					addScoredBonus={mockAddScoredBonus}
 					addScoredMove={mockAddscoredMove}
 				/>
@@ -51,6 +59,7 @@ describe("The currentPaddler state should change when the user clicks the paddle
 		renderWithProviders(
 			<BrowserRouter>
 				<InfoBar
+					paddlerInfo={testPaddlerInfo}
 					addScoredBonus={mockAddScoredBonus}
 					addScoredMove={mockAddscoredMove}
 				/>
@@ -98,6 +107,7 @@ describe("The currentRun state should change when the user clicks the run naviga
 		renderWithProviders(
 			<BrowserRouter>
 				<InfoBar
+					paddlerInfo={testPaddlerInfo}
 					addScoredBonus={mockAddScoredBonus}
 					addScoredMove={mockAddscoredMove}
 				/>
@@ -131,6 +141,7 @@ describe("The currentRun state should change when the user clicks the run naviga
 		renderWithProviders(
 			<BrowserRouter>
 				<InfoBar
+					paddlerInfo={testPaddlerInfo}
 					addScoredBonus={mockAddScoredBonus}
 					addScoredMove={mockAddscoredMove}
 				/>

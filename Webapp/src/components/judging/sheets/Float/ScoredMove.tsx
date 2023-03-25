@@ -3,13 +3,17 @@ import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
-import { useSelector } from "react-redux"
-import { getAvailableMoves } from "../../../../redux/atoms/scoring"
 
+import { useSelector } from "react-redux"
+import { getSelectedHeat } from "../../../../redux/atoms/competitions"
+import { getCurrentPaddlerIndex } from "../../../../redux/atoms/scoring"
+import {
+	useGetManyAthleteheatGetQuery,
+	useGetManyAvailablemovesGetQuery
+} from "../../../../redux/services/aemsApi"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
-	movesType,
 	removeScoredMoveType,
 	scoredMovesType
 } from "./Interfaces"
@@ -25,10 +29,25 @@ interface ScoredMovePropsType {
 }
 
 const ScoredMove = React.memo((props: ScoredMovePropsType) => {
-	const movesList = useSelector(getAvailableMoves)
-	const filteredMoves = movesList.filter(
-		(move: movesType) => move.id === props.scoredMove.moveId
-	)
+	const selectedHeat = useSelector(getSelectedHeat)
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const athletes = useGetManyAthleteheatGetQuery({
+		heatIdListComparisonOperator: "Equal",
+		heatIdList: [selectedHeat],
+		joinForeignTable: ["athlete"]
+	})
+
+	const scoresheetId = athletes.data
+		? athletes.data[currentPaddlerIndex].scoresheet!
+		: ""
+	const movesList = useGetManyAvailablemovesGetQuery({
+		sheetIdListComparisonOperator: "Equal",
+		sheetIdList: [scoresheetId]
+	})
+
+	const filteredMoves =
+		movesList.data?.filter((move) => move.id === props.scoredMove.moveId) ||
+		[]
 
 	if (filteredMoves.length === 1) {
 		const moveData = filteredMoves[0]

@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
+import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -43,7 +44,9 @@ const PhasesSelector = () => {
 		resetSelectedPhase()
 		setSelectedPhase(event.target.value)
 	}
-
+	if (!selectedEvent) {
+		return <></>
+	}
 	if (isLoading) {
 		return <Skeleton variant="rectangular" />
 	} else if (!isSuccess) {
@@ -106,6 +109,7 @@ const PhasesSelector = () => {
 
 const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [PhaseName, setPhaseName] = useState<string>("")
+	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [phaseId, setPhaseId] = useState<string>(selectedCompetition)
 	const [postNewPhase] = useInsertManyPhasePostMutation()
@@ -117,17 +121,23 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		.map((d) => ({ value: d.id, label: d.name! }))
+		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewPhase = async () => {
 		await postNewPhase({
 			body: [
 				// eslint-disable-next-line camelcase
-				{ name: PhaseName, id: uuid4(), event_id: phaseId }
+				{
+					name: PhaseName,
+					id: uuid4(),
+					event_id: phaseId,
+					number_of_runs: numberOfRuns
+				}
 			]
 		})
 		await refetch()
 		setPhaseName("")
 		setPhaseId("")
+		toast.success("Successfully added phase")
 	}
 
 	return (
@@ -168,6 +178,20 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 				) : (
 					<> </>
 				)}
+			</Grid>
+			<Grid item xs={12}>
+				<TextField
+					label="Number of Runs"
+					variant="outlined"
+					fullWidth
+					type="number"
+					onChange={(
+						event: React.ChangeEvent<HTMLInputElement>
+					): void =>
+						setNumberOfRuns(event.target.value as unknown as number)
+					}
+					value={numberOfRuns}
+				/>
 			</Grid>
 			<Grid item xs={12}>
 				<Button variant="contained" fullWidth onClick={submitNewPhase}>

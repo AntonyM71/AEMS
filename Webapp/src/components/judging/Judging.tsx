@@ -37,63 +37,73 @@ const Judging = () => {
 		if (competition) {
 			if (event) {
 				return (
-					<Paper sx={{ padding: "1em" }}>
-						<Grid container spacing={2} alignItems={"stretch"}>
-							<Grid item xs={12}>
-								<h1>Scribes</h1>
-							</Grid>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									to="/scribe/1"
-									color="inherit"
+					<Grid container spacing={2} alignItems="flex-start">
+						<Grid item xs={12}>
+							<Paper sx={{ padding: "1em" }}>
+								<Grid
+									container
+									spacing={2}
+									alignItems={"stretch"}
 								>
-									<Button variant="contained" fullWidth>
-										Scribe 1
-									</Button>
-								</Link>
-							</Grid>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									to="/scribe/2"
-									color="inherit"
-								>
-									<Button variant="contained" fullWidth>
-										Scribe 2
-									</Button>
-								</Link>
-							</Grid>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									to="/scribe/3"
-									color="inherit"
-								>
-									<Button variant="contained" fullWidth>
-										Scribe 3
-									</Button>
-								</Link>
-							</Grid>
-							<Grid item xs={12}>
-								<HeatSummaryTable />
-							</Grid>
+									<Grid item xs={12}>
+										<h1>Scribes</h1>
+									</Grid>
+									<Grid item xs>
+										<Link
+											component={RouterLink}
+											to="/scribe/1"
+											color="inherit"
+										>
+											<Button
+												variant="contained"
+												fullWidth
+											>
+												Scribe 1
+											</Button>
+										</Link>
+									</Grid>
+									<Grid item xs>
+										<Link
+											component={RouterLink}
+											to="/scribe/2"
+											color="inherit"
+										>
+											<Button
+												variant="contained"
+												fullWidth
+											>
+												Scribe 2
+											</Button>
+										</Link>
+									</Grid>
+									<Grid item xs>
+										<Link
+											component={RouterLink}
+											to="/scribe/3"
+											color="inherit"
+										>
+											<Button
+												variant="contained"
+												fullWidth
+											>
+												Scribe 3
+											</Button>
+										</Link>
+									</Grid>
+								</Grid>
+							</Paper>
 						</Grid>
-					</Paper>
+						<Grid item xs={12}>
+							<HeatSummaryTable />
+						</Grid>
+					</Grid>
 				)
 			}
 		}
 	}
 
 	return (
-		<Grid container>
-			<Grid item xs={12}>
-				<Paper sx={{ margin: "1em", padding: "1em" }}>
-					<h1>No Competition Selected</h1>
-
-					<p>Please select a competition and event to get started</p>
-				</Paper>
-			</Grid>
+		<Grid container alignItems="stretch">
 			<Grid item xs={12}>
 				<SelectorDisplay />
 			</Grid>

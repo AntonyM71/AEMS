@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
+import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -45,7 +46,9 @@ const HeatsSelector = () => {
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedHeat(event.target.value)
 	}
-
+	if (!selectedPhase) {
+		return <></>
+	}
 	if (isLoading) {
 		return <Skeleton variant="rectangular" />
 	} else if (!isSuccess) {
@@ -128,6 +131,7 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 		await refetch()
 		setHeatName("")
 		setCompetitionId("")
+		toast.success("Successfully added heat")
 	}
 
 	return (

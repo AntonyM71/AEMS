@@ -22,11 +22,11 @@ const Header = () => {
 	return (
 		<AppBar position="sticky" color="default" elevation={0}>
 			<Toolbar variant="dense">
-				<Box display="flex" flexGrow={1}>
+				<Box display="flex">
 					<img
 						src={preferDark ? lightLogo : darkLogo}
 						alt="Hurley Foundation Events Logo"
-						style={{ height: "40px" }}
+						style={{ height: "40px", justifyContent: "center" }}
 					></img>
 
 					<List component="nav">
@@ -57,10 +57,10 @@ const Header = () => {
 								<Typography color="textPrimary" variant="body1">
 									<Link
 										component={RouterLink}
-										to={routes.upload.root}
+										to={routes.scoreSheetBuilder.root}
 										color="inherit"
 									>
-										Upload
+										Scoresheet Builder
 									</Link>
 								</Typography>
 							</ListItemText>

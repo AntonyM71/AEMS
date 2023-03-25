@@ -18,10 +18,13 @@ import {
 } from "../../../../redux/atoms/scoring"
 
 import {
-	getCurrentHeatInfo,
-	getNumberOfPaddlersInCurrentHeat,
-	getNumberOfRunsInCurrentHeat
+	getSelectedHeat,
+	getSelectedPhase
 } from "../../../../redux/atoms/competitions"
+import {
+	useGetManyAthleteheatGetQuery,
+	useGetOneByPrimaryKeyPhaseIdGetQuery
+} from "../../../../redux/services/aemsApi"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
@@ -31,10 +34,22 @@ import {
 import ScoredMove from "./ScoredMove"
 
 interface propsType {
+	paddlerInfo: {
+		id: string
+		first_name: string
+		last_name: string
+		bib: string
+		scoresheetId: string
+	}
 	addScoredMove: addScoredMoveType
 	addScoredBonus: addScoredBonusType
 }
-export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
+
+export const InfoBar = ({
+	addScoredMove,
+	addScoredBonus,
+	paddlerInfo
+}: propsType) => {
 	const dispatch = useDispatch()
 	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
 	useEffect(() => {
@@ -44,11 +59,21 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 	const fetchedScoredMoves = () => []
 
 	const currentPaddler = useSelector(getCurrentPaddlerIndex)
-	const numberOfPaddlers = useSelector(getNumberOfPaddlersInCurrentHeat)
+	// const numberOfPaddlers = useSelector(getNumberOfPaddlersInCurrentHeat)
 	const currentRun = useSelector(getCurrentRun)
-	const numberOfRuns = useSelector(getNumberOfRunsInCurrentHeat)
-	const paddlersInHeat = useSelector(getCurrentHeatInfo)
-	const paddlerInfo = paddlersInHeat.athletes[currentPaddler]
+	const currentPhase = useSelector(getSelectedPhase)
+	const currentHeat = useSelector(getSelectedHeat)
+	const phaseInfo = useGetOneByPrimaryKeyPhaseIdGetQuery({ id: currentPhase })
+	const numberOfRuns = phaseInfo.data?.number_of_runs || 0
+	const athletes = useGetManyAthleteheatGetQuery({
+		heatIdListComparisonOperator: "Equal",
+		heatIdList: [currentHeat]
+	})
+	const paddlersInHeat = athletes.data || []
+	const numberOfPaddlers = paddlersInHeat.length
+	// const numberOfRuns = useSelector(getNumberOfRunsInCurrentHeat)
+	// const paddlersInHeat = useSelector(getCurrentHeatInfo)
+
 	const scoredMoves = useSelector(getScoredMoves)
 	const ressetScoredMoves = () => dispatch(updateScoredMoves([]))
 	const setCurrentMove = (newMove: string) =>
@@ -106,7 +131,7 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 				<Grid item xs={6}>
 					<Paper>
 						<h4 data-testid="display-bib-number">
-							Paddler No: {paddlerInfo.Bib}
+							Paddler No: {paddlerInfo.bib}
 						</h4>
 						<div className="score" id="heatScore">
 							<Grid
@@ -128,10 +153,10 @@ export const InfoBar = ({ addScoredMove, addScoredBonus }: propsType) => {
 									data-testid={"display-paddler-name"}
 								>
 									<div style={{ textAlign: "center" }}>
-										{paddlerInfo.GivenName}
+										{paddlerInfo.first_name}
 									</div>
 									<div style={{ textAlign: "center" }}>
-										{paddlerInfo.FamilyName.toUpperCase()}
+										{paddlerInfo.last_name.toUpperCase()}
 									</div>
 								</Grid>
 								<Grid item xs={3}>
