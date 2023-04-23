@@ -1,6 +1,5 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
-import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
 import InputLabel from "@mui/material/InputLabel"
@@ -27,7 +26,11 @@ import {
 	useInsertManyHeatPostMutation
 } from "../../redux/services/aemsApi"
 
-const HeatsSelector = () => {
+const HeatsSelector = ({
+	showDetailed = false
+}: {
+	showDetailed?: boolean
+}) => {
 	const dispatch = useDispatch()
 	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedCompetition = useSelector(getSelectedCompetition)
@@ -71,9 +74,13 @@ const HeatsSelector = () => {
 			return (
 				<Paper sx={{ padding: "1em" }}>
 					<Grid container spacing="2">
-						<Grid item xs={12}>
-							<h4>Select an Heat</h4>
-						</Grid>
+						{showDetailed ? (
+							<Grid item xs={12}>
+								<h4>Select an Heat</h4>
+							</Grid>
+						) : (
+							<></>
+						)}
 						<Grid item xs={12}>
 							<FormControl fullWidth={true}>
 								<InputLabel>Select Heat</InputLabel>
@@ -90,12 +97,13 @@ const HeatsSelector = () => {
 								</Select>
 							</FormControl>
 						</Grid>
-						<Grid item>
-							<Divider />
-						</Grid>
-						<Grid item>
-							<AddHeat refetch={refetch} />
-						</Grid>
+						{showDetailed ? (
+							<Grid item>
+								<AddHeat refetch={refetch} />
+							</Grid>
+						) : (
+							<></>
+						)}
 					</Grid>
 				</Paper>
 			)
@@ -120,7 +128,7 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		.map((d) => ({ value: d.id, label: d.name! }))
+		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewHeat = async () => {
 		await postNewHeat({
 			body: [

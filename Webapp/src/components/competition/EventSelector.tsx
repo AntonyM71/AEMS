@@ -1,6 +1,5 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
-import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
 import InputLabel from "@mui/material/InputLabel"
@@ -26,7 +25,11 @@ import {
 	useInsertManyEventPostMutation
 } from "../../redux/services/aemsApi"
 
-const EventSelector = () => {
+const EventSelector = ({
+	showDetailed = false
+}: {
+	showDetailed?: boolean
+}) => {
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedEvent = (newevent: string) =>
@@ -72,10 +75,13 @@ const EventSelector = () => {
 			return (
 				<Paper sx={{ padding: "1em" }}>
 					<Grid container spacing="2">
-						{" "}
-						<Grid item xs={12}>
-							<h4>Select an Event</h4>
-						</Grid>
+						{showDetailed ? (
+							<Grid item xs={12}>
+								<h4>Select an Event</h4>
+							</Grid>
+						) : (
+							<></>
+						)}
 						<Grid item xs={12}>
 							<FormControl fullWidth={true}>
 								<InputLabel>Select Event</InputLabel>
@@ -95,12 +101,13 @@ const EventSelector = () => {
 								</Select>
 							</FormControl>
 						</Grid>
-						<Grid item>
-							<Divider />
-						</Grid>
-						<Grid item>
-							<AddEvent refetch={refetch} />
-						</Grid>
+						{showDetailed ? (
+							<Grid item>
+								<AddEvent refetch={refetch} />
+							</Grid>
+						) : (
+							<></>
+						)}
 					</Grid>
 				</Paper>
 			)

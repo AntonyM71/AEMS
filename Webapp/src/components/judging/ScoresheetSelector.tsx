@@ -1,4 +1,6 @@
-import { Autocomplete, Skeleton, TextField } from "@mui/material"
+import Autocomplete from "@mui/material/Autocomplete"
+import Skeleton from "@mui/material/Skeleton"
+import TextField from "@mui/material/TextField"
 import { useGetManyScoresheetGetQuery } from "../../redux/services/aemsApi"
 
 export const SelectScoresheet = ({
@@ -14,12 +16,13 @@ export const SelectScoresheet = ({
 			?.filter((d) => !!d.id && !!d.name)
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			.map((d) => ({ value: d.id!, label: d.name! })) || []
-
 	if (options) {
 		return (
 			<Autocomplete
 				// error={!!competitionId}
-				value={options.find((s) => s.value === selectedScoresheet)}
+				value={
+					options.find((s) => s.value === selectedScoresheet) || null
+				}
 				options={options}
 				fullWidth
 				renderInput={(params) => (

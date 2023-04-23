@@ -1,12 +1,17 @@
+from typing import List, Literal
+from uuid import UUID
+
 from db.models import (Athlete, AthleteHeat, AvailableBonuses, AvailableMoves,
                        Competition, Event, Heat, Phase, Run, ScoredBonuses,
                        ScoredMoves, ScoreSheet)
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_quickcrud.crud_router import (SqlType,
                                            generic_sql_crud_router_builder)
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from pydantic import BaseModel
+from sqlalchemy import create_engine, delete
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import Session, sessionmaker
 
 database_address = "postgresql://pi:kayak1@192.168.0.28/aems"
 frontend_url = "http://localhost:3000"
@@ -141,7 +146,7 @@ app = FastAPI()
         crud_route_availablebonuses,
         crud_route_scoredmoves,
         crud_route_scoredbonuses,
-        crud_route_athleteheat
+        crud_route_athleteheat,
     ]
 ]
 
@@ -151,13 +156,6 @@ async def root():
     return {"message": "Go to /docs to see the swagger documentation"}
 
 
-@app.get("/")
-
-@app.get("/athleteheat/athlete/{athlete_id}", tags=["athleteheat"])
-async def getAthleteHeatsByAthleteId(athlete_id: str):
-
-    session.query(AthleteHeat).filter(AthleteHeat.athlete_id == athlete_id )
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=request_origins,
@@ -165,6 +163,57 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class PydanticAvailableMoves(BaseModel):
+
+    id: UUID
+    sheet_id: UUID
+    name: str
+    fl_score: int
+    rb_score: int
+    direction: Literal["LR", "FB", "LRFB"]
+
+
+class PydanticAvailableBonuses(BaseModel):
+    id: UUID
+    sheet_id: UUID
+    move_id: UUID
+    name: str
+    score: int
+
+
+class AddUpdateScoresheetRequest(BaseModel):
+    moves: List[PydanticAvailableMoves] = []
+    bonuses: List[PydanticAvailableBonuses] = []
+
+    class Config:
+        orm_mode = True
+
+
+@app.post("/addUpdateScoresheet/{scoresheet_id}")
+async def addUpdateScoresheet(
+    scoresheet_id,
+    scoresheet: AddUpdateScoresheetRequest,
+    db: Session = Depends(get_transaction_session),
+):
+
+    print([bonus.sheet_id for bonus in scoresheet.bonuses])
+    with db.begin():
+        db.query(AvailableBonuses).filter( AvailableBonuses.sheet_id== scoresheet_id).delete()
+        db.query(AvailableMoves).filter(        AvailableMoves.sheet_id == scoresheet_id
+                    ).delete()
+
+
+        db.bulk_save_objects(
+                [AvailableMoves(**move.dict()) for move in scoresheet.moves]
+            )
+        db.bulk_save_objects(
+                [AvailableBonuses(**bonus.dict()) for bonus in scoresheet.bonuses]
+            )
+
+        db.commit()
+
 
 import uvicorn
 

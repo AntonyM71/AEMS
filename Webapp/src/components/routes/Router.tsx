@@ -1,10 +1,10 @@
 import { Route, Switch } from "react-router-dom"
 import { registerRejectedPromise } from "../../topLevelErrorHandler"
+import ScoresheetBuilderPage from "../ScoresheetBuilder/ScoresheetBuilderPage"
 import { DevRouterPage } from "../dev/DevRouter"
 import Judging from "../judging/Judging"
 import Scribe from "../judging/roles/Scribe"
 import Score from "../score/Score"
-import ScoresheetBuilderPage from "../upload/ScoresheetBuilderPage"
 
 export const routes = {
 	dev: {

@@ -28,9 +28,15 @@ export const HeatSummaryTable = () => {
 	if (data && selectedHeat && !isLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<h3>{`Heat: ${data.name || ""}`}</h3>
-				<HeatAthleteTable />
-				<AddAthletesToHeat />
+				<Grid container spacing={2} alignItems="stretch">
+					<Grid item xs={12}>
+						<h3>{`Heat: ${data.name || ""}`}</h3>
+						<HeatAthleteTable />
+					</Grid>
+					<Grid item xs={12}>
+						<AddAthletesToHeat />
+					</Grid>
+				</Grid>
 			</Paper>
 		)
 	} else if (isLoading) {
@@ -67,7 +73,7 @@ export const HeatAthleteTable = () => {
 	} else if (rows) {
 		return (
 			<DataGrid
-				autoHeight
+				sx={{ height: "50vh" }}
 				rows={rows}
 				columns={columns}
 				disableRowSelectionOnClick
@@ -176,6 +182,7 @@ const AddAthletesToHeat = () => {
 					onClick={handleNewPaddlerSubmit}
 					variant="contained"
 					fullWidth
+					sx={{ height: "100%" }}
 				>
 					Add to Heat
 				</Button>

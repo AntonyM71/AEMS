@@ -4,5 +4,6 @@
 	"apiImport": "emptySplitApi",
 	"outputFile": "./aemsApi.ts",
 	"exportName": "aemsApi",
-	"hooks": true
+	"hooks": true,
+	"unionUndefined": false
 }

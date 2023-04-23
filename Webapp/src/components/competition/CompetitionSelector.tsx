@@ -22,7 +22,11 @@ import {
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
 
-export const CompetitionSelector = () => {
+export const CompetitionSelector = ({
+	showDetailed = false
+}: {
+	showDetailed?: boolean
+}) => {
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
@@ -58,9 +62,13 @@ export const CompetitionSelector = () => {
 			<>
 				<Paper sx={{ padding: "1em" }}>
 					<Grid container spacing="2">
-						<Grid item xs={12}>
-							<h4>Select a Competition</h4>
-						</Grid>
+						{showDetailed ? (
+							<Grid item xs={12}>
+								<h4>Select a Competition</h4>
+							</Grid>
+						) : (
+							<></>
+						)}
 						<Grid item xs={12}>
 							<FormControl fullWidth={true}>
 								<InputLabel>Select Competition</InputLabel>
@@ -86,9 +94,13 @@ export const CompetitionSelector = () => {
 								</Select>
 							</FormControl>
 						</Grid>
-						<Grid item xs={12}>
-							<AddCompetition />
-						</Grid>
+						{showDetailed ? (
+							<Grid item xs={12}>
+								<AddCompetition />
+							</Grid>
+						) : (
+							<></>
+						)}
 					</Grid>
 				</Paper>
 			</>

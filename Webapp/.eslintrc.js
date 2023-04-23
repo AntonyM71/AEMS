@@ -74,7 +74,6 @@ module.exports = {
 			"warn",
 			"always"
 		],
-		camelcase: "warn",
 		"comma-dangle": "warn",
 		complexity: [
 			"warn",
@@ -212,15 +211,7 @@ module.exports = {
 					"jsdoc-format": true,
 					"no-boolean-literal-compare": true,
 					"no-reference-import": true,
-					"no-unnecessary-callback-wrapper": true,
-					"one-line": [
-						true,
-						"check-catch",
-						"check-finally",
-						"check-else",
-						"check-open-brace",
-						"check-whitespace"
-					]
+					"no-unnecessary-callback-wrapper": true
 				}
 			}
 		]

@@ -34,17 +34,18 @@ import {
 import ScoredMove from "./ScoredMove"
 
 interface propsType {
-	paddlerInfo: {
-		id: string
-		first_name: string
-		last_name: string
-		bib: string
-		scoresheetId: string
-	}
+	paddlerInfo: AthleteInfo
 	addScoredMove: addScoredMoveType
 	addScoredBonus: addScoredBonusType
 }
 
+export interface AthleteInfo {
+	id: string
+	first_name: string
+	last_name: string
+	bib: string
+	scoresheetId: string
+}
 export const InfoBar = ({
 	addScoredMove,
 	addScoredBonus,
@@ -121,7 +122,7 @@ export const InfoBar = ({
 		<div style={{ height: "100%" }}>
 			<Grid container spacing={2} alignItems="stretch">
 				<Grid item xs={2}>
-					<Paper>
+					<Paper sx={{ height: "max-content" }}>
 						<h4>Run Score </h4>
 						<div className="score" id="runScore">
 							{currentScore}
@@ -129,7 +130,7 @@ export const InfoBar = ({
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
-					<Paper>
+					<Paper sx={{ flex: "true" }}>
 						<h4 data-testid="display-bib-number">
 							Paddler No: {paddlerInfo.bib}
 						</h4>
@@ -172,7 +173,7 @@ export const InfoBar = ({
 					</Paper>
 				</Grid>
 				<Grid item xs={4}>
-					<Paper>
+					<Paper sx={{ flex: "true" }}>
 						<h4>Run</h4>
 						<div
 							className="score"

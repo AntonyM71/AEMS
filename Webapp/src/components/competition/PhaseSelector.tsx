@@ -1,6 +1,5 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
-import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
 import InputLabel from "@mui/material/InputLabel"
@@ -25,7 +24,11 @@ import {
 	useInsertManyPhasePostMutation
 } from "../../redux/services/aemsApi"
 
-const PhasesSelector = () => {
+const PhasesSelector = ({
+	showDetailed = false
+}: {
+	showDetailed?: boolean
+}) => {
 	const dispatch = useDispatch()
 	const selectedEvent = useSelector(getSelectedEvent)
 	const selectedCompetition = useSelector(getSelectedCompetition)
@@ -69,10 +72,13 @@ const PhasesSelector = () => {
 			return (
 				<Paper sx={{ padding: "1em" }}>
 					<Grid container spacing="2">
-						{" "}
-						<Grid item xs={12}>
-							<h4>Select an Phase</h4>
-						</Grid>
+						{showDetailed ? (
+							<Grid item xs={12}>
+								<h4>Select an Phase</h4>
+							</Grid>
+						) : (
+							<></>
+						)}
 						<Grid item xs={12}>
 							<FormControl fullWidth={true}>
 								<InputLabel>Select Phase</InputLabel>
@@ -92,12 +98,13 @@ const PhasesSelector = () => {
 								</Select>
 							</FormControl>
 						</Grid>
-						<Grid item>
-							<Divider />
-						</Grid>
-						<Grid item>
-							<AddPhase refetch={refetch} />
-						</Grid>
+						{showDetailed ? (
+							<Grid item>
+								<AddPhase refetch={refetch} />
+							</Grid>
+						) : (
+							<></>
+						)}
 					</Grid>
 				</Paper>
 			)

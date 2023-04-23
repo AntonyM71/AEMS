@@ -14,11 +14,12 @@ import {
 	useGetManyAthleteheatGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../../redux/services/aemsApi"
-import { InfoBar } from "./InfoBar"
+import { AthleteInfo, InfoBar } from "./InfoBar"
 import {
 	addScoredBonusType,
 	addScoredMoveType,
 	directionType,
+	movesType,
 	scoredMovesType
 } from "./Interfaces"
 import { MoveCard } from "./MoveCard"
@@ -145,7 +146,7 @@ const Float = () => {
 							<Grid item xs={3} key={move.id}>
 								<MoveCard
 									key={move.id}
-									move={move}
+									move={move as movesType}
 									addScoredMove={addScoredMove}
 									addScoredBonus={addScoredBonus}
 									data-testid={
@@ -158,7 +159,7 @@ const Float = () => {
 				</Grid>
 				<Grid item xs={5}>
 					<InfoBar
-						paddlerInfo={currentAthlete}
+						paddlerInfo={currentAthlete as AthleteInfo}
 						addScoredMove={addScoredMove}
 						addScoredBonus={addScoredBonus}
 						data-testid={"infobar"}

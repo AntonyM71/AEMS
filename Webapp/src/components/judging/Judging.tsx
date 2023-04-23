@@ -45,9 +45,6 @@ const Judging = () => {
 									spacing={2}
 									alignItems={"stretch"}
 								>
-									<Grid item xs={12}>
-										<h1>Scribes</h1>
-									</Grid>
 									<Grid item xs>
 										<Link
 											component={RouterLink}
@@ -105,7 +102,7 @@ const Judging = () => {
 	return (
 		<Grid container alignItems="stretch">
 			<Grid item xs={12}>
-				<SelectorDisplay />
+				<SelectorDisplay showDetailed={true} />
 			</Grid>
 		</Grid>
 	)
