@@ -1,9 +1,9 @@
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import { useState } from "react"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
-import { AddScoresheet } from "./AddScoresheet"
-import { ScoresheetMoves } from "./ScoresheetBuilder"
+import { AddScoresheet } from "../components/ScoresheetBuilder/AddScoresheet"
+import { ScoresheetMoves } from "../components/ScoresheetBuilder/ScoresheetBuilder"
+import { SelectScoresheet } from "../components/judging/ScoresheetSelector"
 
 export const ScoresheetBuilder = () => {
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")

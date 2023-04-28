@@ -7,10 +7,10 @@ import {
 	getSelectedEvent,
 	getSelectedHeat,
 	getSelectedPhase
-} from "../../../redux/atoms/competitions"
+} from "../redux/atoms/competitions"
 
-import { SelectorDisplay } from "../../competition/MainSelector"
-import Float from "../sheets/Float/Float"
+import { SelectorDisplay } from "../components/competition/MainSelector"
+import Float from "../components/judging/sheets/Float/Float"
 
 // eslint-disable-next-line complexity
 const Scribe = () => {

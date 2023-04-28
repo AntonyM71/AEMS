@@ -2,18 +2,18 @@ import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
+import RouterLink from "next/link"
 import { useSelector } from "react-redux"
-import { Link as RouterLink } from "react-router-dom"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
 	getSelectedHeat,
 	getSelectedPhase
-} from "../../redux/atoms/competitions"
+} from "../redux/atoms/competitions"
 
-import { HeatSummaryTable } from "../competition/HeatSummaryTable"
-import { SelectorDisplay } from "../competition/MainSelector"
-// eslint-disable-next-line complexity
+import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
+import { SelectorDisplay } from "../components/competition/MainSelector"
+// eslint-disable-href=-line complexity
 
 // const competitionsThing = getCompetitionsFromServer()
 
@@ -21,14 +21,14 @@ import { SelectorDisplay } from "../competition/MainSelector"
 // 	() => import("../competition/CompetitionSelector")
 // )
 const Judging = () => {
-	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+	// eslint-disable-href=-line @typescript-eslint/explicit-member-accessibility
 
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
 	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	// eslint-disable-next-line complexity
+	// eslint-disable-href=-line complexity
 	const competition = selectedCompetition
 	const event = selectedEvent
 	const phase = selectedPhase
