@@ -12,86 +12,99 @@ import { useDispatch, useSelector } from "react-redux"
 import RouterLink from "next/link"
 // import darkLogo from "../../../public/images/images/THFLogoBlackOrange.png"
 // import lightLogo from "../../../public/images/images/THFLogoWhiteOrange.png"
+import Grid from "@mui/material/Grid"
+import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 
 const Header = () => {
 	const env = "development"
 	const dispatch = useDispatch()
 	const preferDark = useSelector(getPreferDark)
+	const userRole = useSelector(getUserRole)
 
 	return (
 		<AppBar position="sticky" color="default" elevation={0}>
 			<Toolbar variant="dense">
-				<img
-					src={
-						preferDark
-							? "/images/THFLogoWhiteOrange.png"
-							: "/images/THFLogoBlackOrange.png"
-					}
-					alt="Hurley Foundation Events Logo"
-					style={{
-						height: "40px",
-						justifyContent: "center"
-					}}
-				></img>
-
-				<List component="nav">
-					<ListItem component="div">
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									href="/"
-									color="inherit"
-								>
-									Home
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									href={"/Judging"}
-									color="inherit"
-								>
-									Judging
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									href={"/ScoresheetBuilder"}
-									color="inherit"
-								>
-									Scoresheet Builder
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<Typography color="textPrimary" variant="body1">
-								<Link
-									component={RouterLink}
-									href={"/Score"}
-									color="inherit"
-								>
-									Score
-								</Link>
-							</Typography>
-						</ListItemText>
-						<ListItemText inset>
-							<DarkModeButton />
-						</ListItemText>
-					</ListItem>
-				</List>
-
-				{/* <UserCard /> */}
+				<Grid
+					container
+					direction="row"
+					justifyContent="space-between"
+					alignItems="center"
+				>
+					<img
+						src={
+							preferDark
+								? "/images/THFLogoWhiteOrange.png"
+								: "/images/THFLogoBlackOrange.png"
+						}
+						alt="Hurley Foundation Events Logo"
+						style={{
+							height: "40px",
+							justifyContent: "center"
+						}}
+					></img>
+					<Grid item>
+						<LinkList />
+					</Grid>{" "}
+					<Grid item>
+						<h4>{userRole}</h4>
+						{/* <UserCard /> */}
+					</Grid>
+					<Grid item>
+						<DarkModeButton />
+					</Grid>
+				</Grid>
 			</Toolbar>
 		</AppBar>
 	)
 }
+
+const LinkList = () => (
+	<List component="nav" dense sx={{ paddingY: 0 }}>
+		<ListItem component="div">
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link component={RouterLink} href="/" color="inherit">
+						Home
+					</Link>
+				</Typography>
+			</ListItemText>
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link
+						component={RouterLink}
+						href={"/Judging"}
+						color="inherit"
+					>
+						Judging
+					</Link>
+				</Typography>
+			</ListItemText>
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link
+						component={RouterLink}
+						href={"/ScoresheetBuilder"}
+						color="inherit"
+					>
+						Scoresheet Builder
+					</Link>
+				</Typography>
+			</ListItemText>
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link
+						component={RouterLink}
+						href={"/Score"}
+						color="inherit"
+					>
+						Score
+					</Link>
+				</Typography>
+			</ListItemText>
+		</ListItem>
+	</List>
+)
 export const DarkModeButton = () => {
 	const dispatch = useDispatch()
 	const preferDark = useSelector(getPreferDark)

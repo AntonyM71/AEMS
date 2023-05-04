@@ -179,7 +179,7 @@ const AddAthletesToHeat = () => {
 			</Grid>
 			<Grid item xs>
 				<Button
-					onClick={handleNewPaddlerSubmit}
+					onClick={() => void handleNewPaddlerSubmit()}
 					variant="contained"
 					fullWidth
 					sx={{ height: "100%" }}

@@ -1,24 +1,29 @@
 import Grid from "@mui/material/Grid"
-import { useSelector } from "react-redux"
-import { Redirect } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 
+import { useEffect } from "react"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
 	getSelectedHeat,
 	getSelectedPhase
-} from "../redux/atoms/competitions"
+} from "../../../redux/atoms/competitions"
 
-import { SelectorDisplay } from "../components/competition/MainSelector"
-import Float from "../components/judging/sheets/Float/Float"
+import { updateUserRole } from "../../../redux/atoms/scoring"
+import { SelectorDisplay } from "../../competition/MainSelector"
+import Float from "./Scribe"
 
 // eslint-disable-next-line complexity
-const Scribe = () => {
+const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
+	const dispatch = useDispatch()
 	const competition = useSelector(getSelectedCompetition)
 	const event = useSelector(getSelectedEvent)
 	const phase = useSelector(getSelectedPhase)
 	const selectedHeat = useSelector(getSelectedHeat)
-	const isFloat = () => true
+	useEffect(() => {
+		dispatch(updateUserRole(`Scribe ${scribeNumber}`))
+	})
+
 	if (competition && event && phase && selectedHeat) {
 		return (
 			<Grid container spacing={2} alignContent="stretch">
@@ -26,14 +31,11 @@ const Scribe = () => {
 					<SelectorDisplay showDetailed={false} />
 				</Grid>
 				<Grid item xs={12}>
-					<Float />
+					<Float scribeNumber={scribeNumber} />
 				</Grid>
 			</Grid>
 		)
 	}
-
-	// if we lose the selection into (refresh), return to the judging page
-	return <Redirect to="/judging" />
 }
 
 export default Scribe

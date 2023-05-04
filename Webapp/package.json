@@ -49,8 +49,8 @@
 	"scripts": {
 		"start": "next dev",
 		"build": "next build",
-		"test": "next test --coverage --watchAll=false",
-		"testwatch": "next test --coverage",
+		"test": "next test ./src",
+		"testwatch": "next test --watch",
 		"eject": "next eject",
 		"lint": "npx eslint ./src",
 		"lintfix": "npx eslint ./src --fix",

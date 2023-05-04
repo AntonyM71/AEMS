@@ -1,6 +1,6 @@
 import { fireEvent, screen, within } from "@testing-library/react"
 import { BrowserRouter } from "react-router-dom"
-import { renderWithProviders } from "../../../../../testUtils"
+import { renderWithProviders } from "../../../../testUtils"
 
 import { calculateNewIndex, InfoBar } from "../InfoBar"
 

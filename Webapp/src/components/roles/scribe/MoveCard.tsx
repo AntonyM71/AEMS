@@ -4,13 +4,52 @@ import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
 
-import { MovePropsType } from "./Interfaces"
+import { useDispatch, useSelector } from "react-redux"
+import { v4 as uuidv4 } from "uuid"
+import {
+	getScoredMoves,
+	updateCurrentMove,
+	updateScoredMoves
+} from "../../../redux/atoms/scoring"
+import {
+	MovePropsType,
+	addScoredMoveType,
+	directionType,
+	scoredMovesType
+} from "./Interfaces"
 
 export const MoveCard = React.memo((props: MovePropsType) => {
+	const dispatch = useDispatch()
+	const setScoredMoves = (newMoves: scoredMovesType[]) =>
+		dispatch(updateScoredMoves(newMoves))
+	const setCurrentMove = (newMove: string) =>
+		dispatch(updateCurrentMove(newMove))
 
+	const scoredMovesList = useSelector(getScoredMoves)
+
+	const addScoredMove: addScoredMoveType = (
+		id: string,
+		direction: directionType
+	) => {
+		const newMoveId = uuidv4()
+		const newScoredMoves: scoredMovesType[] = [
+			...scoredMovesList,
+			{
+				id: newMoveId,
+				timestamp: Date.now().toString(),
+				moveId: id,
+				direction,
+
+				status: "active"
+			}
+		]
+
+		setScoredMoves(newScoredMoves)
+		setCurrentMove(newMoveId)
+	}
 	if (props.move.direction === "LR") {
 		return (
-			<Paper >
+			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1} alignItems="stretch">
@@ -21,7 +60,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								fullWidth
 								color="primary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "L")
+									addScoredMove(props.move.id, "L")
 								}
 								data-testid={"button-" + props.move.id + "-l"}
 							>
@@ -35,7 +74,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "R")
+									addScoredMove(props.move.id, "R")
 								}
 								data-testid={"button-" + props.move.id + "-r"}
 							>
@@ -48,7 +87,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "FB") {
 		return (
-			<Paper >
+			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -59,7 +98,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "F")
+									addScoredMove(props.move.id, "F")
 								}
 								data-testid={"button-" + props.move.id + "-f"}
 							>
@@ -73,7 +112,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "B")
+									addScoredMove(props.move.id, "B")
 								}
 								data-testid={"button-" + props.move.id + "-b"}
 							>
@@ -86,7 +125,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 		)
 	} else if (props.move.direction === "LRFB") {
 		return (
-			<Paper >
+			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1}>
@@ -97,7 +136,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "LF")
+									addScoredMove(props.move.id, "LF")
 								}
 								data-testid={"button-" + props.move.id + "-lf"}
 							>
@@ -111,7 +150,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button2"}
 								color="secondary"
 								onClick={() =>
-									props.addScoredMove(props.move.id, "RB")
+									addScoredMove(props.move.id, "RB")
 								}
 								data-testid={"button-" + props.move.id + "-rb"}
 							>
@@ -122,29 +161,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else {
-		return (
-			<Paper >
-				<Typography align="center">{props.move.name}</Typography>
-				<div className="moveButton">
-					<Grid container spacing={1}>
-						<Grid item xs={12}>
-							<Button
-								variant="contained"
-								fullWidth
-								aria-label={"button1"}
-								color="primary"
-								onClick={() =>
-									props.addScoredMove(props.move.id, "A")
-								}
-								data-testid={"button-" + props.move.id + "-a"}
-							>
-								Any
-							</Button>
-						</Grid>
-					</Grid>
-				</div>
-			</Paper>
-		)
 	}
+
+	return <></>
 })

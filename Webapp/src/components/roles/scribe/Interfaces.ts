@@ -18,19 +18,21 @@ export interface movesType {
 }
 
 export type AvailableMoveDirections = "SINGLE" | "LR" | "FB" | "LRFB"
-export type directionType = "L" | "R" | "F" | "B" | "LF" | "RB" | "A"
+export type directionType = frontLeftDirections | rightBackDirections
+export type frontLeftDirections = "LF" | "L" | "F"
+export type rightBackDirections = "RB" | "R" | "B"
 export type removeScoredMoveType = (id: string) => void
 export interface scoredMovesType {
 	id: string
-	timestamp: Date
+	timestamp: string
 	moveId: string
 	direction: directionType
-	bonuses: scoredBonusType[]
 	status: string
 }
 export interface scoredBonusType {
 	id: string
-	timestamp: Date
+	timestamp: string
+	moveId: string
 	bonusId: string
 }
 
@@ -47,6 +49,4 @@ export type addScoredBonusType = (id: string, moveId: string) => void
 
 export interface MovePropsType {
 	move: movesType
-	addScoredMove: addScoredMoveType
-	addScoredBonus: addScoredBonusType
 }

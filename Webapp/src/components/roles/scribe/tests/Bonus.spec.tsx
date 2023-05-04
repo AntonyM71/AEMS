@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react"
-import { renderWithProviders } from "../../../../../testUtils"
+import { renderWithProviders } from "../../../../testUtils"
 import { Bonus } from "../Bonus"
 import { BonusPropsType } from "../Interfaces"
 

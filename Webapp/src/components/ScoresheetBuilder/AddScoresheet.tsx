@@ -53,7 +53,7 @@ export const AddScoresheet = ({
 					fullWidth
 					onChange={handleChange}
 					value={scoresheetName}
-					onKeyUp={submitScoresheet}
+					onKeyUp={void submitScoresheet}
 				/>
 			</Grid>
 		</Grid>

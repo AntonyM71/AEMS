@@ -2,9 +2,9 @@ import { fireEvent, screen, within } from "@testing-library/react"
 import { BrowserRouter } from "react-router-dom"
 import * as uuid from "uuid"
 
-import { renderWithProviders } from "../../../../../testUtils"
-import Float from "../Float"
+import { renderWithProviders } from "../../../../testUtils"
 import { movesType } from "../Interfaces"
+import Float from "../Scribe"
 import { testMoves } from "./TestData"
 
 describe("The test-move cards are rendered", () => {

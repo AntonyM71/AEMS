@@ -18,7 +18,7 @@ export const handleErrors = (e: any) => {
 			: e.reason
 			? e.reason
 			: "Undefined Error"
-		toast.error(message)
+		toast.error(JSON.stringify(message))
 	} else {
 		toast.error("Something Went Wrong :(")
 	}
