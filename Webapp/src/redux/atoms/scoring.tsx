@@ -4,7 +4,6 @@ import {
 	scoredBonusType,
 	scoredMovesType
 } from "../../components/roles/scribe/Interfaces"
-import { calculateRunScore } from "../../utils/scoringUtils"
 import { RootState } from "../store"
 export const isTest = false
 
@@ -74,12 +73,5 @@ export const getScoredBonuses = (state: RootState) => state.score.scoredBonuses
 export const getCurrentPaddlerIndex = (state: RootState) =>
 	state.score.selectedPaddler
 export const getCurrentRun = (state: RootState) => state.score.selectedRun
-
-export const getCurrentScore = (state: RootState) => {
-	const scoredMoves = getScoredMoves(state)
-	const scoredBonuses = getScoredBonuses(state)
-
-	return calculateRunScore(scoredMoves, scoredBonuses)
-}
 
 export const getUserRole = (state: RootState) => state.score.userRole

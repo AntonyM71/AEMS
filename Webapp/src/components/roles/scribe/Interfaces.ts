@@ -22,6 +22,7 @@ export type directionType = frontLeftDirections | rightBackDirections
 export type frontLeftDirections = "LF" | "L" | "F"
 export type rightBackDirections = "RB" | "R" | "B"
 export type removeScoredMoveType = (id: string) => void
+
 export interface scoredMovesType {
 	id: string
 	timestamp: string

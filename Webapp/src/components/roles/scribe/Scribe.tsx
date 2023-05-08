@@ -54,7 +54,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const submitScores = () => {
 		console.log(scribeNumber)
 	}
-	const movesList = useGetManyAvailablemovesGetQuery({
+	const availableMoves = useGetManyAvailablemovesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
 		sheetIdList: [currentAthlete.scoresheetId]
 	})
@@ -70,7 +70,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			<Grid container spacing={3}>
 				<Grid item xs={7}>
 					<Grid container spacing={2}>
-						{movesList.data?.map((move) => (
+						{availableMoves.data?.map((move) => (
 							<Grid item xs={3} key={move.id}>
 								<MoveCard
 									key={move.id}
@@ -87,6 +87,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 					<InfoBar
 						paddlerInfo={currentAthlete as AthleteInfo}
 						data-testid={"infobar"}
+						availableMoves={availableMoves.data as movesType[]}
 					/>
 				</Grid>
 			</Grid>

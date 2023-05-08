@@ -5,8 +5,6 @@ import Link from "@mui/material/Link"
 import toast from "react-hot-toast"
 import { Link as RouterLink } from "react-router-dom"
 
-import { routes } from "../routes/Router"
-
 export const UserCard = () => {
 	const currentUserName = ""
 	if (!currentUserName) {
@@ -22,11 +20,7 @@ export const UserCard = () => {
 					<Avatar>?</Avatar>
 				</Grid>
 				<Grid item xs={5}>
-					<Link
-						component={RouterLink}
-						to={routes.login.root}
-						color="inherit"
-					>
+					<Link component={RouterLink} to={"/login"} color="inherit">
 						<h4>Log In</h4>
 					</Link>
 				</Grid>

@@ -63,13 +63,14 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const scoresheetId = athletes.data
 		? athletes.data[currentPaddlerIndex].scoresheet!
 		: ""
+
 	const availableMovesList = useGetManyAvailablemovesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [scoresheetId]
+		idListComparisonOperator: "Equal",
+		idList: [props.scoredMove.moveId]
 	})
 	const bonusList = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [scoresheetId]
+		moveIdListComparisonOperator: "Equal",
+		moveIdList: [props.scoredMove.moveId]
 	})
 	const filteredMoves =
 		availableMovesList.data?.filter(
@@ -102,9 +103,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 					</Grid>
 					<Grid item>
 						<Typography align="center">
-							{props.scoredMove.direction !== "A"
-								? props.scoredMove.direction
-								: "-"}
+							{props.scoredMove.direction}
 						</Typography>
 					</Grid>
 					<Grid item xs={4}>
