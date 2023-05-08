@@ -1,9 +1,9 @@
 import { createAction, createReducer } from "@reduxjs/toolkit"
 import {
 	movesType,
+	scoredBonusType,
 	scoredMovesType
-} from "../../components/judging/sheets/Float/Interfaces"
-import { calculateRunScore } from "../../utils/scoringUtils"
+} from "../../components/roles/scribe/Interfaces"
 import { RootState } from "../store"
 export const isTest = false
 
@@ -12,7 +12,9 @@ export interface ScoringStateType {
 	selectedRun: number
 
 	scoredMoves: scoredMovesType[]
+	scoredBonuses: scoredBonusType[]
 	currentMove: string
+	userRole: string
 }
 
 const initialState: ScoringStateType = {
@@ -20,11 +22,17 @@ const initialState: ScoringStateType = {
 	selectedRun: 0,
 
 	scoredMoves: [],
-	currentMove: ""
+	scoredBonuses: [],
+	currentMove: "",
+	userRole: ""
 }
-export const updateCurrentMove = createAction<string>("availableMovesListState")
+export const updateCurrentMove = createAction<string>("currentMove")
+export const updateUserRole = createAction<string>("userRole")
 export const updateScoredMoves =
 	createAction<scoredMovesType[]>("updateScoredMoves")
+export const updateScoredBonuses = createAction<scoredBonusType[]>(
+	"updateScoredBonuses"
+)
 export const updateAvailableMoves = createAction<movesType[]>(
 	"updateAvailableMoves"
 )
@@ -45,19 +53,25 @@ export const scoringReducer = createReducer(initialState, (builder) => {
 			// "mutate" the array by calling push()
 			state.scoredMoves = action.payload
 		})
+		.addCase(updateScoredBonuses, (state, action) => {
+			// "mutate" the array by calling push()
+			state.scoredBonuses = action.payload
+		})
 		.addCase(updateCurrentMove, (state, action) => {
 			// "mutate" the array by calling push()
 			state.currentMove = action.payload
 		})
+		.addCase(updateUserRole, (state, action) => {
+			// "mutate" the array by calling push()
+			state.userRole = action.payload
+		})
 })
 
 export const getScoredMoves = (state: RootState) => state.score.scoredMoves
+export const getScoredBonuses = (state: RootState) => state.score.scoredBonuses
 
 export const getCurrentPaddlerIndex = (state: RootState) =>
 	state.score.selectedPaddler
 export const getCurrentRun = (state: RootState) => state.score.selectedRun
-export const getCurrentScore = (state: RootState) => {
-	const scoredMoves = getScoredMoves(state)
 
-	return calculateRunScore(scoredMoves)
-}
+export const getUserRole = (state: RootState) => state.score.userRole

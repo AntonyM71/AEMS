@@ -181,7 +181,11 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 				)}
 			</Grid>
 			<Grid item xs={12}>
-				<Button variant="contained" fullWidth onClick={submitNewEvent}>
+				<Button
+					variant="contained"
+					fullWidth
+					onClick={() => void submitNewEvent()}
+				>
 					Add Event
 				</Button>
 			</Grid>

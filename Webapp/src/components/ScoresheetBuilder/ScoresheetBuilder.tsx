@@ -187,7 +187,7 @@ export const ScoresheetMoves = ({
 					addMove={addNewMove}
 				/>
 				<Button
-					onClick={submitDataToDB}
+					onClick={() => void submitDataToDB()}
 					variant="contained"
 					color="secondary"
 				>

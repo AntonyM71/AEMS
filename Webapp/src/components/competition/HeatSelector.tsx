@@ -182,7 +182,11 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 				)}
 			</Grid>
 			<Grid item xs={12}>
-				<Button variant="contained" fullWidth onClick={submitNewHeat}>
+				<Button
+					variant="contained"
+					fullWidth
+					onClick={() => void submitNewHeat()}
+				>
 					Add Heat
 				</Button>
 			</Grid>

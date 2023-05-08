@@ -70,10 +70,10 @@ export const ScoresheetBuilderHeader = ({
 			))}
 			<Grid item xs={2}>
 				<TextField
-					label="New Bonus"
+					label="Add New Bonus"
 					error={bonusAlreadyExists}
 					fullWidth
-					variant="standard"
+					variant="outlined"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setNewBonus(event.target.value)}

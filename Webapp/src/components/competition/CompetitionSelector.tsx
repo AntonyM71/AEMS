@@ -117,7 +117,7 @@ const AddCompetition = () => {
 	const { refetch } = useGetManyCompetitionGetQuery({})
 	const submitCompetition = async (
 		e: React.KeyboardEvent<HTMLDivElement>
-	) => {
+	): void => {
 		if (e.key === "Enter") {
 			if (competitionName) {
 				await postNewCompetition({

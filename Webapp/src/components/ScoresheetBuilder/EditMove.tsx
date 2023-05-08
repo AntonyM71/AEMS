@@ -7,7 +7,7 @@ export const EditMove = ({
 	moveData,
 	setMoveData
 }: {
-	moveData: MoveData,
+	moveData: MoveData
 	setMoveData: (m: MoveData) => void
 }) => (
 	<>
@@ -32,8 +32,6 @@ export const EditMove = ({
 				variant="outlined"
 				fullWidth
 				onChange={(event: SelectChangeEvent<string>): void => {
-					console.log(event.target.value)
-
 					setMoveData({
 						...moveData,
 						direction: event.target.value as MoveDirections
