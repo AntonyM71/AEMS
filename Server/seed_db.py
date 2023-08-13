@@ -1,7 +1,6 @@
 from typing import List
 
-from alembic import op
-from db.models import Competition, Event
+from db.models import Competition
 
 comp: List[Competition] = [
     {

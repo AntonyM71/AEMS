@@ -62,7 +62,7 @@ export const AddNewMove = ({
 					variant="contained"
 					sx={{ height: "100%" }}
 				>
-					Add to List
+					Add
 				</Button>
 			</Grid>
 		</Grid>

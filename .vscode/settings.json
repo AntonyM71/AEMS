@@ -1,4 +1,5 @@
 {
   "mui-snippets.importPaths": "second level",
-  "mui-snippets.showNotesOnStartup": false
+  "mui-snippets.showNotesOnStartup": false,
+  "python.linting.mypyEnabled": true
 }

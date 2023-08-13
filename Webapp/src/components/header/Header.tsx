@@ -18,12 +18,11 @@ import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 
 const Header = () => {
 	const env = "development"
-	const dispatch = useDispatch()
 	const preferDark = useSelector(getPreferDark)
 	const userRole = useSelector(getUserRole)
 
 	return (
-		<AppBar position="sticky" color="default" elevation={0}>
+		<AppBar position="sticky" color={"default"} elevation={0}>
 			<Toolbar variant="dense">
 				<Grid
 					container

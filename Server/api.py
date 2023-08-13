@@ -1,16 +1,24 @@
 from typing import List, Literal
 from uuid import UUID
 
-from db.models import (Athlete, AthleteHeat, AvailableBonuses, AvailableMoves,
-                       Competition, Event, Heat, Phase, Run, ScoredBonuses,
-                       ScoredMoves, ScoreSheet)
+from db.models import (
+    Athlete,
+    AthleteHeat,
+    AvailableBonuses,
+    AvailableMoves,
+    Competition,
+    Event,
+    Heat,
+    Phase,
+    ScoredBonuses,
+    ScoredMoves,
+    ScoreSheet,
+)
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_quickcrud.crud_router import (SqlType,
-                                           generic_sql_crud_router_builder)
+from fastapi_quickcrud.crud_router import SqlType, generic_sql_crud_router_builder
 from pydantic import BaseModel
-from sqlalchemy import create_engine, delete
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 database_address = "postgresql://pi:kayak1@192.168.0.28/aems"
@@ -62,15 +70,6 @@ crud_route_heat = generic_sql_crud_router_builder(
     tags=["heat"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
-    foreign_include=[Run],
-)
-crud_route_run = generic_sql_crud_router_builder(
-    db_model=Run,
-    prefix="/run",
-    tags=["run"],
-    db_session=get_transaction_session,
-    sql_type=SqlType("postgresql"),
-    # foreign_include=[Run]
 )
 
 crud_route_athlete = generic_sql_crud_router_builder(
@@ -139,7 +138,6 @@ app = FastAPI()
         crud_route_event,
         crud_route_phase,
         crud_route_heat,
-        crud_route_run,
         crud_route_athlete,
         crud_route_scoresheet,
         crud_route_availablemoves,
@@ -166,7 +164,6 @@ app.add_middleware(
 
 
 class PydanticAvailableMoves(BaseModel):
-
     id: UUID
     sheet_id: UUID
     name: str
@@ -197,20 +194,21 @@ async def addUpdateScoresheet(
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),
 ):
-
     print([bonus.sheet_id for bonus in scoresheet.bonuses])
     with db.begin():
-        db.query(AvailableBonuses).filter( AvailableBonuses.sheet_id== scoresheet_id).delete()
-        db.query(AvailableMoves).filter(        AvailableMoves.sheet_id == scoresheet_id
-                    ).delete()
-
+        db.query(AvailableBonuses).filter(
+            AvailableBonuses.sheet_id == scoresheet_id
+        ).delete()
+        db.query(AvailableMoves).filter(
+            AvailableMoves.sheet_id == scoresheet_id
+        ).delete()
 
         db.bulk_save_objects(
-                [AvailableMoves(**move.dict()) for move in scoresheet.moves]
-            )
+            [AvailableMoves(**move.dict()) for move in scoresheet.moves]
+        )
         db.bulk_save_objects(
-                [AvailableBonuses(**bonus.dict()) for bonus in scoresheet.bonuses]
-            )
+            [AvailableBonuses(**bonus.dict()) for bonus in scoresheet.bonuses]
+        )
 
         db.commit()
 
