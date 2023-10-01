@@ -72,6 +72,6 @@ export const getScoredBonuses = (state: RootState) => state.score.scoredBonuses
 
 export const getCurrentPaddlerIndex = (state: RootState) =>
 	state.score.selectedPaddler
-export const getCurrentRun = (state: RootState) => state.score.selectedRun
+export const getSelectedRun = (state: RootState) => state.score.selectedRun
 
 export const getUserRole = (state: RootState) => state.score.userRole

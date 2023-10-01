@@ -31,6 +31,7 @@ export interface AthleteInfo {
 }
 export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 	const dispatch = useDispatch()
+
 	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
 	useEffect(() => {
 		fetchedMoves = fetchedScoredMoves()

@@ -59,14 +59,6 @@ class AthleteHeat(Base):
     athletes = relationship("Athlete", back_populates="heats")
 
 
-# class Run(Base):
-#     __tablename__ = "run"
-#     id = Column(UUID(as_uuid=True), primary_key=True)
-#     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"), nullable=False)
-#     heat = relationship("Heat", back_populates="runs")
-#     name = Column(String, nullable=False)
-#     schema = "public"
-
 
 class Athlete(Base):
     __tablename__ = "athlete"
@@ -83,7 +75,6 @@ class ScoreSheet(Base):
     __tablename__ = "scoreSheet"
     id = Column(UUID(as_uuid=True), primary_key=True, comment="Competition ID")
     name = Column(String, nullable=False)
-    # athletes = relationship("Athlete", back_populates="scoresheet_id")
     schema = "public"
 
 
@@ -91,7 +82,7 @@ class AvailableMoves(Base):
     __tablename__ = "availableMoves"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
-    # run = relationship("ScoreSheet", foreign_keys=[sheet_id])
+
     name = Column(String, nullable=False)
     fl_score = Column(Integer, nullable=False)
     rb_score = Column(Integer, nullable=False)
