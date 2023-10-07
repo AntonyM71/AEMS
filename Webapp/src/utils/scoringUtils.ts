@@ -46,7 +46,7 @@ export function calculateSingleJudgeRunScore(
 				frontLeftDirectionValues.includes(ami.direction)
 			)
 			leftRightPartition.map((directionalScoredMoves) => {
-				if (directionalScoredMoves) {
+				if (directionalScoredMoves.length !== 0) {
 					runScore =
 						runScore +
 						directionalScoredMoves.reduce(
@@ -112,13 +112,6 @@ const getBonusScore = (
 	)
 
 	return scoredBonusValues?.score || 0
-}
-// TODO add in bonus values and calculate from them
-const calculateScoreWithBonuses = (scoredMoveObject: movesType) => {
-	const score = []
-	score.push(scoredMoveObject.fl_score)
-
-	return score.reduce((a, b) => a + b, 0)
 }
 
 export interface MoveScoreInfo {
