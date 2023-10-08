@@ -36,11 +36,9 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 			...scoredMovesList,
 			{
 				id: newMoveId,
-				timestamp: Date.now().toString(),
-				moveId: id,
-				direction,
 
-				status: "active"
+				moveId: id,
+				direction
 			}
 		]
 

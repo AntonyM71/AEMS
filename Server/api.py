@@ -23,6 +23,8 @@ app = FastAPI()
 [
     app.include_router(i)
     for i in [
+        scoring_router,
+        scoresheet_router,
         crud_route_competition,
         crud_route_event,
         crud_route_phase,
@@ -34,8 +36,7 @@ app = FastAPI()
         crud_route_scoredmoves,
         crud_route_scoredbonuses,
         crud_route_athleteheat,
-        scoring_router,
-        scoresheet_router,
+
     ]
 ]
 

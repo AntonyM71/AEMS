@@ -40,7 +40,8 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 	const fetchedScoredMoves = () => []
 
 	const scoredMoves = useSelector(getScoredMoves)
-	const ressetScoredMoves = () => dispatch(updateScoredMoves([]))
+	const ressetScoredMovesAndBonuses = () => dispatch(updateScoredMoves([]))
+
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
 
@@ -48,13 +49,10 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 		dispatch(updateScoredMoves(movesList))
 
 	const clearRun = () => {
-		ressetScoredMoves()
+		ressetScoredMovesAndBonuses()
 		setCurrentMove("")
 	}
-	const resetRun = () => {
-		setScoredMoves(fetchedMoves)
-		setCurrentMove("")
-	}
+
 	const bonusList = useGetManyAvailablebonusesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
 		sheetIdList: [paddlerInfo.scoresheetId]
@@ -88,16 +86,7 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 				<Grid item xs={4}>
 					<h4>Move Listing</h4>
 				</Grid>
-				<Grid item xs={4}>
-					<Button
-						onClick={resetRun}
-						variant="contained"
-						fullWidth
-						data-testid={"button-clear-run"}
-					>
-						Reset Run
-					</Button>
-				</Grid>
+
 				<Grid item xs={4}>
 					<Button
 						onClick={clearRun}

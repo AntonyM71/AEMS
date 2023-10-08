@@ -1,30 +1,57 @@
 import Grid from "@mui/material/Grid"
 import { flatten } from "lodash"
 import { useEffect, useMemo } from "react"
-import { useSelector } from "react-redux"
-import { getSelectedHeat } from "../../../redux/atoms/competitions"
+import { batch, useDispatch, useSelector } from "react-redux"
+import {
+	getSelectedHeat,
+	getSelectedPhase
+} from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getScoredBonuses,
 	getScoredMoves,
-	getSelectedRun
+	getSelectedRun,
+	updateScoredMovesAndBonuses
 } from "../../../redux/atoms/scoring"
 import {
 	PydanticScoredBonuses,
 	PydanticScoredMoves,
 	useGetManyAthleteheatGetQuery,
 	useGetManyAvailablemovesGetQuery,
+	useGetManyScoredbonusesGetQuery,
+	useGetManyScoredmovesGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
 import { AthleteInfo, InfoBar } from "./InfoBar"
-import { movesType, scoredBonusType, scoredMovesType } from "./Interfaces"
+import {
+	directionType,
+	movesType,
+	scoredBonusType,
+	scoredMovesType
+} from "./Interfaces"
 import { MoveCard } from "./MoveCard"
 
 const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
+	const dispatch = useDispatch()
 	const scoredMoves = useSelector(getScoredMoves)
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
+	const selectedPhase = useSelector(getSelectedPhase)
+
+	const setScoredMovesAndBonuses = (
+		movesList: scoredMovesType[],
+		bonusList: scoredBonusType[]
+	): void => {
+		batch(() => {
+			dispatch(
+				updateScoredMovesAndBonuses({
+					moves: movesList,
+					bonuses: bonusList
+				})
+			)
+		})
+	}
 
 	const athletes = useGetManyAthleteheatGetQuery({
 		heatIdListComparisonOperator: "Equal",
@@ -50,7 +77,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	}, [athletes])
 
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const currentAthlete = athleteList[currentPaddlerIndex]
+	const selectedAthlete = athleteList[currentPaddlerIndex]
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
 	const submitScores = () => {
@@ -66,8 +93,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		// ToDo: if statement here to only send the moves if they don't match the most recent returned requested moves?
 		void addUpdateMovesAndBonuses({
 			heatId: selectedHeat,
-			athleteId: currentAthlete.id!,
+			athleteId: selectedAthlete.id!,
 			runNumber: selectedRun.toString(),
+			phaseId: selectedPhase,
 			judgeId: scribeNumber,
 			addUpdateScoredMovesRequest: {
 				moves: formattedScoredMoves,
@@ -78,17 +106,68 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	useEffect(() => {
 		submitScores()
 	}, [scoredMoves, scoredBonuses])
+	const {
+		data: moveData,
+		refetch: refetchMoveData,
+		isFetching: isBonusFetching
+	} = useGetManyScoredmovesGetQuery({
+		runNumberList: [selectedRun.toString()],
+		runNumberListComparisonOperator: "Equal",
+		athleteIdList: [selectedAthlete.id!],
+		athleteIdListComparisonOperator: "Equal",
+		judgeIdList: [scribeNumber],
+		judgeIdListComparisonOperator: "Equal",
+		heatIdList: [selectedHeat],
+		heatIdListComparisonOperator: "Equal"
+	})
+	const {
+		data: bonusData,
+		refetch: refetchBonusData,
+		isFetching: isMoveFetching
+	} = useGetManyScoredbonusesGetQuery({
+		moveIdList: moveData ? moveData.map((m) => m.id!) : [],
+		moveIdListComparisonOperator: "In"
+	})
+	const getServerScores = async () => {
+		await refetchMoveData()
+		await refetchBonusData()
+	}
+	useEffect(() => {
+		if (!isMoveFetching && !isBonusFetching) {
+			setScoredMovesAndBonuses(
+				moveData
+					? moveData.map((m) => ({
+							moveId: m.move_id!,
+							id: m.id!,
+							direction: m.direction! as directionType
+					  }))
+					: [],
+
+				bonusData
+					? bonusData.map((b) => ({
+							id: b.id!,
+
+							moveId: b.move_id!,
+							bonusId: b.bonus_id!
+					  }))
+					: []
+			)
+		}
+	}, [moveData, bonusData])
+	useEffect(() => {
+		void getServerScores()
+	}, [scribeNumber, selectedHeat, selectedRun, selectedAthlete.id])
 
 	const availableMoves = useGetManyAvailablemovesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [currentAthlete.scoresheetId]
+		sheetIdList: [selectedAthlete.scoresheetId]
 	})
 
 	if (
-		currentAthlete?.id &&
-		currentAthlete.first_name &&
-		currentAthlete.last_name &&
-		currentAthlete.bib
+		selectedAthlete?.id &&
+		selectedAthlete.first_name &&
+		selectedAthlete.last_name &&
+		selectedAthlete.bib
 	) {
 		return (
 			<Grid container spacing={3}>
@@ -98,9 +177,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 							<Grid item xs={3} key={move.id}>
 								<MoveCard
 									key={move.id}
-									move={move}
+									move={move as movesType}
 									data-testid={
-										"movecard-" + move.id.toString()
+										"movecard-" + move.id!.toString()
 									}
 								/>
 							</Grid>
@@ -109,7 +188,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				</Grid>
 				<Grid item xs={5}>
 					<InfoBar
-						paddlerInfo={currentAthlete as AthleteInfo}
+						paddlerInfo={selectedAthlete as AthleteInfo}
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
 					/>

@@ -28,11 +28,16 @@ const initialState: ScoringStateType = {
 }
 export const updateCurrentMove = createAction<string>("currentMove")
 export const updateUserRole = createAction<string>("userRole")
+
 export const updateScoredMoves =
 	createAction<scoredMovesType[]>("updateScoredMoves")
 export const updateScoredBonuses = createAction<scoredBonusType[]>(
 	"updateScoredBonuses"
 )
+export const updateScoredMovesAndBonuses = createAction<{
+	moves: scoredMovesType[]
+	bonuses: scoredBonusType[]
+}>("updateScoredMovesAndBonuses")
 export const updateAvailableMoves = createAction<movesType[]>(
 	"updateAvailableMoves"
 )
@@ -48,7 +53,10 @@ export const scoringReducer = createReducer(initialState, (builder) => {
 			// "mutate" the array by calling push()
 			state.selectedRun = action.payload
 		})
-
+		.addCase(updateScoredMovesAndBonuses, (state, action) => {
+			state.scoredBonuses = action.payload.bonuses
+			state.scoredMoves = action.payload.moves
+		})
 		.addCase(updateScoredMoves, (state, action) => {
 			// "mutate" the array by calling push()
 			state.scoredMoves = action.payload

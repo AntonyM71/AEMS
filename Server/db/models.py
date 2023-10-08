@@ -59,7 +59,6 @@ class AthleteHeat(Base):
     athletes = relationship("Athlete", back_populates="heats")
 
 
-
 class Athlete(Base):
     __tablename__ = "athlete"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
@@ -111,6 +110,8 @@ class ScoredMoves(Base):
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(String, nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    phase = relationship("Phase", foreign_keys=[phase_id])
     move = relationship("AvailableMoves", foreign_keys=[move_id])
     judge_id = Column(String, nullable=False)
     athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)

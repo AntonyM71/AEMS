@@ -56,8 +56,8 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 		const newScoredMoves: scoredMovesType[] = scoredMovesList.filter(
 			(scoredMove: scoredMovesType) => scoredMove.id !== id
 		)
-		dispatch(updateScoredMoves(newScoredMoves))
 		updateScoredMoveBonuses([])
+		dispatch(updateScoredMoves(newScoredMoves))
 	}
 
 	const scoresheetId = athletes.data
