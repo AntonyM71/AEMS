@@ -5,8 +5,7 @@ from db.client import get_transaction_session
 from db.models import ScoredBonuses, ScoredMoves
 from fastapi import Depends
 from fastapi.responses import ORJSONResponse
-from pydantic import BaseModel
-from sqlalchemy import select
+from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
 
 
@@ -91,54 +90,59 @@ async def update_athlete_score(
         db.commit()
 
 
-
-
-# class ScoredMovesAndBonusesResponse(BaseModel):
-#     moves: ScoredMoves
-#     bonuses: ScoredBonuses
-#     class Config:
-#         orm_mode = True
-
-
 class PydanticScoredMovesResponse(BaseModel):
-    id : UUID
-    move_id : UUID
-    heat_id : UUID
-    run_number :str
+    id: UUID
+    move_id: UUID
+    heat_id: UUID
+    run_number: str
     phase_id: UUID
-    judge_id :str
-    athlete_id:str
-    direction :str
+    judge_id: str
+    athlete_id: UUID
+    direction: str
+
     class Config:
         orm_mode = True
+
 
 class PydanticScoredBonusesResponse(BaseModel):
-    id : UUID
-    move_id : UUID
-    bonus_id : UUID
-    judge_id :str
+    id: UUID
+    move_id: UUID
+    bonus_id: UUID
+    judge_id: str
 
     class Config:
         orm_mode = True
 
+
+class ScoredMovesAndBonusesResponse(BaseModel):
+    moves: list[PydanticScoredMovesResponse]
+    bonuses: list[PydanticScoredBonusesResponse]
+
+    class Config:
+        orm_mode = True
+
+
 class AvailableMoves(BaseModel):
-    id :UUID
-    sheet_id : UUID
-    name : str
+    id: UUID
+    sheet_id: UUID
+    name: str
     fl_score: int
-    rb_score : int
-    direction : str
+    rb_score: int
+    direction: str
+
 
 class AvailableBonuses(BaseModel):
     id: UUID
-    sheet_id :UUID
-    move_id : UUID
-    name : str
+    sheet_id: UUID
+    move_id: UUID
+    name: str
     score: int
 
 
 @scoring_router.get(
-    "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}/{judge_id}",response_class=ORJSONResponse
+    "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}/{judge_id}",
+    response_class=ORJSONResponse,
+    response_model=ScoredMovesAndBonusesResponse
 )
 async def get_athlete_moves_and_bonnuses(
     heat_id: str,
@@ -146,18 +150,27 @@ async def get_athlete_moves_and_bonnuses(
     run_number: str,
     judge_id: str,
     db: Session = Depends(get_transaction_session),
-):
+) -> ScoredMovesAndBonusesResponse:
+    # scored_moves = select(ScoredMoves)
+    moves = (
+        db.query(ScoredMoves)
+        .filter(ScoredMoves.heat_id == heat_id)
+        .filter(ScoredMoves.athlete_id == athlete_id)
+        .filter(ScoredMoves.run_number == run_number)
+        .filter(ScoredMoves.judge_id == judge_id)
+        .all()
+    )
+    pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
 
-    scored_moves = select(ScoredMoves)
-    # .filter(ScoredMoves.heat_id == heat_id).filter(ScoredMoves.athlete_id == athlete_id).filter(ScoredMoves.run_number == run_number).filter(ScoredMoves.judge_id == judge_id)
-    moves = db.execute(scored_moves).fetchall()
-    print("moves are:")
-    print(moves[0].keys())
-    # moves_dict = PydanticScoredMovesResponse.from_orm(moves)
+    move_ids = [m.id for m in pydantic_moves]
 
-    # print(moves_dict)
+    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
+    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
 
-    # scored_bonuses = db.query(ScoredBonuses).filter(
+    return ScoredMovesAndBonusesResponse.parse_obj(
+        {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
+    )
+    # scored_bonuses = db.query(ScoredBonuses).flter(
     #     ScoredBonuses.move_id.in_(m.id for m in scored_moves)
     # )
 

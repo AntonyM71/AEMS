@@ -16,10 +16,9 @@ import {
 import {
 	PydanticScoredBonuses,
 	PydanticScoredMoves,
+	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
 	useGetManyAthleteheatGetQuery,
 	useGetManyAvailablemovesGetQuery,
-	useGetManyScoredbonusesGetQuery,
-	useGetManyScoredmovesGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
 import { AthleteInfo, InfoBar } from "./InfoBar"
@@ -107,53 +106,43 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		submitScores()
 	}, [scoredMoves, scoredBonuses])
 	const {
-		data: moveData,
-		refetch: refetchMoveData,
-		isFetching: isBonusFetching
-	} = useGetManyScoredmovesGetQuery({
-		runNumberList: [selectedRun.toString()],
-		runNumberListComparisonOperator: "Equal",
-		athleteIdList: [selectedAthlete.id!],
-		athleteIdListComparisonOperator: "Equal",
-		judgeIdList: [scribeNumber],
-		judgeIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		heatIdListComparisonOperator: "Equal"
-	})
-	const {
-		data: bonusData,
-		refetch: refetchBonusData,
-		isFetching: isMoveFetching
-	} = useGetManyScoredbonusesGetQuery({
-		moveIdList: moveData ? moveData.map((m) => m.id!) : [],
-		moveIdListComparisonOperator: "In"
-	})
+		data: moveAndBonusdata,
+		refetch: refetchMoveAndBonusData,
+		isFetching: isMoveAndBonusFetching
+	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
+		{
+			runNumber: selectedRun.toString(),
+			athleteId: selectedAthlete.id!,
+			judgeId: scribeNumber,
+			heatId: selectedHeat
+		}
+	)
+
 	const getServerScores = async () => {
-		await refetchMoveData()
-		await refetchBonusData()
+		await refetchMoveAndBonusData()
 	}
 	useEffect(() => {
-		if (!isMoveFetching && !isBonusFetching) {
+		if (!isMoveAndBonusFetching) {
 			setScoredMovesAndBonuses(
-				moveData
-					? moveData.map((m) => ({
-							moveId: m.move_id!,
-							id: m.id!,
-							direction: m.direction! as directionType
+				moveAndBonusdata?.moves
+					? moveAndBonusdata.moves.map((m) => ({
+							moveId: m.move_id,
+							id: m.id,
+							direction: m.direction as directionType
 					  }))
 					: [],
 
-				bonusData
-					? bonusData.map((b) => ({
-							id: b.id!,
+				moveAndBonusdata?.bonuses
+					? moveAndBonusdata.bonuses.map((b) => ({
+							id: b.id,
 
-							moveId: b.move_id!,
-							bonusId: b.bonus_id!
+							moveId: b.move_id,
+							bonusId: b.bonus_id
 					  }))
 					: []
 			)
 		}
-	}, [moveData, bonusData])
+	}, [moveAndBonusdata])
 	useEffect(() => {
 		void getServerScores()
 	}, [scribeNumber, selectedHeat, selectedRun, selectedAthlete.id])
@@ -191,6 +180,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 						paddlerInfo={selectedAthlete as AthleteInfo}
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
+						isFetchingScoredMoves={isMoveAndBonusFetching}
 					/>
 				</Grid>
 			</Grid>

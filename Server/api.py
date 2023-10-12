@@ -36,7 +36,6 @@ app = FastAPI()
         crud_route_scoredmoves,
         crud_route_scoredbonuses,
         crud_route_athleteheat,
-
     ]
 ]
 
