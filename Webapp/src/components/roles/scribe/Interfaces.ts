@@ -25,14 +25,12 @@ export type removeScoredMoveType = (id: string) => void
 
 export interface scoredMovesType {
 	id: string
-	timestamp: string
+
 	moveId: string
 	direction: directionType
-	status: string
 }
 export interface scoredBonusType {
 	id: string
-	timestamp: string
 	moveId: string
 	bonusId: string
 }

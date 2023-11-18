@@ -1,13 +1,13 @@
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
-import { useEffect } from "react"
+import Skeleton from "@mui/material/Skeleton"
 import { useDispatch, useSelector } from "react-redux"
 import {
 	getScoredBonuses,
 	getScoredMoves,
 	updateCurrentMove,
-	updateScoredMoves
+	updateScoredMovesAndBonuses
 } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
@@ -20,6 +20,7 @@ import { movesType, scoredMovesType } from "./Interfaces"
 interface propsType {
 	paddlerInfo: AthleteInfo
 	availableMoves: movesType[]
+	isFetchingScoredMoves: boolean
 }
 
 export interface AthleteInfo {
@@ -29,31 +30,26 @@ export interface AthleteInfo {
 	bib: string
 	scoresheetId: string
 }
-export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
+export const InfoBar = ({
+	paddlerInfo,
+	availableMoves,
+	isFetchingScoredMoves
+}: propsType) => {
 	const dispatch = useDispatch()
-	let fetchedMoves: scoredMovesType[] = [] // let to allow population on mount, do not change manually
-	useEffect(() => {
-		fetchedMoves = fetchedScoredMoves()
-	}, [])
-
-	const fetchedScoredMoves = () => []
 
 	const scoredMoves = useSelector(getScoredMoves)
-	const ressetScoredMoves = () => dispatch(updateScoredMoves([]))
+	const resetScoredMovesAndBonuses = () => {
+		dispatch(updateScoredMovesAndBonuses({ moves: [], bonuses: [] }))
+	}
+
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
 
-	const setScoredMoves = (movesList: scoredMovesType[]) =>
-		dispatch(updateScoredMoves(movesList))
-
 	const clearRun = () => {
-		ressetScoredMoves()
+		resetScoredMovesAndBonuses()
 		setCurrentMove("")
 	}
-	const resetRun = () => {
-		setScoredMoves(fetchedMoves)
-		setCurrentMove("")
-	}
+
 	const bonusList = useGetManyAvailablebonusesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
 		sheetIdList: [paddlerInfo.scoresheetId]
@@ -63,7 +59,7 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 	const currentScore = calculateSingleJudgeRunScore(
 		scoredMoves,
 		scoredBonuses,
-		availableMoves,
+		availableMoves || [],
 		(bonusList.data as AvailableBonusType[]) || []
 	)
 
@@ -87,16 +83,7 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 				<Grid item xs={4}>
 					<h4>Move Listing</h4>
 				</Grid>
-				<Grid item xs={4}>
-					<Button
-						onClick={resetRun}
-						variant="contained"
-						fullWidth
-						data-testid={"button-clear-run"}
-					>
-						Reset Run
-					</Button>
-				</Grid>
+
 				<Grid item xs={4}>
 					<Button
 						onClick={clearRun}
@@ -117,16 +104,20 @@ export const InfoBar = ({ paddlerInfo, availableMoves }: propsType) => {
 					overflow: "auto"
 				}}
 			>
-				{[...scoredMoves] // put these into a new array so that reverse works
-					.reverse()
-					.map((scoredMove: scoredMovesType) => (
-						<Grid item xs={12} key={scoredMove.id}>
-							<ScoredMove
-								key={scoredMove.id}
-								scoredMove={scoredMove}
-							/>
-						</Grid>
-					))}
+				{isFetchingScoredMoves ? (
+					<Skeleton sx={{ width: "100%", height: "100%" }} />
+				) : (
+					[...scoredMoves] // put these into a new array so that reverse works
+						.reverse()
+						.map((scoredMove: scoredMovesType) => (
+							<Grid item xs={12} key={scoredMove.id}>
+								<ScoredMove
+									key={scoredMove.id}
+									scoredMove={scoredMove}
+								/>
+							</Grid>
+						))
+				)}
 			</Grid>
 		</div>
 	)

@@ -39,7 +39,8 @@ const App = ({ children }) => {
 						main: red[500],
 						light: red[300],
 						dark: red[700]
-					}
+					},
+					background: preferDark ? {} : { default: "#fafafa" }
 				}
 			}),
 		[preferDark]

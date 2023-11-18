@@ -12,9 +12,7 @@ describe("The user can see the correct score for a list of moves", () => {
 		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
 		const scoredMove: scoredMovesType = {
 			id: v4(),
-			timestamp: "0001",
 			direction: "L",
-			status: "New",
 			moveId: exampleMoveId
 		}
 		const availableMoves: movesType = {
@@ -33,9 +31,7 @@ describe("The user can see the correct score for a list of moves", () => {
 		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
 		const scoredMove: scoredMovesType = {
 			id: v4(),
-			timestamp: "0001",
 			direction: "L",
-			status: "New",
 			moveId: exampleMoveId
 		}
 		const availableMoves: movesType = {
@@ -54,9 +50,7 @@ describe("The user can see the correct score for a list of moves", () => {
 		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
 		const scoredMove: scoredMovesType = {
 			id: v4(),
-			timestamp: "0001",
 			direction: "R",
-			status: "New",
 			moveId: exampleMoveId
 		}
 		const availableMoves: movesType = {
@@ -75,9 +69,7 @@ describe("The user can see the correct score for a list of moves", () => {
 		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
 		const scoredMove: scoredMovesType = {
 			id: v4(),
-			timestamp: "0001",
 			direction: "R",
-			status: "New",
 			moveId: exampleMoveId
 		}
 		const availableMoves: movesType = {
@@ -98,9 +90,7 @@ describe("The user can see the correct score for a list of moves", () => {
 		const exampleBonusId = "e347dce3-9da6-4ad4-93fc-1719e92e7c38"
 		const scoredMove: scoredMovesType = {
 			id: v4(),
-			timestamp: "0001",
 			direction: "R",
-			status: "New",
 			moveId: exampleMoveId
 		}
 		const availableMoves: movesType = {
@@ -120,7 +110,6 @@ describe("The user can see the correct score for a list of moves", () => {
 		const scoredBonuses: scoredBonusType[] = [
 			{
 				id: "e347dce3-9da6-4ad4-93fc-1719e92e7c35",
-				timestamp: "0002",
 				moveId: exampleMoveId,
 				bonusId: exampleBonusId
 			}
