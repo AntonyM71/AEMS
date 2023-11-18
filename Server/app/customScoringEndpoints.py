@@ -45,7 +45,7 @@ async def update_athlete_score(
     phase_id: str,
     scored_moves_list: AddUpdateScoredMovesRequest,
     db: Session = Depends(get_transaction_session),
-):
+) -> None:
     with db.begin():
         scored_moves = (
             db.query(ScoredMoves.id)
@@ -142,7 +142,7 @@ class AvailableBonuses(BaseModel):
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}/{judge_id}",
     response_class=ORJSONResponse,
-    response_model=ScoredMovesAndBonusesResponse
+    response_model=ScoredMovesAndBonusesResponse,
 )
 async def get_athlete_moves_and_bonnuses(
     heat_id: str,
@@ -170,11 +170,3 @@ async def get_athlete_moves_and_bonnuses(
     return ScoredMovesAndBonusesResponse.parse_obj(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
     )
-    # scored_bonuses = db.query(ScoredBonuses).flter(
-    #     ScoredBonuses.move_id.in_(m.id for m in scored_moves)
-    # )
-
-    # return ORJSONResponse({
-    #     "scored_moves" : moves.json(),
-    #     # "scored_bonuses": scored_bonuses
-    # })

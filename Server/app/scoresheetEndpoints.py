@@ -40,7 +40,7 @@ async def addUpdateScoresheet(
     scoresheet_id: str,
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),
-):
+) -> None:
     with db.begin():
         db.query(AvailableBonuses).filter(
             AvailableBonuses.sheet_id == scoresheet_id
