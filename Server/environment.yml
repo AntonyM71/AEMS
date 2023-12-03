@@ -5,18 +5,20 @@ dependencies:
   - alembic
   - psycopg2
   - orjson
+  - asyncpg
   - pydantic-sqlalchemy
   - fastapi
   - pytest
+  - pydantic<=1.8.2
+  - SQLAlchemy<=1.4.30
+  - starlette==0.14.2
+  - uvicorn-standard
   # Dev
   - ruff
   - mypy
   - isort
   - pip
-  - pydantic<=1.8.2
-  - SQLAlchemy<=1.4.30
-  - starlette==0.14.2
-  - uvicorn-standard
+  - pytest
   - pip:
       - fastapi-quickcrud
       - sqlalchemy_utils

@@ -17,7 +17,8 @@ class PydanticAvailableMoves(BaseModel):
     fl_score: int
     rb_score: int
     direction: Literal["LR", "FB", "LRFB"]
-
+    class Config:
+        orm_mode = True
 
 class PydanticAvailableBonuses(BaseModel):
     id: UUID
@@ -25,7 +26,8 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
-
+    class Config:
+        orm_mode = True
 
 class AddUpdateScoresheetRequest(BaseModel):
     moves: list[PydanticAvailableMoves] = []

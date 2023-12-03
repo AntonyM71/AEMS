@@ -5,13 +5,11 @@ Revises: b88a9571adc8
 Create Date: 2023-11-25 17:33:37.241487
 
 """
-from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '77c0a8c18e80'
-down_revision = 'b88a9571adc8'
+revision = "77c0a8c18e80"
+down_revision = "b88a9571adc8"
 branch_labels = None
 depends_on = None
 
