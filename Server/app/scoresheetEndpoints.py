@@ -17,7 +17,8 @@ class PydanticAvailableMoves(BaseModel):
     fl_score: int
     rb_score: int
     direction: Literal["LR", "FB", "LRFB"]
-
+    class Config:
+        orm_mode = True
 
 class PydanticAvailableBonuses(BaseModel):
     id: UUID
@@ -25,7 +26,8 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
-
+    class Config:
+        orm_mode = True
 
 class AddUpdateScoresheetRequest(BaseModel):
     moves: list[PydanticAvailableMoves] = []
@@ -40,7 +42,7 @@ async def addUpdateScoresheet(
     scoresheet_id: str,
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),
-):
+) -> None:
     with db.begin():
         db.query(AvailableBonuses).filter(
             AvailableBonuses.sheet_id == scoresheet_id

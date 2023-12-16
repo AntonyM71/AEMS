@@ -103,7 +103,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		})
 	}
 	useEffect(() => {
-		submitScores()
+		if (!isMoveAndBonusFetching) {
+			submitScores()
+		}
 	}, [scoredMoves, scoredBonuses])
 	const {
 		data: moveAndBonusdata,

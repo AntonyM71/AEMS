@@ -1,9 +1,11 @@
 [tool.ruff]
-ignore = ["E501"]
+ignore = ["E501", "ANN101"]
 select = ["E", "F", "B" ,"I", "N", "UP", "YTT", "ANN", "FBT", "EM", "RUF", "PD", "TRY", "G"]
 fixable = ["ALL"]
 line-length = 88
-
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 [project]
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"

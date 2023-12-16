@@ -34,7 +34,8 @@ class Phase(Base):
     event = relationship("Event", back_populates="phases")
     heats = relationship("Heat", back_populates="phase")
     name = Column(String, nullable=False)
-    number_of_runs = Column(Integer, nullable=False)
+    number_of_runs = Column(Integer, nullable=False, default=3)
+    number_of_runs_for_score = Column(Integer, nullable=False, default=2)
     schema = "public"
 
 
@@ -73,7 +74,7 @@ class Athlete(Base):
 class ScoreSheet(Base):
     __tablename__ = "scoreSheet"
     id = Column(UUID(as_uuid=True), primary_key=True, comment="Competition ID")
-    name = Column(String, nullable=False)
+    name = Column(Integer, nullable=False)
     schema = "public"
 
 

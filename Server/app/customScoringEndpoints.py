@@ -1,35 +1,32 @@
-from typing import Literal
 from uuid import UUID
 
 from db.client import get_transaction_session
-from db.models import ScoredBonuses, ScoredMoves
-from fastapi import Depends
+from db.models import (
+    Athlete,
+    AthleteHeat,
+    AvailableBonuses,
+    AvailableMoves,
+    ScoredBonuses,
+    ScoredMoves,
+)
+from fastapi import APIRouter, Depends
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
 
-
-class PydanticScoredMoves(BaseModel):
-    id: UUID
-    move_id: UUID
-    direction: Literal["L", "R", "F", "B", "LF", "RB"]
-
-
-class PydanticScoredBonuses(BaseModel):
-    id: UUID
-    bonus_id: UUID
-    move_id: UUID
-
-
-class AddUpdateScoredMovesRequest(BaseModel):
-    moves: list[PydanticScoredMoves] = []
-    bonuses: list[PydanticScoredBonuses] = []
-
-    class Config:
-        orm_mode = True
-
-
-from fastapi import APIRouter
+from app.scoresheetEndpoints import (
+    PydanticAvailableBonuses,
+    PydanticAvailableMoves,
+)
+from app.scoring_logic import (
+    AddUpdateScoredMovesRequest,
+    AthleteScores,
+    AthleteScoresWithAthleteInfo,
+    PydanticScoredBonusesResponse,
+    PydanticScoredMovesResponse,
+    calculate_heat_scores,
+    organise_moves_by_athlete_run_judge,
+)
 
 scoring_router = APIRouter()
 
@@ -45,7 +42,7 @@ async def update_athlete_score(
     phase_id: str,
     scored_moves_list: AddUpdateScoredMovesRequest,
     db: Session = Depends(get_transaction_session),
-):
+) -> None:
     with db.begin():
         scored_moves = (
             db.query(ScoredMoves.id)
@@ -90,30 +87,6 @@ async def update_athlete_score(
         db.commit()
 
 
-class PydanticScoredMovesResponse(BaseModel):
-    id: UUID
-    move_id: UUID
-    heat_id: UUID
-    run_number: str
-    phase_id: UUID
-    judge_id: str
-    athlete_id: UUID
-    direction: str
-
-    class Config:
-        orm_mode = True
-
-
-class PydanticScoredBonusesResponse(BaseModel):
-    id: UUID
-    move_id: UUID
-    bonus_id: UUID
-    judge_id: str
-
-    class Config:
-        orm_mode = True
-
-
 class ScoredMovesAndBonusesResponse(BaseModel):
     moves: list[PydanticScoredMovesResponse]
     bonuses: list[PydanticScoredBonusesResponse]
@@ -122,27 +95,10 @@ class ScoredMovesAndBonusesResponse(BaseModel):
         orm_mode = True
 
 
-class AvailableMoves(BaseModel):
-    id: UUID
-    sheet_id: UUID
-    name: str
-    fl_score: int
-    rb_score: int
-    direction: str
-
-
-class AvailableBonuses(BaseModel):
-    id: UUID
-    sheet_id: UUID
-    move_id: UUID
-    name: str
-    score: int
-
-
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}/{judge_id}",
     response_class=ORJSONResponse,
-    response_model=ScoredMovesAndBonusesResponse
+    response_model=ScoredMovesAndBonusesResponse,
 )
 async def get_athlete_moves_and_bonnuses(
     heat_id: str,
@@ -170,11 +126,67 @@ async def get_athlete_moves_and_bonnuses(
     return ScoredMovesAndBonusesResponse.parse_obj(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
     )
-    # scored_bonuses = db.query(ScoredBonuses).flter(
-    #     ScoredBonuses.move_id.in_(m.id for m in scored_moves)
-    # )
 
-    # return ORJSONResponse({
-    #     "scored_moves" : moves.json(),
-    #     # "scored_bonuses": scored_bonuses
-    # })
+
+class HeatScoresResponse(BaseModel):
+    heat_id: UUID
+    scores: list[AthleteScoresWithAthleteInfo]
+
+
+@scoring_router.get(
+    "/getHeatScores/{heat_id}",
+    response_class=ORJSONResponse,
+    response_model=HeatScoresResponse,
+)
+async def get_heat_scores(
+    heat_id: str,
+    db: Session = Depends(get_transaction_session),
+) -> HeatScoresResponse:
+    # scored_moves = select(ScoredMoves)
+    moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
+    pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
+    athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
+    move_ids = [m.id for m in pydantic_moves]
+    athletes = db.query(Athlete).filter(
+        Athlete.id.in_([a.athlete_id for a in athlete_heat])
+    )
+    scoresheets = list(set([a.scoresheet for a in athlete_heat]))
+    scoresheet_available_moves= (
+        db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
+    )
+
+    scoresheet_available_bonuses = (
+        db.query(AvailableBonuses)
+        .filter(AvailableBonuses.sheet_id.in_(scoresheets))
+        .all()
+    )
+    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
+
+    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
+
+    athlete_moves_list = organise_moves_by_athlete_run_judge(
+        moves=pydantic_moves, bonuses=pydantic_bonuses
+    )
+    athlete_scores = calculate_heat_scores(
+        athlete_moves_list=athlete_moves_list,
+        available_moves=parse_obj_as(
+            list[PydanticAvailableMoves], scoresheet_available_moves
+        ),
+        available_bonuses=parse_obj_as(
+            list[PydanticAvailableBonuses], scoresheet_available_bonuses
+        ),
+    )
+    athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
+    for a_info in athletes:
+        athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
+        athlete_scores_with_info.append(
+            AthleteScoresWithAthleteInfo(
+                **athlete_score[0].dict() if athlete_score else (AthleteScores(athlete_id = a_info.id, highest_scoring_move=0, run_scores=[]).dict()),
+                first_name=a_info.first_name,
+                last_name=a_info.last_name,
+                bib_number=a_info.bib,
+            )
+        )
+    athlete_scores_with_info.sort(key=lambda x: x.bib_number)
+
+    return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
