@@ -1,8 +1,12 @@
 /* eslint-disable camelcase */
 
 import Button from "@mui/material/Button"
+import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid"
@@ -14,11 +18,12 @@ import { v4 } from "uuid"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
 import {
 	useGetManyAthleteheatGetQuery,
+	useGetManyPhaseGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
 	useInsertManyAthletePostMutation,
 	useInsertManyAthleteheatPostMutation
 } from "../../redux/services/aemsApi"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 export const HeatSummaryTable = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
@@ -62,10 +67,7 @@ export const HeatAthleteTable = () => {
 	})
 
 	const rows: GridRowsProp = flatten(
-		athletes.data?.map(
-			(a) =>
-				({ ...a.athlete_foreign![0], scoresheetId: a.scoresheet } || [])
-		)
+		athletes.data?.map((a) => ({ ...a.athlete_foreign![0] } || []))
 	)
 
 	if (athletes.isLoading) {
@@ -91,6 +93,7 @@ export const HeatAthleteTable = () => {
 const AddAthletesToHeat = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const [athleteFirstName, setAthleteFirstName] = useState<string>("")
+	const [selectedPhase, setSelectedPhase] = useState<string>("")
 	const athletes = useGetManyAthleteheatGetQuery({
 		heatIdListComparisonOperator: "Equal",
 		heatIdList: [selectedHeat],
@@ -98,44 +101,52 @@ const AddAthletesToHeat = () => {
 	})
 	const [athleteLastName, setAthleteLastName] = useState<string>("")
 	const [bibNumber, setBibNumber] = useState<number>(1)
-	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
+	const { data, isLoading, isSuccess, refetch } = useGetManyPhaseGetQuery({})
+
+	const onSelect = (event: SelectChangeEvent<string>) => {
+		setSelectedPhase(event.target.value)
+	}
 
 	const [makeAthlete] = useInsertManyAthletePostMutation()
 	const [makeAthleteHeat] = useInsertManyAthleteheatPostMutation()
 	const handleNewPaddlerSubmit = async () => {
-		if (
-			athleteFirstName &&
-			athleteLastName &&
-			selectedScoresheet &&
-			bibNumber
-		) {
+		if (athleteFirstName && athleteLastName && bibNumber) {
 			const athleteId = v4()
-			await makeAthlete({
-				body: [
-					{
-						id: athleteId,
-						first_name: athleteFirstName,
-						last_name: athleteLastName,
-						bib: bibNumber.toString()
-					}
-				]
-			})
-			await makeAthleteHeat({
-				body: [
-					{
-						id: v4(),
-						heat_id: selectedHeat,
-						athlete_id: athleteId,
-						scoresheet: selectedScoresheet
-					}
-				]
-			})
+			HandlePostResponse(
+				await makeAthlete({
+					body: [
+						{
+							id: athleteId,
+							first_name: athleteFirstName,
+							last_name: athleteLastName,
+							bib: bibNumber.toString()
+						}
+					]
+				}),
+				"Created Athlete"
+			)
+			HandlePostResponse(
+				await makeAthleteHeat({
+					body: [
+						{
+							id: v4(),
+							heat_id: selectedHeat,
+							athlete_id: athleteId,
+							phase_id: selectedPhase
+						}
+					]
+				}),
+				"Added Athlete to Heat"
+			)
 			await athletes.refetch()
 			setAthleteFirstName("")
 			setAthleteLastName("")
 		} else {
 			toast.error("Please fill in all the fields")
 		}
+	}
+	if (!isSuccess) {
+		return <h4>Failed to get data from server</h4>
 	}
 
 	return (
@@ -158,6 +169,22 @@ const AddAthletesToHeat = () => {
 				/>
 			</Grid>
 			<Grid item xs>
+				<FormControl fullWidth={true}>
+					<InputLabel>Select Phase</InputLabel>
+					<Select
+						value={selectedPhase}
+						onChange={onSelect}
+						variant="outlined"
+					>
+						{data.map((Phase) => (
+							<MenuItem key={Phase.id} value={Phase.id}>
+								{Phase.name}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			</Grid>
+			<Grid item xs>
 				<TextField
 					label="Bib Number"
 					variant="outlined"
@@ -169,12 +196,6 @@ const AddAthletesToHeat = () => {
 						setBibNumber(event.target.value as unknown as number)
 					}
 					value={bibNumber}
-				/>
-			</Grid>
-			<Grid item xs>
-				<SelectScoresheet
-					selectedScoresheet={selectedScoresheet}
-					setSelectedScoresheet={setSelectedScoresheet}
 				/>
 			</Grid>
 			<Grid item xs>

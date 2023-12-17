@@ -9,7 +9,6 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -24,6 +23,7 @@ import {
 	useGetManyCompetitionGetQuery,
 	useInsertManyEventPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 const EventSelector = ({
 	showDetailed = false
@@ -129,16 +129,21 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		.map((d) => ({ value: d.id!, label: d.name! }))
 	const submitNewEvent = async () => {
-		await postNewEvent({
-			body: [
-				// eslint-disable-next-line camelcase
-				{ name: eventName, id: uuid4(), competition_id: competitionId }
-			]
-		})
+		HandlePostResponse(
+			await postNewEvent({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: eventName,
+						id: uuid4(),
+						competition_id: competitionId
+					}
+				]
+			})
+		)
 		await refetch()
 		setEventName("")
 		setCompetitionId("")
-		toast.success("Successfully added event")
 	}
 
 	return (

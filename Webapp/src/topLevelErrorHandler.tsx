@@ -9,6 +9,8 @@ export const registerRejectedPromise = () => {
 export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
 	if (env === "development" || "staging") {
+		// eslint-disable-next-line no-console
+		console.log(e)
 		const message = e.statusText
 			? e.statusText
 			: e.message
@@ -17,6 +19,8 @@ export const handleErrors = (e: any) => {
 			? e.reason.message
 			: e.reason
 			? e.reason
+			: e.data?.detail
+			? e.data.detail
 			: "Undefined Error"
 		toast.error(JSON.stringify(message))
 	} else {

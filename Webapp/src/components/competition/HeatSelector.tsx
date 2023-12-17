@@ -9,22 +9,19 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
 	getSelectedCompetition,
-	getSelectedEvent,
 	getSelectedHeat,
-	getSelectedPhase,
-	updateSelectedHeat,
-	updateSelectedPhase
+	updateSelectedHeat
 } from "../../redux/atoms/competitions"
 import {
-	useGetManyByPkFromHeatPhasePhasePkIdHeatGetQuery,
-	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
+	useGetManyCompetitionGetQuery,
+	useGetManyHeatGetQuery,
 	useInsertManyHeatPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 const HeatsSelector = ({
 	showDetailed = false
@@ -32,24 +29,20 @@ const HeatsSelector = ({
 	showDetailed?: boolean
 }) => {
 	const dispatch = useDispatch()
-	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedHeat = (newHeat: string) =>
 		dispatch(updateSelectedHeat(newHeat))
 	const selectedHeat = useSelector(getSelectedHeat)
-	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 
-	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
-	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromHeatPhasePhasePkIdHeatGetQuery({
-			phasePkId: selectedPhase,
-			joinForeignTable: ["phase"]
-		})
+	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery({
+		competitionIdList: [selectedCompetition],
+		competitionIdListComparisonOperator: "Equal"
+	})
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedHeat(event.target.value)
 	}
-	if (!selectedPhase) {
+	if (!selectedCompetition) {
 		return <></>
 	}
 	if (isLoading) {
@@ -116,30 +109,32 @@ const HeatsSelector = ({
 const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [HeatName, setHeatName] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const selectedEvent = useSelector(getSelectedEvent)
 	const [competitionId, setCompetitionId] =
 		useState<string>(selectedCompetition)
 	const [postNewHeat] = useInsertManyHeatPostMutation()
-	const { data, isLoading, isSuccess } =
-		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery({
-			eventPkId: selectedEvent,
-			joinForeignTable: ["event"]
-		})
+	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
+
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		.map((d) => ({ value: d.id, label: d.name }))
+		.map((d) => ({ value: d.id!, label: d.name! }))
+
 	const submitNewHeat = async () => {
-		await postNewHeat({
-			body: [
-				// eslint-disable-next-line camelcase
-				{ name: HeatName, id: uuid4(), phase_id: competitionId }
-			]
-		})
+		HandlePostResponse(
+			await postNewHeat({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: HeatName,
+						id: uuid4(),
+						competition_id: competitionId
+					}
+				]
+			})
+		)
 		await refetch()
 		setHeatName("")
 		setCompetitionId("")
-		toast.success("Successfully added heat")
 	}
 
 	return (

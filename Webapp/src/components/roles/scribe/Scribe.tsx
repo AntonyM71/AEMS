@@ -1,10 +1,10 @@
 import Grid from "@mui/material/Grid"
-import { flatten } from "lodash"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { batch, useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
-	getSelectedPhase
+	getSelectedPhase,
+	updateNumberOfRuns
 } from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
@@ -17,7 +17,7 @@ import {
 	PydanticScoredBonuses,
 	PydanticScoredMoves,
 	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
-	useGetManyAthleteheatGetQuery,
+	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyAvailablemovesGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
@@ -37,6 +37,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
 	const selectedPhase = useSelector(getSelectedPhase)
+	const setNumberOfRuns = (n: number) => dispatch(updateNumberOfRuns(n))
 
 	const setScoredMovesAndBonuses = (
 		movesList: scoredMovesType[],
@@ -52,31 +53,17 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		})
 	}
 
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: selectedHeat
 	})
 
-	const athleteList = useMemo(() => {
-		if (athletes.data) {
-			const filteredList = flatten(
-				athletes.data.map((a) => [
-					{
-						...a.athlete_foreign![0],
-						scoresheetId: a.scoresheet!
-					}
-				])
-			)
-
-			return filteredList
-		}
-
-		return []
-	}, [athletes])
-
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const selectedAthlete = athleteList[currentPaddlerIndex]
+	const selectedAthlete = athletes.data
+		? athletes.data[currentPaddlerIndex]
+		: undefined
+	useEffect(() => {
+		setNumberOfRuns(selectedAthlete?.number_of_runs)
+	}, [dispatch, selectedAthlete, selectedAthlete?.number_of_runs])
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
 	const submitScores = () => {
@@ -92,9 +79,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		// ToDo: if statement here to only send the moves if they don't match the most recent returned requested moves?
 		void addUpdateMovesAndBonuses({
 			heatId: selectedHeat,
-			athleteId: selectedAthlete.id!,
+			athleteId: selectedAthlete?.athlete_id!,
 			runNumber: selectedRun.toString(),
-			phaseId: selectedPhase,
+			phaseId: selectedAthlete?.phase_id!,
 			judgeId: scribeNumber,
 			addUpdateScoredMovesRequest: {
 				moves: formattedScoredMoves,
@@ -103,10 +90,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		})
 	}
 	useEffect(() => {
-		if (!isMoveAndBonusFetching) {
+		if (!isMoveAndBonusFetching && !athletes.isFetching) {
 			submitScores()
 		}
 	}, [scoredMoves, scoredBonuses])
+
 	const {
 		data: moveAndBonusdata,
 		refetch: refetchMoveAndBonusData,
@@ -114,7 +102,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
 		{
 			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete.id!,
+			athleteId: selectedAthlete?.athlete_id ?? "",
 			judgeId: scribeNumber,
 			heatId: selectedHeat
 		}
@@ -147,14 +135,15 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	}, [moveAndBonusdata])
 	useEffect(() => {
 		void getServerScores()
-	}, [scribeNumber, selectedHeat, selectedRun, selectedAthlete.id])
+	}, [scribeNumber, selectedHeat, selectedRun, selectedAthlete?.athlete_id])
 
 	const availableMoves = useGetManyAvailablemovesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedAthlete.scoresheetId]
+		sheetIdList: [selectedAthlete?.scoresheet]
 	})
 
 	if (
+		selectedAthlete &&
 		selectedAthlete?.id &&
 		selectedAthlete.first_name &&
 		selectedAthlete.last_name &&

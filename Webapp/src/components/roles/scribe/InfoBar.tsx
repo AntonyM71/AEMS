@@ -155,4 +155,12 @@ const style = {
 	boxShadow: 24,
 	p: 4
 }
-export const calculateNewIndex = (n: number, m: number) => ((n % m) + m) % m
+export const calculateNewIndex = (newNumber: number, maxNumber: number) => {
+	if (newNumber >= maxNumber) {
+		return 0
+	} else if (newNumber < 0) {
+		return maxNumber - 1
+	} else {
+		return newNumber
+	}
+}

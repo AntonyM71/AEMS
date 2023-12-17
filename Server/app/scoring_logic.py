@@ -56,7 +56,7 @@ class PydanticScoredMovesResponse(BaseModel):
     id: UUID
     move_id: UUID
     heat_id: UUID
-    run_number: str
+    run_number: int
     phase_id: UUID
     judge_id: str
     athlete_id: UUID
@@ -245,6 +245,7 @@ class AthleteScoresWithAthleteInfo(AthleteScores):
     first_name: str
     last_name: str
     bib_number: int
+
 
 
 def organise_moves_by_athlete_run_judge(

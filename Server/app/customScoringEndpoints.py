@@ -30,6 +30,45 @@ from app.scoring_logic import (
 
 scoring_router = APIRouter()
 
+class HeatInfoResponse(BaseModel):
+    id: UUID
+    heat_id: UUID
+    athlete_id : UUID
+    phase_id : UUID
+    number_of_runs: int
+    number_of_runs_for_score: int
+    scoresheet: UUID
+    first_name: str
+    last_name: str
+    bib: str
+
+    class Config:
+        orm_mode = True
+@scoring_router.get(
+    "/getHeatInfo/{heat_id}",
+    response_class=ORJSONResponse,
+    response_model=list[HeatInfoResponse],
+)
+async def get_heat_info(
+    heat_id: str,
+    db: Session = Depends(get_transaction_session),
+) -> list[HeatInfoResponse]:
+    print(heat_id)
+
+
+    heat_info =  db.query(AthleteHeat).all()
+    print(heat_info)
+    print(heat_info[0].__dict__)
+    print(heat_info[0].phases.__dict__)
+
+    heat_info_response = [HeatInfoResponse(**h.__dict__, number_of_runs_for_score=h.phases.number_of_runs_for_score, number_of_runs=h.phases.number_of_runs, scoresheet=h.phases.scoresheet, first_name=h.athletes.first_name, last_name = h.athletes.last_name, bib = h.athletes.bib ) for h in heat_info]
+
+    return(heat_info_response)
+
+
+
+
+
 
 @scoring_router.post(
     "/addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}"
@@ -150,7 +189,7 @@ async def get_heat_scores(
     athletes = db.query(Athlete).filter(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
     )
-    scoresheets = list(set([a.scoresheet for a in athlete_heat]))
+    scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
     scoresheet_available_moves= (
         db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
     )

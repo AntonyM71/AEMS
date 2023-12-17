@@ -9,7 +9,6 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -23,6 +22,8 @@ import {
 	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
 	useInsertManyPhasePostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { SelectScoresheet } from "../judging/ScoresheetSelector"
 
 const PhasesSelector = ({
 	showDetailed = false
@@ -31,7 +32,6 @@ const PhasesSelector = ({
 }) => {
 	const dispatch = useDispatch()
 	const selectedEvent = useSelector(getSelectedEvent)
-	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedPhase = (newPhase: string) =>
 		dispatch(updateSelectedPhase(newPhase))
 	const selectedPhase = useSelector(getSelectedPhase)
@@ -117,6 +117,8 @@ const PhasesSelector = ({
 const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [PhaseName, setPhaseName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
+	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [phaseId, setPhaseId] = useState<string>(selectedCompetition)
 	const [postNewPhase] = useInsertManyPhasePostMutation()
@@ -130,21 +132,24 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewPhase = async () => {
-		await postNewPhase({
-			body: [
-				// eslint-disable-next-line camelcase
-				{
-					name: PhaseName,
-					id: uuid4(),
-					event_id: phaseId,
-					number_of_runs: numberOfRuns
-				}
-			]
-		})
+		HandlePostResponse(
+			await postNewPhase({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: PhaseName,
+						id: uuid4(),
+						event_id: phaseId,
+						number_of_runs: numberOfRuns,
+						number_of_runs_for_score: numberOfScoringRuns,
+						scoresheet: selectedScoresheet
+					}
+				]
+			})
+		)
 		await refetch()
 		setPhaseName("")
 		setPhaseId("")
-		toast.success("Successfully added phase")
 	}
 
 	return (
@@ -174,7 +179,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						options={options}
 						fullWidth
 						renderInput={(params) => (
-							<TextField {...params} label="Competition" />
+							<TextField {...params} label="Event" />
 						)}
 						onChange={(event, newValue) => {
 							if (newValue) {
@@ -185,6 +190,12 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 				) : (
 					<> </>
 				)}
+			</Grid>
+			<Grid item xs>
+				<SelectScoresheet
+					selectedScoresheet={selectedScoresheet}
+					setSelectedScoresheet={setSelectedScoresheet}
+				/>
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
@@ -198,6 +209,22 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						setNumberOfRuns(event.target.value as unknown as number)
 					}
 					value={numberOfRuns}
+				/>
+			</Grid>
+			<Grid item xs={12}>
+				<TextField
+					label="Number of Scoring Runs"
+					variant="outlined"
+					fullWidth
+					type="number"
+					onChange={(
+						event: React.ChangeEvent<HTMLInputElement>
+					): void =>
+						setNumberOfScoringRuns(
+							event.target.value as unknown as number
+						)
+					}
+					value={numberOfScoringRuns}
 				/>
 			</Grid>
 			<Grid item xs={12}>

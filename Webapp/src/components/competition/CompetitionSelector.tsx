@@ -21,6 +21,7 @@ import {
 	useGetManyCompetitionGetQuery,
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 export const CompetitionSelector = ({
 	showDetailed = false
@@ -117,14 +118,15 @@ const AddCompetition = () => {
 	const { refetch } = useGetManyCompetitionGetQuery({})
 	const submitCompetition = async (
 		e: React.KeyboardEvent<HTMLDivElement>
-	): void => {
+	): Promise<void> => {
 		if (e.key === "Enter") {
 			if (competitionName) {
-				await postNewCompetition({
-					body: [{ name: competitionName, id: uuid4() }]
-				})
+				HandlePostResponse(
+					await postNewCompetition({
+						body: [{ name: competitionName, id: uuid4() }]
+					})
+				)
 				await refetch()
-				toast.success("Successfully added competition")
 			} else {
 				toast.error(
 					"Please add a name before submitting a new competition"

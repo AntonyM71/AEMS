@@ -7,6 +7,7 @@ import {
 	useGetManyScoresheetGetQuery,
 	useInsertManyScoresheetPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 export const AddScoresheet = ({
 	setSelectedScoresheet
@@ -20,14 +21,17 @@ export const AddScoresheet = ({
 	}
 	const { refetch } = useGetManyScoresheetGetQuery({})
 	const submitScoresheet = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+		console.log(e.key)
 		if (e.key === "Enter") {
+			console.log("ENTER HIT")
 			if (scoresheetName) {
 				const newScoresheetId = v4()
-				await postNewScoresheet({
-					body: [{ name: scoresheetName, id: newScoresheetId }]
-				})
+				HandlePostResponse(
+					await postNewScoresheet({
+						body: [{ name: scoresheetName, id: newScoresheetId }]
+					})
+				)
 				await refetch()
-				toast.success("Successfully added Scoresheet")
 				setSelectedScoresheet(newScoresheetId)
 				setScoresheetName("")
 			} else {
@@ -53,7 +57,8 @@ export const AddScoresheet = ({
 					fullWidth
 					onChange={handleChange}
 					value={scoresheetName}
-					onKeyUp={void submitScoresheet}
+					// eslint-disable-next-line @typescript-eslint/no-misused-promises
+					onKeyUp={submitScoresheet}
 				/>
 			</Grid>
 		</Grid>
