@@ -1,3 +1,5 @@
+import { PhaseScoreTable } from "../components/competition/PhaseScoretable"
+
 export default function Score() {
-	return <div>Score</div>
+	return <PhaseScoreTable />
 }

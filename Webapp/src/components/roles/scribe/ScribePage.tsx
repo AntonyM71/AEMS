@@ -19,7 +19,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	if (selectedHeat) {
 		return (
-			<Grid container spacing={2} alignContent="stretch">
+			<Grid
+				container
+				spacing={2}
+				alignContent="stretch"
+				sx={{ paddingTop: "1em" }}
+			>
 				<Grid item xs={12}>
 					<SelectorDisplay showDetailed={false} />
 				</Grid>

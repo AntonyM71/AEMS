@@ -323,3 +323,13 @@ def calculate_heat_scores(
             )
         )
     return scores
+
+
+
+class RankInfo(BaseModel):
+    ranking: int
+    reason: Optional[str]
+
+
+def calculate_rank(athlete_info, athlete_scores) -> RankInfo:
+    return RankInfo(ranking = 1, reason = "")

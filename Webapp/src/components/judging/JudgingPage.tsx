@@ -35,7 +35,12 @@ const Judging = () => {
 	const heat = selectedHeat
 	if (heat) {
 		return (
-			<Grid container spacing={2} alignItems="flex-start">
+			<Grid
+				container
+				spacing={2}
+				alignItems="flex-start"
+				sx={{ paddingTop: "1em" }}
+			>
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={2} alignItems={"stretch"}>
@@ -83,7 +88,7 @@ const Judging = () => {
 	}
 
 	return (
-		<Grid container alignItems="stretch">
+		<Grid container alignItems="stretch" sx={{ paddingTop: "1em" }}>
 			<Grid item xs={12}>
 				<SelectorDisplay showDetailed={true} />
 			</Grid>

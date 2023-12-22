@@ -1,40 +1,53 @@
 /* eslint-disable camelcase */
 
 import Grid from "@mui/material/Grid"
-import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid"
 import { flatten } from "lodash"
 import { useSelector } from "react-redux"
-import { getSelectedHeat } from "../../redux/atoms/competitions"
+import { getSelectedPhase } from "../../redux/atoms/competitions"
 import {
-	HeatScoresResponse,
-	useGetHeatScoresGetHeatScoresHeatIdGetQuery,
-	useGetOneByPrimaryKeyHeatIdGetQuery
+	PhaseScoresResponse,
+	useGetOneByPrimaryKeyPhaseIdGetQuery,
+	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../redux/services/aemsApi"
+import { SelectorDisplay } from "./MainSelector"
 
-export const HeatScoreTable = () => {
-	const selectedHeat = useSelector(getSelectedHeat)
-	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
-		id: selectedHeat
+export const PhaseScoreTable = () => {
+	const selectedPhase = useSelector(getSelectedPhase)
+	const { data, isLoading } = useGetOneByPrimaryKeyPhaseIdGetQuery({
+		id: selectedPhase
 	})
 	const { data: scoreData, isLoading: isScoreLoading } =
-		useGetHeatScoresGetHeatScoresHeatIdGetQuery(
+		useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
 			{
-				heatId: selectedHeat
+				phaseId: selectedPhase
 			},
 			{ refetchOnMountOrArgChange: true }
 		)
-	if (data && scoreData && selectedHeat && !isLoading && !isScoreLoading) {
+	if (data && !isLoading) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={2} alignItems="stretch">
-					<Grid item xs={12}>
-						<h3>{`Heat: ${data.name || ""}`}</h3>
-						<HeatAthleteScoreTable athletes={scoreData} />
-					</Grid>
+			<Grid
+				container
+				spacing={1}
+				alignItems="stretch"
+				sx={{ paddingTop: "1em" }}
+			>
+				<Grid item xs={12}>
+					<SelectorDisplay />
 				</Grid>
-			</Paper>
+				{selectedPhase && scoreData && !isScoreLoading ? (
+					<Grid item xs={12}>
+						<h3>{`Phase: ${data.name || ""}`}</h3>
+						<PhaseAthleteScoreTable
+							athletes={scoreData}
+							numberOfRuns={data.number_of_runs || 3}
+						/>
+					</Grid>
+				) : (
+					<Skeleton variant="rectangular" />
+				)}
+			</Grid>
 		)
 	} else if (isLoading) {
 		return <Skeleton variant="rectangular" />
@@ -43,12 +56,14 @@ export const HeatScoreTable = () => {
 	return <h4>Something went wrong</h4>
 }
 
-export const HeatAthleteScoreTable = ({
-	athletes
+export const PhaseAthleteScoreTable = ({
+	athletes,
+	numberOfRuns
 }: {
-	athletes: HeatScoresResponse
+	athletes: PhaseScoresResponse
+	numberOfRuns: number
 }) => {
-	const maxRuns = Math.max(...athletes.scores.map((a) => a.run_scores.length))
+	const maxRuns = numberOfRuns
 	const runCols: GridColDef[] = []
 	for (let i = 0; i < maxRuns; i++) {
 		runCols.push({ field: `run_${i + 1}`, headerName: `Run ${i + 1}` })
@@ -56,6 +71,7 @@ export const HeatAthleteScoreTable = ({
 
 	const columns: GridColDef[] = [
 		// { field: "id", headerName: "ID"},
+		{ field: "ranking", headerName: "Rank" },
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
@@ -95,7 +111,7 @@ export const HeatAthleteScoreTable = ({
 
 	return (
 		<div>
-			<h4>No athletes in heat</h4>
+			<h4>No athletes in phase</h4>
 		</div>
 	)
 }

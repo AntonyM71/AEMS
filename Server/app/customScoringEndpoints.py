@@ -25,6 +25,7 @@ from app.scoring_logic import (
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
     calculate_heat_scores,
+    calculate_rank,
     organise_moves_by_athlete_run_judge,
 )
 
@@ -171,6 +172,9 @@ class HeatScoresResponse(BaseModel):
     heat_id: UUID
     scores: list[AthleteScoresWithAthleteInfo]
 
+class PhaseScoresResponse(BaseModel):
+    phase_id: UUID
+    scores: list[AthleteScoresWithAthleteInfo]
 
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
@@ -229,3 +233,72 @@ async def get_heat_scores(
     athlete_scores_with_info.sort(key=lambda x: x.bib_number)
 
     return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
+
+
+
+@scoring_router.get(
+    "/getPhaseScores/{phase_id}",
+    response_class=ORJSONResponse,
+    response_model=PhaseScoresResponse,
+)
+async def get_phase_scores(
+    phase_id: str,
+    db: Session = Depends(get_transaction_session),
+) -> PhaseScoresResponse:
+    # scored_moves = select(ScoredMoves)
+    moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
+    pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
+    athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
+    move_ids = [m.id for m in pydantic_moves]
+    athletes = db.query(Athlete).filter(
+        Athlete.id.in_([a.athlete_id for a in athlete_heat])
+    )
+    scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
+    scoresheet_available_moves= (
+        db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
+    )
+
+    scoresheet_available_bonuses = (
+        db.query(AvailableBonuses)
+        .filter(AvailableBonuses.sheet_id.in_(scoresheets))
+        .all()
+    )
+    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
+
+    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
+
+    athlete_moves_list = organise_moves_by_athlete_run_judge(
+        moves=pydantic_moves, bonuses=pydantic_bonuses
+    )
+    athlete_scores = calculate_heat_scores(
+        athlete_moves_list=athlete_moves_list,
+        available_moves=parse_obj_as(
+            list[PydanticAvailableMoves], scoresheet_available_moves
+        ),
+        available_bonuses=parse_obj_as(
+            list[PydanticAvailableBonuses], scoresheet_available_bonuses
+        ),
+    )
+    athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
+    for a_info in athletes:
+        athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
+        rank_info = calculate_rank(a_info, athlete_scores)
+        print(athlete_score[0].dict())
+        athlete_scores_with_info.append(
+            AthleteScoresWithAthleteInfo(
+                **athlete_score[0].dict(exclude_none=True) if athlete_score else (AthleteScores(athlete_id = a_info.id, highest_scoring_move=0, run_scores=[]).dict()),
+                first_name=a_info.first_name,
+                last_name=a_info.last_name,
+                bib_number=a_info.bib,
+                ranking = rank_info.ranking,
+                reason = rank_info.reason
+
+            )
+        )
+    athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking ]
+    athletes_without_scores = [a  for a in athlete_scores_with_info if not a.ranking]
+    athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
+    athletes_without_scores.sort(key = lambda x : x.bib_number)
+
+
+    return PhaseScoresResponse(phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores])
