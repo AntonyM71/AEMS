@@ -79,6 +79,19 @@ const LinkList = () => (
 					</Link>
 				</Typography>
 			</ListItemText>
+
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link
+						component={RouterLink}
+						href={"/Score"}
+						color="inherit"
+					>
+						Score
+					</Link>
+				</Typography>
+			</ListItemText>
+
 			<ListItemText inset>
 				<Typography color="textPrimary" variant="body1">
 					<Link
@@ -94,10 +107,10 @@ const LinkList = () => (
 				<Typography color="textPrimary" variant="body1">
 					<Link
 						component={RouterLink}
-						href={"/Score"}
+						href={"/Admin"}
 						color="inherit"
 					>
-						Score
+						Admin
 					</Link>
 				</Typography>
 			</ListItemText>

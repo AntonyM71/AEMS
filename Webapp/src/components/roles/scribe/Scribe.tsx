@@ -135,11 +135,17 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	}, [moveAndBonusdata])
 	useEffect(() => {
 		void getServerScores()
-	}, [scribeNumber, selectedHeat, selectedRun, selectedAthlete?.athlete_id])
+	}, [
+		scribeNumber,
+		selectedHeat,
+		selectedRun,
+		selectedAthlete,
+		selectedAthlete?.athlete_id
+	])
 
 	const availableMoves = useGetManyAvailablemovesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedAthlete?.scoresheet]
+		sheetIdList: [selectedAthlete?.scoresheet ?? ""]
 	})
 
 	if (
@@ -167,6 +173,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 					</Grid>
 				</Grid>
 				<Grid item xs={5}>
+					<SelectorDisplay
+						showDetailed={false}
+						showEvent={false}
+						showPhase={false}
+					/>
 					<InfoBar
 						paddlerInfo={selectedAthlete as AthleteInfo}
 						data-testid={"infobar"}

@@ -5,7 +5,6 @@ import { useEffect } from "react"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 
 import { updateUserRole } from "../../../redux/atoms/scoring"
-import { SelectorDisplay } from "../../competition/MainSelector"
 import Float from "./Scribe"
 
 // eslint-disable-next-line complexity
@@ -25,9 +24,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				alignContent="stretch"
 				sx={{ paddingTop: "1em" }}
 			>
-				<Grid item xs={12}>
-					<SelectorDisplay showDetailed={false} />
-				</Grid>
 				<Grid item xs={12}>
 					<Float scribeNumber={scribeNumber} />
 				</Grid>

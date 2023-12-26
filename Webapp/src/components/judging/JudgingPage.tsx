@@ -13,22 +13,13 @@ import {
 
 import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../components/competition/MainSelector"
-// eslint-disable-href=-line complexity
 
-// const competitionsThing = getCompetitionsFromServer()
-
-// const CompetitionSelector = React.lazy(
-// 	() => import("../competition/CompetitionSelector")
-// )
 const Judging = () => {
-	// eslint-disable-href=-line @typescript-eslint/explicit-member-accessibility
-
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
 	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	// eslint-disable-href=-line complexity
 	const competition = selectedCompetition
 	const event = selectedEvent
 	const phase = selectedPhase
@@ -90,7 +81,11 @@ const Judging = () => {
 	return (
 		<Grid container alignItems="stretch" sx={{ paddingTop: "1em" }}>
 			<Grid item xs={12}>
-				<SelectorDisplay showDetailed={true} />
+				<SelectorDisplay
+					showDetailed={false}
+					showEvent={false}
+					showPhase={false}
+				/>
 			</Grid>
 		</Grid>
 	)
