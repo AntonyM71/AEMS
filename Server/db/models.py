@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -10,7 +10,7 @@ class Competition(Base):
     __tablename__ = "competition"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     name = Column(String, nullable=False)
-    users = ARRAY(String)
+    # users = ARRAY(String)
     events = relationship("Event")
     schema = "public"
 
