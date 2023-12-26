@@ -1,12 +1,19 @@
 /* eslint-disable camelcase */
 
+import { Paper, Typography } from "@mui/material"
 import Grid from "@mui/material/Grid"
 import Skeleton from "@mui/material/Skeleton"
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid"
+import {
+	DataGrid,
+	GridColDef,
+	GridRowsProp,
+	GridValidRowModel
+} from "@mui/x-data-grid"
 import { flatten } from "lodash"
 import { useSelector } from "react-redux"
 import { getSelectedPhase } from "../../redux/atoms/competitions"
 import {
+	AthleteScoresWithAthleteInfo,
 	PhaseScoresResponse,
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
@@ -38,11 +45,19 @@ export const PhaseScoreTable = () => {
 				</Grid>
 				{selectedPhase && scoreData && !isScoreLoading ? (
 					<Grid item xs={12}>
-						<h3>{`Phase: ${data.name || ""}`}</h3>
-						<PhaseAthleteScoreTable
-							athletes={scoreData}
-							numberOfRuns={data.number_of_runs || 3}
-						/>
+						<Paper>
+							<Typography
+								variant="h5"
+								sx={{ padding: "0.5em" }}
+							>{`Phase: ${data.name || ""}`}</Typography>
+							<PhaseAthleteScoreTable
+								athletes={scoreData}
+								numberOfRuns={data.number_of_runs || 3}
+								numberOfScoringRuns={
+									data.number_of_runs_for_score || 3
+								}
+							/>
+						</Paper>
 					</Grid>
 				) : (
 					<Skeleton variant="rectangular" />
@@ -58,10 +73,12 @@ export const PhaseScoreTable = () => {
 
 export const PhaseAthleteScoreTable = ({
 	athletes,
-	numberOfRuns
+	numberOfRuns,
+	numberOfScoringRuns
 }: {
 	athletes: PhaseScoresResponse
 	numberOfRuns: number
+	numberOfScoringRuns: number
 }) => {
 	const maxRuns = numberOfRuns
 	const runCols: GridColDef[] = []
@@ -75,33 +92,40 @@ export const PhaseAthleteScoreTable = ({
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
-		...runCols
+		...runCols,
+		{ field: "total_score", headerName: "Total" },
+		{ field: "reason", headerName: "Notes" }
 	]
 
-	const rows: GridRowsProp = flatten(
-		athletes.scores.map((a, i) => {
-			const runScores: Record<string, any> = {}
-			runCols.forEach(
-				(r, j) =>
-					(runScores[r.field] = a.run_scores[j]?.mean_run_score || 0)
-			)
+	const rows: GridRowsProp =
+		flatten(
+			athletes.scores.map((a: AthleteScoresWithAthleteInfo, i) => {
+				const runScores: Record<string, number> = {}
+				runCols.forEach(
+					(r, j) =>
+						(runScores[r.field] =
+							a.run_scores[j]?.mean_run_score || 0)
+				)
 
-			return (
-				{
+				const formattedRow: GridValidRowModel = {
+					ranking: a.ranking ?? 0,
 					id: i,
 					bib: a.bib_number,
 					first_name: a.first_name,
 					last_name: a.last_name,
+					reason: a.reason ?? "",
+					total_score: a.total_score ?? 0,
 					...runScores
-				} || []
-			)
-		})
-	)
+				}
+
+				return formattedRow
+			})
+		) || []
 
 	if (rows) {
 		return (
 			<DataGrid
-				sx={{ height: "50vh" }}
+				sx={{ height: "70vh", margin: "0.5em" }}
 				rows={rows}
 				columns={columns}
 				disableRowSelectionOnClick

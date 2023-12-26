@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
 import {
 	getNumberOfRuns,
@@ -25,9 +26,14 @@ export const RunSelector = () => {
 	}
 
 	return (
-		<Paper sx={{ flex: "true" }}>
-			<h4>Run</h4>
-			<div className="score" id="heatScore" data-testid="display-run-box">
+		<Paper
+			sx={{
+				padding: "1em",
+				height: "100%"
+			}}
+		>
+			<Typography variant="h6">Run:</Typography>
+			<div style={{ textAlign: "center" }}>
 				<IconButton
 					onClick={() => changeRun(-1)}
 					data-testid={"button-prev-run"}

@@ -239,13 +239,13 @@ class AthleteScores(BaseModel):
     highest_scoring_move: float
     ranking: Optional[int]
     reason: Optional[str]
+    total_score: Optional[float]
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
     first_name: str
     last_name: str
     bib_number: int
-
 
 
 def organise_moves_by_athlete_run_judge(
@@ -291,6 +291,7 @@ def calculate_heat_scores(
     athlete_moves_list: list[AthleteMoves],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
+    scoring_runs: int,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -315,15 +316,19 @@ def calculate_heat_scores(
                     ),
                 )
             )
+        run_scores: list[float] = [r.mean_run_score for r in runs]
+        run_scores.sort()
+
+        total_score = sum(run_scores[-scoring_runs:])
         scores.append(
             AthleteScores(
                 run_scores=runs,
                 athlete_id=athlete.athlete_id,
                 highest_scoring_move=max(r.highest_scoring_move for r in runs),
+                total_score=total_score,
             )
         )
     return scores
-
 
 
 class RankInfo(BaseModel):
@@ -331,5 +336,70 @@ class RankInfo(BaseModel):
     reason: Optional[str]
 
 
-def calculate_rank(athlete_info, athlete_scores) -> RankInfo:
-    return RankInfo(ranking = 1, reason = "")
+def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
+    sorted_athletes_scores = sorted(
+        athlete_scores, key=lambda x: (x.total_score or 0), reverse=True
+    )
+    rank = 0
+
+    for s in sorted_athletes_scores:
+        # rank = max([a.ranking or 1 for a in athlete_scores])
+        # print(rank)
+
+        athletes_with_same_score = [
+            item for item in sorted_athletes_scores if item.total_score == s.total_score
+        ]
+        if len(athletes_with_same_score) == 1:
+            rank = rank + 1
+            s.ranking = rank
+        else:
+            rank_info = calculate_tied_rank(s.athlete_id, athlete_scores)
+            s.ranking = rank + rank_info.ranking + 1
+            s.reason = f"TieBreak: {rank_info.reason}"
+            # s.ranking = rank + calculate_tied_rank(s.athlete_id, athlete_scores)
+
+    # rank = sorted_athletes_scores.index(athlete_info.id)
+    return sorted_athletes_scores
+
+
+def calculate_tied_rank(
+    athlete_id: UUID, athlete_scores: list[AthleteScores]
+) -> RankInfo:
+    number_of_runs = max( len(a.run_scores) for a in athlete_scores)
+    # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
+    # First sort by highest scored move
+    sorted_athlete_score = sorted(
+        athlete_scores,
+        key= lambda x: x.highest_scoring_move,
+        reverse=True,
+    )
+
+    # Sort by dropped rides
+    for i in range(1,number_of_runs):
+
+        sorted_athlete_score.sort(
+
+            key=get_nth_highest_score(index = number_of_runs-i-1),
+            reverse=True,
+        )
+
+    return RankInfo(
+        ranking=sorted_athlete_score.index(
+            next(filter(lambda n: n.athlete_id == athlete_id, sorted_athlete_score))
+        ),
+        reason="Highest Scoring Run",
+    )
+
+
+def get_nth_highest_score( index: int):
+    print(index)
+    def get_highest_score_for_n(x: AthleteScores )-> float:
+
+                sorted_run_scores = sorted(
+                    x.run_scores, key=lambda y: y.mean_run_score, reverse=True
+                )
+                try:
+                    return sorted_run_scores[index].mean_run_score
+                except IndexError:
+                    return 0
+    return get_highest_score_for_n

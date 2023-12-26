@@ -84,10 +84,16 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 		const moveData = filteredMoves[0]
 
 		return (
-			<Paper data-testid={"scored-move-" + props.scoredMove.id}>
+			<Paper
+				sx={{
+					padding: "0.5em",
+					height: "max-content",
+					width: "100%"
+				}}
+			>
 				<Grid
 					container
-					spacing={1}
+					spacing={0}
 					justifyContent="space-between"
 					alignItems="center"
 				>

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
 import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
@@ -35,11 +36,14 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	}
 
 	return (
-		<Paper sx={{ flex: "true" }}>
-			<h4 data-testid="display-bib-number">
-				Paddler No: {paddlerInfo.bib}
-			</h4>
-			<div className="score" id="heatScore">
+		<Paper
+			sx={{
+				padding: "1em",
+				height: "100%"
+			}}
+		>
+			<Typography variant="h6">Paddler No: {paddlerInfo.bib}</Typography>
+			<div style={{ textAlign: "center" }}>
 				<Grid container direction="row" alignContent="space-between">
 					<Grid item xs={3}>
 						<IconButton

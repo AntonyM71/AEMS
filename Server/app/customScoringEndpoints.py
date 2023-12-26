@@ -6,6 +6,7 @@ from db.models import (
     AthleteHeat,
     AvailableBonuses,
     AvailableMoves,
+    Phase,
     ScoredBonuses,
     ScoredMoves,
 )
@@ -31,11 +32,12 @@ from app.scoring_logic import (
 
 scoring_router = APIRouter()
 
+
 class HeatInfoResponse(BaseModel):
     id: UUID
     heat_id: UUID
-    athlete_id : UUID
-    phase_id : UUID
+    athlete_id: UUID
+    phase_id: UUID
     number_of_runs: int
     number_of_runs_for_score: int
     scoresheet: UUID
@@ -45,6 +47,8 @@ class HeatInfoResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
 @scoring_router.get(
     "/getHeatInfo/{heat_id}",
     response_class=ORJSONResponse,
@@ -56,19 +60,25 @@ async def get_heat_info(
 ) -> list[HeatInfoResponse]:
     print(heat_id)
 
-
-    heat_info =  db.query(AthleteHeat).all()
+    heat_info = db.query(AthleteHeat).all()
     print(heat_info)
     print(heat_info[0].__dict__)
     print(heat_info[0].phases.__dict__)
 
-    heat_info_response = [HeatInfoResponse(**h.__dict__, number_of_runs_for_score=h.phases.number_of_runs_for_score, number_of_runs=h.phases.number_of_runs, scoresheet=h.phases.scoresheet, first_name=h.athletes.first_name, last_name = h.athletes.last_name, bib = h.athletes.bib ) for h in heat_info]
+    heat_info_response = [
+        HeatInfoResponse(
+            **h.__dict__,
+            number_of_runs_for_score=h.phases.number_of_runs_for_score,
+            number_of_runs=h.phases.number_of_runs,
+            scoresheet=h.phases.scoresheet,
+            first_name=h.athletes.first_name,
+            last_name=h.athletes.last_name,
+            bib=h.athletes.bib,
+        )
+        for h in heat_info
+    ]
 
-    return(heat_info_response)
-
-
-
-
+    return heat_info_response
 
 
 @scoring_router.post(
@@ -172,9 +182,11 @@ class HeatScoresResponse(BaseModel):
     heat_id: UUID
     scores: list[AthleteScoresWithAthleteInfo]
 
+
 class PhaseScoresResponse(BaseModel):
     phase_id: UUID
     scores: list[AthleteScoresWithAthleteInfo]
+
 
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
@@ -194,7 +206,7 @@ async def get_heat_scores(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
     )
     scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
-    scoresheet_available_moves= (
+    scoresheet_available_moves = (
         db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
     )
 
@@ -224,7 +236,13 @@ async def get_heat_scores(
         athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
-                **athlete_score[0].dict() if athlete_score else (AthleteScores(athlete_id = a_info.id, highest_scoring_move=0, run_scores=[]).dict()),
+                **athlete_score[0].dict()
+                if athlete_score
+                else (
+                    AthleteScores(
+                        athlete_id=a_info.id, highest_scoring_move=0, run_scores=[]
+                    ).dict()
+                ),
                 first_name=a_info.first_name,
                 last_name=a_info.last_name,
                 bib_number=a_info.bib,
@@ -233,7 +251,6 @@ async def get_heat_scores(
     athlete_scores_with_info.sort(key=lambda x: x.bib_number)
 
     return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
-
 
 
 @scoring_router.get(
@@ -247,14 +264,15 @@ async def get_phase_scores(
 ) -> PhaseScoresResponse:
     # scored_moves = select(ScoredMoves)
     moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
+    phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
     move_ids = [m.id for m in pydantic_moves]
-    athletes = db.query(Athlete).filter(
+    athletes: list[Athlete] = db.query(Athlete).filter(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
     )
     scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
-    scoresheet_available_moves= (
+    scoresheet_available_moves = (
         db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
     )
 
@@ -278,27 +296,35 @@ async def get_phase_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+        scoring_runs=phase.number_of_runs_for_score,
     )
+
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:
         athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
         rank_info = calculate_rank(a_info, athlete_scores)
-        print(athlete_score[0].dict())
+        # print(athlete_score[0].dict())
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
-                **athlete_score[0].dict(exclude_none=True) if athlete_score else (AthleteScores(athlete_id = a_info.id, highest_scoring_move=0, run_scores=[]).dict()),
+                **athlete_score[0].dict(exclude_none=True)
+                if len(athlete_score) != 0
+                else (
+                    AthleteScores(
+                        athlete_id=a_info.id, highest_scoring_move=0, run_scores=[]
+                    ).dict(exclude_none=True)
+                ),
                 first_name=a_info.first_name,
                 last_name=a_info.last_name,
                 bib_number=a_info.bib,
-                ranking = rank_info.ranking,
-                reason = rank_info.reason
-
+                ranking=rank_info.ranking,
+                reason=rank_info.reason,
             )
         )
-    athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking ]
-    athletes_without_scores = [a  for a in athlete_scores_with_info if not a.ranking]
+    athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]
+    athletes_without_scores = [a for a in athlete_scores_with_info if not a.ranking]
     athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
-    athletes_without_scores.sort(key = lambda x : x.bib_number)
+    athletes_without_scores.sort(key=lambda x: x.bib_number)
 
-
-    return PhaseScoresResponse(phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores])
+    return PhaseScoresResponse(
+        phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores]
+    )
