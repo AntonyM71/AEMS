@@ -17,6 +17,7 @@ import {
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
+import { SelectorDisplay } from "../../competition/MainSelector"
 import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
 import { RunSelector } from "./InfoBar/Runselector"
 import ScoredMove, { AvailableBonusType } from "./InfoBar/ScoredMove"
@@ -33,7 +34,7 @@ export interface AthleteInfo {
 	first_name: string
 	last_name: string
 	bib: string
-	scoresheetId: string
+	scoresheet: string
 }
 export const InfoBar = ({
 	paddlerInfo,
@@ -59,7 +60,7 @@ export const InfoBar = ({
 	const handleClose = () => setOpen(false)
 	const bonusList = useGetManyAvailablebonusesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [paddlerInfo.scoresheetId]
+		sheetIdList: [paddlerInfo.scoresheet]
 	})
 
 	const scoredBonuses = useSelector(getScoredBonuses)
@@ -83,6 +84,13 @@ export const InfoBar = ({
 				</Box>
 			</Modal>
 			<Grid container spacing={2}>
+				<Grid item xs={12}>
+					<SelectorDisplay
+						showDetailed={false}
+						showEvent={false}
+						showPhase={false}
+					/>
+				</Grid>
 				<Grid item xs={3}>
 					<Paper
 						sx={{

@@ -21,7 +21,7 @@ import {
 	useGetManyAvailablemovesGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { AthleteInfo, InfoBar } from "./InfoBar"
+import { InfoBar } from "./InfoBar"
 import {
 	directionType,
 	movesType,
@@ -173,13 +173,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 					</Grid>
 				</Grid>
 				<Grid item xs={5}>
-					<SelectorDisplay
-						showDetailed={false}
-						showEvent={false}
-						showPhase={false}
-					/>
 					<InfoBar
-						paddlerInfo={selectedAthlete as AthleteInfo}
+						paddlerInfo={selectedAthlete}
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
 						isFetchingScoredMoves={isMoveAndBonusFetching}
