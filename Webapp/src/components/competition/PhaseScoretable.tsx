@@ -30,45 +30,44 @@ export const PhaseScoreTable = () => {
 			{
 				phaseId: selectedPhase
 			},
-			{ refetchOnMountOrArgChange: true }
+			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
 		)
-	if (data && !isLoading) {
-		return (
-			<Grid
-				container
-				spacing={1}
-				alignItems="stretch"
-				sx={{ paddingTop: "1em" }}
-			>
-				<Grid item xs={12}>
-					<SelectorDisplay />
-				</Grid>
-				{selectedPhase && scoreData && !isScoreLoading ? (
-					<Grid item xs={12}>
-						<Paper>
-							<Typography
-								variant="h5"
-								sx={{ padding: "0.5em" }}
-							>{`Phase: ${data.name || ""}`}</Typography>
-							<PhaseAthleteScoreTable
-								athletes={scoreData}
-								numberOfRuns={data.number_of_runs || 3}
-								numberOfScoringRuns={
-									data.number_of_runs_for_score || 3
-								}
-							/>
-						</Paper>
-					</Grid>
-				) : (
-					<Skeleton variant="rectangular" />
-				)}
-			</Grid>
-		)
-	} else if (isLoading) {
-		return <Skeleton variant="rectangular" />
-	}
 
-	return <h4>Something went wrong</h4>
+	return (
+		<Grid
+			container
+			spacing={1}
+			alignItems="stretch"
+			sx={{ paddingTop: "1em" }}
+		>
+			<Grid item xs={12}>
+				<SelectorDisplay />
+			</Grid>
+			{data &&
+			!isLoading &&
+			selectedPhase &&
+			scoreData &&
+			!isScoreLoading ? (
+				<Grid item xs={12}>
+					<Paper>
+						<Typography
+							variant="h5"
+							sx={{ padding: "0.5em" }}
+						>{`Phase: ${data.name || ""}`}</Typography>
+						<PhaseAthleteScoreTable
+							athletes={scoreData}
+							numberOfRuns={data.number_of_runs || 3}
+							numberOfScoringRuns={
+								data.number_of_runs_for_score || 3
+							}
+						/>
+					</Paper>
+				</Grid>
+			) : (
+				<Skeleton variant="rectangular" />
+			)}
+		</Grid>
+	)
 }
 
 export const PhaseAthleteScoreTable = ({

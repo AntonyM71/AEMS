@@ -38,10 +38,13 @@ const PhasesSelector = ({
 
 	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery({
-			eventPkId: selectedEvent,
-			joinForeignTable: ["event"]
-		})
+		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery(
+			{
+				eventPkId: selectedEvent,
+				joinForeignTable: ["event"]
+			},
+			{ skip: !selectedEvent }
+		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		resetSelectedPhase()

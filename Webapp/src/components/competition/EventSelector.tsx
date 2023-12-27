@@ -39,10 +39,13 @@ const EventSelector = ({
 
 	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
 	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
-			competitionPkId: selectedCompetition,
-			joinForeignTable: ["competition"]
-		})
+		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery(
+			{
+				competitionPkId: selectedCompetition,
+				joinForeignTable: ["competition"]
+			},
+			{ skip: !selectedCompetition }
+		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		resetSelectedHeat()

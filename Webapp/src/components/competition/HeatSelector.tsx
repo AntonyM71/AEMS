@@ -34,10 +34,13 @@ const HeatsSelector = ({
 		dispatch(updateSelectedHeat(newHeat))
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery({
-		competitionIdList: [selectedCompetition],
-		competitionIdListComparisonOperator: "Equal"
-	})
+	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery(
+		{
+			competitionIdList: [selectedCompetition],
+			competitionIdListComparisonOperator: "Equal"
+		},
+		{ skip: !selectedCompetition }
+	)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedHeat(event.target.value)
