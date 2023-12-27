@@ -1,5 +1,6 @@
 {
   "mui-snippets.importPaths": "second level",
   "mui-snippets.showNotesOnStartup": false,
-  "python.linting.mypyEnabled": true
+  "python.linting.mypyEnabled": true,
+  "python.analysis.extraPaths": ["Server"]
 }
