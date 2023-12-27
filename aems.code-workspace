@@ -8,7 +8,6 @@
     "mui-snippets.importPaths": "second level",
     "mui-snippets.showNotesOnStartup": false,
     "eslint.workingDirectories": ["./Webapp"],
-    "eslint."
     "editor.formatOnPaste": true,
     "editor.fontLigatures": false,
     "editor.fontVariations": false,
@@ -25,8 +24,8 @@
     "eslint.migration.2_x": "off",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
-      "source.organizeImports": true
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     },
     "[scss]": {
       "editor.suggest.insertMode": "replace",
@@ -39,21 +38,9 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
     "editor.suggestSelection": "first",
-    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-    "tabnine.experimentalAutoImports": true,
     "yaml.schemas": {
       "file:///Users/antonymitchell/.vscode/extensions/atlassian.atlascode-2.10.12/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
     },
-    "atlascode.jira.jqlList": [
-      {
-        "id": "be37e193-410d-4c0b-a0db-7f2266a9bf0f",
-        "enabled": true,
-        "name": "My thehurleyfoundation Issues",
-        "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY lastViewed DESC",
-        "siteId": "7fdf6b8a-8a76-47e0-a1ec-a06272366187",
-        "monitor": true
-      }
-    ],
     "git.autofetch": true,
     "explorer.confirmDragAndDrop": false,
     "explorer.confirmDelete": false,
@@ -67,10 +54,6 @@
       "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "editor.formatOnType": true,
-    "atlascode.jira.lastCreateSiteAndProject": {
-      "siteId": "7fdf6b8a-8a76-47e0-a1ec-a06272366187",
-      "projectKey": ""
-    },
     "terminal.integrated.inheritEnv": false,
     "python.diagnostics.sourceMapsEnabled": true,
     "python.formatting.provider": "black",
@@ -86,7 +69,6 @@
     "breadcrumbs.showMethods": false,
     "zenMode.hideLineNumbers": false,
     "zenMode.hideStatusBar": false,
-    "zenMode.hideTabs": false,
     "zenMode.silentNotifications": false,
     "workbench.settings.editor": "json"
   }
