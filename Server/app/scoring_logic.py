@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from itertools import groupby
 from statistics import mean
 from typing import Literal
@@ -291,7 +292,7 @@ def calculate_heat_scores(
     athlete_moves_list: list[AthleteMoves],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
-    scoring_runs: int,
+    scoring_runs: int | None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -319,7 +320,7 @@ def calculate_heat_scores(
         run_scores: list[float] = [r.mean_run_score for r in runs]
         run_scores.sort()
 
-        total_score = sum(run_scores[-scoring_runs:])
+        total_score = sum(run_scores[-scoring_runs:]) if scoring_runs else 0
         scores.append(
             AthleteScores(
                 run_scores=runs,
@@ -343,9 +344,6 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
     rank = 0
 
     for s in sorted_athletes_scores:
-        # rank = max([a.ranking or 1 for a in athlete_scores])
-        # print(rank)
-
         athletes_with_same_score = [
             item for item in sorted_athletes_scores if item.total_score == s.total_score
         ]
@@ -356,9 +354,7 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
             rank_info = calculate_tied_rank(s.athlete_id, athlete_scores)
             s.ranking = rank + rank_info.ranking + 1
             s.reason = f"TieBreak: {rank_info.reason}"
-            # s.ranking = rank + calculate_tied_rank(s.athlete_id, athlete_scores)
 
-    # rank = sorted_athletes_scores.index(athlete_info.id)
     return sorted_athletes_scores
 
 
@@ -390,8 +386,7 @@ def calculate_tied_rank(
 
 
 def get_nth_highest_score(index: int) -> float:
-
-    def get_highest_score_for_n(x: AthleteScores) -> float:
+    def get_highest_score_for_n(x: AthleteScores) -> Callable[[AthleteScores], float]:
         sorted_run_scores = sorted(
             x.run_scores, key=lambda y: y.mean_run_score, reverse=True
         )

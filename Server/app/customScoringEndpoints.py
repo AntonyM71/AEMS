@@ -1,15 +1,5 @@
 from uuid import UUID
 
-from db.client import get_transaction_session
-from db.models import (
-    Athlete,
-    AthleteHeat,
-    AvailableBonuses,
-    AvailableMoves,
-    Phase,
-    ScoredBonuses,
-    ScoredMoves,
-)
 from fastapi import APIRouter, Depends
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
@@ -28,6 +18,16 @@ from app.scoring_logic import (
     calculate_heat_scores,
     calculate_rank,
     organise_moves_by_athlete_run_judge,
+)
+from db.client import get_transaction_session
+from db.models import (
+    Athlete,
+    AthleteHeat,
+    AvailableBonuses,
+    AvailableMoves,
+    Phase,
+    ScoredBonuses,
+    ScoredMoves,
 )
 
 scoring_router = APIRouter()

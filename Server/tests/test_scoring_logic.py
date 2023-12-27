@@ -1,4 +1,5 @@
 import pytest
+
 from app.scoring_logic import (
     AthleteMoves,
     AthleteScoreInfo,

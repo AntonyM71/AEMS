@@ -1,3 +1,6 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.autogenEndpoints import (
     crud_route_athlete,
     crud_route_athleteheat,
@@ -13,8 +16,6 @@ from app.autogenEndpoints import (
 )
 from app.customScoringEndpoints import scoring_router
 from app.scoresheetEndpoints import scoresheet_router
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 frontend_url = "http://localhost:3000"
 request_origins = [frontend_url]
