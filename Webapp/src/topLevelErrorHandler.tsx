@@ -2,26 +2,35 @@
 import { toast } from "react-hot-toast"
 export const registerRejectedPromise = () => {
 	window.onunhandledrejection = (err: any) => {
+		console.log(e)
 		handleErrors(err)
 	}
 }
 
+// eslint-disable-next-line complexity
 export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
 	if (env === "development" || "staging") {
 		// eslint-disable-next-line no-console
 		console.log(e)
-		const message = e.statusText
-			? e.statusText
-			: e.message
-			? e.message
-			: e.reason && e.reason.message
-			? e.reason.message
-			: e.reason
-			? e.reason
-			: e.data?.detail
-			? e.data.detail
-			: "Undefined Error"
+		const message =
+			typeof e == "string"
+				? e
+				: e.statusText
+				? e.statusText
+				: e.message
+				? e.message
+				: e.reason && e.reason.message
+				? e.reason.message
+				: e.reason
+				? e.reason
+				: e.data?.detail
+				? e.data.detail
+				: e.payload?.data?.detail
+				? e.payload.data.detail[0]
+				: e.error?.message
+				? e.error.message
+				: "Undefined Error"
 		toast.error(JSON.stringify(message))
 	} else {
 		toast.error("Something Went Wrong :(")

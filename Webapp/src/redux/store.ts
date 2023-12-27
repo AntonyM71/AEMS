@@ -6,6 +6,7 @@ import {
 	configureStore
 } from "@reduxjs/toolkit"
 import { cloneDeep } from "lodash"
+import { rtkQueryErrorLogger } from "../utils/rtkQueryHelper"
 import { competitionsReducer } from "./atoms/competitions"
 import { scoringReducer } from "./atoms/scoring"
 import { utilitiesReducer } from "./atoms/utilities"
@@ -25,7 +26,9 @@ export const setupStore = (
 		reducer: rootReducer,
 		preloadedState: cloneDeep(preloadedState),
 		middleware: (getDefaultMiddleware) =>
-			getDefaultMiddleware().concat(emptySplitApi.middleware)
+			getDefaultMiddleware()
+				.concat(emptySplitApi.middleware)
+				.concat(rtkQueryErrorLogger)
 	})
 export type RootState = ReturnType<typeof rootReducer>
 export type AppStore = ReturnType<typeof setupStore>
