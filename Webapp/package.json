@@ -54,6 +54,7 @@
 		"eject": "next eject",
 		"lint": "npx eslint ./src",
 		"lintfix": "npx eslint ./src --fix",
+		"prettierfix": "npx prettier ./src -v",
 		"api-generate": " npx @rtk-query/codegen-openapi src/services/example_api.json"
 	},
 	"eslintConfig": {
