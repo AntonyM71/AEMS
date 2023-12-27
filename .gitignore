@@ -1,5 +1,6 @@
 node_modules
 Server/db/__pycache__
+*.db
 Server/alembic/__pycache__
 Server/db/__pycache__
 .next
