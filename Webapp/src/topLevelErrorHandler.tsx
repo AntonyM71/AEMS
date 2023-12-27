@@ -26,8 +26,10 @@ export const handleErrors = (e: any) => {
 				? e.reason
 				: e.data?.detail
 				? e.data.detail
+				: e.payload?.error
+				? e.payload.error
 				: e.payload?.data?.detail
-				? e.payload.data.detail[0]
+				? e.payload.data.detail
 				: e.error?.message
 				? e.error.message
 				: "Undefined Error"
