@@ -4947,7 +4947,7 @@ export type Competition97758Afd647345888Bc59358757B9792FindManyResponseItemModel
 export type Competition768816E2D1694E89Bb418A01B35Db1E1FindManyResponseListModel =
 
 		| Competition97758Afd647345888Bc59358757B9792FindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type ItemComparisonOperators = "Equal" | "Not_equal" | "In" | "Not_in"
 export type PgsqlMatchingPatternInString =
 	| "case_insensitive"
@@ -5077,7 +5077,7 @@ export type CompetitionIdEventIdffb9F41F0E0747FdAef57Cf8A18F91DdFindOneResponseM
 export type CompetitionIdEventIde8C505623F8F4Dc5A05C82Cb09A37Ef0FindManyResponseListModel =
 
 		| CompetitionIdEventIdffb9F41F0E0747FdAef57Cf8A18F91DdFindOneResponseModelWithValidators[]
-		| undefined
+		 
 export type TableName24Ad9A907Fef4B35B8Dc4Dfc04C4Ecec = "competition" | "phase"
 export type ForeignCompetition4239Bf34F563494FA0490C47B3C970F7FindManyResponseItemModelWithValidators =
 	{
@@ -5107,7 +5107,7 @@ export type Event183E14Eb25A8473CBd4A753Bde4Cd5A3FindManyResponseItemModelWithVa
 	}
 export type Eventd967C6926A0642D9947BF6Aaad9B81AfFindManyResponseListModel =
 	| Event183E14Eb25A8473CBd4A753Bde4Cd5A3FindManyResponseItemModelWithValidators[]
-	| undefined
+	 
 export type TableName312C85Ec792B4D2CB56D3Ea593128B51 = "competition" | "phase"
 export type Event175A7C6804Fd45F4A6E19E826A6E84FbUpdateManyResponseModelWithValidators =
 	{
@@ -5258,7 +5258,7 @@ export type EventIdPhaseId6628B3FeB16F4909Afe33Fc06C825AadFindOneResponseModelWi
 export type EventIdPhaseIdfee9E8109164485EA8Da099083Fccb8CFindManyResponseListModel =
 
 		| EventIdPhaseId6628B3FeB16F4909Afe33Fc06C825AadFindOneResponseModelWithValidators[]
-		| undefined
+		 
 export type TableName9D9690B101654D28853E9D97Cc1F6D48 = "event" | "athleteheat"
 export type ForeignEventd29A5Cb9864C4Eaf8244Cbd615353F03FindManyResponseItemModelWithValidators =
 	{
@@ -5290,7 +5290,7 @@ export type Phase6A321D2B030F4325B66ED43Aa8C9Eb1DFindManyResponseItemModelWithVa
 	}
 export type Phase6Be9B62C756C4C3CB666718C4Ce9F377FindManyResponseListModel =
 	| Phase6A321D2B030F4325B66ED43Aa8C9Eb1DFindManyResponseItemModelWithValidators[]
-	| undefined
+	 
 export type TableNamefc0916Bf51Fb45959B18Dd6845C06C9B = "event" | "athleteheat"
 export type Phase0Bfefe66A34645BbAdcfEbed36B9Bba3UpdateManyResponseModelWithValidators =
 	{
@@ -5432,7 +5432,7 @@ export type Heat039F628F9B184Eef9E654227736Ec606FindManyResponseItemModelWithVal
 	}
 export type Heatdcff67Db0D3545DcBf66Aef39F8805AbFindManyResponseListModel =
 	| Heat039F628F9B184Eef9E654227736Ec606FindManyResponseItemModelWithValidators[]
-	| undefined
+	 
 export type TableNamef1524Bef6067463191C175B8D4Bea38E = "athleteheat"
 export type Heat862Ed4E9Cfd94D1EA541E031Bc5259AbUpdateManyResponseModelWithValidators =
 	{
@@ -5535,7 +5535,7 @@ export type Athlete701708FaCdc24731Be4D0Eccd66E796AFindManyResponseItemModelWith
 	}
 export type Athletedd85Ea61F7Bc4D6EB80176A9Da504A8EFindManyResponseListModel =
 	| Athlete701708FaCdc24731Be4D0Eccd66E796AFindManyResponseItemModelWithValidators[]
-	| undefined
+	 
 export type TableNamea38C413F0E114DeeA62F73469F4B1625 = "athleteheat"
 export type Athlete0D4D1818Fdec4689B0334B5E9B424E43UpdateManyResponseModelWithValidators =
 	{
@@ -5640,7 +5640,7 @@ export type ScoreSheet1222039A48Be44B4B3Aa5837D0712C5EFindManyResponseItemModelW
 export type ScoreSheete421B76F794A494AA9522Edfdb6Fd4F0FindManyResponseListModel =
 
 		| ScoreSheet1222039A48Be44B4B3Aa5837D0712C5EFindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type ScoreSheet4Ce28514Fe9A41B0Add8Bbd1Ba40F269UpdateManyResponseModelWithValidators =
 	{
 		id: string
@@ -5708,7 +5708,7 @@ export type AvailableMoves22Db4Fc4F5014D9F97D61Da8C53E8C4EFindManyResponseItemMo
 export type AvailableMovesaefb0861C08F40059852764E8Bab194AFindManyResponseListModel =
 
 		| AvailableMoves22Db4Fc4F5014D9F97D61Da8C53E8C4EFindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type AvailableMovesfac9Debb2Ea3438D96A3A38F10Cc92C7UpdateManyResponseModelWithValidators =
 	{
 		id: string
@@ -5859,7 +5859,7 @@ export type AvailableBonusesdd1Eac21F6684619B98452410A6E9E26FindManyResponseItem
 export type AvailableBonuses1053D1C324E644Ab9443F235C17B0A00FindManyResponseListModel =
 
 		| AvailableBonusesdd1Eac21F6684619B98452410A6E9E26FindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type TableName02Decf255Bdf42F3B462Bf5Accc9Fb03 =
 	| "scoreSheet"
 	| "availableMoves"
@@ -6031,7 +6031,7 @@ export type ScoredMoves1A62940A71Ad4F139Eb52574452D840FFindManyResponseItemModel
 export type ScoredMoves82De1927A75941E6A3653900C0F80F9AFindManyResponseListModel =
 
 		| ScoredMoves1A62940A71Ad4F139Eb52574452D840FFindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type TableNamee53F15C910Af4F41B444A7Ea53E311E1 =
 	| "heat"
 	| "phase"
@@ -6226,7 +6226,7 @@ export type ScoredBonuses0633F0599Bd24B74B3C47Cf17771BdfbFindManyResponseItemMod
 export type ScoredBonuses4Ff4Bd3BFa86404888Bc67C7327D280AFindManyResponseListModel =
 
 		| ScoredBonuses0633F0599Bd24B74B3C47Cf17771BdfbFindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type TableNamef0968E3E77Bb41De9C1AB6C3A3F991Db =
 	| "availableBonuses"
 	| "scoredMoves"
@@ -6369,7 +6369,7 @@ export type Athleteheat7C6Dac6C3B8D47AdA3390A3B631435EfFindManyResponseItemModel
 export type Athleteheat024E52A459144AdcA0F3103Ae4045106FindManyResponseListModel =
 
 		| Athleteheat7C6Dac6C3B8D47AdA3390A3B631435EfFindManyResponseItemModelWithValidators[]
-		| undefined
+		 
 export type TableName5Adec472D57248C6B55071041A4963F2 =
 	| "heat"
 	| "athlete"

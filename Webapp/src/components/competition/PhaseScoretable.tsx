@@ -1,8 +1,9 @@
 /* eslint-disable camelcase */
 
-import { Paper, Typography } from "@mui/material"
 import Grid from "@mui/material/Grid"
+import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
+import Typography from "@mui/material/Typography"
 import {
 	DataGrid,
 	GridColDef,
@@ -57,9 +58,6 @@ export const PhaseScoreTable = () => {
 						<PhaseAthleteScoreTable
 							athletes={scoreData}
 							numberOfRuns={data.number_of_runs || 3}
-							numberOfScoringRuns={
-								data.number_of_runs_for_score || 3
-							}
 						/>
 					</Paper>
 				</Grid>
@@ -72,12 +70,10 @@ export const PhaseScoreTable = () => {
 
 export const PhaseAthleteScoreTable = ({
 	athletes,
-	numberOfRuns,
-	numberOfScoringRuns
+	numberOfRuns
 }: {
 	athletes: PhaseScoresResponse
 	numberOfRuns: number
-	numberOfScoringRuns: number
 }) => {
 	const maxRuns = numberOfRuns
 	const runCols: GridColDef[] = []
