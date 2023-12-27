@@ -1,9 +1,15 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import SingletonThreadPool
 
-database_address = "postgresql://pi:kayak1@192.168.0.28/aems"
+load_dotenv(".env")
 
-engine = create_engine(database_address)
+# database_address = "postgresql://pi:kayak1@192.168.0.28/aems"
+database_address = os.environ.get("CONNECTION_STRING")
+engine = create_engine(database_address, poolclass=SingletonThreadPool)
 # TODO: Update to use dotenv
 session = sessionmaker(engine)
 
