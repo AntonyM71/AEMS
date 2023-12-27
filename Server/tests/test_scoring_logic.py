@@ -1571,7 +1571,7 @@ class TestAthleteRankCalculation:
         got = calculate_rank(scores)
         assert got == want
 
-    def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run(
+    def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move(
         self,
     ) -> None:
         scores = [
@@ -1604,7 +1604,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -1619,8 +1619,7 @@ class TestAthleteRankCalculation:
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=50
-
+                total_score=50,
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -1638,7 +1637,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -1667,8 +1666,6 @@ class TestAthleteRankCalculation:
                 ],
                 highest_scoring_move=25.0,
                 total_score=50,
-
-
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -1702,7 +1699,6 @@ class TestAthleteRankCalculation:
                 ],
                 highest_scoring_move=35.0,
                 total_score=50,
-
             ),
         ]
 
@@ -1736,7 +1732,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -1771,7 +1767,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -1843,7 +1839,6 @@ class TestAthleteRankCalculation:
         got = calculate_rank(scores)
         assert got == want
 
-
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move(
         self,
     ) -> None:
@@ -1879,8 +1874,7 @@ class TestAthleteRankCalculation:
                     ),
                 ],
                 highest_scoring_move=20.0,
-                total_score=50
-
+                total_score=50,
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -1898,7 +1892,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1913,9 +1907,7 @@ class TestAthleteRankCalculation:
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=50
-
-
+                total_score=50,
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -1949,7 +1941,6 @@ class TestAthleteRankCalculation:
                 ],
                 highest_scoring_move=35.0,
                 total_score=50,
-
             ),
         ]
 
@@ -2005,7 +1996,7 @@ class TestAthleteRankCalculation:
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-                                        RunScores(
+                    RunScores(
                         run_number=2,
                         judge_scores=[
                             JudgeScores(

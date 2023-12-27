@@ -42,7 +42,7 @@ class AddUpdateScoresheetRequest(BaseModel):
 
 
 @scoresheet_router.post("/addUpdateScoresheet/{scoresheet_id}")
-async def addUpdateScoresheet(
+async def add_update_scoresheet(
     scoresheet_id: str,
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),

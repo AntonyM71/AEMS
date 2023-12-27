@@ -1,6 +1,6 @@
 from itertools import groupby
 from statistics import mean
-from typing import Literal, Optional
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -237,9 +237,9 @@ class AthleteScores(BaseModel):
     athlete_id: UUID
     run_scores: list[RunScores]
     highest_scoring_move: float
-    ranking: Optional[int]
-    reason: Optional[str]
-    total_score: Optional[float]
+    ranking: int | None
+    reason: str | None
+    total_score: float | None
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
@@ -333,7 +333,7 @@ def calculate_heat_scores(
 
 class RankInfo(BaseModel):
     ranking: int
-    reason: Optional[str]
+    reason: str | None
 
 
 def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
@@ -365,21 +365,19 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
 def calculate_tied_rank(
     athlete_id: UUID, athlete_scores: list[AthleteScores]
 ) -> RankInfo:
-    number_of_runs = max( len(a.run_scores) for a in athlete_scores)
+    number_of_runs = max(len(a.run_scores) for a in athlete_scores)
     # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
     # First sort by highest scored move
     sorted_athlete_score = sorted(
         athlete_scores,
-        key= lambda x: x.highest_scoring_move,
+        key=lambda x: x.highest_scoring_move,
         reverse=True,
     )
 
     # Sort by dropped rides
-    for i in range(1,number_of_runs):
-
+    for i in range(1, number_of_runs):
         sorted_athlete_score.sort(
-
-            key=get_nth_highest_score(index = number_of_runs-i-1),
+            key=get_nth_highest_score(index=number_of_runs - i - 1),
             reverse=True,
         )
 
@@ -391,15 +389,15 @@ def calculate_tied_rank(
     )
 
 
-def get_nth_highest_score( index: int):
-    print(index)
-    def get_highest_score_for_n(x: AthleteScores )-> float:
+def get_nth_highest_score(index: int) -> float:
 
-                sorted_run_scores = sorted(
-                    x.run_scores, key=lambda y: y.mean_run_score, reverse=True
-                )
-                try:
-                    return sorted_run_scores[index].mean_run_score
-                except IndexError:
-                    return 0
+    def get_highest_score_for_n(x: AthleteScores) -> float:
+        sorted_run_scores = sorted(
+            x.run_scores, key=lambda y: y.mean_run_score, reverse=True
+        )
+        try:
+            return sorted_run_scores[index].mean_run_score
+        except IndexError:
+            return 0
+
     return get_highest_score_for_n
