@@ -21,9 +21,7 @@ export const AddScoresheet = ({
 	}
 	const { refetch } = useGetManyScoresheetGetQuery({})
 	const submitScoresheet = async (e: React.KeyboardEvent<HTMLDivElement>) => {
-		console.log(e.key)
 		if (e.key === "Enter") {
-			console.log("ENTER HIT")
 			if (scoresheetName) {
 				const newScoresheetId = v4()
 				HandlePostResponse(

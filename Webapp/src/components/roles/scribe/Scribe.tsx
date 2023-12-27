@@ -61,33 +61,38 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const selectedAthlete = athletes.data
 		? athletes.data[currentPaddlerIndex]
 		: undefined
+
 	useEffect(() => {
-		setNumberOfRuns(selectedAthlete?.number_of_runs)
+		if (selectedAthlete) {
+			setNumberOfRuns(selectedAthlete.number_of_runs)
+		}
 	}, [dispatch, selectedAthlete, selectedAthlete?.number_of_runs])
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
 	const submitScores = () => {
-		const formattedScoredMoves: PydanticScoredMoves[] = scoredMoves.map(
-			(m: scoredMovesType) => ({ ...m, move_id: m.moveId })
-		)
-		const formattedScoredBonuses: PydanticScoredBonuses[] =
-			scoredBonuses.map((b: scoredBonusType) => ({
-				...b,
-				move_id: b.moveId,
-				bonus_id: b.bonusId
-			}))
-		// ToDo: if statement here to only send the moves if they don't match the most recent returned requested moves?
-		void addUpdateMovesAndBonuses({
-			heatId: selectedHeat,
-			athleteId: selectedAthlete?.athlete_id!,
-			runNumber: selectedRun.toString(),
-			phaseId: selectedAthlete?.phase_id!,
-			judgeId: scribeNumber,
-			addUpdateScoredMovesRequest: {
-				moves: formattedScoredMoves,
-				bonuses: formattedScoredBonuses
-			}
-		})
+		if (selectedAthlete) {
+			const formattedScoredMoves: PydanticScoredMoves[] = scoredMoves.map(
+				(m: scoredMovesType) => ({ ...m, move_id: m.moveId })
+			)
+			const formattedScoredBonuses: PydanticScoredBonuses[] =
+				scoredBonuses.map((b: scoredBonusType) => ({
+					...b,
+					move_id: b.moveId,
+					bonus_id: b.bonusId
+				}))
+			// ToDo: if statement here to only send the moves if they don't match the most recent returned  moves?
+			void addUpdateMovesAndBonuses({
+				heatId: selectedHeat,
+				athleteId: selectedAthlete.athlete_id,
+				runNumber: selectedRun.toString(),
+				phaseId: selectedAthlete.phase_id,
+				judgeId: scribeNumber,
+				addUpdateScoredMovesRequest: {
+					moves: formattedScoredMoves,
+					bonuses: formattedScoredBonuses
+				}
+			})
+		}
 	}
 	useEffect(() => {
 		if (!isMoveAndBonusFetching && !athletes.isFetching) {
@@ -164,9 +169,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 								<MoveCard
 									key={move.id}
 									move={move as movesType}
-									data-testid={
-										"movecard-" + move.id!.toString()
-									}
 								/>
 							</Grid>
 						))}

@@ -67,7 +67,7 @@ export const HeatAthleteTable = () => {
 	})
 
 	const rows: GridRowsProp = flatten(
-		athletes.data?.map((a) => ({ ...a.athlete_foreign![0] } || []))
+		athletes.data?.map((a) => ({ ...a.athlete_foreign?.[0] } || []))
 	)
 
 	if (athletes.isLoading) {

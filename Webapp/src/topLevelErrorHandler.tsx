@@ -2,7 +2,6 @@
 import { toast } from "react-hot-toast"
 export const registerRejectedPromise = () => {
 	window.onunhandledrejection = (err: any) => {
-		console.log(e)
 		handleErrors(err)
 	}
 }
