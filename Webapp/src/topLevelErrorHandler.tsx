@@ -9,7 +9,7 @@ export const registerRejectedPromise = () => {
 // eslint-disable-next-line complexity
 export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
-	if (env === "development" || "staging") {
+	if (process.env.NODE_ENV === "development" || "test") {
 		// eslint-disable-next-line no-console
 		console.log(e)
 		const message =
@@ -37,4 +37,3 @@ export const handleErrors = (e: any) => {
 		toast.error("Something Went Wrong :(")
 	}
 }
-const env = "development"
