@@ -24,7 +24,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 		heatIdListComparisonOperator: "Equal",
 		heatIdList: [currentHeat]
 	})
-	const paddlersInHeat = athletes.data || []
+	const paddlersInHeat = athletes.data ?? []
 	const numberOfPaddlers = paddlersInHeat.length
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
