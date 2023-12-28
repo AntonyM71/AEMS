@@ -38,7 +38,7 @@ export function calculateSingleJudgeRunScore(
 			: 0
 
 	let runScore = 0
-	scoredMoveScores.map((am) => {
+	scoredMoveScores.forEach((am) => {
 		if (am && am.length === 1) {
 			runScore = runScore + am[0].value
 		} else if (am && am.length > 1) {
@@ -79,7 +79,7 @@ export const calculateMoveScore = (
 	)
 
 	return {
-		baseMove: baseMove?.id || "",
+		baseMove: baseMove?.id ?? "",
 		value: sum([moveBaseScore, ...scoredBonusValues]),
 		direction: scoredMove.direction,
 		moveType: scoredMove.moveId
@@ -93,9 +93,9 @@ const getMoveBaseScore = (
 	const scoredMoveValues = getScoredMoveValues(scoredMove, availableMoves)
 
 	if (frontLeftDirectionValues.includes(scoredMove.direction)) {
-		return scoredMoveValues?.fl_score || 0
+		return scoredMoveValues?.fl_score ?? 0
 	} else {
-		return scoredMoveValues?.rb_score || 0
+		return scoredMoveValues?.rb_score ?? 0
 	}
 }
 const getScoredMoveValues = (
@@ -111,7 +111,7 @@ const getBonusScore = (
 		(b) => b.id === scoredBonus.bonusId
 	)
 
-	return scoredBonusValues?.score || 0
+	return scoredBonusValues?.score ?? 0
 }
 
 export interface MoveScoreInfo {

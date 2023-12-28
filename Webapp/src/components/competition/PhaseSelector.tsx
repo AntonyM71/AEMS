@@ -70,62 +70,57 @@ const PhasesSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Phase</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Phase</InputLabel>
-								<Select
-									value={selectedPhase}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((Phase) => (
-										<MenuItem
-											key={Phase.id}
-											value={Phase.id}
-										>
-											{Phase.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Phase</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddPhase refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Phase</InputLabel>
+							<Select
+								value={selectedPhase}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((Phase) => (
+									<MenuItem key={Phase.id} value={Phase.id}>
+										{Phase.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Phases Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddPhase refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Phases Available</Fragment>
 	}
 }
 
 const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
-	const [PhaseName, setPhaseName] = useState<string>("")
+	const [phaseName, setPhaseName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [phaseId, setPhaseId] = useState<string>(selectedCompetition)
 	const [postNewPhase] = useInsertManyPhasePostMutation()
-	const { data, isLoading, isSuccess } =
+	const { data } =
 		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
 			competitionPkId: selectedCompetition,
 			joinForeignTable: ["competition"]
@@ -140,7 +135,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 				body: [
 					// eslint-disable-next-line camelcase
 					{
-						name: PhaseName,
+						name: phaseName,
 						id: uuid4(),
 						event_id: phaseId,
 						number_of_runs: numberOfRuns,
@@ -165,14 +160,14 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
-					error={!!PhaseName}
+					error={!!phaseName}
 					label="New Phase"
 					variant="outlined"
 					fullWidth
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setPhaseName(event.target.value)}
-					value={PhaseName}
+					value={phaseName}
 				/>
 			</Grid>
 			<Grid item xs={12}>

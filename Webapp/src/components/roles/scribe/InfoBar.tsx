@@ -52,10 +52,6 @@ export const InfoBar = ({
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
 
-	const clearRun = () => {
-		resetScoredMovesAndBonuses()
-		setCurrentMove("")
-	}
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
 	const bonusList = useGetManyAvailablebonusesGetQuery({

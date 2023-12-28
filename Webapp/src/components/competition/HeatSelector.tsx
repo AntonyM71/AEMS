@@ -65,57 +65,55 @@ const HeatsSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Heat</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Heat</InputLabel>
-								<Select
-									value={selectedHeat}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((Heat) => (
-										<MenuItem key={Heat.id} value={Heat.id}>
-											{Heat.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Heat</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddHeat refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Heat</InputLabel>
+							<Select
+								value={selectedHeat}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((Heat) => (
+									<MenuItem key={Heat.id} value={Heat.id}>
+										{Heat.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Heats Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddHeat refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Heats Available</Fragment>
 	}
 }
 
 const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
-	const [HeatName, setHeatName] = useState<string>("")
+	const [heatName, setHeatName] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [competitionId, setCompetitionId] =
 		useState<string>(selectedCompetition)
 	const [postNewHeat] = useInsertManyHeatPostMutation()
-	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
+	const { data } = useGetManyCompetitionGetQuery({})
 
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
@@ -128,7 +126,7 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 				body: [
 					// eslint-disable-next-line camelcase
 					{
-						name: HeatName,
+						name: heatName,
 						id: uuid4(),
 						competition_id: competitionId
 					}
@@ -150,14 +148,14 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
-					error={!!HeatName}
+					error={!!heatName}
 					label="New Heat"
 					variant="outlined"
 					fullWidth
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setHeatName(event.target.value)}
-					value={HeatName}
+					value={heatName}
 				/>
 			</Grid>
 			<Grid item xs={12}>

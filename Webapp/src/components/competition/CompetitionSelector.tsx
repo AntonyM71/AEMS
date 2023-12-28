@@ -31,8 +31,7 @@ export const CompetitionSelector = ({
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
-	const { data, isLoading, isSuccess, refetch } =
-		useGetManyCompetitionGetQuery({})
+	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
 	const setSelectedCompetition = (newComp: string) =>
@@ -60,51 +59,49 @@ export const CompetitionSelector = ({
 		)
 	} else {
 		return (
-			<>
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select a Competition</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Competition</InputLabel>
-								<Select
-									value={selectedCompetition}
-									onChange={handleSelect}
-									variant="outlined"
-									fullWidth={true}
-									label="Competition"
-								>
-									{data.map((competition) => {
-										if (competition.id) {
-											return (
-												<MenuItem
-													key={competition.id}
-													value={competition.id}
-												>
-													{competition.name || ""}
-												</MenuItem>
-											)
-										}
-									})}
-								</Select>
-							</FormControl>
+							<h4>Select a Competition</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<AddCompetition />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Competition</InputLabel>
+							<Select
+								value={selectedCompetition}
+								onChange={handleSelect}
+								variant="outlined"
+								fullWidth={true}
+								label="Competition"
+							>
+								{data.map((competition) => {
+									if (competition.id) {
+										return (
+											<MenuItem
+												key={competition.id}
+												value={competition.id}
+											>
+												{competition.name ?? ""}
+											</MenuItem>
+										)
+									}
+								})}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			</>
+					{showDetailed ? (
+						<Grid item xs={12}>
+							<AddCompetition />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
 		)
 	}
 }

@@ -3,7 +3,6 @@ import { useEffect } from "react"
 import { batch, useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
-	getSelectedPhase,
 	updateNumberOfRuns
 } from "../../../redux/atoms/competitions"
 import {
@@ -36,7 +35,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
-	const selectedPhase = useSelector(getSelectedPhase)
 	const setNumberOfRuns = (n: number) => dispatch(updateNumberOfRuns(n))
 
 	const setScoredMovesAndBonuses = (
@@ -154,7 +152,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	})
 
 	if (
-		selectedAthlete &&
 		selectedAthlete?.id &&
 		selectedAthlete.first_name &&
 		selectedAthlete.last_name &&

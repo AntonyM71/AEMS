@@ -17,7 +17,6 @@ import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 
 const Header = () => {
-	const env = "development"
 	const preferDark = useSelector(getPreferDark)
 	const userRole = useSelector(getUserRole)
 

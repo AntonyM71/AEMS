@@ -197,7 +197,6 @@ async def get_heat_scores(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
-    # scored_moves = select(ScoredMoves)
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
@@ -230,6 +229,7 @@ async def get_heat_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:

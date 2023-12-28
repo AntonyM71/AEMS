@@ -57,7 +57,7 @@ export const PhaseScoreTable = () => {
 						>{`Phase: ${data.name || ""}`}</Typography>
 						<PhaseAthleteScoreTable
 							athletes={scoreData}
-							numberOfRuns={data.number_of_runs || 3}
+							numberOfRuns={data.number_of_runs ?? 3}
 						/>
 					</Paper>
 				</Grid>

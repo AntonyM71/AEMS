@@ -46,8 +46,8 @@ export const ScoresheetBuilderHeader = ({
 				<Typography>L/B Score</Typography>
 			</Grid>
 
-			{bonuses.map((b, i) => (
-				<Grid item key={i} xs={1}>
+			{bonuses.map((b) => (
+				<Grid item key={b} xs={1}>
 					<Grid
 						container
 						justifyContent="space-between"

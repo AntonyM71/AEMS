@@ -70,15 +70,13 @@ export const HeatAthleteScoreTable = ({
 					(runScores[r.field] = a.run_scores[j]?.mean_run_score || 0)
 			)
 
-			return (
-				{
-					id: i,
-					bib: a.bib_number,
-					first_name: a.first_name,
-					last_name: a.last_name,
-					...runScores
-				} || []
-			)
+			return {
+				id: i,
+				bib: a.bib_number,
+				first_name: a.first_name,
+				last_name: a.last_name,
+				...runScores
+			}
 		})
 	)
 

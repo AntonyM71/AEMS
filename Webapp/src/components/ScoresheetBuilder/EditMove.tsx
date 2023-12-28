@@ -75,7 +75,7 @@ export const EditMove = ({
 			/>
 		</Grid>
 		{moveData.bonuses.map((b, i) => (
-			<Grid item xs={1} key={i}>
+			<Grid item xs={1} key={b.id}>
 				<TextField
 					error={!moveData.bonuses[i].score.toString()}
 					label={`${b.name}`}

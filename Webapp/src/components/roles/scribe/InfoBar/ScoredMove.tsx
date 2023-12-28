@@ -4,7 +4,6 @@ import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
 	getScoredBonuses,
 	getScoredMoves,
@@ -28,7 +27,6 @@ interface ScoredMovePropsType {
 
 const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const dispatch = useDispatch()
-	const selectedHeat = useSelector(getSelectedHeat)
 	const scoredMovesList = useSelector(getScoredMoves)
 
 	const scoredBonuses = useSelector(getScoredBonuses)
@@ -63,7 +61,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const filteredMoves =
 		availableMovesList.data?.filter(
 			(move) => move.id === props.scoredMove.moveId
-		) || []
+		) ?? []
 	const scoredMoveAvailableBonuses: AvailableBonusType[] =
 		(bonusList.data?.filter(
 			(bonus) => bonus.move_id === props.scoredMove.moveId
@@ -108,6 +106,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 
 					{scoredMoveAvailableBonuses.map((availableBonus) => (
 						<BonusChip
+							key={props.scoredMove.id}
 							availableBonus={availableBonus}
 							scoredMove={props.scoredMove}
 							scoredMoveBonuses={scoredMoveBonuses}

@@ -73,50 +73,45 @@ const EventSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Event</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Event</InputLabel>
-								<Select
-									value={selectedEvent}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((event) => (
-										<MenuItem
-											key={event.id}
-											value={event.id}
-										>
-											{event.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Event</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddEvent refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Event</InputLabel>
+							<Select
+								value={selectedEvent}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((event) => (
+									<MenuItem key={event.id} value={event.id}>
+										{event.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Events Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddEvent refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Events Available</Fragment>
 	}
 }
 
@@ -126,7 +121,7 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [competitionId, setCompetitionId] =
 		useState<string>(selectedCompetition)
 	const [postNewEvent] = useInsertManyEventPostMutation()
-	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
+	const { data } = useGetManyCompetitionGetQuery({})
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

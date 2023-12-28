@@ -67,7 +67,7 @@ export const HeatAthleteTable = () => {
 	})
 
 	const rows: GridRowsProp = flatten(
-		athletes.data?.map((a) => ({ ...a.athlete_foreign?.[0] } || []))
+		athletes.data?.map((a) => ({ ...a.athlete_foreign?.[0] }))
 	)
 
 	if (athletes.isLoading) {
@@ -101,7 +101,7 @@ const AddAthletesToHeat = () => {
 	})
 	const [athleteLastName, setAthleteLastName] = useState<string>("")
 	const [bibNumber, setBibNumber] = useState<number>(1)
-	const { data, isLoading, isSuccess, refetch } = useGetManyPhaseGetQuery({})
+	const { data, isSuccess } = useGetManyPhaseGetQuery({})
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedPhase(event.target.value)
@@ -210,29 +210,6 @@ const AddAthletesToHeat = () => {
 			</Grid>
 		</Grid>
 	)
-}
-
-const parsePhasesInHeats = (heats: apiHeatsListType[]): PhaseListType[] => {
-	const phaseList: PhaseListType[] = []
-	if (heats) {
-		const phases = heats.map((h) => {
-			const phasesInHeat = h.phase_foreign
-			phasesInHeat?.map((p) => {
-				if (p.name && p.id) {
-					phaseList.push({ name: p.name, value: p.id })
-				}
-			})
-		})
-	}
-
-	return phaseList
-}
-
-interface apiHeatsListType {
-	phase_foreign: {
-		name: string
-		id: string
-	}[]
 }
 
 interface PhaseListType {

@@ -117,7 +117,6 @@ def calculate_run_score(
         move_metahash = make_move_string(scored_move)
 
         if not filtered_move_scores.get(move_metahash):
-            # possible_duplicates = [ pd for pd in scored_move_list_with_scores if pd.move_id == scored_move.move]
             filtered_move_scores[move_metahash] = scored_move.total_score_with_bonuses
         else:
             if (
@@ -292,7 +291,7 @@ def calculate_heat_scores(
     athlete_moves_list: list[AthleteMoves],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
-    scoring_runs: int | None,
+    scoring_runs: int | None = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -385,8 +384,8 @@ def calculate_tied_rank(
     )
 
 
-def get_nth_highest_score(index: int) -> float:
-    def get_highest_score_for_n(x: AthleteScores) -> Callable[[AthleteScores], float]:
+def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:
+    def get_highest_score_for_n(x: AthleteScores) -> float:
         sorted_run_scores = sorted(
             x.run_scores, key=lambda y: y.mean_run_score, reverse=True
         )
