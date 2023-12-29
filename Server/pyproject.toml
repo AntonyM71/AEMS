@@ -1,5 +1,5 @@
 [tool.ruff]
-ignore = ["E501", "ANN101", "N999"]
+ignore = ["E501", "ANN101", "N999", "UP007"]
 select = ["E", "F", "B" ,"I", "N", "UP", "YTT", "ANN", "FBT", "EM", "RUF", "PD", "TRY", "G"]
 fixable = ["ALL"]
 line-length = 88

@@ -347,10 +347,11 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
             item for item in sorted_athletes_scores if item.total_score == s.total_score
         ]
         if len(athletes_with_same_score) == 1:
-            rank = rank + 1
+            print(rank)
+            rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
             s.ranking = rank
         else:
-            rank_info = calculate_tied_rank(s.athlete_id, athlete_scores)
+            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
             s.ranking = rank + rank_info.ranking + 1
             s.reason = f"TieBreak: {rank_info.reason}"
 
@@ -375,6 +376,25 @@ def calculate_tied_rank(
             key=get_nth_highest_score(index=number_of_runs - i - 1),
             reverse=True,
         )
+    if (
+        len(
+            fully_tied_athletes := athletes_with_this_exact_score_after_tiebreak(
+                athlete_id=athlete_id, athlete_scores=athlete_scores
+            )
+        )
+        != 1
+    ):
+        return RankInfo(
+            ranking=min(
+                [
+                    sorted_athlete_score.index(
+                        next(filter(lambda n: n.athlete_id == a, sorted_athlete_score))
+                    )
+                    for a in fully_tied_athletes
+                ]
+            ),
+            reason="Fully Tied",
+        )
 
     return RankInfo(
         ranking=sorted_athlete_score.index(
@@ -382,6 +402,29 @@ def calculate_tied_rank(
         ),
         reason="Highest Scoring Run",
     )
+
+
+def athletes_with_this_exact_score_after_tiebreak(
+    athlete_id: UUID, athlete_scores: list[AthleteScores]
+) -> list[UUID]:
+    this_athlete = next(a for a in athlete_scores if a.athlete_id == athlete_id)
+    return [
+        a.athlete_id for a in athlete_scores if athlete_is_fully_tied(a, this_athlete)
+    ]
+
+
+def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
+    if (
+        a.total_score == this_athlete.total_score
+        and a.highest_scoring_move == this_athlete.highest_scoring_move
+        and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
+        == [
+            get_nth_highest_score(i)(this_athlete)
+            for i, r in enumerate(this_athlete.run_scores)
+        ]
+    ):
+        return True
+    return False
 
 
 def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:

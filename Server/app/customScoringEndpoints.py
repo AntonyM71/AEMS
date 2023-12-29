@@ -299,11 +299,11 @@ async def get_phase_scores(
     )
 
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
-    athlete_scores_with_rank = calculate_rank( athlete_scores)
+    athlete_scores_with_rank = calculate_rank(athlete_scores)
     for a_info in athletes:
-
-
-        athlete_score = [a for a in athlete_scores_with_rank if a.athlete_id == a_info.id]
+        athlete_score = [
+            a for a in athlete_scores_with_rank if a.athlete_id == a_info.id
+        ]
         # print(athlete_score[0].dict())
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
@@ -317,7 +317,6 @@ async def get_phase_scores(
                 first_name=a_info.first_name,
                 last_name=a_info.last_name,
                 bib_number=a_info.bib,
-
             )
         )
     athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]

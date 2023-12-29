@@ -2055,3 +2055,219 @@ class TestAthleteRankCalculation:
 
         got = calculate_rank(scores)
         assert got == want
+
+    def test_it_returns_tied_ranks_for_an_actual_tie(
+        self,
+    ) -> None:
+        scores = [
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=20.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                total_score=50,
+            ),
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                total_score=50,
+            ),
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=30, highest_scoring_move=30
+                                ),
+                            )
+                        ],
+                        mean_run_score=30.0,
+                        highest_scoring_move=30.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=15, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=15.0,
+                        highest_scoring_move=15.0,
+                    ),
+                ],
+                highest_scoring_move=30.0,
+                total_score=45,
+            ),
+        ]
+
+        want = [
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=20.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                ranking=1,
+                total_score=50,
+                reason="TieBreak: Fully Tied",
+            ),
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0,
+                        highest_scoring_move=25.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                ranking=1,
+                total_score=50,
+                reason="TieBreak: Fully Tied",
+            ),
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=30, highest_scoring_move=30
+                                ),
+                            )
+                        ],
+                        mean_run_score=30.0,
+                        highest_scoring_move=30.0,
+                    ),
+                    RunScores(
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=15, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=15.0,
+                        highest_scoring_move=15.0,
+                    ),
+                ],
+                highest_scoring_move=30.0,
+                total_score=45,
+                ranking=2,
+                reason=None,
+            ),
+        ]
+
+        got = calculate_rank(scores)
+        assert got == want
