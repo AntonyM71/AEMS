@@ -101,18 +101,22 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const {
 		data: moveAndBonusdata,
 		refetch: refetchMoveAndBonusData,
-		isFetching: isMoveAndBonusFetching
+		isFetching: isMoveAndBonusFetching,
+		isUninitialized
 	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
 		{
 			runNumber: selectedRun.toString(),
 			athleteId: selectedAthlete?.athlete_id ?? "",
 			judgeId: scribeNumber,
 			heatId: selectedHeat
-		}
+		},
+		{ skip: !selectedAthlete?.athlete_id }
 	)
 
 	const getServerScores = async () => {
-		await refetchMoveAndBonusData()
+		if (!isUninitialized) {
+			await refetchMoveAndBonusData()
+		}
 	}
 	useEffect(() => {
 		if (!isMoveAndBonusFetching) {
@@ -146,10 +150,13 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		selectedAthlete?.athlete_id
 	])
 
-	const availableMoves = useGetManyAvailablemovesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedAthlete?.scoresheet ?? ""]
-	})
+	const availableMoves = useGetManyAvailablemovesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
+		},
+		{ skip: !selectedAthlete?.scoresheet }
+	)
 
 	if (
 		selectedAthlete?.id &&
@@ -158,9 +165,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		selectedAthlete.bib
 	) {
 		return (
-			<Grid container spacing={3}>
+			<Grid container spacing={1}>
 				<Grid item xs={7}>
-					<Grid container spacing={2}>
+					<Grid container spacing={1}>
 						{availableMoves.data?.map((move) => (
 							<Grid item xs={3} key={move.id}>
 								<MoveCard

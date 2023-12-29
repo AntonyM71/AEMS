@@ -28,13 +28,13 @@ const Judging = () => {
 		return (
 			<Grid
 				container
-				spacing={2}
+				spacing={1}
 				alignItems="flex-start"
-				sx={{ paddingTop: "1em" }}
+				sx={{ paddingTop: "0.5em" }}
 			>
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
-						<Grid container spacing={2} alignItems={"stretch"}>
+						<Grid container spacing={1} alignItems={"stretch"}>
 							<Grid item xs>
 								<Link
 									component={RouterLink}
@@ -79,7 +79,7 @@ const Judging = () => {
 	}
 
 	return (
-		<Grid container alignItems="stretch" sx={{ paddingTop: "1em" }}>
+		<Grid container alignItems="stretch" sx={{ paddingTop: "0.5em" }}>
 			<Grid item xs={12}>
 				<SelectorDisplay
 					showDetailed={false}

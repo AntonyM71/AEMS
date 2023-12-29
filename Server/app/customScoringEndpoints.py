@@ -229,7 +229,6 @@ async def get_heat_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
-
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:
@@ -300,9 +299,11 @@ async def get_phase_scores(
     )
 
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
+    athlete_scores_with_rank = calculate_rank( athlete_scores)
     for a_info in athletes:
-        athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
-        rank_info = calculate_rank(a_info, athlete_scores)
+
+
+        athlete_score = [a for a in athlete_scores_with_rank if a.athlete_id == a_info.id]
         # print(athlete_score[0].dict())
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
@@ -316,8 +317,7 @@ async def get_phase_scores(
                 first_name=a_info.first_name,
                 last_name=a_info.last_name,
                 bib_number=a_info.bib,
-                ranking=rank_info.ranking,
-                reason=rank_info.reason,
+
             )
         )
     athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]

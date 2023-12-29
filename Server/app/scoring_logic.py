@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from itertools import groupby
 from statistics import mean
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -237,9 +237,9 @@ class AthleteScores(BaseModel):
     athlete_id: UUID
     run_scores: list[RunScores]
     highest_scoring_move: float
-    ranking: int | None
-    reason: str | None
-    total_score: float | None
+    ranking: Optional[int]
+    reason: Optional[str]
+    total_score: Optional[float]
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
@@ -291,7 +291,7 @@ def calculate_heat_scores(
     athlete_moves_list: list[AthleteMoves],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
-    scoring_runs: int | None = None,
+    scoring_runs: Optional[int] = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -333,7 +333,7 @@ def calculate_heat_scores(
 
 class RankInfo(BaseModel):
     ranking: int
-    reason: str | None
+    reason: Optional[str]
 
 
 def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:

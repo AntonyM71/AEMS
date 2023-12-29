@@ -17,7 +17,7 @@ export const SelectorDisplay = ({
 	showPhase?: boolean
 	showHeat?: boolean
 }) => (
-	<Grid container spacing={3} alignItems={"stretch"}>
+	<Grid container spacing={1} alignItems="stretch">
 		{showCompetition && (
 			<Grid item xs>
 				<CompetitionSelector showDetailed={showDetailed} />

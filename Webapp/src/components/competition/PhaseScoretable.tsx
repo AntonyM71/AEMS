@@ -39,10 +39,10 @@ export const PhaseScoreTable = () => {
 			container
 			spacing={1}
 			alignItems="stretch"
-			sx={{ paddingTop: "1em" }}
+			sx={{ paddingTop: "0.5em" }}
 		>
 			<Grid item xs={12}>
-				<SelectorDisplay />
+				<SelectorDisplay showHeat={false} />
 			</Grid>
 			{data &&
 			!isLoading &&

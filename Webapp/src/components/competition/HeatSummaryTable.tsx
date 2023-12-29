@@ -25,7 +25,11 @@ import {
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
-export const HeatSummaryTable = () => {
+export const HeatSummaryTable = ({
+	showAddAthletes = false
+}: {
+	showAddAthletes: boolean
+}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
 		id: selectedHeat
@@ -33,14 +37,16 @@ export const HeatSummaryTable = () => {
 	if (data && selectedHeat && !isLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={2} alignItems="stretch">
+				<Grid container spacing={1} alignItems="stretch">
 					<Grid item xs={12}>
 						<h3>{`Heat: ${data.name || ""}`}</h3>
 						<HeatAthleteTable />
 					</Grid>
-					<Grid item xs={12}>
-						<AddAthletesToHeat />
-					</Grid>
+					{showAddAthletes && (
+						<Grid item xs={12}>
+							<AddAthletesToHeat />
+						</Grid>
+					)}
 				</Grid>
 			</Paper>
 		)
@@ -150,7 +156,7 @@ const AddAthletesToHeat = () => {
 	}
 
 	return (
-		<Grid container spacing={2} alignItems="stretch">
+		<Grid container spacing={1} alignItems="stretch">
 			<Grid item xs>
 				<TextField label="Heat" value={selectedHeat} disabled />
 			</Grid>

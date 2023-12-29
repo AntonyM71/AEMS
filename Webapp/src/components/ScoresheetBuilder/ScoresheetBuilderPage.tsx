@@ -9,7 +9,7 @@ export const ScoresheetBuilder = () => {
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 
 	return (
-		<Grid container spacing={2}>
+		<Grid container spacing={1}>
 			<Grid item xs={2}>
 				<Paper sx={{ padding: "1em" }}>
 					<SelectScoresheet
@@ -22,7 +22,7 @@ export const ScoresheetBuilder = () => {
 				</Paper>
 			</Grid>
 			<Grid item xs={10}>
-				<Grid container spacing={2}>
+				<Grid container spacing={1}>
 					<Grid item xs={12}>
 						{selectedScoresheet ? (
 							<ScoresheetMoves

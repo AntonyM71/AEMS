@@ -54,7 +54,7 @@ const HeatsSelector = ({
 		return <h4>Failed to get data from the server</h4>
 	} else if (!data) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
+			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Grid container spacing="2">
 					<Grid item xs={12}>
 						<h4>No Heats in phase</h4>

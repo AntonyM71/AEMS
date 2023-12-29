@@ -42,10 +42,15 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 				height: "100%"
 			}}
 		>
-			<Typography variant="h6">Paddler No: {paddlerInfo.bib}</Typography>
+			<Typography>Paddler No: {paddlerInfo.bib}</Typography>
 			<div style={{ textAlign: "center" }}>
-				<Grid container direction="row" alignContent="space-between">
-					<Grid item xs={3}>
+				<Grid
+					container
+					direction="row"
+					justifyContent="space-between"
+					alignContent="space-between"
+				>
+					<Grid item>
 						<IconButton
 							onClick={() => changePaddler(-1)}
 							data-testid={"button-prev-paddler"}
@@ -53,7 +58,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 							<ChevronLeft />
 						</IconButton>
 					</Grid>
-					<Grid item xs={6} data-testid={"display-paddler-name"}>
+					<Grid item data-testid={"display-paddler-name"}>
 						<div style={{ textAlign: "center" }}>
 							{paddlerInfo.first_name}
 						</div>
@@ -61,7 +66,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 							{paddlerInfo.last_name.toUpperCase()}
 						</div>
 					</Grid>
-					<Grid item xs={3}>
+					<Grid item>
 						<IconButton
 							onClick={() => changePaddler(1)}
 							data-testid={"button-next-paddler"}

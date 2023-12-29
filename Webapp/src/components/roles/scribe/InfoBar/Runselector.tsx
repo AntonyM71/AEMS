@@ -30,7 +30,7 @@ export const RunSelector = () => {
 				height: "100%"
 			}}
 		>
-			<Typography variant="h6">Run:</Typography>
+			<Typography>Run:</Typography>
 			<div style={{ textAlign: "center" }}>
 				<IconButton
 					onClick={() => changeRun(-1)}

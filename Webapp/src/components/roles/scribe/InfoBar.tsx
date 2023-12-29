@@ -7,12 +7,7 @@ import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	getScoredBonuses,
-	getScoredMoves,
-	updateCurrentMove,
-	updateScoredMovesAndBonuses
-} from "../../../redux/atoms/scoring"
+import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
@@ -45,12 +40,6 @@ export const InfoBar = ({
 	const [open, setOpen] = React.useState(false)
 
 	const scoredMoves = useSelector(getScoredMoves)
-	const resetScoredMovesAndBonuses = () => {
-		dispatch(updateScoredMovesAndBonuses({ moves: [], bonuses: [] }))
-	}
-
-	const setCurrentMove = (newMove: string) =>
-		dispatch(updateCurrentMove(newMove))
 
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
@@ -79,13 +68,23 @@ export const InfoBar = ({
 					<HeatScoreTable />
 				</Box>
 			</Modal>
-			<Grid container spacing={2}>
-				<Grid item xs={12}>
+			<Grid container spacing={1}>
+				<Grid item xs={10}>
 					<SelectorDisplay
 						showDetailed={false}
 						showEvent={false}
 						showPhase={false}
 					/>
+				</Grid>
+				<Grid item xs={2}>
+					<Button
+						onClick={handleOpen}
+						variant="contained"
+						fullWidth
+						sx={{ height: "100%" }}
+					>
+						Heat Summary
+					</Button>
 				</Grid>
 				<Grid item xs={3}>
 					<Paper
@@ -94,26 +93,20 @@ export const InfoBar = ({
 							height: "100%"
 						}}
 					>
-						<Typography variant="h6">Score</Typography>
+						<Typography>Score:</Typography>
 						<div style={{ textAlign: "center" }}>
 							<Typography>{currentScore.score}</Typography>
 						</div>
 					</Paper>
 				</Grid>
-				<Grid item xs={5}>
+				<Grid item xs={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
 				</Grid>
-				<Grid item xs={4}>
+				<Grid item xs={3}>
 					<RunSelector />
 				</Grid>
 				<Grid item xs={4}>
-					<h4>Move Listing</h4>
-				</Grid>
-
-				<Grid item xs={4}>
-					<Button onClick={handleOpen} variant="contained" fullWidth>
-						Heat Summary
-					</Button>
+					<Typography>Move Listing</Typography>
 				</Grid>
 			</Grid>
 			<Grid
