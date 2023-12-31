@@ -60,7 +60,7 @@ async def get_heat_info(
 ) -> list[HeatInfoResponse]:
     print(heat_id)
 
-    heat_info = db.query(AthleteHeat).all()
+    heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
     print(heat_info)
     print(heat_info[0].__dict__)
     print(heat_info[0].phases.__dict__)
