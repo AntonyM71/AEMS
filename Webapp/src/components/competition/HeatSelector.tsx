@@ -16,6 +16,7 @@ import {
 	getSelectedHeat,
 	updateSelectedHeat
 } from "../../redux/atoms/competitions"
+import { updatePaddler, updateRun } from "../../redux/atoms/scoring"
 import {
 	useGetManyCompetitionGetQuery,
 	useGetManyHeatGetQuery,
@@ -41,9 +42,13 @@ const HeatsSelector = ({
 		},
 		{ skip: !selectedCompetition }
 	)
-
+	const setCurrentPaddler = (newPaddler: number) =>
+		dispatch(updatePaddler(newPaddler))
+	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedHeat(event.target.value)
+		setCurrentPaddler(0)
+		setselectedRun(0)
 	}
 	if (!selectedCompetition) {
 		return <></>

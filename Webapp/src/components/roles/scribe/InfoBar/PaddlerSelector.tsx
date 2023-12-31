@@ -5,24 +5,31 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-import { getSelectedHeat } from "../../../../redux/atoms/competitions"
+import {
+	getNumberOfRuns,
+	getSelectedHeat
+} from "../../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
-	updatePaddler
+	getSelectedRun,
+	updatePaddler,
+	updateRun
 } from "../../../../redux/atoms/scoring"
-import { useGetManyAthleteheatGetQuery } from "../../../../redux/services/aemsApi"
+import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
 import { AthleteInfo, calculateNewIndex } from "../InfoBar"
 
 export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	const dispatch = useDispatch()
 	const setCurrentPaddler = (newPaddler: number) =>
 		dispatch(updatePaddler(newPaddler))
+	const setCurrentRun = (newRun: number) => dispatch(updateRun(newRun))
+	const numberOfRuns = useSelector(getNumberOfRuns)
 	const currentPaddler = useSelector(getCurrentPaddlerIndex)
-
+	const currentRun = useSelector(getSelectedRun)
 	const currentHeat = useSelector(getSelectedHeat)
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [currentHeat]
+
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: currentHeat
 	})
 	const paddlersInHeat = athletes.data ?? []
 	const numberOfPaddlers = paddlersInHeat.length
@@ -32,6 +39,13 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 			numberOfPaddlers
 		)
 
+		if (number > 0 && newPaddlerIndex < currentPaddler) {
+			const newRun = calculateNewIndex(currentRun + 1, numberOfRuns)
+			setCurrentRun(newRun)
+		} else if (number < 0 && newPaddlerIndex > currentPaddler) {
+			const newRun = calculateNewIndex(currentRun - 1, numberOfRuns)
+			setCurrentRun(newRun)
+		}
 		setCurrentPaddler(newPaddlerIndex)
 	}
 
