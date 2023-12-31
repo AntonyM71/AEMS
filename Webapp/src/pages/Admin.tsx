@@ -1,3 +1,4 @@
+import { Divider } from "@mui/material"
 import Grid from "@mui/material/Grid"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../components/competition/MainSelector"
@@ -13,6 +14,9 @@ export default function Score() {
 			<Grid item xs={12}>
 				<SelectorDisplay showDetailed={true} />
 			</Grid>
+			<Grid item xs={12}>
+				<Divider />
+			</Grid>
 			<Grid item xs={3}>
 				<SelectorDisplay
 					showCompetition={false}
@@ -22,6 +26,9 @@ export default function Score() {
 			</Grid>
 			<Grid item xs={9}>
 				<HeatSummaryTable showAddAthletes={true} />
+			</Grid>
+			<Grid item xs={12}>
+				<Divider />
 			</Grid>
 		</Grid>
 	)
