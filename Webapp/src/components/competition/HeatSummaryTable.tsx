@@ -42,7 +42,7 @@ import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 export const HeatSummaryTable = ({
 	showAddAthletes = false
 }: {
-	showAddAthletes: boolean
+	showAddAthletes?: boolean
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
