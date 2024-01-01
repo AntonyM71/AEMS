@@ -29,8 +29,8 @@ import {
 import {
 	useDeleteManyByQueryScoredmovesDeleteMutation,
 	useGetManyAthleteheatGetQuery,
+	useGetManyEventGetQuery,
 	useGetManyHeatGetQuery,
-	useGetManyPhaseGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
 	useInsertManyAthletePostMutation,
 	useInsertManyAthleteheatPostMutation,
@@ -246,7 +246,11 @@ const AddAthletesToHeat = (props: {
 		props.last_name ?? ""
 	)
 	const [bibNumber, setBibNumber] = useState<number>(props.bib ?? 1)
-	const { data, isSuccess } = useGetManyPhaseGetQuery({})
+	const { data, isSuccess } = useGetManyEventGetQuery({
+		competitionIdList: [selectedCompetition],
+		competitionIdListComparisonOperator: "Equal",
+		joinForeignTable: ["phase"]
+	})
 	const { data: heatData, isSuccess: heatIsSuccess } = useGetManyHeatGetQuery(
 		{
 			competitionIdList: [selectedCompetition],
@@ -374,7 +378,7 @@ const AddAthletesToHeat = (props: {
 						onChange={onSelectPhase}
 						variant="outlined"
 					>
-						{data.map((phase) => (
+						{data[0].phase_foreign.map((phase) => (
 							<MenuItem key={phase.id} value={phase.id}>
 								{phase.name}
 							</MenuItem>
