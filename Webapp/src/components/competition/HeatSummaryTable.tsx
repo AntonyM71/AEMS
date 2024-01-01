@@ -27,6 +27,7 @@ import {
 	getSelectedHeat
 } from "../../redux/atoms/competitions"
 import {
+	useDeleteManyByQueryScoredmovesDeleteMutation,
 	useGetManyAthleteheatGetQuery,
 	useGetManyHeatGetQuery,
 	useGetManyPhaseGetQuery,
@@ -265,6 +266,8 @@ const AddAthletesToHeat = (props: {
 		usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation()
 	const [updateAthleteHeat] =
 		usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation()
+	const [deleteOldMoves] = useDeleteManyByQueryScoredmovesDeleteMutation()
+	// eslint-disable-next-line complexity
 	const handleNewPaddlerSubmit = async () => {
 		if (athleteFirstName && athleteLastName && bibNumber) {
 			const athleteId = props.id ?? v4()
@@ -291,6 +294,19 @@ const AddAthletesToHeat = (props: {
 					}),
 					"Updated Athlete Competition Information"
 				)
+				if (
+					selectedHeat !== newHeat ||
+					selectedPhase !== props.phase_id
+				) {
+					HandlePostResponse(
+						await deleteOldMoves({
+							heatIdList: [selectedHeat],
+							heatIdListComparisonOperator: "Equal",
+							athleteIdList: [athleteId],
+							athleteIdListComparisonOperator: "Equal"
+						})
+					)
+				}
 			} else {
 				HandlePostResponse(
 					await makeAthlete({
@@ -412,6 +428,16 @@ const AddAthletesToHeat = (props: {
 						: "Add Athlete"}
 				</Button>
 			</Grid>
+			{props.id && props.athlete_heat_id && (
+				<Grid item xs={colWidth}>
+					{" "}
+					<Typography variant="h6">
+						Warning: Moving an athlete between heats or phases will
+						delete any previously scored moves for that athlete in
+						that heat/phase{" "}
+					</Typography>
+				</Grid>
+			)}
 		</Grid>
 	)
 }
