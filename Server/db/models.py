@@ -35,6 +35,7 @@ class Phase(Base):
     name = Column(String, nullable=False)
     number_of_runs = Column(Integer, nullable=False, default=3)
     number_of_runs_for_score = Column(Integer, nullable=False, default=2)
+    number_of_judges = Column(Integer, nullable=False, default=3)
     scoresheet = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
     athletes = relationship("AthleteHeat", back_populates="phases")
 
