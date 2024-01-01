@@ -115,6 +115,7 @@ const PhasesSelector = ({
 const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [phaseName, setPhaseName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [numberOfJudges, setNumberOfJudges] = useState<number>(3)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
@@ -140,7 +141,8 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						event_id: phaseId,
 						number_of_runs: numberOfRuns,
 						number_of_runs_for_score: numberOfScoringRuns,
-						scoresheet: selectedScoresheet
+						scoresheet: selectedScoresheet,
+						number_of_judges: numberOfJudges
 					}
 				]
 			})
@@ -223,6 +225,22 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						)
 					}
 					value={numberOfScoringRuns}
+				/>
+			</Grid>
+			<Grid item xs={12}>
+				<TextField
+					label="Number of Judges"
+					variant="outlined"
+					fullWidth
+					type="number"
+					onChange={(
+						event: React.ChangeEvent<HTMLInputElement>
+					): void =>
+						setNumberOfJudges(
+							event.target.value as unknown as number
+						)
+					}
+					value={numberOfJudges}
 				/>
 			</Grid>
 			<Grid item xs={12}>
