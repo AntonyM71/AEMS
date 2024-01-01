@@ -99,7 +99,7 @@ export const PhaseAthleteScoreTable = ({
 				runCols.forEach(
 					(r, j) =>
 						(runScores[r.field] =
-							a.run_scores[j]?.mean_run_score || 0)
+							a.run_scores[j]?.mean_run_score.toFixed(2) || 0)
 				)
 
 				const formattedRow: GridValidRowModel = {
@@ -109,7 +109,7 @@ export const PhaseAthleteScoreTable = ({
 					first_name: a.first_name,
 					last_name: a.last_name,
 					reason: a.reason ?? "",
-					total_score: a.total_score ?? 0,
+					total_score: a.total_score?.toFixed(2) ?? 0,
 					...runScores
 				}
 

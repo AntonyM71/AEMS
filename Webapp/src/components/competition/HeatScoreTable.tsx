@@ -67,7 +67,8 @@ export const HeatAthleteScoreTable = ({
 			const runScores: Record<string, any> = {}
 			runCols.forEach(
 				(r, j) =>
-					(runScores[r.field] = a.run_scores[j]?.mean_run_score || 0)
+					(runScores[r.field] =
+						a.run_scores[j]?.mean_run_score.toFixed(2) || 0)
 			)
 
 			return {
