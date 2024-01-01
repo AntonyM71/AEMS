@@ -63,6 +63,7 @@ class AthleteHeat(Base):
     heats = relationship("Heat", back_populates="athletes")
     athletes = relationship("Athlete", back_populates="heats")
     phases = relationship("Phase", back_populates="athletes")
+    last_phase_rank = Column(Integer, nullable=True)
 
 
 class Athlete(Base):
