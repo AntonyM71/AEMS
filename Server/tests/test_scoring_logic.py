@@ -2,6 +2,7 @@ import pytest
 
 from app.scoring_logic import (
     AthleteMoves,
+    AthleteMovesWithJudgeInfo,
     AthleteScoreInfo,
     AthleteScores,
     AvailableBonuses,
@@ -853,8 +854,9 @@ class TestAthleteScoreCalculation:
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
     ) -> None:
-        athlete_moves: list[AthleteMoves] = [
-            AthleteMoves(
+        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
+            AthleteMovesWithJudgeInfo(
+                number_of_judges=3,
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 run_moves=[
                     RunMoves(
@@ -924,7 +926,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0,
+                        mean_run_score=25.0 / 3,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -937,12 +939,12 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0,
+                        mean_run_score=20.0 / 3,
                         highest_scoring_move=20.0,
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=25,
+                total_score=25 / 3,
             )
         ]
         got = calculate_heat_scores(
@@ -959,9 +961,10 @@ class TestAthleteScoreCalculation:
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
     ) -> None:
-        athlete_moves: list[AthleteMoves] = [
-            AthleteMoves(
+        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
+            AthleteMovesWithJudgeInfo(
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                number_of_judges=3,
                 run_moves=[
                     RunMoves(
                         run=1,
@@ -1030,7 +1033,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0,
+                        mean_run_score=25.0 / 3,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -1043,12 +1046,12 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0,
+                        mean_run_score=20.0 / 3,
                         highest_scoring_move=20.0,
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=45,
+                total_score=45 / 3,
             )
         ]
         got = calculate_heat_scores(

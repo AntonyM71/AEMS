@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from itertools import groupby
-from statistics import mean
 from typing import Literal, Optional
 from uuid import UUID
 
@@ -221,6 +220,10 @@ class AthleteMoves(BaseModel):
     run_moves: list[RunMoves]
 
 
+class AthleteMovesWithJudgeInfo(AthleteMoves):
+    number_of_judges: int
+
+
 class JudgeScores(BaseModel):
     judge_id: str
     score_info: AthleteScoreInfo
@@ -288,7 +291,7 @@ def organise_moves_by_athlete_run_judge(
 
 
 def calculate_heat_scores(
-    athlete_moves_list: list[AthleteMoves],
+    athlete_moves_list: list[AthleteMovesWithJudgeInfo],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
     scoring_runs: Optional[int] = None,
@@ -310,7 +313,8 @@ def calculate_heat_scores(
                 RunScores(
                     judge_scores=judges,
                     run_number=run.run,
-                    mean_run_score=mean([j.score_info.score for j in judges]),
+                    mean_run_score=sum([j.score_info.score for j in judges])
+                    / athlete.number_of_judges,
                     highest_scoring_move=max(
                         [j.score_info.highest_scoring_move for j in judges]
                     ),

@@ -11,6 +11,7 @@ from app.scoresheetEndpoints import (
 )
 from app.scoring_logic import (
     AddUpdateScoredMovesRequest,
+    AthleteMovesWithJudgeInfo,
     AthleteScores,
     AthleteScoresWithAthleteInfo,
     PydanticScoredBonusesResponse,
@@ -221,8 +222,19 @@ async def get_heat_scores(
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
     )
+    athlete_moves_with_judges = [
+        AthleteMovesWithJudgeInfo(
+            **a.dict(),
+            number_of_judges=next(
+                ath.phases.number_of_judges
+                for ath in athlete_heat
+                if ath.athlete_id == a.athlete_id
+            ),
+        )
+        for a in athlete_moves_list
+    ]
     athlete_scores = calculate_heat_scores(
-        athlete_moves_list=athlete_moves_list,
+        athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
             list[PydanticAvailableMoves], scoresheet_available_moves
         ),
@@ -287,8 +299,13 @@ async def get_phase_scores(
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
     )
+    athlete_moves_with_judges = [
+        AthleteMovesWithJudgeInfo(**a.dict(), number_of_judges=phase.number_of_judges)
+        for a in athlete_moves_list
+    ]
+
     athlete_scores = calculate_heat_scores(
-        athlete_moves_list=athlete_moves_list,
+        athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
             list[PydanticAvailableMoves], scoresheet_available_moves
         ),
