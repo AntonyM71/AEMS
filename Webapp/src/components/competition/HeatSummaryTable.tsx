@@ -350,6 +350,7 @@ const AddAthletesToHeat = (props: {
 		return <h4>Failed to get data from server</h4>
 	}
 	const colWidth = props.id && props.athlete_heat_id ? 12 : 2
+	const phases = data.map((e) => e.phase_foreign || []).flat()
 
 	return (
 		<Grid container spacing={1} alignItems="stretch">
@@ -378,7 +379,7 @@ const AddAthletesToHeat = (props: {
 						onChange={onSelectPhase}
 						variant="outlined"
 					>
-						{data[0].phase_foreign.map((phase) => (
+						{phases.map((phase) => (
 							<MenuItem key={phase.id} value={phase.id}>
 								{phase.name}
 							</MenuItem>
