@@ -64,11 +64,11 @@ export const HeatAthleteScoreTable = ({
 
 	const rows: GridRowsProp = flatten(
 		athletes.scores.map((a, i) => {
-			const runScores: Record<string, any> = {}
+			const runScores: Record<string, string> = {}
 			runCols.forEach(
 				(r, j) =>
 					(runScores[r.field] =
-						a.run_scores[j]?.mean_run_score.toFixed(2) || 0)
+						a.run_scores[j]?.mean_run_score.toFixed(2) || "0")
 			)
 
 			return {
