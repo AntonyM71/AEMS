@@ -18,7 +18,7 @@ import {
 	GridTreeNodeWithRender
 } from "@mui/x-data-grid"
 import { flatten } from "lodash"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
@@ -233,6 +233,9 @@ const AddAthletesToHeat = (props: {
 		props.phase_id ?? ""
 	)
 	const [newHeat, setSelectedHeat] = useState<string>(selectedHeat ?? "")
+	useEffect(() => {
+		setSelectedHeat(selectedHeat)
+	}, [selectedHeat])
 	const athletes = useGetManyAthleteheatGetQuery({
 		heatIdListComparisonOperator: "Equal",
 		heatIdList: [selectedHeat],
