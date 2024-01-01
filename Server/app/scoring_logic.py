@@ -314,7 +314,7 @@ def calculate_heat_scores(
                     judge_scores=judges,
                     run_number=run.run,
                     mean_run_score=sum([j.score_info.score for j in judges])
-                    / athlete.number_of_judges,
+                    / max([athlete.number_of_judges, len(judges)]),
                     highest_scoring_move=max(
                         [j.score_info.highest_scoring_move for j in judges]
                     ),
