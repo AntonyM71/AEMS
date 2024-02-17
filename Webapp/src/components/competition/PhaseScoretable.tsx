@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 
+import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
@@ -10,6 +11,7 @@ import {
 	GridRowsProp,
 	GridValidRowModel
 } from "@mui/x-data-grid"
+import axios from "axios"
 import { flatten } from "lodash"
 import { useSelector } from "react-redux"
 import { getSelectedPhase } from "../../redux/atoms/competitions"
@@ -34,6 +36,26 @@ export const PhaseScoreTable = () => {
 			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
 		)
 
+	const downloadFile = async () => {
+		const response = await axios.get(
+			`http://localhost:8000/phase_pdf/${selectedPhase}`,
+			{
+				method: "GET",
+				responseType: "blob"
+			}
+		)
+		const file = new Blob([response.data], {
+			type: "application/pdf"
+		})
+		// Build a URL from the file
+		const fileURL = URL.createObjectURL(file)
+		// Open the URL on new Window
+		const pdfWindow = window.open()
+		if (pdfWindow) {
+			pdfWindow.location.href = fileURL
+		}
+	}
+
 	return (
 		<Grid
 			container
@@ -51,14 +73,34 @@ export const PhaseScoreTable = () => {
 			!isScoreLoading ? (
 				<Grid item xs={12}>
 					<Paper>
-						<Typography
-							variant="h5"
-							sx={{ padding: "0.5em" }}
-						>{`Phase: ${data.name || ""}`}</Typography>
-						<PhaseAthleteScoreTable
-							athletes={scoreData}
-							numberOfRuns={data.number_of_runs ?? 3}
-						/>
+						<Grid
+							container
+							justifyContent="space-between"
+							alignItems="center"
+						>
+							<Grid item>
+								<Typography
+									variant="h5"
+									sx={{ padding: "0.5em" }}
+								>{`Phase: ${data.name || ""}`}</Typography>
+							</Grid>
+
+							<Grid item sx={{ padding: "0.5em" }}>
+								<Button
+									variant="contained"
+									color="info"
+									onClick={downloadFile}
+								>
+									Download PDF
+								</Button>
+							</Grid>
+							<Grid item xs={12}>
+								<PhaseAthleteScoreTable
+									athletes={scoreData}
+									numberOfRuns={data.number_of_runs ?? 3}
+								/>
+							</Grid>
+						</Grid>
 					</Paper>
 				</Grid>
 			) : (
