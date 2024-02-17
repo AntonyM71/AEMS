@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -45,6 +46,7 @@ class HeatInfoResponse(BaseModel):
     first_name: str
     last_name: str
     bib: str
+    last_phase_rank: Optional[int]
 
     class Config:
         orm_mode = True
@@ -59,26 +61,28 @@ async def get_heat_info(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatInfoResponse]:
-    print(heat_id)
 
     heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
-    print(heat_info)
-    print(heat_info[0].__dict__)
-    print(heat_info[0].phases.__dict__)
+
 
     heat_info_response = [
         HeatInfoResponse(
-            **h.__dict__,
+            id= h.__dict__["id"],
+            heat_id=h.__dict__["heat_id"],
+            athlete_id = h.__dict__["athlete_id"],
+            phase_id = h.__dict__["phase_id"],
             number_of_runs_for_score=h.phases.number_of_runs_for_score,
             number_of_runs=h.phases.number_of_runs,
             scoresheet=h.phases.scoresheet,
             first_name=h.athletes.first_name,
             last_name=h.athletes.last_name,
             bib=h.athletes.bib,
+            last_phase_rank = h.last_phase_rank
         )
         for h in heat_info
     ]
-
+    heat_info_response.sort(key=lambda x: x.bib)
+    heat_info_response.sort(key=lambda x: x.last_phase_rank or 0)
     return heat_info_response
 
 
@@ -205,6 +209,7 @@ async def get_heat_scores(
     athletes = db.query(Athlete).filter(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
     )
+
     scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
     scoresheet_available_moves = (
         db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
@@ -259,8 +264,8 @@ async def get_heat_scores(
                 bib_number=a_info.bib,
             )
         )
-    athlete_scores_with_info.sort(key=lambda x: x.bib_number)
-
+    athlete_scores_with_info.sort(key = lambda x: x.bib_number)
+    athlete_scores_with_info.sort(key = lambda x: x.last_phase_rank or 0)
     return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
 
 

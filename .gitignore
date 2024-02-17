@@ -3,6 +3,7 @@ Server/db/__pycache__
 *.db
 Server/alembic/__pycache__
 Server/db/__pycache__
+Server/app/__pycache__
 .next
 *.pyc
 Server/alembic/__pycache__/env.cpython-310.pyc
@@ -13,3 +14,4 @@ Server/app/__pycache__/scoresheetEndpoints.cpython-310.pyc
 Server/app/__pycache__/scoring_logic.cpython-310.pyc
 Server/db/__pycache__/models.cpython-310.pyc
 Server/alembic/__pycache__/env.cpython-310.pyc
+Server/app/__pycache__/autogenEndpoints.cpython-310.pyc

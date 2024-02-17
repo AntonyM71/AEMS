@@ -243,6 +243,7 @@ class AthleteScores(BaseModel):
     ranking: Optional[int]
     reason: Optional[str]
     total_score: Optional[float]
+    last_phase_rank: Optional[int]
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):

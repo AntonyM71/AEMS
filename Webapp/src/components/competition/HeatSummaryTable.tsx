@@ -17,7 +17,6 @@ import {
 	GridRowsProp,
 	GridTreeNodeWithRender
 } from "@mui/x-data-grid"
-import { flatten } from "lodash"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
@@ -28,7 +27,7 @@ import {
 } from "../../redux/atoms/competitions"
 import {
 	useDeleteManyByQueryScoredmovesDeleteMutation,
-	useGetManyAthleteheatGetQuery,
+	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyEventGetQuery,
 	useGetManyHeatGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
@@ -81,6 +80,7 @@ export const HeatSummaryTable = ({
 	return <h4>Something went wrong</h4>
 }
 
+// eslint-disable-next-line complexity
 export const HeatAthleteTable = ({
 	showAdmin = false
 }: {
@@ -128,20 +128,11 @@ export const HeatAthleteTable = ({
 		{ field: "bib", headerName: "Bib Number" },
 		...editCol
 	]
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: selectedHeat
 	})
 
-	const rows: GridRowsProp = flatten(
-		athletes.data?.map((a) => ({
-			phase_id: a.phase_id,
-			heat_id: a.heat_id,
-			athlete_heat_id: a.id,
-			...a.athlete_foreign?.[0]
-		}))
-	)
+	const rows: GridRowsProp = athletes.data ?? []
 
 	if (athletes.isLoading) {
 		return <Skeleton variant="rectangular" />
@@ -237,10 +228,8 @@ const AddAthletesToHeat = (props: {
 	useEffect(() => {
 		setSelectedHeat(selectedHeat)
 	}, [selectedHeat])
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: selectedHeat
 	})
 	const [athleteLastName, setAthleteLastName] = useState<string>(
 		props.last_name ?? ""
