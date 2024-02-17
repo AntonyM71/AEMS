@@ -15,6 +15,7 @@ from app.autogenEndpoints import (
     crud_route_scoresheet,
 )
 from app.customScoringEndpoints import scoring_router
+from app.pdfEndpoints import pdf_router
 from app.scoresheetEndpoints import scoresheet_router
 
 frontend_url = "http://localhost:3000"
@@ -26,6 +27,7 @@ app = FastAPI()
     for i in [
         scoring_router,
         scoresheet_router,
+        pdf_router,
         crud_route_competition,
         crud_route_event,
         crud_route_phase,
@@ -59,6 +61,6 @@ import uvicorn
 
 
 async def run_server() -> None:
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, debug=False)
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
     server = uvicorn.Server(config)
     await server.serve()
