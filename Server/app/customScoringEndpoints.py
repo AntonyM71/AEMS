@@ -278,7 +278,10 @@ async def get_phase_scores(
     phase_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> PhaseScoresResponse:
-    # scored_moves = select(ScoredMoves)
+    return calculate_phase_scores(phase_id=phase_id, db=db)
+
+def calculate_phase_scores(    phase_id: str,
+    db: Session )-> PhaseScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
