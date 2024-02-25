@@ -126,12 +126,12 @@ export const PhaseAthleteScoreTable = ({
 	const columns: GridColDef[] = [
 		// { field: "id", headerName: "ID"},
 		{ field: "ranking", headerName: "Rank" },
-		{ field: "first_name", headerName: "First Name" },
-		{ field: "last_name", headerName: "Last Name" },
+		{ field: "first_name", headerName: "First Name", width: 200 },
+		{ field: "last_name", headerName: "Last Name", width: 200 },
 		{ field: "bib", headerName: "Bib Number" },
 		...runCols,
 		{ field: "total_score", headerName: "Total" },
-		{ field: "reason", headerName: "Notes" }
+		{ field: "reason", headerName: "Notes", width: 200 }
 	]
 
 	const rows: GridRowsProp =
