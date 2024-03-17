@@ -14,7 +14,7 @@ pdf_router = APIRouter()
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
 async def phase_pdf(    phase_id: str,
                         db: Session = Depends(get_transaction_session),
-):
+)-> Response:
 
     try:
 
