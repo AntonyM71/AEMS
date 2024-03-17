@@ -21,6 +21,7 @@ import {
 	useGetManyCompetitionGetQuery,
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 export const CompetitionSelector = ({
 	showDetailed = false
@@ -30,8 +31,7 @@ export const CompetitionSelector = ({
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
-	const { data, isLoading, isSuccess, refetch } =
-		useGetManyCompetitionGetQuery({})
+	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
 	const setSelectedCompetition = (newComp: string) =>
@@ -59,51 +59,49 @@ export const CompetitionSelector = ({
 		)
 	} else {
 		return (
-			<>
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select a Competition</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+			<Paper sx={{ padding: "1em", height: "100%" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Competition</InputLabel>
-								<Select
-									value={selectedCompetition}
-									onChange={handleSelect}
-									variant="outlined"
-									fullWidth={true}
-									label="Competition"
-								>
-									{data.map((competition) => {
-										if (competition.id) {
-											return (
-												<MenuItem
-													key={competition.id}
-													value={competition.id}
-												>
-													{competition.name || ""}
-												</MenuItem>
-											)
-										}
-									})}
-								</Select>
-							</FormControl>
+							<h4>Select a Competition</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<AddCompetition />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Competition</InputLabel>
+							<Select
+								value={selectedCompetition}
+								onChange={handleSelect}
+								variant="outlined"
+								fullWidth={true}
+								label="Competition"
+							>
+								{data.map((competition) => {
+									if (competition.id) {
+										return (
+											<MenuItem
+												key={competition.id}
+												value={competition.id}
+											>
+												{competition.name ?? ""}
+											</MenuItem>
+										)
+									}
+								})}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			</>
+					{showDetailed ? (
+						<Grid item xs={12}>
+							<AddCompetition />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
 		)
 	}
 }
@@ -117,14 +115,15 @@ const AddCompetition = () => {
 	const { refetch } = useGetManyCompetitionGetQuery({})
 	const submitCompetition = async (
 		e: React.KeyboardEvent<HTMLDivElement>
-	): void => {
+	): Promise<void> => {
 		if (e.key === "Enter") {
 			if (competitionName) {
-				await postNewCompetition({
-					body: [{ name: competitionName, id: uuid4() }]
-				})
+				HandlePostResponse(
+					await postNewCompetition({
+						body: [{ name: competitionName, id: uuid4() }]
+					})
+				)
 				await refetch()
-				toast.success("Successfully added competition")
 			} else {
 				toast.error(
 					"Please add a name before submitting a new competition"

@@ -9,7 +9,6 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -23,6 +22,8 @@ import {
 	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
 	useInsertManyPhasePostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { SelectScoresheet } from "../judging/ScoresheetSelector"
 
 const PhasesSelector = ({
 	showDetailed = false
@@ -31,17 +32,19 @@ const PhasesSelector = ({
 }) => {
 	const dispatch = useDispatch()
 	const selectedEvent = useSelector(getSelectedEvent)
-	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedPhase = (newPhase: string) =>
 		dispatch(updateSelectedPhase(newPhase))
 	const selectedPhase = useSelector(getSelectedPhase)
 
 	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery({
-			eventPkId: selectedEvent,
-			joinForeignTable: ["event"]
-		})
+		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery(
+			{
+				eventPkId: selectedEvent,
+				joinForeignTable: ["event"]
+			},
+			{ skip: !selectedEvent }
+		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		resetSelectedPhase()
@@ -56,7 +59,7 @@ const PhasesSelector = ({
 		return <h4>Failed to get data from the server</h4>
 	} else if (!data) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
+			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Grid container spacing="2">
 					<Grid item xs={12}>
 						<h4>No phases in event</h4>
@@ -67,60 +70,58 @@ const PhasesSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Phase</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Phase</InputLabel>
-								<Select
-									value={selectedPhase}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((Phase) => (
-										<MenuItem
-											key={Phase.id}
-											value={Phase.id}
-										>
-											{Phase.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Phase</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddPhase refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Phase</InputLabel>
+							<Select
+								value={selectedPhase}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((Phase) => (
+									<MenuItem key={Phase.id} value={Phase.id}>
+										{Phase.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Phases Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddPhase refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Phases Available</Fragment>
 	}
 }
 
 const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
-	const [PhaseName, setPhaseName] = useState<string>("")
+	const [phaseName, setPhaseName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [numberOfJudges, setNumberOfJudges] = useState<number>(3)
+	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
+	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [phaseId, setPhaseId] = useState<string>(selectedCompetition)
 	const [postNewPhase] = useInsertManyPhasePostMutation()
-	const { data, isLoading, isSuccess } =
+	const { data } =
 		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
 			competitionPkId: selectedCompetition,
 			joinForeignTable: ["competition"]
@@ -130,21 +131,25 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewPhase = async () => {
-		await postNewPhase({
-			body: [
-				// eslint-disable-next-line camelcase
-				{
-					name: PhaseName,
-					id: uuid4(),
-					event_id: phaseId,
-					number_of_runs: numberOfRuns
-				}
-			]
-		})
+		HandlePostResponse(
+			await postNewPhase({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: phaseName,
+						id: uuid4(),
+						event_id: phaseId,
+						number_of_runs: numberOfRuns,
+						number_of_runs_for_score: numberOfScoringRuns,
+						scoresheet: selectedScoresheet,
+						number_of_judges: numberOfJudges
+					}
+				]
+			})
+		)
 		await refetch()
 		setPhaseName("")
 		setPhaseId("")
-		toast.success("Successfully added phase")
 	}
 
 	return (
@@ -157,14 +162,14 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
-					error={!!PhaseName}
+					error={!!phaseName}
 					label="New Phase"
 					variant="outlined"
 					fullWidth
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setPhaseName(event.target.value)}
-					value={PhaseName}
+					value={phaseName}
 				/>
 			</Grid>
 			<Grid item xs={12}>
@@ -174,7 +179,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						options={options}
 						fullWidth
 						renderInput={(params) => (
-							<TextField {...params} label="Competition" />
+							<TextField {...params} label="Event" />
 						)}
 						onChange={(event, newValue) => {
 							if (newValue) {
@@ -185,6 +190,12 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 				) : (
 					<> </>
 				)}
+			</Grid>
+			<Grid item xs>
+				<SelectScoresheet
+					selectedScoresheet={selectedScoresheet}
+					setSelectedScoresheet={setSelectedScoresheet}
+				/>
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
@@ -198,6 +209,38 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 						setNumberOfRuns(event.target.value as unknown as number)
 					}
 					value={numberOfRuns}
+				/>
+			</Grid>
+			<Grid item xs={12}>
+				<TextField
+					label="Number of Scoring Runs"
+					variant="outlined"
+					fullWidth
+					type="number"
+					onChange={(
+						event: React.ChangeEvent<HTMLInputElement>
+					): void =>
+						setNumberOfScoringRuns(
+							event.target.value as unknown as number
+						)
+					}
+					value={numberOfScoringRuns}
+				/>
+			</Grid>
+			<Grid item xs={12}>
+				<TextField
+					label="Number of Judges"
+					variant="outlined"
+					fullWidth
+					type="number"
+					onChange={(
+						event: React.ChangeEvent<HTMLInputElement>
+					): void =>
+						setNumberOfJudges(
+							event.target.value as unknown as number
+						)
+					}
+					value={numberOfJudges}
 				/>
 			</Grid>
 			<Grid item xs={12}>

@@ -4,16 +4,13 @@ import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
-	getCurrentPaddlerIndex,
 	getScoredBonuses,
 	getScoredMoves,
 	updateScoredBonuses,
 	updateScoredMoves
 } from "../../../../redux/atoms/scoring"
 import {
-	useGetManyAthleteheatGetQuery,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../../redux/services/aemsApi"
@@ -30,15 +27,8 @@ interface ScoredMovePropsType {
 
 const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const dispatch = useDispatch()
-	const selectedHeat = useSelector(getSelectedHeat)
-	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const scoredMovesList = useSelector(getScoredMoves)
 
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
-	})
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const scoredMoveBonuses = scoredBonuses.filter(
 		(b) => b.moveId === props.scoredMove.id
@@ -60,10 +50,6 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 		dispatch(updateScoredMoves(newScoredMoves))
 	}
 
-	const scoresheetId = athletes.data
-		? athletes.data[currentPaddlerIndex].scoresheet!
-		: ""
-
 	const availableMovesList = useGetManyAvailablemovesGetQuery({
 		idListComparisonOperator: "Equal",
 		idList: [props.scoredMove.moveId]
@@ -75,7 +61,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 	const filteredMoves =
 		availableMovesList.data?.filter(
 			(move) => move.id === props.scoredMove.moveId
-		) || []
+		) ?? []
 	const scoredMoveAvailableBonuses: AvailableBonusType[] =
 		(bonusList.data?.filter(
 			(bonus) => bonus.move_id === props.scoredMove.moveId
@@ -84,10 +70,16 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 		const moveData = filteredMoves[0]
 
 		return (
-			<Paper data-testid={"scored-move-" + props.scoredMove.id}>
+			<Paper
+				sx={{
+					padding: "0.5em",
+					height: "max-content",
+					width: "100%"
+				}}
+			>
 				<Grid
 					container
-					spacing={1}
+					spacing={0}
 					justifyContent="space-between"
 					alignItems="center"
 				>
@@ -114,6 +106,7 @@ const ScoredMove = React.memo((props: ScoredMovePropsType) => {
 
 					{scoredMoveAvailableBonuses.map((availableBonus) => (
 						<BonusChip
+							key={props.scoredMove.id}
 							availableBonus={availableBonus}
 							scoredMove={props.scoredMove}
 							scoredMoveBonuses={scoredMoveBonuses}

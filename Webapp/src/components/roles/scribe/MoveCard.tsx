@@ -47,7 +47,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 	}
 	if (props.move.direction === "LR") {
 		return (
-			<Paper>
+			<Paper sx={{ padding: "0.5em" }}>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container spacing={1} alignItems="stretch">

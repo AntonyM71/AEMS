@@ -1,8 +1,10 @@
 [tool.ruff]
-ignore = ["E501", "ANN101"]
+ignore = ["E501", "ANN101", "N999", "UP007"]
 select = ["E", "F", "B" ,"I", "N", "UP", "YTT", "ANN", "FBT", "EM", "RUF", "PD", "TRY", "G"]
 fixable = ["ALL"]
 line-length = 88
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

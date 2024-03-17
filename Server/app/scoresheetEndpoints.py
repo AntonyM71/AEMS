@@ -1,11 +1,12 @@
 from typing import Literal
 from uuid import UUID
 
-from db.client import get_transaction_session
-from db.models import AvailableBonuses, AvailableMoves
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from db.client import get_transaction_session
+from db.models import AvailableBonuses, AvailableMoves
 
 scoresheet_router = APIRouter()
 
@@ -17,8 +18,10 @@ class PydanticAvailableMoves(BaseModel):
     fl_score: int
     rb_score: int
     direction: Literal["LR", "FB", "LRFB"]
+
     class Config:
         orm_mode = True
+
 
 class PydanticAvailableBonuses(BaseModel):
     id: UUID
@@ -26,8 +29,10 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
+
     class Config:
         orm_mode = True
+
 
 class AddUpdateScoresheetRequest(BaseModel):
     moves: list[PydanticAvailableMoves] = []
@@ -38,7 +43,7 @@ class AddUpdateScoresheetRequest(BaseModel):
 
 
 @scoresheet_router.post("/addUpdateScoresheet/{scoresheet_id}")
-async def addUpdateScoresheet(
+async def add_update_scoresheet(
     scoresheet_id: str,
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),

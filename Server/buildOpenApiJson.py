@@ -1,7 +1,8 @@
 import json
 
-from api import app
 from fastapi.openapi.utils import get_openapi
+
+from api import app
 
 with open("../Common/openapi.json", "w") as f:
     json.dump(

@@ -50,7 +50,7 @@ const App = ({ children }) => {
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			<Header />
-			<Toaster />
+			<Toaster position="top-right" />
 			<Container maxWidth={false}>{...children}</Container>
 		</ThemeProvider>
 	)

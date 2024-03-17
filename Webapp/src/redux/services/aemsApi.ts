@@ -1,6 +1,12 @@
 import { emptySplitApi as api } from "./emptyApi"
 const injectedRtkApi = api.injectEndpoints({
 	endpoints: (build) => ({
+		getHeatInfoGetHeatInfoHeatIdGet: build.query<
+			GetHeatInfoGetHeatInfoHeatIdGetApiResponse,
+			GetHeatInfoGetHeatInfoHeatIdGetApiArg
+		>({
+			query: (queryArg) => ({ url: `/getHeatInfo/${queryArg.heatId}` })
+		}),
 		updateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPost:
 			build.mutation<
 				UpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostApiResponse,
@@ -28,6 +34,14 @@ const injectedRtkApi = api.injectEndpoints({
 		>({
 			query: (queryArg) => ({ url: `/getHeatScores/${queryArg.heatId}` })
 		}),
+		getPhaseScoresGetPhaseScoresPhaseIdGet: build.query<
+			GetPhaseScoresGetPhaseScoresPhaseIdGetApiResponse,
+			GetPhaseScoresGetPhaseScoresPhaseIdGetApiArg
+		>({
+			query: (queryArg) => ({
+				url: `/getPhaseScores/${queryArg.phaseId}`
+			})
+		}),
 		addUpdateScoresheetAddUpdateScoresheetScoresheetIdPost: build.mutation<
 			AddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostApiResponse,
 			AddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostApiArg
@@ -37,6 +51,12 @@ const injectedRtkApi = api.injectEndpoints({
 				method: "POST",
 				body: queryArg.addUpdateScoresheetRequest
 			})
+		}),
+		phasePdfPhasePdfPhaseIdGet: build.query<
+			PhasePdfPhasePdfPhaseIdGetApiResponse,
+			PhasePdfPhasePdfPhaseIdGetApiArg
+		>({
+			query: (queryArg) => ({ url: `/phase_pdf/${queryArg.phaseId}` })
 		}),
 		getManyCompetitionGet: build.query<
 			GetManyCompetitionGetApiResponse,
@@ -464,6 +484,18 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
 						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
@@ -505,6 +537,18 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
 						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
@@ -549,6 +593,18 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
 						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns,
@@ -597,7 +653,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -651,7 +719,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -696,7 +776,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -737,6 +829,18 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
 						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
@@ -779,7 +883,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -820,7 +936,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -862,44 +990,19 @@ const injectedRtkApi = api.injectEndpoints({
 					number_of_runs_for_score____list_____comparison_operator:
 						queryArg.numberOfRunsForScoreListComparisonOperator,
 					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList
-				}
-			})
-		}),
-		getOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGet: build.query<
-			GetOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGetApiResponse,
-			GetOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase/${queryArg.phasePkId}/heat/${queryArg.heatPkId}`,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		getManyByPkFromHeatPhasePhasePkIdHeatGet: build.query<
-			GetManyByPkFromHeatPhasePhasePkIdHeatGetApiResponse,
-			GetManyByPkFromHeatPhasePhasePkIdHeatGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase/${queryArg.phasePkId}/heat`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
+						queryArg.numberOfRunsForScoreList,
+					number_of_judges____from_____comparison_operator:
+						queryArg.numberOfJudgesFromComparisonOperator,
+					number_of_judges____to_____comparison_operator:
+						queryArg.numberOfJudgesToComparisonOperator,
+					number_of_judges____from: queryArg.numberOfJudgesFrom,
+					number_of_judges____to: queryArg.numberOfJudgesTo,
+					number_of_judges____list_____comparison_operator:
+						queryArg.numberOfJudgesListComparisonOperator,
+					number_of_judges____list: queryArg.numberOfJudgesList,
+					scoresheet____list_____comparison_operator:
+						queryArg.scoresheetListComparisonOperator,
+					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -913,9 +1016,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -941,9 +1044,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -974,9 +1077,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -998,9 +1101,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -1017,9 +1120,9 @@ const injectedRtkApi = api.injectEndpoints({
 			query: (queryArg) => ({
 				url: `/heat/${queryArg.id}`,
 				params: {
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -1039,9 +1142,9 @@ const injectedRtkApi = api.injectEndpoints({
 				method: "PUT",
 				body: queryArg.bodyEntireUpdateByPrimaryKeyHeatIdPut,
 				params: {
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -1059,9 +1162,9 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/heat/${queryArg.id}`,
 				method: "DELETE",
 				params: {
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -1080,9 +1183,9 @@ const injectedRtkApi = api.injectEndpoints({
 				method: "PATCH",
 				body: queryArg.bodyPartialUpdateOneByPrimaryKeyHeatIdPatch,
 				params: {
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
+					competition_id____list_____comparison_operator:
+						queryArg.competitionIdListComparisonOperator,
+					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -1363,12 +1466,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList,
@@ -1390,12 +1490,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1423,12 +1520,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1447,12 +1541,9 @@ const injectedRtkApi = api.injectEndpoints({
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1466,12 +1557,9 @@ const injectedRtkApi = api.injectEndpoints({
 			query: (queryArg) => ({
 				url: `/scoresheet/${queryArg.id}`,
 				params: {
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1487,12 +1575,9 @@ const injectedRtkApi = api.injectEndpoints({
 				method: "PUT",
 				body: queryArg.body,
 				params: {
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1507,12 +1592,9 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/scoresheet/${queryArg.id}`,
 				method: "DELETE",
 				params: {
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -1528,12 +1610,9 @@ const injectedRtkApi = api.injectEndpoints({
 				method: "PATCH",
 				body: queryArg.body,
 				params: {
-					name____from_____comparison_operator:
-						queryArg.nameFromComparisonOperator,
-					name____to_____comparison_operator:
-						queryArg.nameToComparisonOperator,
-					name____from: queryArg.nameFrom,
-					name____to: queryArg.nameTo,
+					name____str_____matching_pattern:
+						queryArg.nameStrMatchingPattern,
+					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
@@ -2220,9 +2299,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2269,9 +2351,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2323,9 +2408,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2368,9 +2456,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2408,9 +2499,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2451,9 +2545,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2492,9 +2589,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2534,9 +2634,12 @@ const injectedRtkApi = api.injectEndpoints({
 					heat_id____list_____comparison_operator:
 						queryArg.heatIdListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					run_number____str_____matching_pattern:
-						queryArg.runNumberStrMatchingPattern,
-					run_number____str: queryArg.runNumberStr,
+					run_number____from_____comparison_operator:
+						queryArg.runNumberFromComparisonOperator,
+					run_number____to_____comparison_operator:
+						queryArg.runNumberToComparisonOperator,
+					run_number____from: queryArg.runNumberFrom,
+					run_number____to: queryArg.runNumberTo,
 					run_number____list_____comparison_operator:
 						queryArg.runNumberListComparisonOperator,
 					run_number____list: queryArg.runNumberList,
@@ -2790,9 +2893,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList,
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns,
@@ -2818,9 +2930,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2851,9 +2972,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2875,9 +3005,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2894,9 +3033,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList,
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
@@ -2916,9 +3064,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2936,9 +3093,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2957,9 +3123,18 @@ const injectedRtkApi = api.injectEndpoints({
 					athlete_id____list_____comparison_operator:
 						queryArg.athleteIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
+					phase_id____list_____comparison_operator:
+						queryArg.phaseIdListComparisonOperator,
+					phase_id____list: queryArg.phaseIdList,
+					last_phase_rank____from_____comparison_operator:
+						queryArg.lastPhaseRankFromComparisonOperator,
+					last_phase_rank____to_____comparison_operator:
+						queryArg.lastPhaseRankToComparisonOperator,
+					last_phase_rank____from: queryArg.lastPhaseRankFrom,
+					last_phase_rank____to: queryArg.lastPhaseRankTo,
+					last_phase_rank____list_____comparison_operator:
+						queryArg.lastPhaseRankListComparisonOperator,
+					last_phase_rank____list: queryArg.lastPhaseRankList
 				}
 			})
 		}),
@@ -2970,6 +3145,11 @@ const injectedRtkApi = api.injectEndpoints({
 	overrideExisting: false
 })
 export { injectedRtkApi as aemsApi }
+export type GetHeatInfoGetHeatInfoHeatIdGetApiResponse =
+	/** status 200 Successful Response */ HeatInfoResponse[]
+export type GetHeatInfoGetHeatInfoHeatIdGetApiArg = {
+	heatId: string
+}
 export type UpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostApiResponse =
 	/** status 200 Successful Response */ any
 export type UpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostApiArg =
@@ -2995,14 +3175,24 @@ export type GetHeatScoresGetHeatScoresHeatIdGetApiResponse =
 export type GetHeatScoresGetHeatScoresHeatIdGetApiArg = {
 	heatId: string
 }
+export type GetPhaseScoresGetPhaseScoresPhaseIdGetApiResponse =
+	/** status 200 Successful Response */ PhaseScoresResponse
+export type GetPhaseScoresGetPhaseScoresPhaseIdGetApiArg = {
+	phaseId: string
+}
 export type AddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostApiResponse =
 	/** status 200 Successful Response */ any
 export type AddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostApiArg = {
 	scoresheetId: string
 	addUpdateScoresheetRequest: AddUpdateScoresheetRequest
 }
+export type PhasePdfPhasePdfPhaseIdGetApiResponse =
+	/** status 200 Successful Response */ any
+export type PhasePdfPhasePdfPhaseIdGetApiArg = {
+	phaseId: string
+}
 export type GetManyCompetitionGetApiResponse =
-	/** status 200 Successful Response */ Competition89010AeeF7D149CeA153364462A4B256FindManyResponseListModel
+	/** status 200 Successful Response */ Competition0Adc3C956Bb94D56B046Caabb3F1653FFindManyResponseListModel
 export type GetManyCompetitionGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3022,10 +3212,10 @@ export type GetManyCompetitionGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName49D1F77D0F074780Abbb6Fdbb7678439[]
+	joinForeignTable?: TableName9E7Db46633B4458E97B3F0F9Fac445B5[]
 }
 export type EntireUpdateManyByQueryCompetitionPutApiResponse =
-	/** status 200 Successful Response */ Competition60F8A6F98Fc84F11A91F877D01Fa57C1UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Competitionb3C8D2A1Bf6C469CB85F5Fa142802A0BUpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryCompetitionPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3036,12 +3226,12 @@ export type EntireUpdateManyByQueryCompetitionPutApiArg = {
 	body: string
 }
 export type InsertManyCompetitionPostApiResponse =
-	/** status 201 Successful Response */ Competition36531E563Ff64Bf888Db234De3F5Fa25UpsertManyResponseListModel
+	/** status 201 Successful Response */ Competition406791F67Fc042CfA38A233Ed46F7012UpsertManyResponseListModel
 export type InsertManyCompetitionPostApiArg = {
-	body: Competition5Fc01B73B5764Adf870CEf4D03D4Eb75CreateManyInsertItemRequestModel[]
+	body: Competition0220C02122Ee4A0B9C3A7B5Db9F4B4BbCreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryCompetitionDeleteApiResponse =
-	/** status 200 Successful Response */ Competition4884De54B9Cc46988C9DE45A5E2A4517DeleteManyResponseListModel
+	/** status 200 Successful Response */ Competition39F4A52A27494Ae6B80249Fa2Cb0466CDeleteManyResponseListModel
 export type DeleteManyByQueryCompetitionDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3051,7 +3241,7 @@ export type DeleteManyByQueryCompetitionDeleteApiArg = {
 	nameList?: string[]
 }
 export type PartialUpdateManyByQueryCompetitionPatchApiResponse =
-	/** status 200 Successful Response */ Competition5A1176Df9Cb146C3877E0E2E9998F345PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Competition763E1D1A822C454BB4B2C6Fa67Dcf1C1PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryCompetitionPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3062,17 +3252,17 @@ export type PartialUpdateManyByQueryCompetitionPatchApiArg = {
 	body: string
 }
 export type GetOneByPrimaryKeyCompetitionIdGetApiResponse =
-	/** status 200 Successful Response */ Competition96Aac1B9Df5940FaB67AF4B6D0D2C5AbFindOneResponseListModel
+	/** status 200 Successful Response */ Competitionce19D1A62A684E019Cb6Ddf3Cb414902FindOneResponseListModel
 export type GetOneByPrimaryKeyCompetitionIdGetApiArg = {
 	id: string
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableNamebd7C87A6Fb7F44B385D0794D98D7543E[]
+	joinForeignTable?: TableNameb83Eea905E7743818Ee3A1Adcd0Ba4C0[]
 }
 export type EntireUpdateByPrimaryKeyCompetitionIdPutApiResponse =
-	/** status 200 Successful Response */ Competitionbee68C28Cfb24Ad3884318B0630C68FbUpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Competition5068De8910B94A989FdaB0797Bc39Db5UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyCompetitionIdPutApiArg = {
 	id: string
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3082,7 +3272,7 @@ export type EntireUpdateByPrimaryKeyCompetitionIdPutApiArg = {
 	body: string
 }
 export type DeleteOneByPrimaryKeyCompetitionIdDeleteApiResponse =
-	/** status 200 Successful Response */ Competition0Cdf6611311D48C9A584048A3D6Fdec3DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Competitionb60483F321D44C41B2B4E3D6A459F0E7DeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyCompetitionIdDeleteApiArg = {
 	id: string
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3091,7 +3281,7 @@ export type DeleteOneByPrimaryKeyCompetitionIdDeleteApiArg = {
 	nameList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiResponse =
-	/** status 200 Successful Response */ Competition7A4490E866C1413CB58D457718E32B29PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Competitioncf60D5Fb9Ecc4B0F8Dcf5536A63F405CPatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiArg = {
 	id: string
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3101,7 +3291,7 @@ export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiArg = {
 	body: string
 }
 export type GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiResponse =
-	/** status 200 Successful Response */ CompetitionIdEventIdfeff3Eb5B8854512A441F3093A2D55FcFindOneResponseListModel
+	/** status 200 Successful Response */ CompetitionIdEventIdb7D1D3Cd14584B32Bf914Bf8344D7B6BFindOneResponseListModel
 export type GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiArg =
 	{
 		competitionPkId: string
@@ -3110,10 +3300,10 @@ export type GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiArg
 		nameStr?: string[]
 		nameListComparisonOperator?: ItemComparisonOperators
 		nameList?: string[]
-		joinForeignTable?: TableNamec24986C876E1413F9Bbb98Cd95Ef588E[]
+		joinForeignTable?: TableName7174Ec9AA2Ec4D7E971FD71B3B4Bf5Ef[]
 	}
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiResponse =
-	/** status 200 Successful Response */ CompetitionIdEventId1856E32E964C4615939E17C047A83D2EFindManyResponseListModel
+	/** status 200 Successful Response */ CompetitionIdEventId2Bca6Da081Dd432EBfc5376Efe6613AaFindManyResponseListModel
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	competitionPkId: string
 	idListComparisonOperator?: ItemComparisonOperators
@@ -3122,10 +3312,10 @@ export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableName7C8853B7608D4Db2B9D318E471D10Dd3[]
+	joinForeignTable?: TableName36D865Be89604346A8E831570338D1Ab[]
 }
 export type GetManyEventGetApiResponse =
-	/** status 200 Successful Response */ Eventa9F4A47DDd2144E18C49Dfe9Bf31B00BFindManyResponseListModel
+	/** status 200 Successful Response */ Eventca017Ac77A5B4F6AAefa5C3F177D4603FindManyResponseListModel
 export type GetManyEventGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3147,10 +3337,10 @@ export type GetManyEventGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName6D04E2E4A677427C80C2D8Cfa7Ad5Cfe[]
+	joinForeignTable?: TableNamea6076D9BF6814092A0E2Adb9Ffc36146[]
 }
 export type EntireUpdateManyByQueryEventPutApiResponse =
-	/** status 200 Successful Response */ Event42Abd6C5Ae634Ca9A44D818Dfc5Ea97EUpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Event736F2C2FEce94D78Af5066912A44E7E7UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryEventPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3163,12 +3353,12 @@ export type EntireUpdateManyByQueryEventPutApiArg = {
 	bodyEntireUpdateManyByQueryEventPut: BodyEntireUpdateManyByQueryEventPut
 }
 export type InsertManyEventPostApiResponse =
-	/** status 201 Successful Response */ Event2C55Db3E121E4B8FAf62Eee894A53C96UpsertManyResponseListModel
+	/** status 201 Successful Response */ Eventa653Eda9E1364C77A9A150Cb71Cb6701UpsertManyResponseListModel
 export type InsertManyEventPostApiArg = {
-	body: Eventa044C97405434763Bf4EB83Ea07Cff5ACreateManyInsertItemRequestModel[]
+	body: Eventa7Acb0995A8C46498253E16B7E2B2778CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryEventDeleteApiResponse =
-	/** status 200 Successful Response */ Eventbe5887C9D19A40A7A03A288049Fcf138DeleteManyResponseListModel
+	/** status 200 Successful Response */ Event2Eb97F143F0649C58E0485D6E2Dd417EDeleteManyResponseListModel
 export type DeleteManyByQueryEventDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3180,7 +3370,7 @@ export type DeleteManyByQueryEventDeleteApiArg = {
 	nameList?: string[]
 }
 export type PartialUpdateManyByQueryEventPatchApiResponse =
-	/** status 200 Successful Response */ Eventf7D51Dcb8D8F4Ea2940BF690Bab9Eb7APatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Event55A67AcaC0Cd4A75Bf778Db6D76Dd9C8PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryEventPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3193,7 +3383,7 @@ export type PartialUpdateManyByQueryEventPatchApiArg = {
 	bodyPartialUpdateManyByQueryEventPatch: BodyPartialUpdateManyByQueryEventPatch
 }
 export type GetOneByPrimaryKeyEventIdGetApiResponse =
-	/** status 200 Successful Response */ Event5C73807B75Db448AA72E9Ddcaa25C643FindOneResponseListModel
+	/** status 200 Successful Response */ Eventc246E6E340E749839A8D381D5Bced468FindOneResponseListModel
 export type GetOneByPrimaryKeyEventIdGetApiArg = {
 	id: string
 	competitionIdListComparisonOperator?: ItemComparisonOperators
@@ -3202,10 +3392,10 @@ export type GetOneByPrimaryKeyEventIdGetApiArg = {
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableNamede9C9082D55F4A67A4892Bb03F8636D8[]
+	joinForeignTable?: TableNamef951Ddfb57914E52959197Db2Ae35122[]
 }
 export type EntireUpdateByPrimaryKeyEventIdPutApiResponse =
-	/** status 200 Successful Response */ Event87976173E90D4E26Aec0590805B7Da47UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Eventdec6961403B64Dc984473A67F9Be1262UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyEventIdPutApiArg = {
 	id: string
 	competitionIdListComparisonOperator?: ItemComparisonOperators
@@ -3217,7 +3407,7 @@ export type EntireUpdateByPrimaryKeyEventIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyEventIdPut: BodyEntireUpdateByPrimaryKeyEventIdPut
 }
 export type DeleteOneByPrimaryKeyEventIdDeleteApiResponse =
-	/** status 200 Successful Response */ Event6C1A1Cde6C7641E58E643F6D3Ac96200DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Event6E84Ee49453340A29B265A007922A73CDeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyEventIdDeleteApiArg = {
 	id: string
 	competitionIdListComparisonOperator?: ItemComparisonOperators
@@ -3228,7 +3418,7 @@ export type DeleteOneByPrimaryKeyEventIdDeleteApiArg = {
 	nameList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyEventIdPatchApiResponse =
-	/** status 200 Successful Response */ Event80Bf06C879554F8683B3B65837A1Cdb2PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Eventbecfb29A67Df47A69CdaB94A61127D88PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyEventIdPatchApiArg = {
 	id: string
 	competitionIdListComparisonOperator?: ItemComparisonOperators
@@ -3240,7 +3430,7 @@ export type PartialUpdateOneByPrimaryKeyEventIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyEventIdPatch: BodyPartialUpdateOneByPrimaryKeyEventIdPatch
 }
 export type GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiResponse =
-	/** status 200 Successful Response */ EventIdPhaseId0521B5DeDb1741AcA5C6676A401C51B1FindOneResponseListModel
+	/** status 200 Successful Response */ EventIdPhaseId3C8Ec3B30934432AA52946F805C97AfaFindOneResponseListModel
 export type GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiArg = {
 	eventPkId: string
 	phasePkId: string
@@ -3260,10 +3450,18 @@ export type GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
-	joinForeignTable?: TableNamea545E36FE2Ea4C14Bbb412E3E973550D[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
+	joinForeignTable?: TableName3A79759239Be449E91B5515E2Cac8E01[]
 }
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiResponse =
-	/** status 200 Successful Response */ EventIdPhaseIdaf244Cc8057D41D798618900D5266Df2FindManyResponseListModel
+	/** status 200 Successful Response */ EventIdPhaseId8B97E322D6934Ee9A92106353Bdd0564FindManyResponseListModel
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	eventPkId: string
 	idListComparisonOperator?: ItemComparisonOperators
@@ -3284,10 +3482,18 @@ export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
-	joinForeignTable?: TableName3379C959C26D433C8008Abcfc19Bf415[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
+	joinForeignTable?: TableName3A3Bc80DEcdb498895F3Fc191F350Be1[]
 }
 export type GetManyPhaseGetApiResponse =
-	/** status 200 Successful Response */ Phase08019E6D75A347A99324C03030E03Da8FindManyResponseListModel
+	/** status 200 Successful Response */ Phasef5B6C4A8452E47BcBe65Ca548E11A442FindManyResponseListModel
 export type GetManyPhaseGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3309,10 +3515,18 @@ export type GetManyPhaseGetApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 	limit?: number
 	offset?: number
 	/** <br> support column:
-                <br> ['id', 'event_id', 'name', 'number_of_runs', 'number_of_runs_for_score'] <hr><br> support ordering:
+                <br> ['id', 'event_id', 'name', 'number_of_runs', 'number_of_runs_for_score', 'number_of_judges', 'scoresheet'] <hr><br> support ordering:
                 <br> ['DESC', 'ASC']
                 <hr>
                 <br />example:
@@ -3321,10 +3535,10 @@ export type GetManyPhaseGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableNameefd78Cef99F04Fed99299A3B2Ea8250B[]
+	joinForeignTable?: TableName8D0F985ED8944A76B9D422A7236D870E[]
 }
 export type EntireUpdateManyByQueryPhasePutApiResponse =
-	/** status 200 Successful Response */ Phase9C166040B73D4E6FB3A8E9Ea4C0B9Af0UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Phaseeaec4C9D13D6403685Dd84535D63C752UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryPhasePutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3346,15 +3560,23 @@ export type EntireUpdateManyByQueryPhasePutApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 	bodyEntireUpdateManyByQueryPhasePut: BodyEntireUpdateManyByQueryPhasePut
 }
 export type InsertManyPhasePostApiResponse =
-	/** status 201 Successful Response */ Phase4D13Fe41B0574660893767710Ce01131UpsertManyResponseListModel
+	/** status 201 Successful Response */ Phase0846Caee91A04145B8268F500D60Cf55UpsertManyResponseListModel
 export type InsertManyPhasePostApiArg = {
-	body: Phase52272810Aeb74C24836A57Dcbd2A9475CreateManyInsertItemRequestModel[]
+	body: Phaseb539A010Ed00460E880E618Ffe594C4DCreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryPhaseDeleteApiResponse =
-	/** status 200 Successful Response */ Phase072Cbab321354A1C88Da8491Dd5109E1DeleteManyResponseListModel
+	/** status 200 Successful Response */ Phased8Ad7B57F2Cf4E23A42F485454Bcbe43DeleteManyResponseListModel
 export type DeleteManyByQueryPhaseDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3376,9 +3598,17 @@ export type DeleteManyByQueryPhaseDeleteApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 }
 export type PartialUpdateManyByQueryPhasePatchApiResponse =
-	/** status 200 Successful Response */ Phase49Ab2345473F486581AfFe28116Ddf72PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Phase3Fafc98C072B4631A039125Aaf9A652CPatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryPhasePatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3400,10 +3630,18 @@ export type PartialUpdateManyByQueryPhasePatchApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 	bodyPartialUpdateManyByQueryPhasePatch: BodyPartialUpdateManyByQueryPhasePatch
 }
 export type GetOneByPrimaryKeyPhaseIdGetApiResponse =
-	/** status 200 Successful Response */ Phasea2C99Ebf3Ed048C4Aae2A8420Bde4D82FindOneResponseListModel
+	/** status 200 Successful Response */ Phasee2077F77E11146Af8D049C632Df89D4EFindOneResponseListModel
 export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -3424,10 +3662,18 @@ export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
-	joinForeignTable?: TableName7B2Ca539828A48B381263F584Fba12Dc[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
+	joinForeignTable?: TableName02D6Cf10Dcb34B6796Ed74C4464338Ac[]
 }
 export type EntireUpdateByPrimaryKeyPhaseIdPutApiResponse =
-	/** status 200 Successful Response */ Phase31Cee6Da6B33481AB177674071297E1AUpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Phase7B97A8A896Fe4DdaAf19E11949033F6DUpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyPhaseIdPutApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -3448,10 +3694,18 @@ export type EntireUpdateByPrimaryKeyPhaseIdPutApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 	bodyEntireUpdateByPrimaryKeyPhaseIdPut: BodyEntireUpdateByPrimaryKeyPhaseIdPut
 }
 export type DeleteOneByPrimaryKeyPhaseIdDeleteApiResponse =
-	/** status 200 Successful Response */ Phaseade908B5D988478AAe367894C486B989DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Phase2C239De1Cf1342D8Acec017F1E5C56FeDeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyPhaseIdDeleteApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -3472,9 +3726,17 @@ export type DeleteOneByPrimaryKeyPhaseIdDeleteApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiResponse =
-	/** status 200 Successful Response */ Phasedf150385865F4C848708C3695C46F0E4PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Phase11B037CaF7A4492FB05327Ba1Da8286FPatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -3495,38 +3757,23 @@ export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiArg = {
 	numberOfRunsForScoreTo?: number
 	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
 	numberOfRunsForScoreList?: number[]
+	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
+	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
+	numberOfJudgesFrom?: number
+	numberOfJudgesTo?: number
+	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
+	numberOfJudgesList?: number[]
+	scoresheetListComparisonOperator?: ItemComparisonOperators
+	scoresheetList?: string[]
 	bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch: BodyPartialUpdateOneByPrimaryKeyPhaseIdPatch
 }
-export type GetOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGetApiResponse =
-	/** status 200 Successful Response */ PhaseIdHeatIda540315009D54B8ABe6B572749A7Ddd7FindOneResponseListModel
-export type GetOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGetApiArg = {
-	phasePkId: string
-	heatPkId: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	joinForeignTable?: TableNamedf9C6Ccd3B754Da48261C97Ec8611Ec9[]
-}
-export type GetManyByPkFromHeatPhasePhasePkIdHeatGetApiResponse =
-	/** status 200 Successful Response */ PhaseIdHeatIdb3Bd723CBbaa473083D1955B9097C98AFindManyResponseListModel
-export type GetManyByPkFromHeatPhasePhasePkIdHeatGetApiArg = {
-	phasePkId: string
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	joinForeignTable?: TableName2Ef23E14F52B491182567Cecf27Ccfb1[]
-}
 export type GetManyHeatGetApiResponse =
-	/** status 200 Successful Response */ Heat98F783FfBc854928A3409Ca12C399F10FindManyResponseListModel
+	/** status 200 Successful Response */ Heat9C659Ea5C1334F17B122Fa15Ab747B49FindManyResponseListModel
 export type GetManyHeatGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
@@ -3534,7 +3781,7 @@ export type GetManyHeatGetApiArg = {
 	limit?: number
 	offset?: number
 	/** <br> support column:
-                <br> ['id', 'phase_id', 'name'] <hr><br> support ordering:
+                <br> ['id', 'competition_id', 'name'] <hr><br> support ordering:
                 <br> ['DESC', 'ASC']
                 <hr>
                 <br />example:
@@ -3543,15 +3790,15 @@ export type GetManyHeatGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName796B385DC5F343EaB4366F8E361Afacd[]
+	joinForeignTable?: TableName13Bb1C69E1824D29Afae77Dfd4Af75Ef[]
 }
 export type EntireUpdateManyByQueryHeatPutApiResponse =
-	/** status 200 Successful Response */ Heat67889327C3Ab4Df59Ba77A50Dd13C935UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Heate401188F6E0B40A98B4ADf355Cfafb5DUpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryHeatPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
@@ -3559,29 +3806,29 @@ export type EntireUpdateManyByQueryHeatPutApiArg = {
 	bodyEntireUpdateManyByQueryHeatPut: BodyEntireUpdateManyByQueryHeatPut
 }
 export type InsertManyHeatPostApiResponse =
-	/** status 201 Successful Response */ Heat142918E8C2574C5CBd7F437Dd608F0EeUpsertManyResponseListModel
+	/** status 201 Successful Response */ Heat7803952B0E934Cd9B9681Ed996366612UpsertManyResponseListModel
 export type InsertManyHeatPostApiArg = {
-	body: Heat1Ef9926639Ab4CabAd87E79Bc97A5435CreateManyInsertItemRequestModel[]
+	body: Heat195D4F7002C24168B6853Ca9C25Dda13CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryHeatDeleteApiResponse =
-	/** status 200 Successful Response */ Heat932Bf9C5E3314B53B44B9910F4695F6ADeleteManyResponseListModel
+	/** status 200 Successful Response */ Heat1F2E0Ef46083498EA8D2Ee6963Eca645DeleteManyResponseListModel
 export type DeleteManyByQueryHeatDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
 }
 export type PartialUpdateManyByQueryHeatPatchApiResponse =
-	/** status 200 Successful Response */ Heat7Cf02C74B9E448Ed9D558B5Ec375A685PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Heat7D8C1C3150Ea4D3691A5328Ee7C33A22PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryHeatPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
@@ -3589,23 +3836,23 @@ export type PartialUpdateManyByQueryHeatPatchApiArg = {
 	bodyPartialUpdateManyByQueryHeatPatch: BodyPartialUpdateManyByQueryHeatPatch
 }
 export type GetOneByPrimaryKeyHeatIdGetApiResponse =
-	/** status 200 Successful Response */ Heat3B4Ed89BA16E48A5B1E46123D025A4B0FindOneResponseListModel
+	/** status 200 Successful Response */ Heata24107BdB9E74430827032F886921DafFindOneResponseListModel
 export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	id: string
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableName755C8C23E69845Fb9Ba5433560B0E6E9[]
+	joinForeignTable?: TableNameb021F3Db2A0847AdBc25Ca81B28Abb5E[]
 }
 export type EntireUpdateByPrimaryKeyHeatIdPutApiResponse =
-	/** status 200 Successful Response */ Heat405F7A33797F4DdfA2Bb89Fd13Bcd87BUpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Heat2579E35559B448C79075435Bf409F593UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyHeatIdPutApiArg = {
 	id: string
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
@@ -3613,22 +3860,22 @@ export type EntireUpdateByPrimaryKeyHeatIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyHeatIdPut: BodyEntireUpdateByPrimaryKeyHeatIdPut
 }
 export type DeleteOneByPrimaryKeyHeatIdDeleteApiResponse =
-	/** status 200 Successful Response */ Heat3A1988908Ad442Cc9116F7B960Af8E72DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Heat82Bf8B5C839645B58Bd32C97C0B1DafbDeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyHeatIdDeleteApiArg = {
 	id: string
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
-	/** status 200 Successful Response */ Heatdac1Eac60A924866A46978005A03C13CPatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Heat082Fc59FCa5347Ab9D108C5C9E26E9D3PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
 	id: string
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
+	competitionIdListComparisonOperator?: ItemComparisonOperators
+	competitionIdList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
@@ -3636,7 +3883,7 @@ export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyHeatIdPatch: BodyPartialUpdateOneByPrimaryKeyHeatIdPatch
 }
 export type GetManyAthleteGetApiResponse =
-	/** status 200 Successful Response */ Athlete1472E4B582764Cf0A8F3679Db260243EFindManyResponseListModel
+	/** status 200 Successful Response */ Athlete40Dd3DdfBe794D81823A54A14Ae6Bbd7FindManyResponseListModel
 export type GetManyAthleteGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3664,10 +3911,10 @@ export type GetManyAthleteGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName786657Ce04Ea4Af0A4DeF0F6565365De[]
+	joinForeignTable?: TableName8150C799B61742Eb91Eb08Bf4425Ab29[]
 }
 export type EntireUpdateManyByQueryAthletePutApiResponse =
-	/** status 200 Successful Response */ Athlete8B4Cb7AfD79449A5A8125Cf9924Cfe95UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Athlete4A3E1De768C14EccBfd990E07A6971B8UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryAthletePutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3686,12 +3933,12 @@ export type EntireUpdateManyByQueryAthletePutApiArg = {
 	bodyEntireUpdateManyByQueryAthletePut: BodyEntireUpdateManyByQueryAthletePut
 }
 export type InsertManyAthletePostApiResponse =
-	/** status 201 Successful Response */ Athlete40381CfbFc4E48569A47Cbf8Bdf60850UpsertManyResponseListModel
+	/** status 201 Successful Response */ Athletee04899E693Fb43448E9966F9B8C37995UpsertManyResponseListModel
 export type InsertManyAthletePostApiArg = {
-	body: Athlete774F673223C0471E9520B2Cf3765B97ECreateManyInsertItemRequestModel[]
+	body: Athlete93DdabbfE88542Dc9Cb598C60E9F9197CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryAthleteDeleteApiResponse =
-	/** status 200 Successful Response */ Athlete7F909A8D66Da43C5Bc30A69Eca9Fd915DeleteManyResponseListModel
+	/** status 200 Successful Response */ Athlete74F01659Bae546DaB134A8Df1099Af02DeleteManyResponseListModel
 export type DeleteManyByQueryAthleteDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3709,7 +3956,7 @@ export type DeleteManyByQueryAthleteDeleteApiArg = {
 	bibList?: string[]
 }
 export type PartialUpdateManyByQueryAthletePatchApiResponse =
-	/** status 200 Successful Response */ Athletef0D4EefeD34C488096A41D7B031F713CPatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Athlete7B440E598D0D4Df1892F7Fae44Da953BPatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryAthletePatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3728,7 +3975,7 @@ export type PartialUpdateManyByQueryAthletePatchApiArg = {
 	bodyPartialUpdateManyByQueryAthletePatch: BodyPartialUpdateManyByQueryAthletePatch
 }
 export type GetOneByPrimaryKeyAthleteIdGetApiResponse =
-	/** status 200 Successful Response */ Athleteca5788D1010C45D4B82134A348Befe05FindOneResponseListModel
+	/** status 200 Successful Response */ Athlete50Bb6D037Abc47D59Ccd052E9De761E5FindOneResponseListModel
 export type GetOneByPrimaryKeyAthleteIdGetApiArg = {
 	id: string
 	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3743,10 +3990,10 @@ export type GetOneByPrimaryKeyAthleteIdGetApiArg = {
 	bibStr?: string[]
 	bibListComparisonOperator?: ItemComparisonOperators
 	bibList?: string[]
-	joinForeignTable?: TableName6A83Ac4DC3Fb4316A3C13717C9C145B1[]
+	joinForeignTable?: TableName911A7604C3B64255B74C5824C8Afe517[]
 }
 export type EntireUpdateByPrimaryKeyAthleteIdPutApiResponse =
-	/** status 200 Successful Response */ Athlete413E5Bee588148828C8FF34F732D6E18UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athlete8F6Ccda3239F44DaA73F2E7E521Cc135UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyAthleteIdPutApiArg = {
 	id: string
 	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3764,7 +4011,7 @@ export type EntireUpdateByPrimaryKeyAthleteIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyAthleteIdPut: BodyEntireUpdateByPrimaryKeyAthleteIdPut
 }
 export type DeleteOneByPrimaryKeyAthleteIdDeleteApiResponse =
-	/** status 200 Successful Response */ Athlete15Ad69Af38D545C6973A0F6F0Bd242C5DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athlete2A3F222A8Dd343E182F3Abc5D7C3B700DeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyAthleteIdDeleteApiArg = {
 	id: string
 	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3781,7 +4028,7 @@ export type DeleteOneByPrimaryKeyAthleteIdDeleteApiArg = {
 	bibList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiResponse =
-	/** status 200 Successful Response */ Athletef356Fee762984B46Ad1FCe83983Cc522PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athleteed3E693C660644Ff8008Ee18702D2C47PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiArg = {
 	id: string
 	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -3799,17 +4046,15 @@ export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyAthleteIdPatch: BodyPartialUpdateOneByPrimaryKeyAthleteIdPatch
 }
 export type GetManyScoresheetGetApiResponse =
-	/** status 200 Successful Response */ ScoreSheet54A4921B472B4Fc78Ef5Ce0349E1Fb92FindManyResponseListModel
+	/** status 200 Successful Response */ ScoreSheet6De40Bb1D70A4EccAabd647A948Bee0BFindManyResponseListModel
 export type GetManyScoresheetGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	/** Competition ID */
 	idList?: string[]
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
+	nameList?: string[]
 	limit?: number
 	offset?: number
 	/** <br> support column:
@@ -3824,99 +4069,85 @@ export type GetManyScoresheetGetApiArg = {
 	orderByColumns?: string[]
 }
 export type EntireUpdateManyByQueryScoresheetPutApiResponse =
-	/** status 200 Successful Response */ ScoreSheet9D89E156D73D447F917ED32Cf1A49226UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoreSheetd7691D305E9F432E9Ed6Ca64760Dc640UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryScoresheetPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	/** Competition ID */
 	idList?: string[]
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
-	body: number
+	nameList?: string[]
+	body: string
 }
 export type InsertManyScoresheetPostApiResponse =
-	/** status 201 Successful Response */ ScoreSheet48B8E4890Cd04394991BD88Bb8A19F40UpsertManyResponseListModel
+	/** status 201 Successful Response */ ScoreSheet1F9B383F39Ef40Db8C118Dfcf658A50FUpsertManyResponseListModel
 export type InsertManyScoresheetPostApiArg = {
-	body: ScoreSheetffadb5CdCe3249E28Bac0F1F5F3996B5CreateManyInsertItemRequestModel[]
+	body: ScoreSheet6183D4106E2345C5A8879A13E4Aeb10DCreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryScoresheetDeleteApiResponse =
-	/** status 200 Successful Response */ ScoreSheetf4839E594E4F4F958Fa752E81B46A3CbDeleteManyResponseListModel
+	/** status 200 Successful Response */ ScoreSheete8A62A3E001341B5A9BfA793Cf51D511DeleteManyResponseListModel
 export type DeleteManyByQueryScoresheetDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	/** Competition ID */
 	idList?: string[]
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
+	nameList?: string[]
 }
 export type PartialUpdateManyByQueryScoresheetPatchApiResponse =
-	/** status 200 Successful Response */ ScoreSheetd7E25Ea51Daf47EaBca0A2Ec5Cd55E9CPatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoreSheetf6Ffb1A600Cb468086F51C946C655079PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryScoresheetPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	/** Competition ID */
 	idList?: string[]
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
-	body: number
+	nameList?: string[]
+	body: string
 }
 export type GetOneByPrimaryKeyScoresheetIdGetApiResponse =
-	/** status 200 Successful Response */ ScoreSheete6805Fb4C84743B38DaeC81Abd0B9116FindOneResponseListModel
+	/** status 200 Successful Response */ ScoreSheet70492597801946278C32142945F1Fe42FindOneResponseListModel
 export type GetOneByPrimaryKeyScoresheetIdGetApiArg = {
 	id: string
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
+	nameList?: string[]
 }
 export type EntireUpdateByPrimaryKeyScoresheetIdPutApiResponse =
-	/** status 200 Successful Response */ ScoreSheetcabe7Fe0F6394CaeBce8B738De89D3F6UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoreSheetd0Ca27A999Ef445FAe47Fd519E75Cff1UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyScoresheetIdPutApiArg = {
 	id: string
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
-	body: number
+	nameList?: string[]
+	body: string
 }
 export type DeleteOneByPrimaryKeyScoresheetIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoreSheet698C4E79355944BfAeb966Ce70Abc0EeDeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoreSheeta174E159165A4E94A8168120226Bcc7ADeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyScoresheetIdDeleteApiArg = {
 	id: string
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
+	nameList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoreSheetf24B4F7B628140Fc997FB33F3Acb7Dd8PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoreSheetae83Abb5Bc53428A9E6A3D278B76D0A3PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiArg = {
 	id: string
-	nameFromComparisonOperator?: RangeFromComparisonOperators
-	nameToComparisonOperator?: RangeToComparisonOperators
-	nameFrom?: number
-	nameTo?: number
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: number[]
-	body: number
+	nameList?: string[]
+	body: string
 }
 export type GetManyAvailablemovesGetApiResponse =
-	/** status 200 Successful Response */ AvailableMovesc3D7079E56D2416793Fc2De43994Fe1DFindManyResponseListModel
+	/** status 200 Successful Response */ AvailableMovescba355C0F7614Ebd9Dba64621465Cbf1FindManyResponseListModel
 export type GetManyAvailablemovesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3956,7 +4187,7 @@ export type GetManyAvailablemovesGetApiArg = {
 	orderByColumns?: string[]
 }
 export type EntireUpdateManyByQueryAvailablemovesPutApiResponse =
-	/** status 200 Successful Response */ AvailableMovesbf49Ff5E427B472690Cd90Dcc131B1B4UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ AvailableMoves0195C66C16Bd459E9535D549F90Bf7A5UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryAvailablemovesPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3985,12 +4216,12 @@ export type EntireUpdateManyByQueryAvailablemovesPutApiArg = {
 	bodyEntireUpdateManyByQueryAvailablemovesPut: BodyEntireUpdateManyByQueryAvailablemovesPut
 }
 export type InsertManyAvailablemovesPostApiResponse =
-	/** status 201 Successful Response */ AvailableMovesf2B6Dbe690Ae4AbbAda9Cbafa605Eb07UpsertManyResponseListModel
+	/** status 201 Successful Response */ AvailableMoves092E6F69Eaac41A48752B71597E2A0FcUpsertManyResponseListModel
 export type InsertManyAvailablemovesPostApiArg = {
-	body: AvailableMovesa6B34De903774A479A41175Bc73D737ECreateManyInsertItemRequestModel[]
+	body: AvailableMoves4233213F5C204Cb78Fbf82B6Ecb144C5CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryAvailablemovesDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableMoves2035Dcf0A3Ab40A6B6D8Ffcd3C7814EfDeleteManyResponseListModel
+	/** status 200 Successful Response */ AvailableMovesfcdc9F251Cf64Acb8B9C819E154B9Cb6DeleteManyResponseListModel
 export type DeleteManyByQueryAvailablemovesDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4018,7 +4249,7 @@ export type DeleteManyByQueryAvailablemovesDeleteApiArg = {
 	directionList?: string[]
 }
 export type PartialUpdateManyByQueryAvailablemovesPatchApiResponse =
-	/** status 200 Successful Response */ AvailableMoves4486Ee9361D44F0EA346Ad0A67321C88PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ AvailableMoves76Ec1247B5B84C7CA5353C79C56B5B8BPatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryAvailablemovesPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4047,7 +4278,7 @@ export type PartialUpdateManyByQueryAvailablemovesPatchApiArg = {
 	bodyPartialUpdateManyByQueryAvailablemovesPatch: BodyPartialUpdateManyByQueryAvailablemovesPatch
 }
 export type GetOneByPrimaryKeyAvailablemovesIdGetApiResponse =
-	/** status 200 Successful Response */ AvailableMovesfb37Ad85F18B414CB473C06C9Fec84CdFindOneResponseListModel
+	/** status 200 Successful Response */ AvailableMoves5685B0B838D44Dda92FfB09A2134C5B7FindOneResponseListModel
 export type GetOneByPrimaryKeyAvailablemovesIdGetApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4074,7 +4305,7 @@ export type GetOneByPrimaryKeyAvailablemovesIdGetApiArg = {
 	directionList?: string[]
 }
 export type EntireUpdateByPrimaryKeyAvailablemovesIdPutApiResponse =
-	/** status 200 Successful Response */ AvailableMoves4464033F738642B7Ad97Ae64846A1976UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableMoves427Bf686E26A44AaA92F9Ced1Df5618EUpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyAvailablemovesIdPutApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4102,7 +4333,7 @@ export type EntireUpdateByPrimaryKeyAvailablemovesIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyAvailablemovesIdPut: BodyEntireUpdateByPrimaryKeyAvailablemovesIdPut
 }
 export type DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableMovesbbbbe33BDc894A2D8F2EBe9303276B96DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableMoves56Ac3A4F6Be940A0Ba2BD1Dfcf3009A9DeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4129,7 +4360,7 @@ export type DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiArg = {
 	directionList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiResponse =
-	/** status 200 Successful Response */ AvailableMovesdba5917B38E2485B9C6F24988847B8AePatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableMoves3Ffc588618994B0CAdb53A3850A36Ff3PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4157,7 +4388,7 @@ export type PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch: BodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch
 }
 export type GetManyAvailablebonusesGetApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses2Ec1734490A441078B29A60860F387C8FindManyResponseListModel
+	/** status 200 Successful Response */ AvailableBonusesbb02Cd8289Ea490A93Fb13164F1C007CFindManyResponseListModel
 export type GetManyAvailablebonusesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4187,10 +4418,10 @@ export type GetManyAvailablebonusesGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName11771Bdd7F2044318F0E272Ce3Cfd71E[]
+	joinForeignTable?: TableName70C7E0378B40494C97557F6B7F336739[]
 }
 export type EntireUpdateManyByQueryAvailablebonusesPutApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses898346683Aa84B72A5B16Fb7E0F06895UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ AvailableBonuses992Ce06AE90A4646913A1C86D328Ca52UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryAvailablebonusesPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4211,12 +4442,12 @@ export type EntireUpdateManyByQueryAvailablebonusesPutApiArg = {
 	bodyEntireUpdateManyByQueryAvailablebonusesPut: BodyEntireUpdateManyByQueryAvailablebonusesPut
 }
 export type InsertManyAvailablebonusesPostApiResponse =
-	/** status 201 Successful Response */ AvailableBonuses2190559454Fe4E8D914F7B56F1C90Af8UpsertManyResponseListModel
+	/** status 201 Successful Response */ AvailableBonuses45664589A8F648F78Fef162Cf357C5F9UpsertManyResponseListModel
 export type InsertManyAvailablebonusesPostApiArg = {
-	body: AvailableBonusesb75877310Cf0486E9B137D3B687A0169CreateManyInsertItemRequestModel[]
+	body: AvailableBonuses035B46Bb9E4C487487283D12B89230FdCreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryAvailablebonusesDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses9D7497105F614D63Ae1FE5B8Bdcf9CefDeleteManyResponseListModel
+	/** status 200 Successful Response */ AvailableBonuses5E7B9Ec822C24C70A34510Da8Eea8F72DeleteManyResponseListModel
 export type DeleteManyByQueryAvailablebonusesDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4236,7 +4467,7 @@ export type DeleteManyByQueryAvailablebonusesDeleteApiArg = {
 	scoreList?: number[]
 }
 export type PartialUpdateManyByQueryAvailablebonusesPatchApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesae6C3D28Ad3F46A5Ad3EFd4Db5Ba3F3FPatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ AvailableBonuses7D05Db6D2B7B42C68EfaB3962B8093BePatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryAvailablebonusesPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4257,7 +4488,7 @@ export type PartialUpdateManyByQueryAvailablebonusesPatchApiArg = {
 	bodyPartialUpdateManyByQueryAvailablebonusesPatch: BodyPartialUpdateManyByQueryAvailablebonusesPatch
 }
 export type GetOneByPrimaryKeyAvailablebonusesIdGetApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses7E950858Dddf45C7A003E685B10A398DFindOneResponseListModel
+	/** status 200 Successful Response */ AvailableBonusesa22Aa6716E004E66A4D5D3E157506626FindOneResponseListModel
 export type GetOneByPrimaryKeyAvailablebonusesIdGetApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4274,10 +4505,10 @@ export type GetOneByPrimaryKeyAvailablebonusesIdGetApiArg = {
 	scoreTo?: number
 	scoreListComparisonOperator?: ItemComparisonOperators
 	scoreList?: number[]
-	joinForeignTable?: TableName4D4B483338D54543B4F7D5065Eb98C43[]
+	joinForeignTable?: TableName2481B2F53F6B4B98B4E3B984A79239Ee[]
 }
 export type EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesa9050F11626341E89B568C75Ceef334AUpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableBonusesfdda186D743A49A79E4112Bcc6Af7D2DUpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4297,7 +4528,7 @@ export type EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut: BodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut
 }
 export type DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesd0Cfd6321A064Abf96322D14Bb83Dbd1DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableBonusesb516Dee55458470DA5487Ccc79263D35DeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4316,7 +4547,7 @@ export type DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiArg = {
 	scoreList?: number[]
 }
 export type PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesafcfc2Df729B4BcfA106D1B37Aa6F5BfPatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ AvailableBonusesab5315E758Ce4D41Aa56446973B8A7F0PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiArg = {
 	id: string
 	sheetIdListComparisonOperator?: ItemComparisonOperators
@@ -4336,7 +4567,7 @@ export type PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch: BodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch
 }
 export type GetManyScoredmovesGetApiResponse =
-	/** status 200 Successful Response */ ScoredMoves89C5B6938F42468FAaee0Be638814629FindManyResponseListModel
+	/** status 200 Successful Response */ ScoredMovesa112C1Ff21E14F60934230Ce91F6E39CFindManyResponseListModel
 export type GetManyScoredmovesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4344,10 +4575,12 @@ export type GetManyScoredmovesGetApiArg = {
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4372,10 +4605,10 @@ export type GetManyScoredmovesGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName5De4Aced1Cf141F88A24Bc3Bbc0F659A[]
+	joinForeignTable?: TableNameb71Ddfe4249E48A38268678Ff4C22Dd1[]
 }
 export type EntireUpdateManyByQueryScoredmovesPutApiResponse =
-	/** status 200 Successful Response */ ScoredMovesccaf64E20322429C85C8Ae9523D75A30UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoredMoveseb54C49364304D419Cb1Da231A444813UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryScoredmovesPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4383,10 +4616,12 @@ export type EntireUpdateManyByQueryScoredmovesPutApiArg = {
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4402,12 +4637,12 @@ export type EntireUpdateManyByQueryScoredmovesPutApiArg = {
 	bodyEntireUpdateManyByQueryScoredmovesPut: BodyEntireUpdateManyByQueryScoredmovesPut
 }
 export type InsertManyScoredmovesPostApiResponse =
-	/** status 201 Successful Response */ ScoredMovesf1Daf0Ab76064B00Ba8177Fa0532C2E7UpsertManyResponseListModel
+	/** status 201 Successful Response */ ScoredMoves59Ed14A001324097834B54Bdf30295A2UpsertManyResponseListModel
 export type InsertManyScoredmovesPostApiArg = {
-	body: ScoredMovesd4291B7D89Eb4398AffeA48A8F3Ac911CreateManyInsertItemRequestModel[]
+	body: ScoredMovesca76A28ECd96415E8C038E9B86Df73C3CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryScoredmovesDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredMoves2A770D101991464599Cf9Fa5164Ab724DeleteManyResponseListModel
+	/** status 200 Successful Response */ ScoredMovese7F2A56C840F4C3EB203Bd2Ad4036E62DeleteManyResponseListModel
 export type DeleteManyByQueryScoredmovesDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4415,10 +4650,12 @@ export type DeleteManyByQueryScoredmovesDeleteApiArg = {
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4433,7 +4670,7 @@ export type DeleteManyByQueryScoredmovesDeleteApiArg = {
 	directionList?: string[]
 }
 export type PartialUpdateManyByQueryScoredmovesPatchApiResponse =
-	/** status 200 Successful Response */ ScoredMoves31E99AebCd784BcaA3Ac68236958B1E2PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoredMoves7Ac1Ef8B40F441138Ba955D675747589PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryScoredmovesPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4441,10 +4678,12 @@ export type PartialUpdateManyByQueryScoredmovesPatchApiArg = {
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4460,17 +4699,19 @@ export type PartialUpdateManyByQueryScoredmovesPatchApiArg = {
 	bodyPartialUpdateManyByQueryScoredmovesPatch: BodyPartialUpdateManyByQueryScoredmovesPatch
 }
 export type GetOneByPrimaryKeyScoredmovesIdGetApiResponse =
-	/** status 200 Successful Response */ ScoredMovesc24A9D8C4628478DBa764Ff02D2D1C05FindOneResponseListModel
+	/** status 200 Successful Response */ ScoredMoves5F99760ABf0D4A8AA9592D9Ec4237221FindOneResponseListModel
 export type GetOneByPrimaryKeyScoredmovesIdGetApiArg = {
 	id: string
 	moveIdListComparisonOperator?: ItemComparisonOperators
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4483,20 +4724,22 @@ export type GetOneByPrimaryKeyScoredmovesIdGetApiArg = {
 	directionStr?: string[]
 	directionListComparisonOperator?: ItemComparisonOperators
 	directionList?: string[]
-	joinForeignTable?: TableName286Ca8BbBfd24C05A207710Ee9B6902E[]
+	joinForeignTable?: TableNamec29Da70E776C4F48A78BF5436B2Eb34A[]
 }
 export type EntireUpdateByPrimaryKeyScoredmovesIdPutApiResponse =
-	/** status 200 Successful Response */ ScoredMovesf2Ce0C6C1Cfd4Ca08311Fa9A00212733UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredMovesed2A5C9DD6A44592A51FBa5B7F137424UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyScoredmovesIdPutApiArg = {
 	id: string
 	moveIdListComparisonOperator?: ItemComparisonOperators
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4512,17 +4755,19 @@ export type EntireUpdateByPrimaryKeyScoredmovesIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyScoredmovesIdPut: BodyEntireUpdateByPrimaryKeyScoredmovesIdPut
 }
 export type DeleteOneByPrimaryKeyScoredmovesIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredMovesc0C0B8026A404CddA1797E0C337Be7F2DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredMoves5Aaea1A986154Def8329E5D7A4C6D8EaDeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyScoredmovesIdDeleteApiArg = {
 	id: string
 	moveIdListComparisonOperator?: ItemComparisonOperators
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4537,17 +4782,19 @@ export type DeleteOneByPrimaryKeyScoredmovesIdDeleteApiArg = {
 	directionList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoredMovesafe13F170Ab649D591BcE9Ef73Dab707PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredMovesf4Bfbf5E91E34Fb5B1D4920B3C0923BbPatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiArg = {
 	id: string
 	moveIdListComparisonOperator?: ItemComparisonOperators
 	moveIdList?: string[]
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
-	runNumberStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	runNumberStr?: string[]
+	runNumberFromComparisonOperator?: RangeFromComparisonOperators
+	runNumberToComparisonOperator?: RangeToComparisonOperators
+	runNumberFrom?: number
+	runNumberTo?: number
 	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: string[]
+	runNumberList?: number[]
 	phaseIdListComparisonOperator?: ItemComparisonOperators
 	phaseIdList?: string[]
 	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4563,7 +4810,7 @@ export type PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch: BodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch
 }
 export type GetManyScoredbonusesGetApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses9165E84D7Ef54Afb802043935D51A046FindManyResponseListModel
+	/** status 200 Successful Response */ ScoredBonuses42243E1CEa3F4Ddd80473C98Efd8Ee6BFindManyResponseListModel
 export type GetManyScoredbonusesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4587,10 +4834,10 @@ export type GetManyScoredbonusesGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName78D54E4AFdeb4A9484773A14Ab40A42B[]
+	joinForeignTable?: TableName2C1C0606389544C58379F7Ac1E6E1032[]
 }
 export type EntireUpdateManyByQueryScoredbonusesPutApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses08066F0B87454D7189Cb4Df893Fe3545UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoredBonusese9F30Afb9C5046B699E05Eca2A32F0D5UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryScoredbonusesPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4605,12 +4852,12 @@ export type EntireUpdateManyByQueryScoredbonusesPutApiArg = {
 	bodyEntireUpdateManyByQueryScoredbonusesPut: BodyEntireUpdateManyByQueryScoredbonusesPut
 }
 export type InsertManyScoredbonusesPostApiResponse =
-	/** status 201 Successful Response */ ScoredBonusescaa4Ca89757C402B9898734E41121338UpsertManyResponseListModel
+	/** status 201 Successful Response */ ScoredBonuses150F87722A064A8A802D4839084Fc9FfUpsertManyResponseListModel
 export type InsertManyScoredbonusesPostApiArg = {
-	body: ScoredBonuses0D00Fd30Ba73429CB377C11E5D44E1A3CreateManyInsertItemRequestModel[]
+	body: ScoredBonusesef8Aeb6F3A924DeeBf93Ce29C8034B5ECreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryScoredbonusesDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses64B1E7A353564766Bf14B74C0Bad13BcDeleteManyResponseListModel
+	/** status 200 Successful Response */ ScoredBonuses554E7967C1C04F09A1F0661Dcf0Bb533DeleteManyResponseListModel
 export type DeleteManyByQueryScoredbonusesDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4624,7 +4871,7 @@ export type DeleteManyByQueryScoredbonusesDeleteApiArg = {
 	judgeIdList?: string[]
 }
 export type PartialUpdateManyByQueryScoredbonusesPatchApiResponse =
-	/** status 200 Successful Response */ ScoredBonuseseeb6Ab7F9B454533B24437Ce0Def0A5EPatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ ScoredBonusesfa5Bea3992124516B2956A32B9578Cd7PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryScoredbonusesPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4639,7 +4886,7 @@ export type PartialUpdateManyByQueryScoredbonusesPatchApiArg = {
 	bodyPartialUpdateManyByQueryScoredbonusesPatch: BodyPartialUpdateManyByQueryScoredbonusesPatch
 }
 export type GetOneByPrimaryKeyScoredbonusesIdGetApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses5244A7E3F3Df441E98791C84587Bd7C4FindOneResponseListModel
+	/** status 200 Successful Response */ ScoredBonuses030Aa6F67D8A4E45A91E3B872898A69EFindOneResponseListModel
 export type GetOneByPrimaryKeyScoredbonusesIdGetApiArg = {
 	id: string
 	bonusIdListComparisonOperator?: ItemComparisonOperators
@@ -4650,10 +4897,10 @@ export type GetOneByPrimaryKeyScoredbonusesIdGetApiArg = {
 	judgeIdStr?: string[]
 	judgeIdListComparisonOperator?: ItemComparisonOperators
 	judgeIdList?: string[]
-	joinForeignTable?: TableName27B2686862F2489595FfE1Ac353Ab479[]
+	joinForeignTable?: TableNamef81F668793D84E798C175567800890A1[]
 }
 export type EntireUpdateByPrimaryKeyScoredbonusesIdPutApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses299430Fd9Dc54251846440Dc5D25676FUpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredBonuses94777Acc536D428E9736A4A0Dc427B67UpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyScoredbonusesIdPutApiArg = {
 	id: string
 	bonusIdListComparisonOperator?: ItemComparisonOperators
@@ -4667,7 +4914,7 @@ export type EntireUpdateByPrimaryKeyScoredbonusesIdPutApiArg = {
 	bodyEntireUpdateByPrimaryKeyScoredbonusesIdPut: BodyEntireUpdateByPrimaryKeyScoredbonusesIdPut
 }
 export type DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses5440C666F70746B3953E5307E0292B2DDeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredBonuses41Afdb0A771E4Fef964F1172894108FeDeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiArg = {
 	id: string
 	bonusIdListComparisonOperator?: ItemComparisonOperators
@@ -4680,7 +4927,7 @@ export type DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiArg = {
 	judgeIdList?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoredBonusesf588A2BfEadf4D1281067Df2B7Dba5A6PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ ScoredBonusesf9E251Ca6F6A4Dee83E2657477544508PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiArg = {
 	id: string
 	bonusIdListComparisonOperator?: ItemComparisonOperators
@@ -4694,7 +4941,7 @@ export type PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch: BodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch
 }
 export type GetManyAthleteheatGetApiResponse =
-	/** status 200 Successful Response */ Athleteheat5Babc3E37F8748F4BbafA9339Af99CfaFindManyResponseListModel
+	/** status 200 Successful Response */ Athleteheatf1897Dd9Aee047E6B3898Fe77E15Aa31FindManyResponseListModel
 export type GetManyAthleteheatGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4702,12 +4949,18 @@ export type GetManyAthleteheatGetApiArg = {
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 	limit?: number
 	offset?: number
 	/** <br> support column:
-                <br> ['id', 'heat_id', 'athlete_id', 'scoresheet'] <hr><br> support ordering:
+                <br> ['id', 'heat_id', 'athlete_id', 'phase_id', 'last_phase_rank'] <hr><br> support ordering:
                 <br> ['DESC', 'ASC']
                 <hr>
                 <br />example:
@@ -4716,10 +4969,10 @@ export type GetManyAthleteheatGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableNamec889C93B16094Fac8A1939871Ea1510B[]
+	joinForeignTable?: TableName3Cc9A675511147E2B6943642754B2B82[]
 }
 export type EntireUpdateManyByQueryAthleteheatPutApiResponse =
-	/** status 200 Successful Response */ Athleteheat0F086D3D7B464Cd38221364Cfb157Ce1UpdateManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Athleteheatf40693D0B5A74D1ABa322B357Abb60B1UpdateManyResponseListModelWithValidators
 export type EntireUpdateManyByQueryAthleteheatPutApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4727,17 +4980,23 @@ export type EntireUpdateManyByQueryAthleteheatPutApiArg = {
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 	bodyEntireUpdateManyByQueryAthleteheatPut: BodyEntireUpdateManyByQueryAthleteheatPut
 }
 export type InsertManyAthleteheatPostApiResponse =
-	/** status 201 Successful Response */ Athleteheat2F21881C907D4F0FAe5FAfc7F45A5FfbUpsertManyResponseListModel
+	/** status 201 Successful Response */ Athleteheat00E18EfbD103418C8A25F432817E2882UpsertManyResponseListModel
 export type InsertManyAthleteheatPostApiArg = {
-	body: Athleteheat8B5C2B1E7Faf4AecA098Ae0A9C90Cc5BCreateManyInsertItemRequestModel[]
+	body: Athleteheat85B385Cb25A04Dca96F74A9Ab2Bb6860CreateManyInsertItemRequestModel[]
 }
 export type DeleteManyByQueryAthleteheatDeleteApiResponse =
-	/** status 200 Successful Response */ Athleteheat5B75Cd42Cefc47D496D7417Ddf133243DeleteManyResponseListModel
+	/** status 200 Successful Response */ Athleteheat0C2Ea816Eef044E8B08327E493Af39D6DeleteManyResponseListModel
 export type DeleteManyByQueryAthleteheatDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4745,11 +5004,17 @@ export type DeleteManyByQueryAthleteheatDeleteApiArg = {
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 }
 export type PartialUpdateManyByQueryAthleteheatPatchApiResponse =
-	/** status 200 Successful Response */ Athleteheat95Cb83EbDbe44A2A8880C3316E4E14F7PatchManyResponseListModelWithValidators
+	/** status 200 Successful Response */ Athleteheat3587BadfC4B0436983BdB0D607A15Fd2PatchManyResponseListModelWithValidators
 export type PartialUpdateManyByQueryAthleteheatPatchApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4757,59 +5022,102 @@ export type PartialUpdateManyByQueryAthleteheatPatchApiArg = {
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 	bodyPartialUpdateManyByQueryAthleteheatPatch: BodyPartialUpdateManyByQueryAthleteheatPatch
 }
 export type GetOneByPrimaryKeyAthleteheatIdGetApiResponse =
-	/** status 200 Successful Response */ Athleteheat50598C1D48F74895832833783076Ee6EFindOneResponseListModel
+	/** status 200 Successful Response */ Athleteheate5EcaeaeB2064374A1AbB0B9686600BbFindOneResponseListModel
 export type GetOneByPrimaryKeyAthleteheatIdGetApiArg = {
 	id: string
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	joinForeignTable?: TableNamefec3Ae42D58A40CfAba9B69A80F2B105[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
+	joinForeignTable?: TableNameb1665617C9F64D8B9Aac6Ffaf017F0C1[]
 }
 export type EntireUpdateByPrimaryKeyAthleteheatIdPutApiResponse =
-	/** status 200 Successful Response */ Athleteheat17Cfe4BdDda24Af7Aed283304F7Defe1UpdateOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athleteheat2446F710255C4DdfAa491F2Bd8D93EfbUpdateOneResponseModelWithValidators
 export type EntireUpdateByPrimaryKeyAthleteheatIdPutApiArg = {
 	id: string
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 	bodyEntireUpdateByPrimaryKeyAthleteheatIdPut: BodyEntireUpdateByPrimaryKeyAthleteheatIdPut
 }
 export type DeleteOneByPrimaryKeyAthleteheatIdDeleteApiResponse =
-	/** status 200 Successful Response */ Athleteheatf1B899FbAea94D3E887E8B4D893B2F37DeleteOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athleteheatd20C3878Ae4D412899Aa28288C922212DeleteOneResponseModelWithValidators
 export type DeleteOneByPrimaryKeyAthleteheatIdDeleteApiArg = {
 	id: string
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 }
 export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiResponse =
-	/** status 200 Successful Response */ Athleteheat88F7346AB7C04862B2F2Be2489Fa4C4EPatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athleteheatbe96Dec65Ada4F90B831231F7355Dcf8PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiArg = {
 	id: string
 	heatIdListComparisonOperator?: ItemComparisonOperators
 	heatIdList?: string[]
 	athleteIdListComparisonOperator?: ItemComparisonOperators
 	athleteIdList?: string[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	phaseIdListComparisonOperator?: ItemComparisonOperators
+	phaseIdList?: string[]
+	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
+	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
+	lastPhaseRankFrom?: number
+	lastPhaseRankTo?: number
+	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
+	lastPhaseRankList?: number[]
 	bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: BodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch
 }
 export type RootGetApiResponse = /** status 200 Successful Response */ any
 export type RootGetApiArg = void
+export type HeatInfoResponse = {
+	id: string
+	heat_id: string
+	athlete_id: string
+	phase_id: string
+	number_of_runs: number
+	number_of_runs_for_score: number
+	scoresheet: string
+	first_name: string
+	last_name: string
+	bib: string
+	last_phase_rank?: number
+}
 export type ValidationError = {
 	loc: string[]
 	msg: string
@@ -4836,7 +5144,7 @@ export type PydanticScoredMovesResponse = {
 	id: string
 	move_id: string
 	heat_id: string
-	run_number: string
+	run_number: number
 	phase_id: string
 	judge_id: string
 	athlete_id: string
@@ -4872,12 +5180,18 @@ export type AthleteScoresWithAthleteInfo = {
 	highest_scoring_move: number
 	ranking?: number
 	reason?: string
+	total_score?: number
+	last_phase_rank?: number
 	first_name: string
 	last_name: string
 	bib_number: number
 }
 export type HeatScoresResponse = {
 	heat_id: string
+	scores: AthleteScoresWithAthleteInfo[]
+}
+export type PhaseScoresResponse = {
+	phase_id: string
 	scores: AthleteScoresWithAthleteInfo[]
 }
 export type PydanticAvailableMoves = {
@@ -4899,24 +5213,24 @@ export type AddUpdateScoresheetRequest = {
 	moves?: PydanticAvailableMoves[]
 	bonuses?: PydanticAvailableBonuses[]
 }
-export type ForeignEvent169Daf681F5B491A8329958Ef68Ae13CFindManyResponseItemModelWithValidators =
+export type ForeignEventba5941A417294C6EB4F49F42D6F99505FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEventbeb3244D2C6D4E37B7F374Ee3141De80GetManyResponseForeignModel =
-	ForeignEvent169Daf681F5B491A8329958Ef68Ae13CFindManyResponseItemModelWithValidators[]
-export type Competition4Aadd2056F3D4C11B7342C00727Cacf4FindManyResponseItemModelWithValidators =
+export type ForeignEvent2Ba526866A564CffAd5DC5Ab10053C63GetManyResponseForeignModel =
+	ForeignEventba5941A417294C6EB4F49F42D6F99505FindManyResponseItemModelWithValidators[]
+export type Competition381E380CDd6642Be966E34046Ae4C58DFindManyResponseItemModelWithValidators =
 	{
-		event_foreign?: ForeignEventbeb3244D2C6D4E37B7F374Ee3141De80GetManyResponseForeignModel
+		event_foreign?: ForeignEvent2Ba526866A564CffAd5DC5Ab10053C63GetManyResponseForeignModel
 		id?: string
 		name?: string
 	}
-export type Competition89010AeeF7D149CeA153364462A4B256FindManyResponseListModel =
+export type Competition0Adc3C956Bb94D56B046Caabb3F1653FFindManyResponseListModel =
 
-		| Competition4Aadd2056F3D4C11B7342C00727Cacf4FindManyResponseItemModelWithValidators[]
-		| undefined
+		| Competition381E380CDd6642Be966E34046Ae4C58DFindManyResponseItemModelWithValidators[]
+
 export type ItemComparisonOperators = "Equal" | "Not_equal" | "In" | "Not_in"
 export type PgsqlMatchingPatternInString =
 	| "case_insensitive"
@@ -4930,209 +5244,215 @@ export type PgsqlMatchingPatternInString =
 	| "does_not_match_regex_with_case_insensitive"
 	| "similar_to"
 	| "not_similar_to"
-export type TableName49D1F77D0F074780Abbb6Fdbb7678439 = "event"
-export type Competition50C8C9EaCe11422DB5B9D145Db4Aad28UpdateManyResponseModelWithValidators =
+export type TableName9E7Db46633B4458E97B3F0F9Fac445B5 = "event"
+export type Competition334C241CE5Ba44358797C19Cb59F9434UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type Competition60F8A6F98Fc84F11A91F877D01Fa57C1UpdateManyResponseListModelWithValidators =
-	Competition50C8C9EaCe11422DB5B9D145Db4Aad28UpdateManyResponseModelWithValidators[]
-export type Competitionc531B07844A84E748E74054C1Edc59D7UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Competitionb3C8D2A1Bf6C469CB85F5Fa142802A0BUpdateManyResponseListModelWithValidators =
+	Competition334C241CE5Ba44358797C19Cb59F9434UpdateManyResponseModelWithValidators[]
+export type Competition10Fdd8455C6A45FbB37B2F3852Ece6A0UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type Competition36531E563Ff64Bf888Db234De3F5Fa25UpsertManyResponseListModel =
-	Competitionc531B07844A84E748E74054C1Edc59D7UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Competition5Fc01B73B5764Adf870CEf4D03D4Eb75CreateManyInsertItemRequestModel =
+export type Competition406791F67Fc042CfA38A233Ed46F7012UpsertManyResponseListModel =
+	Competition10Fdd8455C6A45FbB37B2F3852Ece6A0UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Competition0220C02122Ee4A0B9C3A7B5Db9F4B4BbCreateManyInsertItemRequestModel =
 	{
 		id: string
 		name: string
 	}
-export type Competition09C0E90199Ad46FcB95D280E7Dd74D03DeleteManyResponseModelWithValidators =
+export type Competition84C4F5309D1D45619Ebe1A675Cb4300CDeleteManyResponseModelWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type Competition4884De54B9Cc46988C9DE45A5E2A4517DeleteManyResponseListModel =
-	Competition09C0E90199Ad46FcB95D280E7Dd74D03DeleteManyResponseModelWithValidators[]
-export type Competitione09A3707Dae74Db6A17FD5B0172Bb139PatchManyResponseModelWithValidators =
+export type Competition39F4A52A27494Ae6B80249Fa2Cb0466CDeleteManyResponseListModel =
+	Competition84C4F5309D1D45619Ebe1A675Cb4300CDeleteManyResponseModelWithValidators[]
+export type Competition5D5555D1Bab6436EB695311998F4C021PatchManyResponseModelWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type Competition5A1176Df9Cb146C3877E0E2E9998F345PatchManyResponseListModelWithValidators =
-	Competitione09A3707Dae74Db6A17FD5B0172Bb139PatchManyResponseModelWithValidators[]
-export type Competition57F5234381Cf456DBfdc0E4A1F448Df7FindOneResponseModelWithValidators =
+export type Competition763E1D1A822C454BB4B2C6Fa67Dcf1C1PatchManyResponseListModelWithValidators =
+	Competition5D5555D1Bab6436EB695311998F4C021PatchManyResponseModelWithValidators[]
+export type Competitioncc97F0968D064330B4623Cb2996Aaa21FindOneResponseModelWithValidators =
 	{
-		event_foreign?: ForeignEventbeb3244D2C6D4E37B7F374Ee3141De80GetManyResponseForeignModel
+		event_foreign?: ForeignEvent2Ba526866A564CffAd5DC5Ab10053C63GetManyResponseForeignModel
 		id: string
 		name: string
 	}
-export type Competition96Aac1B9Df5940FaB67AF4B6D0D2C5AbFindOneResponseListModel =
-	Competition57F5234381Cf456DBfdc0E4A1F448Df7FindOneResponseModelWithValidators
-export type TableNamebd7C87A6Fb7F44B385D0794D98D7543E = "event"
-export type Competitionbee68C28Cfb24Ad3884318B0630C68FbUpdateOneResponseModelWithValidators =
-	{
-		id: string
-		name: string
-	}
-export type Competition0Cdf6611311D48C9A584048A3D6Fdec3DeleteOneResponseModelWithValidators =
+export type Competitionce19D1A62A684E019Cb6Ddf3Cb414902FindOneResponseListModel =
+	Competitioncc97F0968D064330B4623Cb2996Aaa21FindOneResponseModelWithValidators
+export type TableNameb83Eea905E7743818Ee3A1Adcd0Ba4C0 = "event"
+export type Competition5068De8910B94A989FdaB0797Bc39Db5UpdateOneResponseModelWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type Competition7A4490E866C1413CB58D457718E32B29PatchOneResponseModelWithValidators =
+export type Competitionb60483F321D44C41B2B4E3D6A459F0E7DeleteOneResponseModelWithValidators =
 	{
 		id: string
 		name: string
 	}
-export type ForeignCompetition38B4015F8Fe54B419474Cea03Aee2E12FindManyResponseItemModelWithValidators =
+export type Competitioncf60D5Fb9Ecc4B0F8Dcf5536A63F405CPatchOneResponseModelWithValidators =
+	{
+		id: string
+		name: string
+	}
+export type ForeignCompetitiona482C621214842278346Bb15E5599788FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ForeignCompetition173B57E559864B5E8BacE8F937A865B3GetManyResponseForeignModel =
-	ForeignCompetition38B4015F8Fe54B419474Cea03Aee2E12FindManyResponseItemModelWithValidators[]
-export type ForeignPhasea5Bfa0747F714E208905463E1252Fc57FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-	}
-export type ForeignPhase2D8Aad69D69C41FbBc8A334Ed4307D5AGetManyResponseForeignModel =
-	ForeignPhasea5Bfa0747F714E208905463E1252Fc57FindManyResponseItemModelWithValidators[]
-export type CompetitionIdEventId9B387078603B49Db841D24F62Eb7Dcd4FindOneResponseModelWithValidators =
-	{
-		id: string
-		competition_id: string
-		name: string
-		competition_foreign?: ForeignCompetition173B57E559864B5E8BacE8F937A865B3GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase2D8Aad69D69C41FbBc8A334Ed4307D5AGetManyResponseForeignModel
-	}
-export type CompetitionIdEventIdfeff3Eb5B8854512A441F3093A2D55FcFindOneResponseListModel =
-	CompetitionIdEventId9B387078603B49Db841D24F62Eb7Dcd4FindOneResponseModelWithValidators
-export type TableNamec24986C876E1413F9Bbb98Cd95Ef588E = "competition" | "phase"
-export type ForeignCompetition59Fc957F55284Be2A020566495De4541FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		name?: string
-	}
-export type ForeignCompetition0Fc401078Cb24E2C81C2C9B34C612527GetManyResponseForeignModel =
-	ForeignCompetition59Fc957F55284Be2A020566495De4541FindManyResponseItemModelWithValidators[]
-export type ForeignPhase0E0571F63E0844E2Bf56D5Ba4575159AFindManyResponseItemModelWithValidators =
+export type ForeignCompetitionf2Ff9Cc7D1E14Cf58Fb4092677Be9Ab3GetManyResponseForeignModel =
+	ForeignCompetitiona482C621214842278346Bb15E5599788FindManyResponseItemModelWithValidators[]
+export type ForeignPhase9D0823F15C534Ba99C6D3D432052400FFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
 		name?: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
 	}
-export type ForeignPhase65C3C2Af483F403699A634Edff5D9Fd5GetManyResponseForeignModel =
-	ForeignPhase0E0571F63E0844E2Bf56D5Ba4575159AFindManyResponseItemModelWithValidators[]
-export type CompetitionIdEventIda855417EBd154C4684664386C14C35DdFindOneResponseModelWithValidators =
+export type ForeignPhase01D12631B11142DbBc45D96De4A3Ec42GetManyResponseForeignModel =
+	ForeignPhase9D0823F15C534Ba99C6D3D432052400FFindManyResponseItemModelWithValidators[]
+export type CompetitionIdEventIda8E7D1A8D99540Dc8787A4B010D817C5FindOneResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
-		competition_foreign?: ForeignCompetition0Fc401078Cb24E2C81C2C9B34C612527GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase65C3C2Af483F403699A634Edff5D9Fd5GetManyResponseForeignModel
+		competition_foreign?: ForeignCompetitionf2Ff9Cc7D1E14Cf58Fb4092677Be9Ab3GetManyResponseForeignModel
+		phase_foreign?: ForeignPhase01D12631B11142DbBc45D96De4A3Ec42GetManyResponseForeignModel
 	}
-export type CompetitionIdEventId1856E32E964C4615939E17C047A83D2EFindManyResponseListModel =
+export type CompetitionIdEventIdb7D1D3Cd14584B32Bf914Bf8344D7B6BFindOneResponseListModel =
+	CompetitionIdEventIda8E7D1A8D99540Dc8787A4B010D817C5FindOneResponseModelWithValidators
+export type TableName7174Ec9AA2Ec4D7E971FD71B3B4Bf5Ef = "competition" | "phase"
+export type ForeignCompetitionc16Ce5C57Dde4006B0E9Cc54Be6C5317FindManyResponseItemModelWithValidators =
+	{
+		id?: string
+		name?: string
+	}
+export type ForeignCompetition7F79F36197354Dc3Bce49F4248250C3AGetManyResponseForeignModel =
+	ForeignCompetitionc16Ce5C57Dde4006B0E9Cc54Be6C5317FindManyResponseItemModelWithValidators[]
+export type ForeignPhaseded0F6A49E144E739A891333598F6355FindManyResponseItemModelWithValidators =
+	{
+		id?: string
+		event_id?: string
+		name?: string
+		number_of_runs?: number
+		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
+	}
+export type ForeignPhase48F91B7E13544441B02A3499137166A4GetManyResponseForeignModel =
+	ForeignPhaseded0F6A49E144E739A891333598F6355FindManyResponseItemModelWithValidators[]
+export type CompetitionIdEventId7759E65F249448Ea9A231641Ed9E378EFindOneResponseModelWithValidators =
+	{
+		id: string
+		competition_id: string
+		name: string
+		competition_foreign?: ForeignCompetition7F79F36197354Dc3Bce49F4248250C3AGetManyResponseForeignModel
+		phase_foreign?: ForeignPhase48F91B7E13544441B02A3499137166A4GetManyResponseForeignModel
+	}
+export type CompetitionIdEventId2Bca6Da081Dd432EBfc5376Efe6613AaFindManyResponseListModel =
 
-		| CompetitionIdEventIda855417EBd154C4684664386C14C35DdFindOneResponseModelWithValidators[]
-		| undefined
-export type TableName7C8853B7608D4Db2B9D318E471D10Dd3 = "competition" | "phase"
-export type ForeignCompetition44Ee07A36C154FbcBfbfEf5Fb98E2275FindManyResponseItemModelWithValidators =
+		| CompetitionIdEventId7759E65F249448Ea9A231641Ed9E378EFindOneResponseModelWithValidators[]
+
+export type TableName36D865Be89604346A8E831570338D1Ab = "competition" | "phase"
+export type ForeignCompetition1917252057294948Ac10480D81B023B9FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ForeignCompetition54Dcc23C24Bd4Fdf8Da16696Ef2Ccf8FGetManyResponseForeignModel =
-	ForeignCompetition44Ee07A36C154FbcBfbfEf5Fb98E2275FindManyResponseItemModelWithValidators[]
-export type ForeignPhase9Cd2Ae09796348AeAf6E0B831D9Efa73FindManyResponseItemModelWithValidators =
+export type ForeignCompetitioncfc142B609084F298D881Ad794D2557FGetManyResponseForeignModel =
+	ForeignCompetition1917252057294948Ac10480D81B023B9FindManyResponseItemModelWithValidators[]
+export type ForeignPhase47C63171Eb4C4D54841F2Dec61C6Da30FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
 		name?: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
 	}
-export type ForeignPhaseec50F01D160F4085A9585Ec2737390A5GetManyResponseForeignModel =
-	ForeignPhase9Cd2Ae09796348AeAf6E0B831D9Efa73FindManyResponseItemModelWithValidators[]
-export type Event576611F507Cc4Ccd816FCa44B504Ce1DFindManyResponseItemModelWithValidators =
+export type ForeignPhase8B50C959C2D3441D9382F32Fa37105CaGetManyResponseForeignModel =
+	ForeignPhase47C63171Eb4C4D54841F2Dec61C6Da30FindManyResponseItemModelWithValidators[]
+export type Evente25A12A1790048178Eed56C3Fd6D6BfcFindManyResponseItemModelWithValidators =
 	{
-		competition_foreign?: ForeignCompetition54Dcc23C24Bd4Fdf8Da16696Ef2Ccf8FGetManyResponseForeignModel
-		phase_foreign?: ForeignPhaseec50F01D160F4085A9585Ec2737390A5GetManyResponseForeignModel
+		competition_foreign?: ForeignCompetitioncfc142B609084F298D881Ad794D2557FGetManyResponseForeignModel
+		phase_foreign?: ForeignPhase8B50C959C2D3441D9382F32Fa37105CaGetManyResponseForeignModel
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type Eventa9F4A47DDd2144E18C49Dfe9Bf31B00BFindManyResponseListModel =
-	| Event576611F507Cc4Ccd816FCa44B504Ce1DFindManyResponseItemModelWithValidators[]
-	| undefined
-export type TableName6D04E2E4A677427C80C2D8Cfa7Ad5Cfe = "competition" | "phase"
-export type Eventc171244D1A384292B2000Ee7F5E39403UpdateManyResponseModelWithValidators =
+export type Eventca017Ac77A5B4F6AAefa5C3F177D4603FindManyResponseListModel =
+	| Evente25A12A1790048178Eed56C3Fd6D6BfcFindManyResponseItemModelWithValidators[]
+
+export type TableNamea6076D9BF6814092A0E2Adb9Ffc36146 = "competition" | "phase"
+export type Event1D2F9C78Cee14B628D6992D8D0Be2D02UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Event42Abd6C5Ae634Ca9A44D818Dfc5Ea97EUpdateManyResponseListModelWithValidators =
-	Eventc171244D1A384292B2000Ee7F5E39403UpdateManyResponseModelWithValidators[]
+export type Event736F2C2FEce94D78Af5066912A44E7E7UpdateManyResponseListModelWithValidators =
+	Event1D2F9C78Cee14B628D6992D8D0Be2D02UpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryEventPut = {
 	competition_id: string
 	name: string
 }
-export type Event13E826F293Ae4D679AecF1837Dfcf324UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Event634Fb0B1697F418DA976C981A00Ee69EUpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Event2C55Db3E121E4B8FAf62Eee894A53C96UpsertManyResponseListModel =
-	Event13E826F293Ae4D679AecF1837Dfcf324UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Eventa044C97405434763Bf4EB83Ea07Cff5ACreateManyInsertItemRequestModel =
+export type Eventa653Eda9E1364C77A9A150Cb71Cb6701UpsertManyResponseListModel =
+	Event634Fb0B1697F418DA976C981A00Ee69EUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Eventa7Acb0995A8C46498253E16B7E2B2778CreateManyInsertItemRequestModel =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Event48C1F4Ed37584C18B6C40Defca5B0DebDeleteManyResponseModelWithValidators =
+export type Event39F712942D6C435591CdDdb1A38Ebeb1DeleteManyResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Eventbe5887C9D19A40A7A03A288049Fcf138DeleteManyResponseListModel =
-	Event48C1F4Ed37584C18B6C40Defca5B0DebDeleteManyResponseModelWithValidators[]
-export type Eventdf2201E5Aa9C4B8D966EC4E80Be7B4F8PatchManyResponseModelWithValidators =
+export type Event2Eb97F143F0649C58E0485D6E2Dd417EDeleteManyResponseListModel =
+	Event39F712942D6C435591CdDdb1A38Ebeb1DeleteManyResponseModelWithValidators[]
+export type Event44Fd7D46B99E4F4C963702E46Bec1F09PatchManyResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Eventf7D51Dcb8D8F4Ea2940BF690Bab9Eb7APatchManyResponseListModelWithValidators =
-	Eventdf2201E5Aa9C4B8D966EC4E80Be7B4F8PatchManyResponseModelWithValidators[]
+export type Event55A67AcaC0Cd4A75Bf778Db6D76Dd9C8PatchManyResponseListModelWithValidators =
+	Event44Fd7D46B99E4F4C963702E46Bec1F09PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryEventPatch = {
 	competition_id?: string
 	name?: string
 }
-export type Eventc2C8B2E6F1Cb4Fd1Ae71B3B63A4D3639FindOneResponseModelWithValidators =
+export type Event38Cbd0E675B844C99C15E6C80F25A078FindOneResponseModelWithValidators =
 	{
-		competition_foreign?: ForeignCompetition54Dcc23C24Bd4Fdf8Da16696Ef2Ccf8FGetManyResponseForeignModel
-		phase_foreign?: ForeignPhaseec50F01D160F4085A9585Ec2737390A5GetManyResponseForeignModel
+		competition_foreign?: ForeignCompetitioncfc142B609084F298D881Ad794D2557FGetManyResponseForeignModel
+		phase_foreign?: ForeignPhase8B50C959C2D3441D9382F32Fa37105CaGetManyResponseForeignModel
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Event5C73807B75Db448AA72E9Ddcaa25C643FindOneResponseListModel =
-	Eventc2C8B2E6F1Cb4Fd1Ae71B3B63A4D3639FindOneResponseModelWithValidators
-export type TableNamede9C9082D55F4A67A4892Bb03F8636D8 = "competition" | "phase"
-export type Event87976173E90D4E26Aec0590805B7Da47UpdateOneResponseModelWithValidators =
+export type Eventc246E6E340E749839A8D381D5Bced468FindOneResponseListModel =
+	Event38Cbd0E675B844C99C15E6C80F25A078FindOneResponseModelWithValidators
+export type TableNamef951Ddfb57914E52959197Db2Ae35122 = "competition" | "phase"
+export type Eventdec6961403B64Dc984473A67F9Be1262UpdateOneResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
@@ -5142,13 +5462,13 @@ export type BodyEntireUpdateByPrimaryKeyEventIdPut = {
 	competition_id: string
 	name: string
 }
-export type Event6C1A1Cde6C7641E58E643F6D3Ac96200DeleteOneResponseModelWithValidators =
+export type Event6E84Ee49453340A29B265A007922A73CDeleteOneResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
 		name: string
 	}
-export type Event80Bf06C879554F8683B3B65837A1Cdb2PatchOneResponseModelWithValidators =
+export type Eventbecfb29A67Df47A69CdaB94A61127D88PatchOneResponseModelWithValidators =
 	{
 		id: string
 		competition_id: string
@@ -5158,471 +5478,437 @@ export type BodyPartialUpdateOneByPrimaryKeyEventIdPatch = {
 	competition_id?: string
 	name?: string
 }
-export type ForeignEvent05C2B6771D8E45A28Fa67A86A3804F31FindManyResponseItemModelWithValidators =
+export type ForeignEvent658321748E3544358071Df66255D7371FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEventf273840F9A5D46DeAaf1B19C33E8Bff6GetManyResponseForeignModel =
-	ForeignEvent05C2B6771D8E45A28Fa67A86A3804F31FindManyResponseItemModelWithValidators[]
-export type ForeignHeatdff95EddD5Fc40809B7E257229704AecFindManyResponseItemModelWithValidators =
+export type ForeignEventd467E4D988C9424F9Ae8A8E59Dfd0A09GetManyResponseForeignModel =
+	ForeignEvent658321748E3544358071Df66255D7371FindManyResponseItemModelWithValidators[]
+export type ForeignAthleteheate124C2E9F1E2478A98F5961979Fb53A8FindManyResponseItemModelWithValidators =
 	{
 		id?: string
+		heat_id?: string
+		athlete_id?: string
 		phase_id?: string
-		name?: string
+		last_phase_rank?: number
 	}
-export type ForeignHeatde146Af13B78438399Fc650014D74451GetManyResponseForeignModel =
-	ForeignHeatdff95EddD5Fc40809B7E257229704AecFindManyResponseItemModelWithValidators[]
-export type EventIdPhaseId5875Bf799C96466F86F347532F7E8506FindOneResponseModelWithValidators =
+export type ForeignAthleteheat7A0F42Cf7C354913Bff9073C8B18F80AGetManyResponseForeignModel =
+	ForeignAthleteheate124C2E9F1E2478A98F5961979Fb53A8FindManyResponseItemModelWithValidators[]
+export type EventIdPhaseIde1Ef1Ed4Bffe431AAd08A08Ed847Ab64FindOneResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
-		event_foreign?: ForeignEventf273840F9A5D46DeAaf1B19C33E8Bff6GetManyResponseForeignModel
-		heat_foreign?: ForeignHeatde146Af13B78438399Fc650014D74451GetManyResponseForeignModel
+		number_of_judges?: number
+		scoresheet: string
+		event_foreign?: ForeignEventd467E4D988C9424F9Ae8A8E59Dfd0A09GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheat7A0F42Cf7C354913Bff9073C8B18F80AGetManyResponseForeignModel
 	}
-export type EventIdPhaseId0521B5DeDb1741AcA5C6676A401C51B1FindOneResponseListModel =
-	EventIdPhaseId5875Bf799C96466F86F347532F7E8506FindOneResponseModelWithValidators
+export type EventIdPhaseId3C8Ec3B30934432AA52946F805C97AfaFindOneResponseListModel =
+	EventIdPhaseIde1Ef1Ed4Bffe431AAd08A08Ed847Ab64FindOneResponseModelWithValidators
 export type RangeFromComparisonOperators =
 	| "Greater_than"
 	| "Greater_than_or_equal_to"
 export type RangeToComparisonOperators = "Less_than" | "Less_than_or_equal_to"
-export type TableNamea545E36FE2Ea4C14Bbb412E3E973550D = "event" | "heat"
-export type ForeignEvent1C9A2406Cff744CaA9B37A8E8E1A235AFindManyResponseItemModelWithValidators =
+export type TableName3A79759239Be449E91B5515E2Cac8E01 = "event" | "athleteheat"
+export type ForeignEvent92628D51777446F6A704D51238C8D5D8FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEvente8B3Ef7FF77A4187A0F08Fc008155D84GetManyResponseForeignModel =
-	ForeignEvent1C9A2406Cff744CaA9B37A8E8E1A235AFindManyResponseItemModelWithValidators[]
-export type ForeignHeat3Ca99F93237C4Df5B011Dccef59F27D2FindManyResponseItemModelWithValidators =
+export type ForeignEvent55A29A0007A945D48725F6B0D1A9673DGetManyResponseForeignModel =
+	ForeignEvent92628D51777446F6A704D51238C8D5D8FindManyResponseItemModelWithValidators[]
+export type ForeignAthleteheatf541Edb278Ca4Ea8Aa69B60F73D64026FindManyResponseItemModelWithValidators =
 	{
 		id?: string
+		heat_id?: string
+		athlete_id?: string
 		phase_id?: string
-		name?: string
+		last_phase_rank?: number
 	}
-export type ForeignHeat85Ff710CA02A445881B8774Fb46B39AaGetManyResponseForeignModel =
-	ForeignHeat3Ca99F93237C4Df5B011Dccef59F27D2FindManyResponseItemModelWithValidators[]
-export type EventIdPhaseId79Db7940016746079D2F66B4Fcfa99A7FindOneResponseModelWithValidators =
+export type ForeignAthleteheatc8452Dcd2D57455FA82381B05E5Ae51BGetManyResponseForeignModel =
+	ForeignAthleteheatf541Edb278Ca4Ea8Aa69B60F73D64026FindManyResponseItemModelWithValidators[]
+export type EventIdPhaseIda02Bd04FEe4443C58E565A7B7De7Fb72FindOneResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
-		event_foreign?: ForeignEvente8B3Ef7FF77A4187A0F08Fc008155D84GetManyResponseForeignModel
-		heat_foreign?: ForeignHeat85Ff710CA02A445881B8774Fb46B39AaGetManyResponseForeignModel
+		number_of_judges?: number
+		scoresheet: string
+		event_foreign?: ForeignEvent55A29A0007A945D48725F6B0D1A9673DGetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheatc8452Dcd2D57455FA82381B05E5Ae51BGetManyResponseForeignModel
 	}
-export type EventIdPhaseIdaf244Cc8057D41D798618900D5266Df2FindManyResponseListModel =
+export type EventIdPhaseId8B97E322D6934Ee9A92106353Bdd0564FindManyResponseListModel =
 
-		| EventIdPhaseId79Db7940016746079D2F66B4Fcfa99A7FindOneResponseModelWithValidators[]
-		| undefined
-export type TableName3379C959C26D433C8008Abcfc19Bf415 = "event" | "heat"
-export type ForeignEvent936Fcdb0D78148928Da666F45Efa04CbFindManyResponseItemModelWithValidators =
+		| EventIdPhaseIda02Bd04FEe4443C58E565A7B7De7Fb72FindOneResponseModelWithValidators[]
+
+export type TableName3A3Bc80DEcdb498895F3Fc191F350Be1 = "event" | "athleteheat"
+export type ForeignEvent64681B8A6C6E411E9E902A785424Ed73FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEvent8D971236A8E046AcA3F2261229037E3FGetManyResponseForeignModel =
-	ForeignEvent936Fcdb0D78148928Da666F45Efa04CbFindManyResponseItemModelWithValidators[]
-export type ForeignHeate437A398A3A0424D87AdF8C794B9C8C9FindManyResponseItemModelWithValidators =
+export type ForeignEventf798D37D6Eeb4601B3C0644864387D37GetManyResponseForeignModel =
+	ForeignEvent64681B8A6C6E411E9E902A785424Ed73FindManyResponseItemModelWithValidators[]
+export type ForeignAthleteheatfa895594F41C4Ed38De1Bc6A97A0F263FindManyResponseItemModelWithValidators =
 	{
 		id?: string
+		heat_id?: string
+		athlete_id?: string
 		phase_id?: string
-		name?: string
+		last_phase_rank?: number
 	}
-export type ForeignHeate338C1FbB067483BA08633Fd453D1Aa2GetManyResponseForeignModel =
-	ForeignHeate437A398A3A0424D87AdF8C794B9C8C9FindManyResponseItemModelWithValidators[]
-export type Phased82Fa10466C54845A9976A56B7E3Ed3DFindManyResponseItemModelWithValidators =
+export type ForeignAthleteheat5D4Fe011Eba94E6EB17C5C6E89350CadGetManyResponseForeignModel =
+	ForeignAthleteheatfa895594F41C4Ed38De1Bc6A97A0F263FindManyResponseItemModelWithValidators[]
+export type Phaseabb6Ae1E149847Fa84Fc418Dd8Fb4Ce3FindManyResponseItemModelWithValidators =
 	{
-		event_foreign?: ForeignEvent8D971236A8E046AcA3F2261229037E3FGetManyResponseForeignModel
-		heat_foreign?: ForeignHeate338C1FbB067483BA08633Fd453D1Aa2GetManyResponseForeignModel
+		event_foreign?: ForeignEventf798D37D6Eeb4601B3C0644864387D37GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheat5D4Fe011Eba94E6EB17C5C6E89350CadGetManyResponseForeignModel
 		id?: string
 		event_id?: string
 		name?: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
 	}
-export type Phase08019E6D75A347A99324C03030E03Da8FindManyResponseListModel =
-	| Phased82Fa10466C54845A9976A56B7E3Ed3DFindManyResponseItemModelWithValidators[]
-	| undefined
-export type TableNameefd78Cef99F04Fed99299A3B2Ea8250B = "event" | "heat"
-export type Phasefbed2EeaC73542BfA9853D5E474278EbUpdateManyResponseModelWithValidators =
+export type Phasef5B6C4A8452E47BcBe65Ca548E11A442FindManyResponseListModel =
+	| Phaseabb6Ae1E149847Fa84Fc418Dd8Fb4Ce3FindManyResponseItemModelWithValidators[]
+
+export type TableName8D0F985ED8944A76B9D422A7236D870E = "event" | "athleteheat"
+export type Phase0C4E4C2B024B46D59Bca8C880D9Ac075UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phase9C166040B73D4E6FB3A8E9Ea4C0B9Af0UpdateManyResponseListModelWithValidators =
-	Phasefbed2EeaC73542BfA9853D5E474278EbUpdateManyResponseModelWithValidators[]
+export type Phaseeaec4C9D13D6403685Dd84535D63C752UpdateManyResponseListModelWithValidators =
+	Phase0C4E4C2B024B46D59Bca8C880D9Ac075UpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryPhasePut = {
 	event_id: string
 	name: string
 	number_of_runs: number
 	number_of_runs_for_score: number
+	number_of_judges: number
+	scoresheet: string
 }
-export type Phasee0605C9A05274F6DAc9FB3Bd373Ecf2FUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Phase61B8E6D1899A4Bdc9C352Db3369FaebaUpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phase4D13Fe41B0574660893767710Ce01131UpsertManyResponseListModel =
-	Phasee0605C9A05274F6DAc9FB3Bd373Ecf2FUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Phase52272810Aeb74C24836A57Dcbd2A9475CreateManyInsertItemRequestModel =
+export type Phase0846Caee91A04145B8268F500D60Cf55UpsertManyResponseListModel =
+	Phase61B8E6D1899A4Bdc9C352Db3369FaebaUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Phaseb539A010Ed00460E880E618Ffe594C4DCreateManyInsertItemRequestModel =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phase98A95D83Cda147C4Ae6818Eb1Ae56226DeleteManyResponseModelWithValidators =
+export type Phasedfb5Ba0BCc8044Ee8C9EA2Cb083B74D5DeleteManyResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phase072Cbab321354A1C88Da8491Dd5109E1DeleteManyResponseListModel =
-	Phase98A95D83Cda147C4Ae6818Eb1Ae56226DeleteManyResponseModelWithValidators[]
-export type Phaseb0F5E8C404B0439B8B6F733F29Ba059DPatchManyResponseModelWithValidators =
+export type Phased8Ad7B57F2Cf4E23A42F485454Bcbe43DeleteManyResponseListModel =
+	Phasedfb5Ba0BCc8044Ee8C9EA2Cb083B74D5DeleteManyResponseModelWithValidators[]
+export type Phase7B3E17645Bc44Bc490A81E1C530Aa73FPatchManyResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phase49Ab2345473F486581AfFe28116Ddf72PatchManyResponseListModelWithValidators =
-	Phaseb0F5E8C404B0439B8B6F733F29Ba059DPatchManyResponseModelWithValidators[]
+export type Phase3Fafc98C072B4631A039125Aaf9A652CPatchManyResponseListModelWithValidators =
+	Phase7B3E17645Bc44Bc490A81E1C530Aa73FPatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryPhasePatch = {
 	event_id?: string
 	name?: string
 	number_of_runs?: number
 	number_of_runs_for_score?: number
+	number_of_judges?: number
+	scoresheet?: string
 }
-export type Phase5635Fe2494F24C719E3C25Dbf0C371F3FindOneResponseModelWithValidators =
+export type Phasef50B1D0765634947B6B1E13E8Af06D04FindOneResponseModelWithValidators =
 	{
-		event_foreign?: ForeignEvent8D971236A8E046AcA3F2261229037E3FGetManyResponseForeignModel
-		heat_foreign?: ForeignHeate338C1FbB067483BA08633Fd453D1Aa2GetManyResponseForeignModel
+		event_foreign?: ForeignEventf798D37D6Eeb4601B3C0644864387D37GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheat5D4Fe011Eba94E6EB17C5C6E89350CadGetManyResponseForeignModel
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phasea2C99Ebf3Ed048C4Aae2A8420Bde4D82FindOneResponseListModel =
-	Phase5635Fe2494F24C719E3C25Dbf0C371F3FindOneResponseModelWithValidators
-export type TableName7B2Ca539828A48B381263F584Fba12Dc = "event" | "heat"
-export type Phase31Cee6Da6B33481AB177674071297E1AUpdateOneResponseModelWithValidators =
+export type Phasee2077F77E11146Af8D049C632Df89D4EFindOneResponseListModel =
+	Phasef50B1D0765634947B6B1E13E8Af06D04FindOneResponseModelWithValidators
+export type TableName02D6Cf10Dcb34B6796Ed74C4464338Ac = "event" | "athleteheat"
+export type Phase7B97A8A896Fe4DdaAf19E11949033F6DUpdateOneResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
 export type BodyEntireUpdateByPrimaryKeyPhaseIdPut = {
 	event_id: string
 	name: string
 	number_of_runs: number
 	number_of_runs_for_score: number
+	number_of_judges: number
+	scoresheet: string
 }
-export type Phaseade908B5D988478AAe367894C486B989DeleteOneResponseModelWithValidators =
+export type Phase2C239De1Cf1342D8Acec017F1E5C56FeDeleteOneResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
-export type Phasedf150385865F4C848708C3695C46F0E4PatchOneResponseModelWithValidators =
+export type Phase11B037CaF7A4492FB05327Ba1Da8286FPatchOneResponseModelWithValidators =
 	{
 		id: string
 		event_id: string
 		name: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
 	}
 export type BodyPartialUpdateOneByPrimaryKeyPhaseIdPatch = {
 	event_id?: string
 	name?: string
 	number_of_runs?: number
 	number_of_runs_for_score?: number
+	number_of_judges?: number
+	scoresheet?: string
 }
-export type ForeignPhase8E3B10C73B844262A8676B569De36702FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-	}
-export type ForeignPhase902F497840Af4Fe9A8B3F1011Af3E5E3GetManyResponseForeignModel =
-	ForeignPhase8E3B10C73B844262A8676B569De36702FindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheatf25Deb7B267F4BfeB541B80F10B571B2FindManyResponseItemModelWithValidators =
+export type ForeignAthleteheat1F1Bf53EA03C40Ea9Dcf58280489E20EFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		heat_id?: string
 		athlete_id?: string
-		scoresheet?: string
-	}
-export type ForeignAthleteheatba4402A01Ba8419A93F0C1Ae6F30Ee0BGetManyResponseForeignModel =
-	ForeignAthleteheatf25Deb7B267F4BfeB541B80F10B571B2FindManyResponseItemModelWithValidators[]
-export type PhaseIdHeatId3317Ca6E0893441980F328E503Ed06F3FindOneResponseModelWithValidators =
-	{
-		id: string
-		phase_id: string
-		name: string
-		phase_foreign?: ForeignPhase902F497840Af4Fe9A8B3F1011Af3E5E3GetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheatba4402A01Ba8419A93F0C1Ae6F30Ee0BGetManyResponseForeignModel
-	}
-export type PhaseIdHeatIda540315009D54B8ABe6B572749A7Ddd7FindOneResponseListModel =
-	PhaseIdHeatId3317Ca6E0893441980F328E503Ed06F3FindOneResponseModelWithValidators
-export type TableNamedf9C6Ccd3B754Da48261C97Ec8611Ec9 = "phase" | "athleteheat"
-export type ForeignPhase058Ce015096945F69F0502Feb0E0FaedFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-	}
-export type ForeignPhase480Be6B7039C4De38B42050F8Db14313GetManyResponseForeignModel =
-	ForeignPhase058Ce015096945F69F0502Feb0E0FaedFindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheated28785CC2C748E7925181D1F2F9AadcFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		athlete_id?: string
-		scoresheet?: string
-	}
-export type ForeignAthleteheat16F7C7E4B8414E188Dd1D218Dfe75Ef5GetManyResponseForeignModel =
-	ForeignAthleteheated28785CC2C748E7925181D1F2F9AadcFindManyResponseItemModelWithValidators[]
-export type PhaseIdHeatId21Af9E1EDe7F49018A7757B3420A359CFindOneResponseModelWithValidators =
-	{
-		id: string
-		phase_id: string
-		name: string
-		phase_foreign?: ForeignPhase480Be6B7039C4De38B42050F8Db14313GetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheat16F7C7E4B8414E188Dd1D218Dfe75Ef5GetManyResponseForeignModel
-	}
-export type PhaseIdHeatIdb3Bd723CBbaa473083D1955B9097C98AFindManyResponseListModel =
-
-		| PhaseIdHeatId21Af9E1EDe7F49018A7757B3420A359CFindOneResponseModelWithValidators[]
-		| undefined
-export type TableName2Ef23E14F52B491182567Cecf27Ccfb1 = "phase" | "athleteheat"
-export type ForeignPhasecc613743Fdcb45029B649D37D56B6C9AFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-	}
-export type ForeignPhasee81D98E005204E0FA992D084187A49FeGetManyResponseForeignModel =
-	ForeignPhasecc613743Fdcb45029B649D37D56B6C9AFindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheated8F964D5C6244E5A4Cb1Ae019C34061FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		athlete_id?: string
-		scoresheet?: string
-	}
-export type ForeignAthleteheat30Cfe7308020487EB63457C25274D4FeGetManyResponseForeignModel =
-	ForeignAthleteheated8F964D5C6244E5A4Cb1Ae019C34061FindManyResponseItemModelWithValidators[]
-export type Heat75C7Fdde363E48E39350Ccf1D0413C26FindManyResponseItemModelWithValidators =
-	{
-		phase_foreign?: ForeignPhasee81D98E005204E0FA992D084187A49FeGetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheat30Cfe7308020487EB63457C25274D4FeGetManyResponseForeignModel
-		id?: string
 		phase_id?: string
+		last_phase_rank?: number
+	}
+export type ForeignAthleteheatef22Cc6ACc324698Bd4B47C0B4Eeac6DGetManyResponseForeignModel =
+	ForeignAthleteheat1F1Bf53EA03C40Ea9Dcf58280489E20EFindManyResponseItemModelWithValidators[]
+export type Heat77B0880594894550A3F21460E7E1160DFindManyResponseItemModelWithValidators =
+	{
+		athleteheat_foreign?: ForeignAthleteheatef22Cc6ACc324698Bd4B47C0B4Eeac6DGetManyResponseForeignModel
+		id?: string
+		competition_id?: string
 		name?: string
 	}
-export type Heat98F783FfBc854928A3409Ca12C399F10FindManyResponseListModel =
-	| Heat75C7Fdde363E48E39350Ccf1D0413C26FindManyResponseItemModelWithValidators[]
-	| undefined
-export type TableName796B385DC5F343EaB4366F8E361Afacd = "phase" | "athleteheat"
-export type Heatfb05416832E94446862E5526258DcafdUpdateManyResponseModelWithValidators =
+export type Heat9C659Ea5C1334F17B122Fa15Ab747B49FindManyResponseListModel =
+	| Heat77B0880594894550A3F21460E7E1160DFindManyResponseItemModelWithValidators[]
+
+export type TableName13Bb1C69E1824D29Afae77Dfd4Af75Ef = "athleteheat"
+export type Heat6F71540856A247109EbeDe192F5201DaUpdateManyResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat67889327C3Ab4Df59Ba77A50Dd13C935UpdateManyResponseListModelWithValidators =
-	Heatfb05416832E94446862E5526258DcafdUpdateManyResponseModelWithValidators[]
+export type Heate401188F6E0B40A98B4ADf355Cfafb5DUpdateManyResponseListModelWithValidators =
+	Heat6F71540856A247109EbeDe192F5201DaUpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryHeatPut = {
-	phase_id: string
+	competition_id: string
 	name: string
 }
-export type Heat48B2E287Cb6C4560B413954C468D207EUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Heatea8F656863Fb430D8009C6Bd1384C879UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat142918E8C2574C5CBd7F437Dd608F0EeUpsertManyResponseListModel =
-	Heat48B2E287Cb6C4560B413954C468D207EUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Heat1Ef9926639Ab4CabAd87E79Bc97A5435CreateManyInsertItemRequestModel =
+export type Heat7803952B0E934Cd9B9681Ed996366612UpsertManyResponseListModel =
+	Heatea8F656863Fb430D8009C6Bd1384C879UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Heat195D4F7002C24168B6853Ca9C25Dda13CreateManyInsertItemRequestModel =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat5976A7Fa764A4344A4BeE41018Df7Df1DeleteManyResponseModelWithValidators =
+export type Heat54E8160191124C66801A88F082E9764ADeleteManyResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat932Bf9C5E3314B53B44B9910F4695F6ADeleteManyResponseListModel =
-	Heat5976A7Fa764A4344A4BeE41018Df7Df1DeleteManyResponseModelWithValidators[]
-export type Heat602F0E05E258454098C42A462B0Fd14FPatchManyResponseModelWithValidators =
+export type Heat1F2E0Ef46083498EA8D2Ee6963Eca645DeleteManyResponseListModel =
+	Heat54E8160191124C66801A88F082E9764ADeleteManyResponseModelWithValidators[]
+export type Heat0D385422226943Ae98A4252327Ab9113PatchManyResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat7Cf02C74B9E448Ed9D558B5Ec375A685PatchManyResponseListModelWithValidators =
-	Heat602F0E05E258454098C42A462B0Fd14FPatchManyResponseModelWithValidators[]
+export type Heat7D8C1C3150Ea4D3691A5328Ee7C33A22PatchManyResponseListModelWithValidators =
+	Heat0D385422226943Ae98A4252327Ab9113PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryHeatPatch = {
-	phase_id?: string
+	competition_id?: string
 	name?: string
 }
-export type Heat77E2F8Cb7B9B411FAb161F7D46E00Fa7FindOneResponseModelWithValidators =
+export type Heat140Dbf842Ade4Ad4A10A58D1Fa82C97DFindOneResponseModelWithValidators =
 	{
-		phase_foreign?: ForeignPhasee81D98E005204E0FA992D084187A49FeGetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheat30Cfe7308020487EB63457C25274D4FeGetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheatef22Cc6ACc324698Bd4B47C0B4Eeac6DGetManyResponseForeignModel
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heat3B4Ed89BA16E48A5B1E46123D025A4B0FindOneResponseListModel =
-	Heat77E2F8Cb7B9B411FAb161F7D46E00Fa7FindOneResponseModelWithValidators
-export type TableName755C8C23E69845Fb9Ba5433560B0E6E9 = "phase" | "athleteheat"
-export type Heat405F7A33797F4DdfA2Bb89Fd13Bcd87BUpdateOneResponseModelWithValidators =
+export type Heata24107BdB9E74430827032F886921DafFindOneResponseListModel =
+	Heat140Dbf842Ade4Ad4A10A58D1Fa82C97DFindOneResponseModelWithValidators
+export type TableNameb021F3Db2A0847AdBc25Ca81B28Abb5E = "athleteheat"
+export type Heat2579E35559B448C79075435Bf409F593UpdateOneResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
 export type BodyEntireUpdateByPrimaryKeyHeatIdPut = {
-	phase_id: string
+	competition_id: string
 	name: string
 }
-export type Heat3A1988908Ad442Cc9116F7B960Af8E72DeleteOneResponseModelWithValidators =
+export type Heat82Bf8B5C839645B58Bd32C97C0B1DafbDeleteOneResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
-export type Heatdac1Eac60A924866A46978005A03C13CPatchOneResponseModelWithValidators =
+export type Heat082Fc59FCa5347Ab9D108C5C9E26E9D3PatchOneResponseModelWithValidators =
 	{
 		id: string
-		phase_id: string
+		competition_id: string
 		name: string
 	}
 export type BodyPartialUpdateOneByPrimaryKeyHeatIdPatch = {
-	phase_id?: string
+	competition_id?: string
 	name?: string
 }
-export type ForeignAthleteheat11A13BbfC42F47FeB123B4930F7E34E6FindManyResponseItemModelWithValidators =
+export type ForeignAthleteheat71217733A34C42739Ea66238Ff9E44D5FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		heat_id?: string
 		athlete_id?: string
-		scoresheet?: string
+		phase_id?: string
+		last_phase_rank?: number
 	}
-export type ForeignAthleteheat9Bed01Dc71864Ef19D24B6E5Ea7A16B6GetManyResponseForeignModel =
-	ForeignAthleteheat11A13BbfC42F47FeB123B4930F7E34E6FindManyResponseItemModelWithValidators[]
-export type Athlete9085543A600A4771Ad6882403937433AFindManyResponseItemModelWithValidators =
+export type ForeignAthleteheatb56412Ec522F49E4Bc349C260F08894FGetManyResponseForeignModel =
+	ForeignAthleteheat71217733A34C42739Ea66238Ff9E44D5FindManyResponseItemModelWithValidators[]
+export type Athlete635B4290359244B88F82F5356273Edc0FindManyResponseItemModelWithValidators =
 	{
-		athleteheat_foreign?: ForeignAthleteheat9Bed01Dc71864Ef19D24B6E5Ea7A16B6GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheatb56412Ec522F49E4Bc349C260F08894FGetManyResponseForeignModel
 		id?: string
 		first_name?: string
 		last_name?: string
 		bib?: string
 	}
-export type Athlete1472E4B582764Cf0A8F3679Db260243EFindManyResponseListModel =
-	| Athlete9085543A600A4771Ad6882403937433AFindManyResponseItemModelWithValidators[]
-	| undefined
-export type TableName786657Ce04Ea4Af0A4DeF0F6565365De = "athleteheat"
-export type Athlete95Aa290C356D4431922850E2A8273B5FUpdateManyResponseModelWithValidators =
+export type Athlete40Dd3DdfBe794D81823A54A14Ae6Bbd7FindManyResponseListModel =
+	| Athlete635B4290359244B88F82F5356273Edc0FindManyResponseItemModelWithValidators[]
+
+export type TableName8150C799B61742Eb91Eb08Bf4425Ab29 = "athleteheat"
+export type Athleteda7D870E5B574202Bc599Ca883B6C34EUpdateManyResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athlete8B4Cb7AfD79449A5A8125Cf9924Cfe95UpdateManyResponseListModelWithValidators =
-	Athlete95Aa290C356D4431922850E2A8273B5FUpdateManyResponseModelWithValidators[]
+export type Athlete4A3E1De768C14EccBfd990E07A6971B8UpdateManyResponseListModelWithValidators =
+	Athleteda7D870E5B574202Bc599Ca883B6C34EUpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryAthletePut = {
 	first_name: string
 	last_name: string
 	bib: string
 }
-export type Athleted792967F417E4Feb9C11C9779Fbeb59CUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Athlete0Fab9305B43D4A5CBc8F9E85019B7673UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athlete40381CfbFc4E48569A47Cbf8Bdf60850UpsertManyResponseListModel =
-	Athleted792967F417E4Feb9C11C9779Fbeb59CUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Athlete774F673223C0471E9520B2Cf3765B97ECreateManyInsertItemRequestModel =
+export type Athletee04899E693Fb43448E9966F9B8C37995UpsertManyResponseListModel =
+	Athlete0Fab9305B43D4A5CBc8F9E85019B7673UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Athlete93DdabbfE88542Dc9Cb598C60E9F9197CreateManyInsertItemRequestModel =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athlete03Bf792F15634E58BebaC7532722B63BDeleteManyResponseModelWithValidators =
+export type Athlete03F4507DBcb14110878B62Daa16A85AcDeleteManyResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athlete7F909A8D66Da43C5Bc30A69Eca9Fd915DeleteManyResponseListModel =
-	Athlete03Bf792F15634E58BebaC7532722B63BDeleteManyResponseModelWithValidators[]
-export type Athlete147Ea58AE1Ea45D286583Ab05D209326PatchManyResponseModelWithValidators =
+export type Athlete74F01659Bae546DaB134A8Df1099Af02DeleteManyResponseListModel =
+	Athlete03F4507DBcb14110878B62Daa16A85AcDeleteManyResponseModelWithValidators[]
+export type Athlete232369B02164488288D3A861D5A3C44BPatchManyResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athletef0D4EefeD34C488096A41D7B031F713CPatchManyResponseListModelWithValidators =
-	Athlete147Ea58AE1Ea45D286583Ab05D209326PatchManyResponseModelWithValidators[]
+export type Athlete7B440E598D0D4Df1892F7Fae44Da953BPatchManyResponseListModelWithValidators =
+	Athlete232369B02164488288D3A861D5A3C44BPatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryAthletePatch = {
 	first_name?: string
 	last_name?: string
 	bib?: string
 }
-export type Athlete41Ef14E6C66C4961A99797948674E4EeFindOneResponseModelWithValidators =
+export type Athlete8257C5DbD5Ec449F80Cc5F0169B5Fae3FindOneResponseModelWithValidators =
 	{
-		athleteheat_foreign?: ForeignAthleteheat9Bed01Dc71864Ef19D24B6E5Ea7A16B6GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheatb56412Ec522F49E4Bc349C260F08894FGetManyResponseForeignModel
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athleteca5788D1010C45D4B82134A348Befe05FindOneResponseListModel =
-	Athlete41Ef14E6C66C4961A99797948674E4EeFindOneResponseModelWithValidators
-export type TableName6A83Ac4DC3Fb4316A3C13717C9C145B1 = "athleteheat"
-export type Athlete413E5Bee588148828C8FF34F732D6E18UpdateOneResponseModelWithValidators =
+export type Athlete50Bb6D037Abc47D59Ccd052E9De761E5FindOneResponseListModel =
+	Athlete8257C5DbD5Ec449F80Cc5F0169B5Fae3FindOneResponseModelWithValidators
+export type TableName911A7604C3B64255B74C5824C8Afe517 = "athleteheat"
+export type Athlete8F6Ccda3239F44DaA73F2E7E521Cc135UpdateOneResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
@@ -5634,14 +5920,14 @@ export type BodyEntireUpdateByPrimaryKeyAthleteIdPut = {
 	last_name: string
 	bib: string
 }
-export type Athlete15Ad69Af38D545C6973A0F6F0Bd242C5DeleteOneResponseModelWithValidators =
+export type Athlete2A3F222A8Dd343E182F3Abc5D7C3B700DeleteOneResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
 		last_name: string
 		bib: string
 	}
-export type Athletef356Fee762984B46Ad1FCe83983Cc522PatchOneResponseModelWithValidators =
+export type Athleteed3E693C660644Ff8008Ee18702D2C47PatchOneResponseModelWithValidators =
 	{
 		id: string
 		first_name: string
@@ -5653,71 +5939,71 @@ export type BodyPartialUpdateOneByPrimaryKeyAthleteIdPatch = {
 	last_name?: string
 	bib?: string
 }
-export type ScoreSheetf1D48Bf6Bf8A43858C2E05405F24B3F7FindManyResponseItemModelWithValidators =
+export type ScoreSheet650C4207Fb7540E797B33E04F984Ae12FindManyResponseItemModelWithValidators =
 	{
 		id?: string
-		name?: number
+		name?: string
 	}
-export type ScoreSheet54A4921B472B4Fc78Ef5Ce0349E1Fb92FindManyResponseListModel =
+export type ScoreSheet6De40Bb1D70A4EccAabd647A948Bee0BFindManyResponseListModel =
 
-		| ScoreSheetf1D48Bf6Bf8A43858C2E05405F24B3F7FindManyResponseItemModelWithValidators[]
-		| undefined
-export type ScoreSheetda1Cde81E7A34EcfBd7063Bc98769264UpdateManyResponseModelWithValidators =
+		| ScoreSheet650C4207Fb7540E797B33E04F984Ae12FindManyResponseItemModelWithValidators[]
+
+export type ScoreSheet53692D0CDb5847Bc93Ea0Dee2D677Ae4UpdateManyResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheet9D89E156D73D447F917ED32Cf1A49226UpdateManyResponseListModelWithValidators =
-	ScoreSheetda1Cde81E7A34EcfBd7063Bc98769264UpdateManyResponseModelWithValidators[]
-export type ScoreSheet31Fe6463738D47D1A2F9772484Cef9B3UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type ScoreSheetd7691D305E9F432E9Ed6Ca64760Dc640UpdateManyResponseListModelWithValidators =
+	ScoreSheet53692D0CDb5847Bc93Ea0Dee2D677Ae4UpdateManyResponseModelWithValidators[]
+export type ScoreSheetff79Fde0F98649C2926955D9Dc31A3FbUpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheet48B8E4890Cd04394991BD88Bb8A19F40UpsertManyResponseListModel =
-	ScoreSheet31Fe6463738D47D1A2F9772484Cef9B3UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoreSheetffadb5CdCe3249E28Bac0F1F5F3996B5CreateManyInsertItemRequestModel =
+export type ScoreSheet1F9B383F39Ef40Db8C118Dfcf658A50FUpsertManyResponseListModel =
+	ScoreSheetff79Fde0F98649C2926955D9Dc31A3FbUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type ScoreSheet6183D4106E2345C5A8879A13E4Aeb10DCreateManyInsertItemRequestModel =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheete5Ee93042B224Af08Ad6E06A1C2370A7DeleteManyResponseModelWithValidators =
+export type ScoreSheetde4446B2596E400899BcAe4Ef9D92AcdDeleteManyResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheetf4839E594E4F4F958Fa752E81B46A3CbDeleteManyResponseListModel =
-	ScoreSheete5Ee93042B224Af08Ad6E06A1C2370A7DeleteManyResponseModelWithValidators[]
-export type ScoreSheet8A1E549BEdb3428F97F4225A14D43Cb9PatchManyResponseModelWithValidators =
+export type ScoreSheete8A62A3E001341B5A9BfA793Cf51D511DeleteManyResponseListModel =
+	ScoreSheetde4446B2596E400899BcAe4Ef9D92AcdDeleteManyResponseModelWithValidators[]
+export type ScoreSheet0A2012Fd6F6843B998D963C82Dd52250PatchManyResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheetd7E25Ea51Daf47EaBca0A2Ec5Cd55E9CPatchManyResponseListModelWithValidators =
-	ScoreSheet8A1E549BEdb3428F97F4225A14D43Cb9PatchManyResponseModelWithValidators[]
-export type ScoreSheet4272D6A34F104Da8A71555315B7Cd073FindOneResponseModelWithValidators =
+export type ScoreSheetf6Ffb1A600Cb468086F51C946C655079PatchManyResponseListModelWithValidators =
+	ScoreSheet0A2012Fd6F6843B998D963C82Dd52250PatchManyResponseModelWithValidators[]
+export type ScoreSheet0521Fa73Be5E4A8A82532E6Def2Ed0A0FindOneResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheete6805Fb4C84743B38DaeC81Abd0B9116FindOneResponseListModel =
-	ScoreSheet4272D6A34F104Da8A71555315B7Cd073FindOneResponseModelWithValidators
-export type ScoreSheetcabe7Fe0F6394CaeBce8B738De89D3F6UpdateOneResponseModelWithValidators =
+export type ScoreSheet70492597801946278C32142945F1Fe42FindOneResponseListModel =
+	ScoreSheet0521Fa73Be5E4A8A82532E6Def2Ed0A0FindOneResponseModelWithValidators
+export type ScoreSheetd0Ca27A999Ef445FAe47Fd519E75Cff1UpdateOneResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheet698C4E79355944BfAeb966Ce70Abc0EeDeleteOneResponseModelWithValidators =
+export type ScoreSheeta174E159165A4E94A8168120226Bcc7ADeleteOneResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type ScoreSheetf24B4F7B628140Fc997FB33F3Acb7Dd8PatchOneResponseModelWithValidators =
+export type ScoreSheetae83Abb5Bc53428A9E6A3D278B76D0A3PatchOneResponseModelWithValidators =
 	{
 		id: string
-		name: number
+		name: string
 	}
-export type AvailableMoves8B9F3DecFa894307A9Cb5E6Fd7F63362FindManyResponseItemModelWithValidators =
+export type AvailableMoves42De17Bd91C74Bf78525Edee53Ebe036FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -5726,11 +6012,11 @@ export type AvailableMoves8B9F3DecFa894307A9Cb5E6Fd7F63362FindManyResponseItemMo
 		rb_score?: number
 		direction?: string
 	}
-export type AvailableMovesc3D7079E56D2416793Fc2De43994Fe1DFindManyResponseListModel =
+export type AvailableMovescba355C0F7614Ebd9Dba64621465Cbf1FindManyResponseListModel =
 
-		| AvailableMoves8B9F3DecFa894307A9Cb5E6Fd7F63362FindManyResponseItemModelWithValidators[]
-		| undefined
-export type AvailableMoves48Fc99947B094Fb694BaB125548746EcUpdateManyResponseModelWithValidators =
+		| AvailableMoves42De17Bd91C74Bf78525Edee53Ebe036FindManyResponseItemModelWithValidators[]
+
+export type AvailableMoves0C883237D54141E19D0EAa4Ecbe902DeUpdateManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5739,8 +6025,8 @@ export type AvailableMoves48Fc99947B094Fb694BaB125548746EcUpdateManyResponseMode
 		rb_score: number
 		direction: string
 	}
-export type AvailableMovesbf49Ff5E427B472690Cd90Dcc131B1B4UpdateManyResponseListModelWithValidators =
-	AvailableMoves48Fc99947B094Fb694BaB125548746EcUpdateManyResponseModelWithValidators[]
+export type AvailableMoves0195C66C16Bd459E9535D549F90Bf7A5UpdateManyResponseListModelWithValidators =
+	AvailableMoves0C883237D54141E19D0EAa4Ecbe902DeUpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryAvailablemovesPut = {
 	sheet_id: string
 	name: string
@@ -5748,7 +6034,7 @@ export type BodyEntireUpdateManyByQueryAvailablemovesPut = {
 	rb_score: number
 	direction: string
 }
-export type AvailableMovese1C9809B2D04446C89C69Cdce75F4A7DUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type AvailableMoves37Df6Fd725674Ce6B2D46D85Ffca2258UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5757,9 +6043,9 @@ export type AvailableMovese1C9809B2D04446C89C69Cdce75F4A7DUpsertManyResponseItem
 		rb_score: number
 		direction: string
 	}
-export type AvailableMovesf2B6Dbe690Ae4AbbAda9Cbafa605Eb07UpsertManyResponseListModel =
-	AvailableMovese1C9809B2D04446C89C69Cdce75F4A7DUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type AvailableMovesa6B34De903774A479A41175Bc73D737ECreateManyInsertItemRequestModel =
+export type AvailableMoves092E6F69Eaac41A48752B71597E2A0FcUpsertManyResponseListModel =
+	AvailableMoves37Df6Fd725674Ce6B2D46D85Ffca2258UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type AvailableMoves4233213F5C204Cb78Fbf82B6Ecb144C5CreateManyInsertItemRequestModel =
 	{
 		id: string
 		sheet_id: string
@@ -5768,7 +6054,7 @@ export type AvailableMovesa6B34De903774A479A41175Bc73D737ECreateManyInsertItemRe
 		rb_score: number
 		direction: string
 	}
-export type AvailableMovese18D930F6F124A6088C4Dfef247D4EdcDeleteManyResponseModelWithValidators =
+export type AvailableMoves3D5041E530884Ec3BbfdD6Ea5144A08BDeleteManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5777,9 +6063,9 @@ export type AvailableMovese18D930F6F124A6088C4Dfef247D4EdcDeleteManyResponseMode
 		rb_score: number
 		direction: string
 	}
-export type AvailableMoves2035Dcf0A3Ab40A6B6D8Ffcd3C7814EfDeleteManyResponseListModel =
-	AvailableMovese18D930F6F124A6088C4Dfef247D4EdcDeleteManyResponseModelWithValidators[]
-export type AvailableMovesb6Afc6Bf022D41C680C20A62Ba4A8576PatchManyResponseModelWithValidators =
+export type AvailableMovesfcdc9F251Cf64Acb8B9C819E154B9Cb6DeleteManyResponseListModel =
+	AvailableMoves3D5041E530884Ec3BbfdD6Ea5144A08BDeleteManyResponseModelWithValidators[]
+export type AvailableMovesea4F72394B004A58Ac72Fe38Ef0F1226PatchManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5788,8 +6074,8 @@ export type AvailableMovesb6Afc6Bf022D41C680C20A62Ba4A8576PatchManyResponseModel
 		rb_score: number
 		direction: string
 	}
-export type AvailableMoves4486Ee9361D44F0EA346Ad0A67321C88PatchManyResponseListModelWithValidators =
-	AvailableMovesb6Afc6Bf022D41C680C20A62Ba4A8576PatchManyResponseModelWithValidators[]
+export type AvailableMoves76Ec1247B5B84C7CA5353C79C56B5B8BPatchManyResponseListModelWithValidators =
+	AvailableMovesea4F72394B004A58Ac72Fe38Ef0F1226PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryAvailablemovesPatch = {
 	sheet_id?: string
 	name?: string
@@ -5797,7 +6083,7 @@ export type BodyPartialUpdateManyByQueryAvailablemovesPatch = {
 	rb_score?: number
 	direction?: string
 }
-export type AvailableMovesb76F53C560044Fc4977F405E4778A3D1FindOneResponseModelWithValidators =
+export type AvailableMoves30C584282E95441B995F9476C1D4517DFindOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5806,9 +6092,9 @@ export type AvailableMovesb76F53C560044Fc4977F405E4778A3D1FindOneResponseModelWi
 		rb_score: number
 		direction: string
 	}
-export type AvailableMovesfb37Ad85F18B414CB473C06C9Fec84CdFindOneResponseListModel =
-	AvailableMovesb76F53C560044Fc4977F405E4778A3D1FindOneResponseModelWithValidators
-export type AvailableMoves4464033F738642B7Ad97Ae64846A1976UpdateOneResponseModelWithValidators =
+export type AvailableMoves5685B0B838D44Dda92FfB09A2134C5B7FindOneResponseListModel =
+	AvailableMoves30C584282E95441B995F9476C1D4517DFindOneResponseModelWithValidators
+export type AvailableMoves427Bf686E26A44AaA92F9Ced1Df5618EUpdateOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5824,7 +6110,7 @@ export type BodyEntireUpdateByPrimaryKeyAvailablemovesIdPut = {
 	rb_score: number
 	direction: string
 }
-export type AvailableMovesbbbbe33BDc894A2D8F2EBe9303276B96DeleteOneResponseModelWithValidators =
+export type AvailableMoves56Ac3A4F6Be940A0Ba2BD1Dfcf3009A9DeleteOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5833,7 +6119,7 @@ export type AvailableMovesbbbbe33BDc894A2D8F2EBe9303276B96DeleteOneResponseModel
 		rb_score: number
 		direction: string
 	}
-export type AvailableMovesdba5917B38E2485B9C6F24988847B8AePatchOneResponseModelWithValidators =
+export type AvailableMoves3Ffc588618994B0CAdb53A3850A36Ff3PatchOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5849,14 +6135,14 @@ export type BodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch = {
 	rb_score?: number
 	direction?: string
 }
-export type ForeignScoreSheet2Fa60164Eb5C444EAf39690C495Cc610FindManyResponseItemModelWithValidators =
+export type ForeignScoreSheete63F0Ae7A1Bb43149C0BF52Edcf22AbcFindManyResponseItemModelWithValidators =
 	{
 		id?: string
-		name?: number
+		name?: string
 	}
-export type ForeignScoreSheetf8Cb99197Fb0486E9E962203971Ef34BGetManyResponseForeignModel =
-	ForeignScoreSheet2Fa60164Eb5C444EAf39690C495Cc610FindManyResponseItemModelWithValidators[]
-export type ForeignAvailableMoves25B4Bba6606E421790365E8B93532D0DFindManyResponseItemModelWithValidators =
+export type ForeignScoreSheet074Ab54A285F4164Af964B84017B0BcaGetManyResponseForeignModel =
+	ForeignScoreSheete63F0Ae7A1Bb43149C0BF52Edcf22AbcFindManyResponseItemModelWithValidators[]
+export type ForeignAvailableMovesfa8811Ae1Dd74910Bacf0D2A5Bb20220FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -5865,26 +6151,26 @@ export type ForeignAvailableMoves25B4Bba6606E421790365E8B93532D0DFindManyRespons
 		rb_score?: number
 		direction?: string
 	}
-export type ForeignAvailableMovesac5C6AbdD10E4445A65CC6Fbae3C6A05GetManyResponseForeignModel =
-	ForeignAvailableMoves25B4Bba6606E421790365E8B93532D0DFindManyResponseItemModelWithValidators[]
-export type AvailableBonusesd874E103E3E044A5A2Bd8216156A4A9FFindManyResponseItemModelWithValidators =
+export type ForeignAvailableMoves115F277A545243F3A957970E00Fa6580GetManyResponseForeignModel =
+	ForeignAvailableMovesfa8811Ae1Dd74910Bacf0D2A5Bb20220FindManyResponseItemModelWithValidators[]
+export type AvailableBonuses3B8B8Fae282743F49433Ef6B592D4D82FindManyResponseItemModelWithValidators =
 	{
-		scoreSheet_foreign?: ForeignScoreSheetf8Cb99197Fb0486E9E962203971Ef34BGetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMovesac5C6AbdD10E4445A65CC6Fbae3C6A05GetManyResponseForeignModel
+		scoreSheet_foreign?: ForeignScoreSheet074Ab54A285F4164Af964B84017B0BcaGetManyResponseForeignModel
+		availableMoves_foreign?: ForeignAvailableMoves115F277A545243F3A957970E00Fa6580GetManyResponseForeignModel
 		id?: string
 		sheet_id?: string
 		move_id?: string
 		name?: string
 		score?: number
 	}
-export type AvailableBonuses2Ec1734490A441078B29A60860F387C8FindManyResponseListModel =
+export type AvailableBonusesbb02Cd8289Ea490A93Fb13164F1C007CFindManyResponseListModel =
 
-		| AvailableBonusesd874E103E3E044A5A2Bd8216156A4A9FFindManyResponseItemModelWithValidators[]
-		| undefined
-export type TableName11771Bdd7F2044318F0E272Ce3Cfd71E =
+		| AvailableBonuses3B8B8Fae282743F49433Ef6B592D4D82FindManyResponseItemModelWithValidators[]
+
+export type TableName70C7E0378B40494C97557F6B7F336739 =
 	| "scoreSheet"
 	| "availableMoves"
-export type AvailableBonusesfe3A478BAc8246849B40A25D5F433A63UpdateManyResponseModelWithValidators =
+export type AvailableBonuses08042865C1964Ae7Bd6D053758157955UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5892,15 +6178,15 @@ export type AvailableBonusesfe3A478BAc8246849B40A25D5F433A63UpdateManyResponseMo
 		name: string
 		score: number
 	}
-export type AvailableBonuses898346683Aa84B72A5B16Fb7E0F06895UpdateManyResponseListModelWithValidators =
-	AvailableBonusesfe3A478BAc8246849B40A25D5F433A63UpdateManyResponseModelWithValidators[]
+export type AvailableBonuses992Ce06AE90A4646913A1C86D328Ca52UpdateManyResponseListModelWithValidators =
+	AvailableBonuses08042865C1964Ae7Bd6D053758157955UpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryAvailablebonusesPut = {
 	sheet_id: string
 	move_id: string
 	name: string
 	score: number
 }
-export type AvailableBonuses172E5750C9Fa4C47Bfbd09Cb1A2810F1UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type AvailableBonuses7C9Ef97569Ab41F9B13A50Beffef69B1UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5908,9 +6194,9 @@ export type AvailableBonuses172E5750C9Fa4C47Bfbd09Cb1A2810F1UpsertManyResponseIt
 		name: string
 		score: number
 	}
-export type AvailableBonuses2190559454Fe4E8D914F7B56F1C90Af8UpsertManyResponseListModel =
-	AvailableBonuses172E5750C9Fa4C47Bfbd09Cb1A2810F1UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type AvailableBonusesb75877310Cf0486E9B137D3B687A0169CreateManyInsertItemRequestModel =
+export type AvailableBonuses45664589A8F648F78Fef162Cf357C5F9UpsertManyResponseListModel =
+	AvailableBonuses7C9Ef97569Ab41F9B13A50Beffef69B1UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type AvailableBonuses035B46Bb9E4C487487283D12B89230FdCreateManyInsertItemRequestModel =
 	{
 		id: string
 		sheet_id: string
@@ -5918,7 +6204,7 @@ export type AvailableBonusesb75877310Cf0486E9B137D3B687A0169CreateManyInsertItem
 		name: string
 		score: number
 	}
-export type AvailableBonuses04Eda8A180Cd49E79C918F53B34D5E8EDeleteManyResponseModelWithValidators =
+export type AvailableBonuses1Be956De9Ee641398Cb7F18B5F96B02DDeleteManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5926,9 +6212,9 @@ export type AvailableBonuses04Eda8A180Cd49E79C918F53B34D5E8EDeleteManyResponseMo
 		name: string
 		score: number
 	}
-export type AvailableBonuses9D7497105F614D63Ae1FE5B8Bdcf9CefDeleteManyResponseListModel =
-	AvailableBonuses04Eda8A180Cd49E79C918F53B34D5E8EDeleteManyResponseModelWithValidators[]
-export type AvailableBonusesf3C794C7720D4F5D8966839D570858CePatchManyResponseModelWithValidators =
+export type AvailableBonuses5E7B9Ec822C24C70A34510Da8Eea8F72DeleteManyResponseListModel =
+	AvailableBonuses1Be956De9Ee641398Cb7F18B5F96B02DDeleteManyResponseModelWithValidators[]
+export type AvailableBonusesbff1B9D7C4Af458EB84CD5B7Fdd8733FPatchManyResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5936,30 +6222,30 @@ export type AvailableBonusesf3C794C7720D4F5D8966839D570858CePatchManyResponseMod
 		name: string
 		score: number
 	}
-export type AvailableBonusesae6C3D28Ad3F46A5Ad3EFd4Db5Ba3F3FPatchManyResponseListModelWithValidators =
-	AvailableBonusesf3C794C7720D4F5D8966839D570858CePatchManyResponseModelWithValidators[]
+export type AvailableBonuses7D05Db6D2B7B42C68EfaB3962B8093BePatchManyResponseListModelWithValidators =
+	AvailableBonusesbff1B9D7C4Af458EB84CD5B7Fdd8733FPatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryAvailablebonusesPatch = {
 	sheet_id?: string
 	move_id?: string
 	name?: string
 	score?: number
 }
-export type AvailableBonuses93Ee75600Fe644F6A157Aace7A348461FindOneResponseModelWithValidators =
+export type AvailableBonusesc928Cf5A200247588271A745024255FbFindOneResponseModelWithValidators =
 	{
-		scoreSheet_foreign?: ForeignScoreSheetf8Cb99197Fb0486E9E962203971Ef34BGetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMovesac5C6AbdD10E4445A65CC6Fbae3C6A05GetManyResponseForeignModel
+		scoreSheet_foreign?: ForeignScoreSheet074Ab54A285F4164Af964B84017B0BcaGetManyResponseForeignModel
+		availableMoves_foreign?: ForeignAvailableMoves115F277A545243F3A957970E00Fa6580GetManyResponseForeignModel
 		id: string
 		sheet_id: string
 		move_id: string
 		name: string
 		score: number
 	}
-export type AvailableBonuses7E950858Dddf45C7A003E685B10A398DFindOneResponseListModel =
-	AvailableBonuses93Ee75600Fe644F6A157Aace7A348461FindOneResponseModelWithValidators
-export type TableName4D4B483338D54543B4F7D5065Eb98C43 =
+export type AvailableBonusesa22Aa6716E004E66A4D5D3E157506626FindOneResponseListModel =
+	AvailableBonusesc928Cf5A200247588271A745024255FbFindOneResponseModelWithValidators
+export type TableName2481B2F53F6B4B98B4E3B984A79239Ee =
 	| "scoreSheet"
 	| "availableMoves"
-export type AvailableBonusesa9050F11626341E89B568C75Ceef334AUpdateOneResponseModelWithValidators =
+export type AvailableBonusesfdda186D743A49A79E4112Bcc6Af7D2DUpdateOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5973,7 +6259,7 @@ export type BodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut = {
 	name: string
 	score: number
 }
-export type AvailableBonusesd0Cfd6321A064Abf96322D14Bb83Dbd1DeleteOneResponseModelWithValidators =
+export type AvailableBonusesb516Dee55458470DA5487Ccc79263D35DeleteOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5981,7 +6267,7 @@ export type AvailableBonusesd0Cfd6321A064Abf96322D14Bb83Dbd1DeleteOneResponseMod
 		name: string
 		score: number
 	}
-export type AvailableBonusesafcfc2Df729B4BcfA106D1B37Aa6F5BfPatchOneResponseModelWithValidators =
+export type AvailableBonusesab5315E758Ce4D41Aa56446973B8A7F0PatchOneResponseModelWithValidators =
 	{
 		id: string
 		sheet_id: string
@@ -5995,25 +6281,27 @@ export type BodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch = {
 	name?: string
 	score?: number
 }
-export type ForeignHeate8F54A33C3254E429845B63602Aeb546FindManyResponseItemModelWithValidators =
+export type ForeignHeat8E9D1534C3B344A4801C1Efcd8966A2AFindManyResponseItemModelWithValidators =
 	{
 		id?: string
-		phase_id?: string
+		competition_id?: string
 		name?: string
 	}
-export type ForeignHeat4956Cf3198624E7F8D021Dc0Ac2994DeGetManyResponseForeignModel =
-	ForeignHeate8F54A33C3254E429845B63602Aeb546FindManyResponseItemModelWithValidators[]
-export type ForeignPhase5F7283EdCbb34872Bd66Dd1B88522299FindManyResponseItemModelWithValidators =
+export type ForeignHeataec148E75376458B906F972087B8Df7EGetManyResponseForeignModel =
+	ForeignHeat8E9D1534C3B344A4801C1Efcd8966A2AFindManyResponseItemModelWithValidators[]
+export type ForeignPhasee06A14EaBad048A9Bed9D181964Ef59DFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
 		name?: string
 		number_of_runs?: number
 		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
 	}
-export type ForeignPhase1Ecd185A2Cff46829D9437C5C7A5C855GetManyResponseForeignModel =
-	ForeignPhase5F7283EdCbb34872Bd66Dd1B88522299FindManyResponseItemModelWithValidators[]
-export type ForeignAvailableMovesc6626F677De44C49A71BEbdab0B92376FindManyResponseItemModelWithValidators =
+export type ForeignPhaseb4057B5D3C9548B79Adc7D2B297Fe054GetManyResponseForeignModel =
+	ForeignPhasee06A14EaBad048A9Bed9D181964Ef59DFindManyResponseItemModelWithValidators[]
+export type ForeignAvailableMoves0Ccd4061988446E7881D473552A30400FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -6022,150 +6310,150 @@ export type ForeignAvailableMovesc6626F677De44C49A71BEbdab0B92376FindManyRespons
 		rb_score?: number
 		direction?: string
 	}
-export type ForeignAvailableMoves4Eddcd20B1124075B2C69754Bfdacb6BGetManyResponseForeignModel =
-	ForeignAvailableMovesc6626F677De44C49A71BEbdab0B92376FindManyResponseItemModelWithValidators[]
-export type ForeignAthlete38Bfd61E816942Aa9Cdd76421Bf6Fa90FindManyResponseItemModelWithValidators =
+export type ForeignAvailableMoveseb345B58Bac64Dc7Bf4E0881288E9E17GetManyResponseForeignModel =
+	ForeignAvailableMoves0Ccd4061988446E7881D473552A30400FindManyResponseItemModelWithValidators[]
+export type ForeignAthletec1312E803E224237Bf213E56Dbb2Ae45FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		first_name?: string
 		last_name?: string
 		bib?: string
 	}
-export type ForeignAthleteb7F6C20455Eb41958D6739D4Db98593BGetManyResponseForeignModel =
-	ForeignAthlete38Bfd61E816942Aa9Cdd76421Bf6Fa90FindManyResponseItemModelWithValidators[]
-export type ScoredMoves16A1C21072F541538B9E37786588807FFindManyResponseItemModelWithValidators =
+export type ForeignAthletefb222641A6064823Aaa65D0C7Ae8462EGetManyResponseForeignModel =
+	ForeignAthletec1312E803E224237Bf213E56Dbb2Ae45FindManyResponseItemModelWithValidators[]
+export type ScoredMoves5E798328E7964A2FB3AcD594204B0DffFindManyResponseItemModelWithValidators =
 	{
-		heat_foreign?: ForeignHeat4956Cf3198624E7F8D021Dc0Ac2994DeGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase1Ecd185A2Cff46829D9437C5C7A5C855GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves4Eddcd20B1124075B2C69754Bfdacb6BGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthleteb7F6C20455Eb41958D6739D4Db98593BGetManyResponseForeignModel
+		heat_foreign?: ForeignHeataec148E75376458B906F972087B8Df7EGetManyResponseForeignModel
+		phase_foreign?: ForeignPhaseb4057B5D3C9548B79Adc7D2B297Fe054GetManyResponseForeignModel
+		availableMoves_foreign?: ForeignAvailableMoveseb345B58Bac64Dc7Bf4E0881288E9E17GetManyResponseForeignModel
+		athlete_foreign?: ForeignAthletefb222641A6064823Aaa65D0C7Ae8462EGetManyResponseForeignModel
 		id?: string
 		move_id?: string
 		heat_id?: string
-		run_number?: string
+		run_number?: number
 		phase_id?: string
 		judge_id?: string
 		athlete_id?: string
 		direction?: string
 	}
-export type ScoredMoves89C5B6938F42468FAaee0Be638814629FindManyResponseListModel =
+export type ScoredMovesa112C1Ff21E14F60934230Ce91F6E39CFindManyResponseListModel =
 
-		| ScoredMoves16A1C21072F541538B9E37786588807FFindManyResponseItemModelWithValidators[]
-		| undefined
-export type TableName5De4Aced1Cf141F88A24Bc3Bbc0F659A =
+		| ScoredMoves5E798328E7964A2FB3AcD594204B0DffFindManyResponseItemModelWithValidators[]
+
+export type TableNameb71Ddfe4249E48A38268678Ff4C22Dd1 =
 	| "heat"
 	| "phase"
 	| "availableMoves"
 	| "athlete"
-export type ScoredMoves831756237039491090123695187F47C1UpdateManyResponseModelWithValidators =
+export type ScoredMoves7F0Da7AeB03F4Ea293F978Ac0B463D46UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMovesccaf64E20322429C85C8Ae9523D75A30UpdateManyResponseListModelWithValidators =
-	ScoredMoves831756237039491090123695187F47C1UpdateManyResponseModelWithValidators[]
+export type ScoredMoveseb54C49364304D419Cb1Da231A444813UpdateManyResponseListModelWithValidators =
+	ScoredMoves7F0Da7AeB03F4Ea293F978Ac0B463D46UpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryScoredmovesPut = {
 	move_id: string
 	heat_id: string
-	run_number: string
+	run_number: number
 	phase_id: string
 	judge_id: string
 	athlete_id: string
 	direction: string
 }
-export type ScoredMovescf66495B1Cf74A84Bbf52411De00C29FUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type ScoredMovesd98D91E2Fee34870A8C9A036Ed86A613UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMovesf1Daf0Ab76064B00Ba8177Fa0532C2E7UpsertManyResponseListModel =
-	ScoredMovescf66495B1Cf74A84Bbf52411De00C29FUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoredMovesd4291B7D89Eb4398AffeA48A8F3Ac911CreateManyInsertItemRequestModel =
+export type ScoredMoves59Ed14A001324097834B54Bdf30295A2UpsertManyResponseListModel =
+	ScoredMovesd98D91E2Fee34870A8C9A036Ed86A613UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type ScoredMovesca76A28ECd96415E8C038E9B86Df73C3CreateManyInsertItemRequestModel =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMovesb3A1899D2D1E453D848D59Dc1Ece891BDeleteManyResponseModelWithValidators =
+export type ScoredMovesb5Dba8A23Dad4Fa09Dc7A60Fe72Cccc4DeleteManyResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMoves2A770D101991464599Cf9Fa5164Ab724DeleteManyResponseListModel =
-	ScoredMovesb3A1899D2D1E453D848D59Dc1Ece891BDeleteManyResponseModelWithValidators[]
-export type ScoredMoves595A50A35Cfc4401A41CDf79B419Df58PatchManyResponseModelWithValidators =
+export type ScoredMovese7F2A56C840F4C3EB203Bd2Ad4036E62DeleteManyResponseListModel =
+	ScoredMovesb5Dba8A23Dad4Fa09Dc7A60Fe72Cccc4DeleteManyResponseModelWithValidators[]
+export type ScoredMoves777B4Efb75864396A55CB9B8D7999D29PatchManyResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMoves31E99AebCd784BcaA3Ac68236958B1E2PatchManyResponseListModelWithValidators =
-	ScoredMoves595A50A35Cfc4401A41CDf79B419Df58PatchManyResponseModelWithValidators[]
+export type ScoredMoves7Ac1Ef8B40F441138Ba955D675747589PatchManyResponseListModelWithValidators =
+	ScoredMoves777B4Efb75864396A55CB9B8D7999D29PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryScoredmovesPatch = {
 	move_id?: string
 	heat_id?: string
-	run_number?: string
+	run_number?: number
 	phase_id?: string
 	judge_id?: string
 	athlete_id?: string
 	direction?: string
 }
-export type ScoredMoves46F1162311C74C47Bb44801Cb6C6D554FindOneResponseModelWithValidators =
+export type ScoredMoves4675884F83F44709B43E02C40047C7B9FindOneResponseModelWithValidators =
 	{
-		heat_foreign?: ForeignHeat4956Cf3198624E7F8D021Dc0Ac2994DeGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase1Ecd185A2Cff46829D9437C5C7A5C855GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves4Eddcd20B1124075B2C69754Bfdacb6BGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthleteb7F6C20455Eb41958D6739D4Db98593BGetManyResponseForeignModel
+		heat_foreign?: ForeignHeataec148E75376458B906F972087B8Df7EGetManyResponseForeignModel
+		phase_foreign?: ForeignPhaseb4057B5D3C9548B79Adc7D2B297Fe054GetManyResponseForeignModel
+		availableMoves_foreign?: ForeignAvailableMoveseb345B58Bac64Dc7Bf4E0881288E9E17GetManyResponseForeignModel
+		athlete_foreign?: ForeignAthletefb222641A6064823Aaa65D0C7Ae8462EGetManyResponseForeignModel
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMovesc24A9D8C4628478DBa764Ff02D2D1C05FindOneResponseListModel =
-	ScoredMoves46F1162311C74C47Bb44801Cb6C6D554FindOneResponseModelWithValidators
-export type TableName286Ca8BbBfd24C05A207710Ee9B6902E =
+export type ScoredMoves5F99760ABf0D4A8AA9592D9Ec4237221FindOneResponseListModel =
+	ScoredMoves4675884F83F44709B43E02C40047C7B9FindOneResponseModelWithValidators
+export type TableNamec29Da70E776C4F48A78BF5436B2Eb34A =
 	| "heat"
 	| "phase"
 	| "availableMoves"
 	| "athlete"
-export type ScoredMovesf2Ce0C6C1Cfd4Ca08311Fa9A00212733UpdateOneResponseModelWithValidators =
+export type ScoredMovesed2A5C9DD6A44592A51FBa5B7F137424UpdateOneResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
@@ -6174,29 +6462,29 @@ export type ScoredMovesf2Ce0C6C1Cfd4Ca08311Fa9A00212733UpdateOneResponseModelWit
 export type BodyEntireUpdateByPrimaryKeyScoredmovesIdPut = {
 	move_id: string
 	heat_id: string
-	run_number: string
+	run_number: number
 	phase_id: string
 	judge_id: string
 	athlete_id: string
 	direction: string
 }
-export type ScoredMovesc0C0B8026A404CddA1797E0C337Be7F2DeleteOneResponseModelWithValidators =
+export type ScoredMoves5Aaea1A986154Def8329E5D7A4C6D8EaDeleteOneResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMovesafe13F170Ab649D591BcE9Ef73Dab707PatchOneResponseModelWithValidators =
+export type ScoredMovesf4Bfbf5E91E34Fb5B1D4920B3C0923BbPatchOneResponseModelWithValidators =
 	{
 		id: string
 		move_id?: string
 		heat_id?: string
-		run_number: string
+		run_number: number
 		phase_id: string
 		judge_id: string
 		athlete_id: string
@@ -6205,13 +6493,13 @@ export type ScoredMovesafe13F170Ab649D591BcE9Ef73Dab707PatchOneResponseModelWith
 export type BodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch = {
 	move_id?: string
 	heat_id?: string
-	run_number?: string
+	run_number?: number
 	phase_id?: string
 	judge_id?: string
 	athlete_id?: string
 	direction?: string
 }
-export type ForeignAvailableBonusese9A3B9F6878046F18DbdCab2069E3Ce6FindManyResponseItemModelWithValidators =
+export type ForeignAvailableBonusesa918808C50E44Fe4Bed9Cd7226Eb6364FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -6219,105 +6507,105 @@ export type ForeignAvailableBonusese9A3B9F6878046F18DbdCab2069E3Ce6FindManyRespo
 		name?: string
 		score?: number
 	}
-export type ForeignAvailableBonuses96F5F6B339Ff400B82FcC579B5261215GetManyResponseForeignModel =
-	ForeignAvailableBonusese9A3B9F6878046F18DbdCab2069E3Ce6FindManyResponseItemModelWithValidators[]
-export type ForeignScoredMoves5Df63203844D436C810F55247C0B0C6BFindManyResponseItemModelWithValidators =
+export type ForeignAvailableBonuses223739A25Dee469382D4Db63336D9Fa2GetManyResponseForeignModel =
+	ForeignAvailableBonusesa918808C50E44Fe4Bed9Cd7226Eb6364FindManyResponseItemModelWithValidators[]
+export type ForeignScoredMovesb9516Cb04D0F4B43A31E20C45Ee91DaaFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		move_id?: string
 		heat_id?: string
-		run_number?: string
+		run_number?: number
 		phase_id?: string
 		judge_id?: string
 		athlete_id?: string
 		direction?: string
 	}
-export type ForeignScoredMoves4Cd944EdB33E4411989161B7F7871AfcGetManyResponseForeignModel =
-	ForeignScoredMoves5Df63203844D436C810F55247C0B0C6BFindManyResponseItemModelWithValidators[]
-export type ScoredBonuses0Dffaf23D5Ff451B9E8769Be815211E5FindManyResponseItemModelWithValidators =
+export type ForeignScoredMoves984D64B72B10438DAd1B54489E3F33FcGetManyResponseForeignModel =
+	ForeignScoredMovesb9516Cb04D0F4B43A31E20C45Ee91DaaFindManyResponseItemModelWithValidators[]
+export type ScoredBonuses5B7C02760Bff4Df8Aff216557Aae0190FindManyResponseItemModelWithValidators =
 	{
-		availableBonuses_foreign?: ForeignAvailableBonuses96F5F6B339Ff400B82FcC579B5261215GetManyResponseForeignModel
-		scoredMoves_foreign?: ForeignScoredMoves4Cd944EdB33E4411989161B7F7871AfcGetManyResponseForeignModel
+		availableBonuses_foreign?: ForeignAvailableBonuses223739A25Dee469382D4Db63336D9Fa2GetManyResponseForeignModel
+		scoredMoves_foreign?: ForeignScoredMoves984D64B72B10438DAd1B54489E3F33FcGetManyResponseForeignModel
 		id?: string
 		bonus_id?: string
 		move_id?: string
 		judge_id?: string
 	}
-export type ScoredBonuses9165E84D7Ef54Afb802043935D51A046FindManyResponseListModel =
+export type ScoredBonuses42243E1CEa3F4Ddd80473C98Efd8Ee6BFindManyResponseListModel =
 
-		| ScoredBonuses0Dffaf23D5Ff451B9E8769Be815211E5FindManyResponseItemModelWithValidators[]
-		| undefined
-export type TableName78D54E4AFdeb4A9484773A14Ab40A42B =
+		| ScoredBonuses5B7C02760Bff4Df8Aff216557Aae0190FindManyResponseItemModelWithValidators[]
+
+export type TableName2C1C0606389544C58379F7Ac1E6E1032 =
 	| "availableBonuses"
 	| "scoredMoves"
-export type ScoredBonuses0F04D559E6C64302A73DEaf2B36De781UpdateManyResponseModelWithValidators =
+export type ScoredBonusesda144322152B449BB76D37D9Ee99B661UpdateManyResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonuses08066F0B87454D7189Cb4Df893Fe3545UpdateManyResponseListModelWithValidators =
-	ScoredBonuses0F04D559E6C64302A73DEaf2B36De781UpdateManyResponseModelWithValidators[]
+export type ScoredBonusese9F30Afb9C5046B699E05Eca2A32F0D5UpdateManyResponseListModelWithValidators =
+	ScoredBonusesda144322152B449BB76D37D9Ee99B661UpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryScoredbonusesPut = {
 	bonus_id: string
 	move_id: string
 	judge_id: string
 }
-export type ScoredBonuses6551E792A924405CBd83E2F8F9Ea2790UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type ScoredBonuses0463A75732E64872B502634E99B6A380UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonusescaa4Ca89757C402B9898734E41121338UpsertManyResponseListModel =
-	ScoredBonuses6551E792A924405CBd83E2F8F9Ea2790UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoredBonuses0D00Fd30Ba73429CB377C11E5D44E1A3CreateManyInsertItemRequestModel =
+export type ScoredBonuses150F87722A064A8A802D4839084Fc9FfUpsertManyResponseListModel =
+	ScoredBonuses0463A75732E64872B502634E99B6A380UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type ScoredBonusesef8Aeb6F3A924DeeBf93Ce29C8034B5ECreateManyInsertItemRequestModel =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonuses1Efe29B53C7249358F74E7Af95091E30DeleteManyResponseModelWithValidators =
+export type ScoredBonusesefcff990Fe514A5BBd50050063Fb4Be1DeleteManyResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonuses64B1E7A353564766Bf14B74C0Bad13BcDeleteManyResponseListModel =
-	ScoredBonuses1Efe29B53C7249358F74E7Af95091E30DeleteManyResponseModelWithValidators[]
-export type ScoredBonusesa2844150B3474648Bbf30C1459C1017DPatchManyResponseModelWithValidators =
+export type ScoredBonuses554E7967C1C04F09A1F0661Dcf0Bb533DeleteManyResponseListModel =
+	ScoredBonusesefcff990Fe514A5BBd50050063Fb4Be1DeleteManyResponseModelWithValidators[]
+export type ScoredBonuses467Fcd38B37640E6923872B2F4C18B30PatchManyResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonuseseeb6Ab7F9B454533B24437Ce0Def0A5EPatchManyResponseListModelWithValidators =
-	ScoredBonusesa2844150B3474648Bbf30C1459C1017DPatchManyResponseModelWithValidators[]
+export type ScoredBonusesfa5Bea3992124516B2956A32B9578Cd7PatchManyResponseListModelWithValidators =
+	ScoredBonuses467Fcd38B37640E6923872B2F4C18B30PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryScoredbonusesPatch = {
 	bonus_id?: string
 	move_id?: string
 	judge_id?: string
 }
-export type ScoredBonuses9C3Bb514B9D34B4194BeEcad33A630FfFindOneResponseModelWithValidators =
+export type ScoredBonuses1B2Ca4B9A7Bf4B6796E956A5373311DbFindOneResponseModelWithValidators =
 	{
-		availableBonuses_foreign?: ForeignAvailableBonuses96F5F6B339Ff400B82FcC579B5261215GetManyResponseForeignModel
-		scoredMoves_foreign?: ForeignScoredMoves4Cd944EdB33E4411989161B7F7871AfcGetManyResponseForeignModel
+		availableBonuses_foreign?: ForeignAvailableBonuses223739A25Dee469382D4Db63336D9Fa2GetManyResponseForeignModel
+		scoredMoves_foreign?: ForeignScoredMoves984D64B72B10438DAd1B54489E3F33FcGetManyResponseForeignModel
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonuses5244A7E3F3Df441E98791C84587Bd7C4FindOneResponseListModel =
-	ScoredBonuses9C3Bb514B9D34B4194BeEcad33A630FfFindOneResponseModelWithValidators
-export type TableName27B2686862F2489595FfE1Ac353Ab479 =
+export type ScoredBonuses030Aa6F67D8A4E45A91E3B872898A69EFindOneResponseListModel =
+	ScoredBonuses1B2Ca4B9A7Bf4B6796E956A5373311DbFindOneResponseModelWithValidators
+export type TableNamef81F668793D84E798C175567800890A1 =
 	| "availableBonuses"
 	| "scoredMoves"
-export type ScoredBonuses299430Fd9Dc54251846440Dc5D25676FUpdateOneResponseModelWithValidators =
+export type ScoredBonuses94777Acc536D428E9736A4A0Dc427B67UpdateOneResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
@@ -6329,14 +6617,14 @@ export type BodyEntireUpdateByPrimaryKeyScoredbonusesIdPut = {
 	move_id: string
 	judge_id: string
 }
-export type ScoredBonuses5440C666F70746B3953E5307E0292B2DDeleteOneResponseModelWithValidators =
+export type ScoredBonuses41Afdb0A771E4Fef964F1172894108FeDeleteOneResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
 		move_id: string
 		judge_id: string
 	}
-export type ScoredBonusesf588A2BfEadf4D1281067Df2B7Dba5A6PatchOneResponseModelWithValidators =
+export type ScoredBonusesf9E251Ca6F6A4Dee83E2657477544508PatchOneResponseModelWithValidators =
 	{
 		id: string
 		bonus_id: string
@@ -6348,138 +6636,175 @@ export type BodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch = {
 	move_id?: string
 	judge_id?: string
 }
-export type ForeignHeata5B4D4686E9440E89Cad94A23D3Bd034FindManyResponseItemModelWithValidators =
+export type ForeignHeat7A4F00CfC091423289Ce10901F934638FindManyResponseItemModelWithValidators =
 	{
 		id?: string
-		phase_id?: string
+		competition_id?: string
 		name?: string
 	}
-export type ForeignHeatfd7585A88Be746C59A2C6545Db2De409GetManyResponseForeignModel =
-	ForeignHeata5B4D4686E9440E89Cad94A23D3Bd034FindManyResponseItemModelWithValidators[]
-export type ForeignAthlete169E1086363F42E6B0515Be3A74D02A6FindManyResponseItemModelWithValidators =
+export type ForeignHeat024B42E0021A4CddB205A5F14357F044GetManyResponseForeignModel =
+	ForeignHeat7A4F00CfC091423289Ce10901F934638FindManyResponseItemModelWithValidators[]
+export type ForeignAthlete2D7B79F553D745CeBda54B660E11E815FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		first_name?: string
 		last_name?: string
 		bib?: string
 	}
-export type ForeignAthletef2703032F15243Cc8A45807Ffcf15B33GetManyResponseForeignModel =
-	ForeignAthlete169E1086363F42E6B0515Be3A74D02A6FindManyResponseItemModelWithValidators[]
-export type Athleteheatf4Edd5A8D25144D8A88EF103Dc2D797CFindManyResponseItemModelWithValidators =
+export type ForeignAthlete0010Ea55D7494D2C80A89D29A4Ff2F4BGetManyResponseForeignModel =
+	ForeignAthlete2D7B79F553D745CeBda54B660E11E815FindManyResponseItemModelWithValidators[]
+export type ForeignPhase04A2B9Ba241B44E0B9Ea6D1A31Eaf2C0FindManyResponseItemModelWithValidators =
 	{
-		heat_foreign?: ForeignHeatfd7585A88Be746C59A2C6545Db2De409GetManyResponseForeignModel
-		athlete_foreign?: ForeignAthletef2703032F15243Cc8A45807Ffcf15B33GetManyResponseForeignModel
+		id?: string
+		event_id?: string
+		name?: string
+		number_of_runs?: number
+		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet?: string
+	}
+export type ForeignPhase191F7B951E8949249A96Efb0Ebc321C0GetManyResponseForeignModel =
+	ForeignPhase04A2B9Ba241B44E0B9Ea6D1A31Eaf2C0FindManyResponseItemModelWithValidators[]
+export type Athleteheat8Dd8F2CeD33F4F279D7F1932Aff715A8FindManyResponseItemModelWithValidators =
+	{
+		heat_foreign?: ForeignHeat024B42E0021A4CddB205A5F14357F044GetManyResponseForeignModel
+		athlete_foreign?: ForeignAthlete0010Ea55D7494D2C80A89D29A4Ff2F4BGetManyResponseForeignModel
+		phase_foreign?: ForeignPhase191F7B951E8949249A96Efb0Ebc321C0GetManyResponseForeignModel
 		id?: string
 		heat_id?: string
 		athlete_id?: string
-		scoresheet?: string
+		phase_id?: string
+		last_phase_rank?: number
 	}
-export type Athleteheat5Babc3E37F8748F4BbafA9339Af99CfaFindManyResponseListModel =
+export type Athleteheatf1897Dd9Aee047E6B3898Fe77E15Aa31FindManyResponseListModel =
 
-		| Athleteheatf4Edd5A8D25144D8A88EF103Dc2D797CFindManyResponseItemModelWithValidators[]
-		| undefined
-export type TableNamec889C93B16094Fac8A1939871Ea1510B = "heat" | "athlete"
-export type Athleteheat717B18C52B9C4Dc4A9A3Ec1F65Ab68B4UpdateManyResponseModelWithValidators =
+		| Athleteheat8Dd8F2CeD33F4F279D7F1932Aff715A8FindManyResponseItemModelWithValidators[]
+
+export type TableName3Cc9A675511147E2B6943642754B2B82 =
+	| "heat"
+	| "athlete"
+	| "phase"
+export type Athleteheate85B4Fee46C846968C84267583A6442AUpdateManyResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat0F086D3D7B464Cd38221364Cfb157Ce1UpdateManyResponseListModelWithValidators =
-	Athleteheat717B18C52B9C4Dc4A9A3Ec1F65Ab68B4UpdateManyResponseModelWithValidators[]
+export type Athleteheatf40693D0B5A74D1ABa322B357Abb60B1UpdateManyResponseListModelWithValidators =
+	Athleteheate85B4Fee46C846968C84267583A6442AUpdateManyResponseModelWithValidators[]
 export type BodyEntireUpdateManyByQueryAthleteheatPut = {
 	heat_id: string
 	athlete_id: string
-	scoresheet: string
+	phase_id: string
+	last_phase_rank: number
 }
-export type Athleteheat2197B7Af23154761A8Cd512932Fd1DeaUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Athleteheat10F08A7051Ea40F8A7D9Cc4Af8Ece12BUpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat2F21881C907D4F0FAe5FAfc7F45A5FfbUpsertManyResponseListModel =
-	Athleteheat2197B7Af23154761A8Cd512932Fd1DeaUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Athleteheat8B5C2B1E7Faf4AecA098Ae0A9C90Cc5BCreateManyInsertItemRequestModel =
+export type Athleteheat00E18EfbD103418C8A25F432817E2882UpsertManyResponseListModel =
+	Athleteheat10F08A7051Ea40F8A7D9Cc4Af8Ece12BUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Athleteheat85B385Cb25A04Dca96F74A9Ab2Bb6860CreateManyInsertItemRequestModel =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheatf50C65659A3C47DaA232A7Fab84Beb44DeleteManyResponseModelWithValidators =
+export type Athleteheata51Ac02B71204E9192Fe18Cbd0D6D5B4DeleteManyResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat5B75Cd42Cefc47D496D7417Ddf133243DeleteManyResponseListModel =
-	Athleteheatf50C65659A3C47DaA232A7Fab84Beb44DeleteManyResponseModelWithValidators[]
-export type Athleteheatf73811Ef697E4CdaA03EB26Eda68F3E5PatchManyResponseModelWithValidators =
+export type Athleteheat0C2Ea816Eef044E8B08327E493Af39D6DeleteManyResponseListModel =
+	Athleteheata51Ac02B71204E9192Fe18Cbd0D6D5B4DeleteManyResponseModelWithValidators[]
+export type Athleteheatce0621D818Db4F3D9B4870E7Ac533C57PatchManyResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat95Cb83EbDbe44A2A8880C3316E4E14F7PatchManyResponseListModelWithValidators =
-	Athleteheatf73811Ef697E4CdaA03EB26Eda68F3E5PatchManyResponseModelWithValidators[]
+export type Athleteheat3587BadfC4B0436983BdB0D607A15Fd2PatchManyResponseListModelWithValidators =
+	Athleteheatce0621D818Db4F3D9B4870E7Ac533C57PatchManyResponseModelWithValidators[]
 export type BodyPartialUpdateManyByQueryAthleteheatPatch = {
 	heat_id?: string
 	athlete_id?: string
-	scoresheet?: string
+	phase_id?: string
+	last_phase_rank?: number
 }
-export type Athleteheat08Ae0D26B94C44Ab844DBa3A8F5422FfFindOneResponseModelWithValidators =
+export type Athleteheat32C1A94645734898Aa0D99Fd42301001FindOneResponseModelWithValidators =
 	{
-		heat_foreign?: ForeignHeatfd7585A88Be746C59A2C6545Db2De409GetManyResponseForeignModel
-		athlete_foreign?: ForeignAthletef2703032F15243Cc8A45807Ffcf15B33GetManyResponseForeignModel
+		heat_foreign?: ForeignHeat024B42E0021A4CddB205A5F14357F044GetManyResponseForeignModel
+		athlete_foreign?: ForeignAthlete0010Ea55D7494D2C80A89D29A4Ff2F4BGetManyResponseForeignModel
+		phase_foreign?: ForeignPhase191F7B951E8949249A96Efb0Ebc321C0GetManyResponseForeignModel
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat50598C1D48F74895832833783076Ee6EFindOneResponseListModel =
-	Athleteheat08Ae0D26B94C44Ab844DBa3A8F5422FfFindOneResponseModelWithValidators
-export type TableNamefec3Ae42D58A40CfAba9B69A80F2B105 = "heat" | "athlete"
-export type Athleteheat17Cfe4BdDda24Af7Aed283304F7Defe1UpdateOneResponseModelWithValidators =
+export type Athleteheate5EcaeaeB2064374A1AbB0B9686600BbFindOneResponseListModel =
+	Athleteheat32C1A94645734898Aa0D99Fd42301001FindOneResponseModelWithValidators
+export type TableNameb1665617C9F64D8B9Aac6Ffaf017F0C1 =
+	| "heat"
+	| "athlete"
+	| "phase"
+export type Athleteheat2446F710255C4DdfAa491F2Bd8D93EfbUpdateOneResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
 export type BodyEntireUpdateByPrimaryKeyAthleteheatIdPut = {
 	heat_id: string
 	athlete_id: string
-	scoresheet: string
+	phase_id: string
+	last_phase_rank: number
 }
-export type Athleteheatf1B899FbAea94D3E887E8B4D893B2F37DeleteOneResponseModelWithValidators =
+export type Athleteheatd20C3878Ae4D412899Aa28288C922212DeleteOneResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
-export type Athleteheat88F7346AB7C04862B2F2Be2489Fa4C4EPatchOneResponseModelWithValidators =
+export type Athleteheatbe96Dec65Ada4F90B831231F7355Dcf8PatchOneResponseModelWithValidators =
 	{
 		id: string
 		heat_id: string
 		athlete_id: string
-		scoresheet: string
+		phase_id: string
+		last_phase_rank?: number
 	}
 export type BodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch = {
 	heat_id?: string
 	athlete_id?: string
-	scoresheet?: string
+	phase_id?: string
+	last_phase_rank?: number
 }
 export const {
+	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation,
 	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
 	useGetHeatScoresGetHeatScoresHeatIdGetQuery,
+	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery,
 	useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation,
+	usePhasePdfPhasePdfPhaseIdGetQuery,
 	useGetManyCompetitionGetQuery,
 	useEntireUpdateManyByQueryCompetitionPutMutation,
 	useInsertManyCompetitionPostMutation,
@@ -6511,8 +6836,6 @@ export const {
 	useEntireUpdateByPrimaryKeyPhaseIdPutMutation,
 	useDeleteOneByPrimaryKeyPhaseIdDeleteMutation,
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation,
-	useGetOneByPkFromHeatPhasePhasePkIdHeatHeatPkIdGetQuery,
-	useGetManyByPkFromHeatPhasePhasePkIdHeatGetQuery,
 	useGetManyHeatGetQuery,
 	useEntireUpdateManyByQueryHeatPutMutation,
 	useInsertManyHeatPostMutation,

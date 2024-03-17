@@ -1,26 +1,48 @@
 /* eslint-disable camelcase */
 
+import { Dialog, Divider, Typography } from "@mui/material"
 import Button from "@mui/material/Button"
+import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid"
-import { flatten } from "lodash"
-import { useState } from "react"
+import {
+	DataGrid,
+	GridColDef,
+	GridRenderCellParams,
+	GridRowsProp,
+	GridTreeNodeWithRender
+} from "@mui/x-data-grid"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
-import { getSelectedHeat } from "../../redux/atoms/competitions"
 import {
-	useGetManyAthleteheatGetQuery,
+	getSelectedCompetition,
+	getSelectedHeat
+} from "../../redux/atoms/competitions"
+import {
+	useDeleteManyByQueryScoredmovesDeleteMutation,
+	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
+	useGetManyEventGetQuery,
+	useGetManyHeatGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
 	useInsertManyAthletePostMutation,
-	useInsertManyAthleteheatPostMutation
+	useInsertManyAthleteheatPostMutation,
+	usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation,
+	usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation
 } from "../../redux/services/aemsApi"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
-export const HeatSummaryTable = () => {
+export const HeatSummaryTable = ({
+	showAddAthletes = false
+}: {
+	showAddAthletes?: boolean
+}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
 		id: selectedHeat
@@ -28,14 +50,26 @@ export const HeatSummaryTable = () => {
 	if (data && selectedHeat && !isLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={2} alignItems="stretch">
+				<Grid container spacing={1} alignItems="stretch">
 					<Grid item xs={12}>
-						<h3>{`Heat: ${data.name || ""}`}</h3>
-						<HeatAthleteTable />
+						<Typography variant="h6">{`Heat: ${
+							data.name || ""
+						}`}</Typography>
+						<HeatAthleteTable showAdmin={showAddAthletes} />
 					</Grid>
-					<Grid item xs={12}>
-						<AddAthletesToHeat />
-					</Grid>
+					{showAddAthletes && (
+						<>
+							<Grid item xs={12}>
+								<Typography variant="h6">
+									Add Athlete to Current Heat
+								</Typography>
+							</Grid>
+
+							<Grid item xs={12}>
+								<AddAthletesToHeat />
+							</Grid>
+						</>
+					)}
 				</Grid>
 			</Paper>
 		)
@@ -46,38 +80,82 @@ export const HeatSummaryTable = () => {
 	return <h4>Something went wrong</h4>
 }
 
-export const HeatAthleteTable = () => {
+// eslint-disable-next-line complexity
+export const HeatAthleteTable = ({
+	showAdmin = false
+}: {
+	showAdmin?: boolean
+}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
+	const [open, setOpen] = useState<boolean>(false)
+	const handleClose = () => setOpen(false)
+	const [rowData, setRowData] = useState<{
+		id?: string
+		first_name?: string
+		last_name?: string
+		bib?: number
+		phase_id?: string
+		athlete_heat_id?: string
+	}>({})
+	const editCol = showAdmin
+		? [
+				{
+					field: "action",
+					headerName: "Admin",
+					sortable: false,
+					renderCell: (
+						params: GridRenderCellParams<
+							any,
+							any,
+							any,
+							GridTreeNodeWithRender
+						>
+					) => {
+						const onClick = () => {
+							setRowData(params.api.getRow(params.id) ?? {})
+							setOpen(true)
+						}
+
+						return <Button onClick={onClick}>Edit</Button>
+					}
+				}
+		  ]
+		: []
 	const columns: GridColDef[] = [
 		// { field: "id", headerName: "ID"},
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
-		{ field: "scoresheetId", headerName: "Scoresheet ID" }
+		...editCol
 	]
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: selectedHeat
 	})
 
-	const rows: GridRowsProp = flatten(
-		athletes.data?.map(
-			(a) =>
-				({ ...a.athlete_foreign![0], scoresheetId: a.scoresheet } || [])
-		)
-	)
+	const rows: GridRowsProp = athletes.data ?? []
 
 	if (athletes.isLoading) {
 		return <Skeleton variant="rectangular" />
 	} else if (rows) {
 		return (
-			<DataGrid
-				sx={{ height: "50vh" }}
-				rows={rows}
-				columns={columns}
-				disableRowSelectionOnClick
-			/>
+			<>
+				<EditAthletDialog
+					open={open}
+					handleClose={handleClose}
+					id={rowData.id ?? ""}
+					first_name={rowData.first_name ?? ""}
+					last_name={rowData.last_name ?? ""}
+					bib={rowData.bib ?? 1}
+					phase_id={rowData.phase_id ?? ""}
+					athlete_heat_id={rowData.athlete_heat_id ?? ""}
+				/>
+				<DataGrid
+					sx={{ height: "50vh" }}
+					rows={rows}
+					columns={columns}
+					disableRowSelectionOnClick
+				/>
+			</>
 		)
 	}
 
@@ -88,48 +166,168 @@ export const HeatAthleteTable = () => {
 	)
 }
 
-const AddAthletesToHeat = () => {
+const EditAthletDialog = ({
+	open,
+	handleClose,
+	id,
+	first_name,
+	last_name,
+	bib,
+	phase_id,
+	athlete_heat_id
+}: {
+	open: boolean
+	handleClose: () => void
+	id?: string
+	first_name?: string
+	last_name?: string
+	bib?: number
+	phase_id?: string
+	athlete_heat_id?: string
+}) => (
+	<Dialog onClose={handleClose} open={open}>
+		<div
+			style={{
+				padding: "1em"
+			}}
+		>
+			<Typography variant="h5">Edit Athlete</Typography>
+			<Divider sx={{ margin: "1em" }} />
+			<AddAthletesToHeat
+				showHeat={true}
+				last_name={last_name}
+				first_name={first_name}
+				athlete_heat_id={athlete_heat_id}
+				id={id}
+				bib={bib}
+				phase_id={phase_id}
+			/>
+		</div>
+	</Dialog>
+)
+
+// eslint-disable-next-line complexity
+const AddAthletesToHeat = (props: {
+	id?: string
+	first_name?: string
+	last_name?: string
+	bib?: number
+	phase_id?: string
+	athlete_heat_id?: string
+	showHeat?: boolean
+}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const [athleteFirstName, setAthleteFirstName] = useState<string>("")
-	const athletes = useGetManyAthleteheatGetQuery({
-		heatIdListComparisonOperator: "Equal",
-		heatIdList: [selectedHeat],
-		joinForeignTable: ["athlete"]
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const [athleteFirstName, setAthleteFirstName] = useState<string>(
+		props.first_name ?? ""
+	)
+	const [selectedPhase, setSelectedPhase] = useState<string>(
+		props.phase_id ?? ""
+	)
+	const [newHeat, setSelectedHeat] = useState<string>(selectedHeat ?? "")
+	useEffect(() => {
+		setSelectedHeat(selectedHeat)
+	}, [selectedHeat])
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+		heatId: selectedHeat
 	})
-	const [athleteLastName, setAthleteLastName] = useState<string>("")
-	const [bibNumber, setBibNumber] = useState<number>(1)
-	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
+	const [athleteLastName, setAthleteLastName] = useState<string>(
+		props.last_name ?? ""
+	)
+	const [bibNumber, setBibNumber] = useState<number>(props.bib ?? 1)
+	const { data, isSuccess } = useGetManyEventGetQuery({
+		competitionIdList: [selectedCompetition],
+		competitionIdListComparisonOperator: "Equal",
+		joinForeignTable: ["phase"]
+	})
+	const { data: heatData, isSuccess: heatIsSuccess } = useGetManyHeatGetQuery(
+		{
+			competitionIdList: [selectedCompetition],
+			competitionIdListComparisonOperator: "Equal"
+		}
+	)
+	const onSelectPhase = (event: SelectChangeEvent<string>) => {
+		setSelectedPhase(event.target.value)
+	}
+	const onSelectHeat = (event: SelectChangeEvent<string>) => {
+		setSelectedHeat(event.target.value)
+	}
 
 	const [makeAthlete] = useInsertManyAthletePostMutation()
 	const [makeAthleteHeat] = useInsertManyAthleteheatPostMutation()
+	const [updateAthlete] =
+		usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation()
+	const [updateAthleteHeat] =
+		usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation()
+	const [deleteOldMoves] = useDeleteManyByQueryScoredmovesDeleteMutation()
+	// eslint-disable-next-line complexity
 	const handleNewPaddlerSubmit = async () => {
-		if (
-			athleteFirstName &&
-			athleteLastName &&
-			selectedScoresheet &&
-			bibNumber
-		) {
-			const athleteId = v4()
-			await makeAthlete({
-				body: [
-					{
+		if (athleteFirstName && athleteLastName && bibNumber) {
+			const athleteId = props.id ?? v4()
+			if (props.id && props.athlete_heat_id) {
+				HandlePostResponse(
+					await updateAthlete({
 						id: athleteId,
-						first_name: athleteFirstName,
-						last_name: athleteLastName,
-						bib: bibNumber.toString()
-					}
-				]
-			})
-			await makeAthleteHeat({
-				body: [
-					{
-						id: v4(),
-						heat_id: selectedHeat,
-						athlete_id: athleteId,
-						scoresheet: selectedScoresheet
-					}
-				]
-			})
+						bodyPartialUpdateOneByPrimaryKeyAthleteIdPatch: {
+							first_name: athleteFirstName,
+							last_name: athleteLastName,
+							bib: bibNumber.toString()
+						}
+					}),
+					"Updated Athlete"
+				)
+				HandlePostResponse(
+					await updateAthleteHeat({
+						id: props.athlete_heat_id ?? v4(),
+						bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: {
+							heat_id: newHeat,
+							athlete_id: athleteId,
+							phase_id: selectedPhase
+						}
+					}),
+					"Updated Athlete Competition Information"
+				)
+				if (
+					selectedHeat !== newHeat ||
+					selectedPhase !== props.phase_id
+				) {
+					HandlePostResponse(
+						await deleteOldMoves({
+							heatIdList: [selectedHeat],
+							heatIdListComparisonOperator: "Equal",
+							athleteIdList: [athleteId],
+							athleteIdListComparisonOperator: "Equal"
+						})
+					)
+				}
+			} else {
+				HandlePostResponse(
+					await makeAthlete({
+						body: [
+							{
+								id: athleteId,
+								first_name: athleteFirstName,
+								last_name: athleteLastName,
+								bib: bibNumber.toString()
+							}
+						]
+					}),
+					"Created Athlete"
+				)
+				HandlePostResponse(
+					await makeAthleteHeat({
+						body: [
+							{
+								id: props.athlete_heat_id ?? v4(),
+								heat_id: newHeat,
+								athlete_id: athleteId,
+								phase_id: selectedPhase
+							}
+						]
+					}),
+					"Added Athlete to Heat"
+				)
+			}
 			await athletes.refetch()
 			setAthleteFirstName("")
 			setAthleteLastName("")
@@ -137,27 +335,68 @@ const AddAthletesToHeat = () => {
 			toast.error("Please fill in all the fields")
 		}
 	}
+	if (!isSuccess || !heatIsSuccess) {
+		return <h4>Failed to get data from server</h4>
+	}
+	const colWidth = props.id && props.athlete_heat_id ? 12 : 2
+	const phases = data.map((e) => e.phase_foreign || []).flat()
 
 	return (
-		<Grid container spacing={2} alignItems="stretch">
-			<Grid item xs>
-				<TextField label="Heat" value={selectedHeat} disabled />
-			</Grid>
-			<Grid item xs>
+		<Grid container spacing={1} alignItems="stretch">
+			<Grid item xs={colWidth}>
 				<TextField
 					label="First Name"
+					fullWidth
 					value={athleteFirstName}
 					onChange={(e) => setAthleteFirstName(e.target.value)}
 				/>
 			</Grid>
-			<Grid item xs>
+			<Grid item xs={colWidth}>
 				<TextField
 					label="Last Name"
+					fullWidth
 					value={athleteLastName}
 					onChange={(e) => setAthleteLastName(e.target.value)}
 				/>
 			</Grid>
-			<Grid item xs>
+			<Grid item xs={colWidth}>
+				<FormControl fullWidth={true}>
+					<InputLabel>Select Phase</InputLabel>
+					<Select
+						value={selectedPhase}
+						fullWidth
+						onChange={onSelectPhase}
+						variant="outlined"
+					>
+						{phases.map((phase) => (
+							<MenuItem key={phase.id} value={phase.id}>
+								{phase.name}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			</Grid>
+			{props.showHeat && (
+				<Grid item xs={colWidth}>
+					<FormControl fullWidth={true}>
+						<InputLabel>Select Heat</InputLabel>
+						<Select
+							value={newHeat}
+							onChange={onSelectHeat}
+							variant="outlined"
+							fullWidth
+							autoWidth
+						>
+							{heatData.map((heat) => (
+								<MenuItem key={heat.id} value={heat.id}>
+									{heat.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
+			)}
+			<Grid item xs={colWidth}>
 				<TextField
 					label="Bib Number"
 					variant="outlined"
@@ -171,47 +410,30 @@ const AddAthletesToHeat = () => {
 					value={bibNumber}
 				/>
 			</Grid>
-			<Grid item xs>
-				<SelectScoresheet
-					selectedScoresheet={selectedScoresheet}
-					setSelectedScoresheet={setSelectedScoresheet}
-				/>
-			</Grid>
-			<Grid item xs>
+			<Grid item xs={colWidth}>
 				<Button
 					onClick={() => void handleNewPaddlerSubmit()}
 					variant="contained"
 					fullWidth
 					sx={{ height: "100%" }}
 				>
-					Add to Heat
+					{props.id && props.athlete_heat_id
+						? "Edit Athlete"
+						: "Add Athlete"}
 				</Button>
 			</Grid>
+			{props.id && props.athlete_heat_id && (
+				<Grid item xs={colWidth}>
+					{" "}
+					<Typography variant="h6">
+						Warning: Moving an athlete between heats or phases will
+						delete any previously scored moves for that athlete in
+						that heat/phase{" "}
+					</Typography>
+				</Grid>
+			)}
 		</Grid>
 	)
-}
-
-const parsePhasesInHeats = (heats: apiHeatsListType[]): PhaseListType[] => {
-	const phaseList: PhaseListType[] = []
-	if (heats) {
-		const phases = heats.map((h) => {
-			const phasesInHeat = h.phase_foreign
-			phasesInHeat?.map((p) => {
-				if (p.name && p.id) {
-					phaseList.push({ name: p.name, value: p.id })
-				}
-			})
-		})
-	}
-
-	return phaseList
-}
-
-interface apiHeatsListType {
-	phase_foreign: {
-		name: string
-		id: string
-	}[]
 }
 
 interface PhaseListType {

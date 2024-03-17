@@ -13,96 +13,79 @@ import {
 
 import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../components/competition/MainSelector"
-// eslint-disable-href=-line complexity
 
-// const competitionsThing = getCompetitionsFromServer()
-
-// const CompetitionSelector = React.lazy(
-// 	() => import("../competition/CompetitionSelector")
-// )
 const Judging = () => {
-	// eslint-disable-href=-line @typescript-eslint/explicit-member-accessibility
-
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
 	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	// eslint-disable-href=-line complexity
 	const competition = selectedCompetition
 	const event = selectedEvent
 	const phase = selectedPhase
 	const heat = selectedHeat
-	if (competition && event && phase && heat) {
-		if (competition) {
-			if (event) {
-				return (
-					<Grid container spacing={2} alignItems="flex-start">
-						<Grid item xs={12}>
-							<Paper sx={{ padding: "1em" }}>
-								<Grid
-									container
-									spacing={2}
-									alignItems={"stretch"}
+	if (heat) {
+		return (
+			<Grid
+				container
+				spacing={1}
+				alignItems="flex-start"
+				sx={{ paddingTop: "0.5em" }}
+			>
+				<Grid item xs={12}>
+					<Paper sx={{ padding: "1em" }}>
+						<Grid container spacing={1} alignItems={"stretch"}>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									href="/scribe/1"
+									color="inherit"
 								>
-									<Grid item xs>
-										<Link
-											component={RouterLink}
-											href="/scribe/1"
-											color="inherit"
-										>
-											<Button
-												variant="contained"
-												fullWidth
-											>
-												Scribe 1
-											</Button>
-										</Link>
-									</Grid>
-									<Grid item xs>
-										<Link
-											component={RouterLink}
-											href="/scribe/2"
-											color="inherit"
-										>
-											<Button
-												variant="contained"
-												fullWidth
-											>
-												Scribe 2
-											</Button>
-										</Link>
-									</Grid>
-									<Grid item xs>
-										<Link
-											component={RouterLink}
-											href="/scribe/3"
-											color="inherit"
-										>
-											<Button
-												variant="contained"
-												fullWidth
-											>
-												Scribe 3
-											</Button>
-										</Link>
-									</Grid>
-								</Grid>
-							</Paper>
+									<Button variant="contained" fullWidth>
+										Scribe 1
+									</Button>
+								</Link>
+							</Grid>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									href="/scribe/2"
+									color="inherit"
+								>
+									<Button variant="contained" fullWidth>
+										Scribe 2
+									</Button>
+								</Link>
+							</Grid>
+							<Grid item xs>
+								<Link
+									component={RouterLink}
+									href="/scribe/3"
+									color="inherit"
+								>
+									<Button variant="contained" fullWidth>
+										Scribe 3
+									</Button>
+								</Link>
+							</Grid>
 						</Grid>
-						<Grid item xs={12}>
-							<HeatSummaryTable />
-						</Grid>
-					</Grid>
-				)
-			}
-		}
+					</Paper>
+				</Grid>
+				<Grid item xs={12}>
+					<HeatSummaryTable />
+				</Grid>
+			</Grid>
+		)
 	}
 
 	return (
-		<Grid container alignItems="stretch">
+		<Grid container alignItems="stretch" sx={{ paddingTop: "0.5em" }}>
 			<Grid item xs={12}>
-				<SelectorDisplay showDetailed={true} />
+				<SelectorDisplay
+					showDetailed={false}
+					showEvent={false}
+					showPhase={false}
+				/>
 			</Grid>
 		</Grid>
 	)

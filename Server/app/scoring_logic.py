@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from itertools import groupby
-from statistics import mean
 from typing import Literal, Optional
 from uuid import UUID
 
@@ -56,7 +56,7 @@ class PydanticScoredMovesResponse(BaseModel):
     id: UUID
     move_id: UUID
     heat_id: UUID
-    run_number: str
+    run_number: int
     phase_id: UUID
     judge_id: str
     athlete_id: UUID
@@ -116,7 +116,6 @@ def calculate_run_score(
         move_metahash = make_move_string(scored_move)
 
         if not filtered_move_scores.get(move_metahash):
-            # possible_duplicates = [ pd for pd in scored_move_list_with_scores if pd.move_id == scored_move.move]
             filtered_move_scores[move_metahash] = scored_move.total_score_with_bonuses
         else:
             if (
@@ -221,6 +220,10 @@ class AthleteMoves(BaseModel):
     run_moves: list[RunMoves]
 
 
+class AthleteMovesWithJudgeInfo(AthleteMoves):
+    number_of_judges: int
+
+
 class JudgeScores(BaseModel):
     judge_id: str
     score_info: AthleteScoreInfo
@@ -239,6 +242,8 @@ class AthleteScores(BaseModel):
     highest_scoring_move: float
     ranking: Optional[int]
     reason: Optional[str]
+    total_score: Optional[float]
+    last_phase_rank: Optional[int]
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
@@ -287,9 +292,10 @@ def organise_moves_by_athlete_run_judge(
 
 
 def calculate_heat_scores(
-    athlete_moves_list: list[AthleteMoves],
+    athlete_moves_list: list[AthleteMovesWithJudgeInfo],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
+    scoring_runs: Optional[int] = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -308,17 +314,132 @@ def calculate_heat_scores(
                 RunScores(
                     judge_scores=judges,
                     run_number=run.run,
-                    mean_run_score=mean([j.score_info.score for j in judges]),
+                    mean_run_score=sum([j.score_info.score for j in judges])
+                    / max([athlete.number_of_judges, len(judges)]),
                     highest_scoring_move=max(
                         [j.score_info.highest_scoring_move for j in judges]
                     ),
                 )
             )
+        run_scores: list[float] = [r.mean_run_score for r in runs]
+        run_scores.sort()
+
+        total_score = sum(run_scores[-scoring_runs:]) if scoring_runs else 0
         scores.append(
             AthleteScores(
                 run_scores=runs,
                 athlete_id=athlete.athlete_id,
                 highest_scoring_move=max(r.highest_scoring_move for r in runs),
+                total_score=total_score,
             )
         )
     return scores
+
+
+class RankInfo(BaseModel):
+    ranking: int
+    reason: Optional[str]
+
+
+def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
+    sorted_athletes_scores = sorted(
+        athlete_scores, key=lambda x: (x.total_score or 0), reverse=True
+    )
+    rank = 0
+
+    for s in sorted_athletes_scores:
+        athletes_with_same_score = [
+            item for item in sorted_athletes_scores if item.total_score == s.total_score
+        ]
+        if len(athletes_with_same_score) == 1:
+            print(rank)
+            rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
+            s.ranking = rank
+        else:
+            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+            s.ranking = rank + rank_info.ranking + 1
+            s.reason = f"TieBreak: {rank_info.reason}"
+
+    return sorted_athletes_scores
+
+
+def calculate_tied_rank(
+    athlete_id: UUID, athlete_scores: list[AthleteScores]
+) -> RankInfo:
+    number_of_runs = max(len(a.run_scores) for a in athlete_scores)
+    # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
+    # First sort by highest scored move
+    sorted_athlete_score = sorted(
+        athlete_scores,
+        key=lambda x: x.highest_scoring_move,
+        reverse=True,
+    )
+
+    # Sort by dropped rides
+    for i in range(1, number_of_runs):
+        sorted_athlete_score.sort(
+            key=get_nth_highest_score(index=number_of_runs - i - 1),
+            reverse=True,
+        )
+    if (
+        len(
+            fully_tied_athletes := athletes_with_this_exact_score_after_tiebreak(
+                athlete_id=athlete_id, athlete_scores=athlete_scores
+            )
+        )
+        != 1
+    ):
+        return RankInfo(
+            ranking=min(
+                [
+                    sorted_athlete_score.index(
+                        next(filter(lambda n: n.athlete_id == a, sorted_athlete_score))
+                    )
+                    for a in fully_tied_athletes
+                ]
+            ),
+            reason="Fully Tied",
+        )
+
+    return RankInfo(
+        ranking=sorted_athlete_score.index(
+            next(filter(lambda n: n.athlete_id == athlete_id, sorted_athlete_score))
+        ),
+        reason="Highest Scoring Run",
+    )
+
+
+def athletes_with_this_exact_score_after_tiebreak(
+    athlete_id: UUID, athlete_scores: list[AthleteScores]
+) -> list[UUID]:
+    this_athlete = next(a for a in athlete_scores if a.athlete_id == athlete_id)
+    return [
+        a.athlete_id for a in athlete_scores if athlete_is_fully_tied(a, this_athlete)
+    ]
+
+
+def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
+    if (
+        a.total_score == this_athlete.total_score
+        and a.highest_scoring_move == this_athlete.highest_scoring_move
+        and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
+        == [
+            get_nth_highest_score(i)(this_athlete)
+            for i, r in enumerate(this_athlete.run_scores)
+        ]
+    ):
+        return True
+    return False
+
+
+def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:
+    def get_highest_score_for_n(x: AthleteScores) -> float:
+        sorted_run_scores = sorted(
+            x.run_scores, key=lambda y: y.mean_run_score, reverse=True
+        )
+        try:
+            return sorted_run_scores[index].mean_run_score
+        except IndexError:
+            return 0
+
+    return get_highest_score_for_n

@@ -13,6 +13,7 @@ dependencies:
   - SQLAlchemy<=1.4.30
   - starlette==0.14.2
   - uvicorn-standard
+  - fpdf2
   # Dev
   - ruff
   - mypy

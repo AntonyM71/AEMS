@@ -1,3 +1,5 @@
+from fastapi_quickcrud.crud_router import SqlType, generic_sql_crud_router_builder
+
 from db.client import get_transaction_session
 from db.models import (
     Athlete,
@@ -12,7 +14,6 @@ from db.models import (
     ScoredMoves,
     ScoreSheet,
 )
-from fastapi_quickcrud.crud_router import SqlType, generic_sql_crud_router_builder
 
 crud_route_competition = generic_sql_crud_router_builder(
     db_model=Competition,

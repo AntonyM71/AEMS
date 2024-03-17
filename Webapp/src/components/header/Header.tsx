@@ -17,7 +17,6 @@ import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 
 const Header = () => {
-	const env = "development"
 	const preferDark = useSelector(getPreferDark)
 	const userRole = useSelector(getUserRole)
 
@@ -79,6 +78,19 @@ const LinkList = () => (
 					</Link>
 				</Typography>
 			</ListItemText>
+
+			<ListItemText inset>
+				<Typography color="textPrimary" variant="body1">
+					<Link
+						component={RouterLink}
+						href={"/Score"}
+						color="inherit"
+					>
+						Score
+					</Link>
+				</Typography>
+			</ListItemText>
+
 			<ListItemText inset>
 				<Typography color="textPrimary" variant="body1">
 					<Link
@@ -94,10 +106,10 @@ const LinkList = () => (
 				<Typography color="textPrimary" variant="body1">
 					<Link
 						component={RouterLink}
-						href={"/Score"}
+						href={"/Admin"}
 						color="inherit"
 					>
-						Score
+						Admin
 					</Link>
 				</Typography>
 			</ListItemText>

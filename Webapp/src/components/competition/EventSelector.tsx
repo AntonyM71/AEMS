@@ -9,7 +9,6 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -24,6 +23,7 @@ import {
 	useGetManyCompetitionGetQuery,
 	useInsertManyEventPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 const EventSelector = ({
 	showDetailed = false
@@ -39,10 +39,13 @@ const EventSelector = ({
 
 	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
 	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
-			competitionPkId: selectedCompetition,
-			joinForeignTable: ["competition"]
-		})
+		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery(
+			{
+				competitionPkId: selectedCompetition,
+				joinForeignTable: ["competition"]
+			},
+			{ skip: !selectedCompetition }
+		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		resetSelectedHeat()
@@ -59,7 +62,7 @@ const EventSelector = ({
 		return <h4>Failed to get data from the server</h4>
 	} else if (!data) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
+			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Grid container spacing="2">
 					<Grid item xs={12}>
 						<h4>No Events in competition</h4>
@@ -70,50 +73,45 @@ const EventSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Event</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Event</InputLabel>
-								<Select
-									value={selectedEvent}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((event) => (
-										<MenuItem
-											key={event.id}
-											value={event.id}
-										>
-											{event.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Event</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddEvent refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Event</InputLabel>
+							<Select
+								value={selectedEvent}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((event) => (
+									<MenuItem key={event.id} value={event.id}>
+										{event.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Events Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddEvent refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Events Available</Fragment>
 	}
 }
 
@@ -123,22 +121,27 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [competitionId, setCompetitionId] =
 		useState<string>(selectedCompetition)
 	const [postNewEvent] = useInsertManyEventPostMutation()
-	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
+	const { data } = useGetManyCompetitionGetQuery({})
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		.map((d) => ({ value: d.id!, label: d.name! }))
 	const submitNewEvent = async () => {
-		await postNewEvent({
-			body: [
-				// eslint-disable-next-line camelcase
-				{ name: eventName, id: uuid4(), competition_id: competitionId }
-			]
-		})
+		HandlePostResponse(
+			await postNewEvent({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: eventName,
+						id: uuid4(),
+						competition_id: competitionId
+					}
+				]
+			})
+		)
 		await refetch()
 		setEventName("")
 		setCompetitionId("")
-		toast.success("Successfully added event")
 	}
 
 	return (

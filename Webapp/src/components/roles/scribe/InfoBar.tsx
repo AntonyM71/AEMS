@@ -4,18 +4,15 @@ import Grid from "@mui/material/Grid"
 import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
+import Typography from "@mui/material/Typography"
 import React from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	getScoredBonuses,
-	getScoredMoves,
-	updateCurrentMove,
-	updateScoredMovesAndBonuses
-} from "../../../redux/atoms/scoring"
+import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
+import { SelectorDisplay } from "../../competition/MainSelector"
 import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
 import { RunSelector } from "./InfoBar/Runselector"
 import ScoredMove, { AvailableBonusType } from "./InfoBar/ScoredMove"
@@ -32,7 +29,7 @@ export interface AthleteInfo {
 	first_name: string
 	last_name: string
 	bib: string
-	scoresheetId: string
+	scoresheet: string
 }
 export const InfoBar = ({
 	paddlerInfo,
@@ -43,22 +40,12 @@ export const InfoBar = ({
 	const [open, setOpen] = React.useState(false)
 
 	const scoredMoves = useSelector(getScoredMoves)
-	const resetScoredMovesAndBonuses = () => {
-		dispatch(updateScoredMovesAndBonuses({ moves: [], bonuses: [] }))
-	}
 
-	const setCurrentMove = (newMove: string) =>
-		dispatch(updateCurrentMove(newMove))
-
-	const clearRun = () => {
-		resetScoredMovesAndBonuses()
-		setCurrentMove("")
-	}
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
 	const bonusList = useGetManyAvailablebonusesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [paddlerInfo.scoresheetId]
+		sheetIdList: [paddlerInfo.scoresheet]
 	})
 
 	const scoredBonuses = useSelector(getScoredBonuses)
@@ -81,44 +68,50 @@ export const InfoBar = ({
 					<HeatScoreTable />
 				</Box>
 			</Modal>
-			<Grid container spacing={2} alignItems="stretch">
+			<Grid container spacing={1}>
+				<Grid item xs={10}>
+					<SelectorDisplay
+						showDetailed={false}
+						showEvent={false}
+						showPhase={false}
+					/>
+				</Grid>
 				<Grid item xs={2}>
-					<Paper sx={{ height: "max-content" }}>
-						<h4>Run Score </h4>
-						<div className="score" id="runScore">
-							{currentScore.score}
+					<Button
+						onClick={handleOpen}
+						variant="contained"
+						fullWidth
+						sx={{ height: "100%" }}
+					>
+						Heat Summary
+					</Button>
+				</Grid>
+				<Grid item xs={3}>
+					<Paper
+						sx={{
+							padding: "1em",
+							height: "100%"
+						}}
+					>
+						<Typography>Score:</Typography>
+						<div style={{ textAlign: "center" }}>
+							<Typography>{currentScore.score}</Typography>
 						</div>
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
 				</Grid>
-				<Grid item xs={4}>
+				<Grid item xs={3}>
 					<RunSelector />
 				</Grid>
 				<Grid item xs={4}>
-					<h4>Move Listing</h4>
-				</Grid>
-
-				<Grid item xs={4}>
-					<Button
-						onClick={clearRun}
-						variant="contained"
-						fullWidth
-						data-testid={"button-clear-run"}
-					>
-						Clear Run
-					</Button>
-				</Grid>
-				<Grid item xs={4}>
-					<Button onClick={handleOpen} variant="contained" fullWidth>
-						Heat Summary
-					</Button>
+					<Typography>Move Listing</Typography>
 				</Grid>
 			</Grid>
 			<Grid
 				container
-				spacing={2}
+				spacing={1}
 				direction="row"
 				style={{
 					maxHeight: "calc(100vh - 410px)", // this is a bit fragile,
@@ -155,4 +148,12 @@ const style = {
 	boxShadow: 24,
 	p: 4
 }
-export const calculateNewIndex = (n: number, m: number) => ((n % m) + m) % m
+export const calculateNewIndex = (newNumber: number, maxNumber: number) => {
+	if (newNumber >= maxNumber) {
+		return 0
+	} else if (newNumber < 0) {
+		return maxNumber - 1
+	} else {
+		return newNumber
+	}
+}

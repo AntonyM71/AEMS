@@ -20,6 +20,7 @@ const initialState: competitionsStateType = {
 export const updateSelectedEvent = createAction<string>("updateSelectedEvent")
 export const updateSelectedHeat = createAction<string>("updateSelectedHeat")
 export const updateSelectedPhase = createAction<string>("updateSelectedPhase")
+export const updateNumberOfRuns = createAction<number>("updateNumberOfRuns")
 export const updateSelectedCompetition = createAction<string>(
 	"updateSelectedCompetition"
 )
@@ -36,6 +37,9 @@ export const competitionsReducer = createReducer(initialState, (builder) => {
 	builder.addCase(updateSelectedCompetition, (state, action) => {
 		state.selectedCompetition = action.payload
 	})
+	builder.addCase(updateNumberOfRuns, (state, action) => {
+		state.numberOfRuns = action.payload
+	})
 })
 
 export const getSelectedHeat = (state: RootState) =>
@@ -46,3 +50,5 @@ export const getSelectedPhase = (state: RootState) =>
 	state.competitions.selectedPhase
 export const getSelectedCompetition = (state: RootState): string =>
 	state.competitions.selectedCompetition
+export const getNumberOfRuns = (state: RootState): number =>
+	state.competitions.numberOfRuns

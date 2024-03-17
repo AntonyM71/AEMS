@@ -9,22 +9,20 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
-import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
 	getSelectedCompetition,
-	getSelectedEvent,
 	getSelectedHeat,
-	getSelectedPhase,
-	updateSelectedHeat,
-	updateSelectedPhase
+	updateSelectedHeat
 } from "../../redux/atoms/competitions"
+import { updatePaddler, updateRun } from "../../redux/atoms/scoring"
 import {
-	useGetManyByPkFromHeatPhasePhasePkIdHeatGetQuery,
-	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
+	useGetManyCompetitionGetQuery,
+	useGetManyHeatGetQuery,
 	useInsertManyHeatPostMutation
 } from "../../redux/services/aemsApi"
+import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 const HeatsSelector = ({
 	showDetailed = false
@@ -32,24 +30,27 @@ const HeatsSelector = ({
 	showDetailed?: boolean
 }) => {
 	const dispatch = useDispatch()
-	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedHeat = (newHeat: string) =>
 		dispatch(updateSelectedHeat(newHeat))
 	const selectedHeat = useSelector(getSelectedHeat)
-	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 
-	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
-	const { data, isLoading, isSuccess, refetch } =
-		useGetManyByPkFromHeatPhasePhasePkIdHeatGetQuery({
-			phasePkId: selectedPhase,
-			joinForeignTable: ["phase"]
-		})
-
+	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery(
+		{
+			competitionIdList: [selectedCompetition],
+			competitionIdListComparisonOperator: "Equal"
+		},
+		{ skip: !selectedCompetition }
+	)
+	const setCurrentPaddler = (newPaddler: number) =>
+		dispatch(updatePaddler(newPaddler))
+	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
 	const onSelect = (event: SelectChangeEvent<string>) => {
 		setSelectedHeat(event.target.value)
+		setCurrentPaddler(0)
+		setselectedRun(0)
 	}
-	if (!selectedPhase) {
+	if (!selectedCompetition) {
 		return <></>
 	}
 	if (isLoading) {
@@ -58,7 +59,7 @@ const HeatsSelector = ({
 		return <h4>Failed to get data from the server</h4>
 	} else if (!data) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
+			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Grid container spacing="2">
 					<Grid item xs={12}>
 						<h4>No Heats in phase</h4>
@@ -69,77 +70,77 @@ const HeatsSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		if (data) {
-			return (
-				<Paper sx={{ padding: "1em" }}>
-					<Grid container spacing="2">
-						{showDetailed ? (
-							<Grid item xs={12}>
-								<h4>Select an Heat</h4>
-							</Grid>
-						) : (
-							<></>
-						)}
+	} else if (data) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<Grid container spacing="2">
+					{showDetailed ? (
 						<Grid item xs={12}>
-							<FormControl fullWidth={true}>
-								<InputLabel>Select Heat</InputLabel>
-								<Select
-									value={selectedHeat}
-									onChange={onSelect}
-									variant="outlined"
-								>
-									{data.map((Heat) => (
-										<MenuItem key={Heat.id} value={Heat.id}>
-											{Heat.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
+							<h4>Select an Heat</h4>
 						</Grid>
-						{showDetailed ? (
-							<Grid item>
-								<AddHeat refetch={refetch} />
-							</Grid>
-						) : (
-							<></>
-						)}
+					) : (
+						<></>
+					)}
+					<Grid item xs={12}>
+						<FormControl fullWidth={true}>
+							<InputLabel>Select Heat</InputLabel>
+							<Select
+								value={selectedHeat}
+								onChange={onSelect}
+								variant="outlined"
+							>
+								{data.map((Heat) => (
+									<MenuItem key={Heat.id} value={Heat.id}>
+										{Heat.name}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
-				</Paper>
-			)
-		} else {
-			return <Fragment>No Heats Available</Fragment>
-		}
+					{showDetailed ? (
+						<Grid item>
+							<AddHeat refetch={refetch} />
+						</Grid>
+					) : (
+						<></>
+					)}
+				</Grid>
+			</Paper>
+		)
+	} else {
+		return <Fragment>No Heats Available</Fragment>
 	}
 }
 
 const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
-	const [HeatName, setHeatName] = useState<string>("")
+	const [heatName, setHeatName] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const selectedEvent = useSelector(getSelectedEvent)
 	const [competitionId, setCompetitionId] =
 		useState<string>(selectedCompetition)
 	const [postNewHeat] = useInsertManyHeatPostMutation()
-	const { data, isLoading, isSuccess } =
-		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery({
-			eventPkId: selectedEvent,
-			joinForeignTable: ["event"]
-		})
+	const { data } = useGetManyCompetitionGetQuery({})
+
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		.map((d) => ({ value: d.id, label: d.name }))
+		.map((d) => ({ value: d.id!, label: d.name! }))
+
 	const submitNewHeat = async () => {
-		await postNewHeat({
-			body: [
-				// eslint-disable-next-line camelcase
-				{ name: HeatName, id: uuid4(), phase_id: competitionId }
-			]
-		})
+		HandlePostResponse(
+			await postNewHeat({
+				body: [
+					// eslint-disable-next-line camelcase
+					{
+						name: heatName,
+						id: uuid4(),
+						competition_id: competitionId
+					}
+				]
+			})
+		)
 		await refetch()
 		setHeatName("")
 		setCompetitionId("")
-		toast.success("Successfully added heat")
 	}
 
 	return (
@@ -152,14 +153,14 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
-					error={!!HeatName}
+					error={!!heatName}
 					label="New Heat"
 					variant="outlined"
 					fullWidth
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setHeatName(event.target.value)}
-					value={HeatName}
+					value={heatName}
 				/>
 			</Grid>
 			<Grid item xs={12}>

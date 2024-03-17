@@ -28,7 +28,7 @@ export const HeatScoreTable = () => {
 	if (data && scoreData && selectedHeat && !isLoading && !isScoreLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={2} alignItems="stretch">
+				<Grid container spacing={1} alignItems="stretch">
 					<Grid item xs={12}>
 						<h3>{`Heat: ${data.name || ""}`}</h3>
 						<HeatAthleteScoreTable athletes={scoreData} />
@@ -49,7 +49,6 @@ export const HeatAthleteScoreTable = ({
 	athletes: HeatScoresResponse
 }) => {
 	const maxRuns = Math.max(...athletes.scores.map((a) => a.run_scores.length))
-	console.log(maxRuns)
 	const runCols: GridColDef[] = []
 	for (let i = 0; i < maxRuns; i++) {
 		runCols.push({ field: `run_${i + 1}`, headerName: `Run ${i + 1}` })
@@ -65,21 +64,20 @@ export const HeatAthleteScoreTable = ({
 
 	const rows: GridRowsProp = flatten(
 		athletes.scores.map((a, i) => {
-			const runScores: Record<string, any> = {}
+			const runScores: Record<string, string> = {}
 			runCols.forEach(
 				(r, j) =>
-					(runScores[r.field] = a.run_scores[j]?.mean_run_score || 0)
+					(runScores[r.field] =
+						a.run_scores[j]?.mean_run_score.toFixed(2) || "0")
 			)
 
-			return (
-				{
-					id: i,
-					bib: a.bib_number,
-					first_name: a.first_name,
-					last_name: a.last_name,
-					...runScores
-				} || []
-			)
+			return {
+				id: i,
+				bib: a.bib_number,
+				first_name: a.first_name,
+				last_name: a.last_name,
+				...runScores
+			}
 		})
 	)
 
