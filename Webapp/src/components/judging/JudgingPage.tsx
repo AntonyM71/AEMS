@@ -27,13 +27,11 @@ const Judging = () => {
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
-							{judgeNumberArray.map((j: number) => {
-								return (
+							{judgeNumberArray.map((j: number) => (
 									<Grid item xs key={j}>
 										<ScribeButton n={j} />
 									</Grid>
-								)
-							})}
+								))}
 						</Grid>
 					</Paper>
 				</Grid>
@@ -57,14 +55,12 @@ const Judging = () => {
 	)
 }
 
-const ScribeButton = ({ n }: { n: number }) => {
-	return (
+const ScribeButton = ({ n }: { n: number }) => (
 		<Link component={RouterLink} href={`scribe/${n}`} color="inherit">
 			<Button variant="contained" fullWidth>
 				Scribe {n}
 			</Button>
 		</Link>
 	)
-}
 
 export default Judging

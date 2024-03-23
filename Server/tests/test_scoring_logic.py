@@ -739,7 +739,7 @@ class TestMoveOrganising:
         assert got == want
 
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_runs_and_bonuses(
-        self
+        self,
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
             PydanticScoredMovesResponse(
@@ -955,8 +955,9 @@ class TestAthleteScoreCalculation:
         )
 
         assert got == want
+
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_runs_and_bonuses(
-        self
+        self,
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
             PydanticScoredMovesResponse(
@@ -1064,7 +1065,6 @@ class TestAthleteScoreCalculation:
         ]
         assert got == want
 
-
     def test_it_handles_too_many_judges_gracefully(
         self,
         available_moves: list[AvailableMoves],
@@ -1169,10 +1169,9 @@ class TestAthleteScoreCalculation:
                                         judge_id="meg",
                                     )
                                 ],
-                            )
+                            ),
                         ],
                     ),
-
                 ],
             )
         ]
@@ -1207,12 +1206,11 @@ class TestAthleteScoreCalculation:
                                 score_info=AthleteScoreInfo(
                                     score=25, highest_scoring_move=25
                                 ),
-                            )
+                            ),
                         ],
                         mean_run_score=25.0,
                         highest_scoring_move=25.0,
                     ),
-
                 ],
                 highest_scoring_move=25.0,
                 total_score=25,
@@ -1226,6 +1224,7 @@ class TestAthleteScoreCalculation:
         )
 
         assert got == want
+
     def test_it_calculates_total_scores_for_multiple_runs(
         self,
         available_moves: list[AvailableMoves],
