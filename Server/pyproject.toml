@@ -8,8 +8,8 @@ build-backend = "setuptools.build_meta"
 py-modules = []
 
 [tool.ruff]
-ignore = ["E501", "ANN101", "N999", "UP007"]
-select = [
+lint.ignore = ["E501", "ANN101", "N999", "UP007"]
+lint.select = [
     "E",
     "F",
     "B",
@@ -25,9 +25,9 @@ select = [
     "TRY",
     "G",
 ]
-fixable = ["ALL"]
+lint.fixable = ["ALL"]
 line-length = 88
-[tool.ruff.flake8-bugbear]
+[tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
     "fastapi.Depends",
     "fastapi.params.Depends",
