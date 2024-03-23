@@ -70,6 +70,9 @@
     "zenMode.hideLineNumbers": false,
     "zenMode.hideStatusBar": false,
     "zenMode.silentNotifications": false,
-    "workbench.settings.editor": "json"
+    "workbench.settings.editor": "json",
+    "[toml]": {
+      "editor.defaultFormatter": "tamasfe.even-better-toml"
+    }
   }
 }

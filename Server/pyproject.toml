@@ -1,15 +1,68 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]      # PEP 508 specifications.
+build-backend = "setuptools.build_meta"
+
+# Ignore flat-layout.
+[tool.setuptools]
+py-modules = []
+
 [tool.ruff]
 ignore = ["E501", "ANN101", "N999", "UP007"]
-select = ["E", "F", "B" ,"I", "N", "UP", "YTT", "ANN", "FBT", "EM", "RUF", "PD", "TRY", "G"]
+select = [
+    "E",
+    "F",
+    "B",
+    "I",
+    "N",
+    "UP",
+    "YTT",
+    "ANN",
+    "FBT",
+    "EM",
+    "RUF",
+    "PD",
+    "TRY",
+    "G",
+]
 fixable = ["ALL"]
 line-length = 88
 [tool.ruff.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.params.Depends",
+    "fastapi.Query",
+    "fastapi.params.Query",
+]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 [project]
+dependencies = [
+
+    "sqlalchemy",
+    "alembic",
+    "psycopg2",
+    "orjson",
+    "asyncpg",
+    "fastapi",
+    "pytest",
+    "uvicorn[standard]",
+    "pydantic<=1.8.2",
+    "SQLAlchemy<=1.4.30",
+    "starlette==0.14.2",
+    "fpdf2",
+    # Dev
+    "ruff",
+    "mypy",
+    "isort",
+    "pytest",
+    "fastapi-quickcrud",
+    "sqlalchemy_utils",
+    "pydantic-sqlalchemy",
+
+]
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"
 version = "0.1.0"
-requires-python =">3.10.0"
+requires-python = ">3.10.0"
