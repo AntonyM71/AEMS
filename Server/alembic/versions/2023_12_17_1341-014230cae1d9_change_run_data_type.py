@@ -1,10 +1,11 @@
 """Change Run data type
 
 Revision ID: 014230cae1d9
-Revises: 
+Revises:
 Create Date: 2023-12-17 13:41:41.818024
 
 """
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 

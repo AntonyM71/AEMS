@@ -61,23 +61,21 @@ async def get_heat_info(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatInfoResponse]:
-
     heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
-
 
     heat_info_response = [
         HeatInfoResponse(
-            id= h.__dict__["id"],
+            id=h.__dict__["id"],
             heat_id=h.__dict__["heat_id"],
-            athlete_id = h.__dict__["athlete_id"],
-            phase_id = h.__dict__["phase_id"],
+            athlete_id=h.__dict__["athlete_id"],
+            phase_id=h.__dict__["phase_id"],
             number_of_runs_for_score=h.phases.number_of_runs_for_score,
             number_of_runs=h.phases.number_of_runs,
             scoresheet=h.phases.scoresheet,
             first_name=h.athletes.first_name,
             last_name=h.athletes.last_name,
             bib=h.athletes.bib,
-            last_phase_rank = h.last_phase_rank
+            last_phase_rank=h.last_phase_rank,
         )
         for h in heat_info
     ]
@@ -264,8 +262,8 @@ async def get_heat_scores(
                 bib_number=a_info.bib,
             )
         )
-    athlete_scores_with_info.sort(key = lambda x: x.bib_number)
-    athlete_scores_with_info.sort(key = lambda x: x.last_phase_rank or 0)
+    athlete_scores_with_info.sort(key=lambda x: x.bib_number)
+    athlete_scores_with_info.sort(key=lambda x: x.last_phase_rank or 0)
     return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
 
 
@@ -280,8 +278,8 @@ async def get_phase_scores(
 ) -> PhaseScoresResponse:
     return calculate_phase_scores(phase_id=phase_id, db=db)
 
-def calculate_phase_scores(    phase_id: str,
-    db: Session )-> PhaseScoresResponse:
+
+def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)

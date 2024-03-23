@@ -1,7 +1,5 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/anaconda-postgres
 {
-  "name": "Anaconda (Python 3) & PostgreSQL",
+  "name": "Python 3 & PostgreSQL",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -9,14 +7,10 @@
     "ghcr.io/devcontainers/features/node:1": {}
   },
 
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [5432],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "onCreateCommand": "conda init",
   "postCreateCommand": "bash .devcontainer/setupEnvs.sh",
 
   // Configure tool-specific properties.
@@ -27,7 +21,6 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "tamasfe.even-better-toml",
         "vscodeshift.mui-snippets",
         "ms-vscode-remote.remote-containers",
         "kevinrose.vsc-python-indent",
@@ -46,7 +39,8 @@
         "mgesbert.python-path",
         "yzhang.markdown-all-in-one",
         "ms-azuretools.vscode-docker",
-        "Zignd.html-css-class-completion"
+        "Zignd.html-css-class-completion",
+        "donjayamanne.python-environment-manager"
       ]
     }
   }

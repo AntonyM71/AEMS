@@ -4,26 +4,18 @@ import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
 import RouterLink from "next/link"
 import { useSelector } from "react-redux"
-import {
-	getSelectedCompetition,
-	getSelectedEvent,
-	getSelectedHeat,
-	getSelectedPhase
-} from "../../redux/atoms/competitions"
+import { getSelectedHeat } from "../../redux/atoms/competitions"
 
 import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../components/competition/MainSelector"
 
 const Judging = () => {
-	const selectedCompetition = useSelector(getSelectedCompetition)
-	const selectedEvent = useSelector(getSelectedEvent)
-	const selectedPhase = useSelector(getSelectedPhase)
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	const competition = selectedCompetition
-	const event = selectedEvent
-	const phase = selectedPhase
+	const judgeNumberArray = new Array(3).fill(null).map((_, i) => i + 1)
+
 	const heat = selectedHeat
+
 	if (heat) {
 		return (
 			<Grid
@@ -35,39 +27,11 @@ const Judging = () => {
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									href="/scribe/1"
-									color="inherit"
-								>
-									<Button variant="contained" fullWidth>
-										Scribe 1
-									</Button>
-								</Link>
-							</Grid>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									href="/scribe/2"
-									color="inherit"
-								>
-									<Button variant="contained" fullWidth>
-										Scribe 2
-									</Button>
-								</Link>
-							</Grid>
-							<Grid item xs>
-								<Link
-									component={RouterLink}
-									href="/scribe/3"
-									color="inherit"
-								>
-									<Button variant="contained" fullWidth>
-										Scribe 3
-									</Button>
-								</Link>
-							</Grid>
+							{judgeNumberArray.map((j: number) => (
+									<Grid item xs key={j}>
+										<ScribeButton n={j} />
+									</Grid>
+								))}
 						</Grid>
 					</Paper>
 				</Grid>
@@ -90,5 +54,13 @@ const Judging = () => {
 		</Grid>
 	)
 }
+
+const ScribeButton = ({ n }: { n: number }) => (
+		<Link component={RouterLink} href={`scribe/${n}`} color="inherit">
+			<Button variant="contained" fullWidth>
+				Scribe {n}
+			</Button>
+		</Link>
+	)
 
 export default Judging

@@ -122,9 +122,9 @@ def calculate_run_score(
                 filtered_move_scores[move_metahash]
                 < scored_move.total_score_with_bonuses
             ):
-                filtered_move_scores[
-                    move_metahash
-                ] = scored_move.total_score_with_bonuses
+                filtered_move_scores[move_metahash] = (
+                    scored_move.total_score_with_bonuses
+                )
 
     return AthleteScoreInfo(
         score=sum(filtered_move_scores.values()),
