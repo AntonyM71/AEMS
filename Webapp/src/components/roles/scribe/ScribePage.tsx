@@ -30,6 +30,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			</Grid>
 		)
 	}
+
+	return <></>
 }
 
 export default Scribe

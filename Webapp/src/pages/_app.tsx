@@ -3,6 +3,7 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { cyan, orange, red } from "@mui/material/colors"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
 import useMediaQuery from "@mui/material/useMediaQuery"
+import { AppProps } from "next/dist/shared/lib/router/router"
 import { useEffect, useMemo } from "react"
 import { Toaster } from "react-hot-toast"
 import { Provider, useDispatch, useSelector } from "react-redux"
@@ -10,7 +11,7 @@ import Header from "../components/header/Header"
 import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 import { setupStore } from "../redux/store"
 const store = setupStore()
-const App = ({ children }) => {
+const App = ({ children }: any) => {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
 	const dispatch = useDispatch()
 	const setPreferDark = (newPreferDark: boolean) =>
@@ -56,7 +57,7 @@ const App = ({ children }) => {
 	)
 }
 
-const WrappedApp = ({ Component, pageProps }) => (
+const WrappedApp = ({ Component, pageProps }: AppProps) => (
 	<Provider store={store}>
 		<App>
 			{" "}

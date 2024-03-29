@@ -1,4 +1,4 @@
-import { Divider } from "@mui/material"
+import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../components/competition/MainSelector"

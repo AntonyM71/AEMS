@@ -30,7 +30,6 @@ export const BonusChip = ({
 				...scoredMoveBonuses,
 				{
 					id: uuidv4(),
-					timestamp: Date.now().toString(),
 					moveId: scoredMove.id,
 					bonusId: availableBonus.id
 				}

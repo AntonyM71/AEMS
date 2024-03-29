@@ -39,3 +39,23 @@ uvicorn api:app \\ run the backend service
 ```
 
 More instructions for running linting and tests can be found in [the Server README](./Server/README.md)
+
+## Deploying to Local Production
+
+### Requirements
+
+A machine running a docker runtime
+
+### Run Docker Compose
+
+```
+docker-compose -f docker-compose.yaml  up
+```
+
+### Rebuild Docker compose based on latest code
+
+This may take a few minutes
+
+```
+docker-compose -f docker-compose.yaml  up
+```
