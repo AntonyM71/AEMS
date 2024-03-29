@@ -89,6 +89,7 @@ export const PhaseScoreTable = () => {
 								<Button
 									variant="contained"
 									color="info"
+									// eslint-disable-next-line @typescript-eslint/no-misused-promises
 									onClick={downloadFile}
 								>
 									Download PDF

@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 
-import { Dialog, Divider, Typography } from "@mui/material"
 import Button from "@mui/material/Button"
+import Dialog from "@mui/material/Dialog"
+import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
 import InputLabel from "@mui/material/InputLabel"
@@ -10,6 +11,7 @@ import Paper from "@mui/material/Paper"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
 import {
 	DataGrid,
 	GridColDef,
@@ -224,9 +226,9 @@ const AddAthletesToHeat = (props: {
 	const [selectedPhase, setSelectedPhase] = useState<string>(
 		props.phase_id ?? ""
 	)
-	const [newHeat, setSelectedHeat] = useState<string>(selectedHeat ?? "")
+	const [newHeat, setNewHeat] = useState<string>(selectedHeat ?? "")
 	useEffect(() => {
-		setSelectedHeat(selectedHeat)
+		setNewHeat(selectedHeat)
 	}, [selectedHeat])
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
 		heatId: selectedHeat
@@ -250,7 +252,7 @@ const AddAthletesToHeat = (props: {
 		setSelectedPhase(event.target.value)
 	}
 	const onSelectHeat = (event: SelectChangeEvent<string>) => {
-		setSelectedHeat(event.target.value)
+		setNewHeat(event.target.value)
 	}
 
 	const [makeAthlete] = useInsertManyAthletePostMutation()
@@ -339,7 +341,7 @@ const AddAthletesToHeat = (props: {
 		return <h4>Failed to get data from server</h4>
 	}
 	const colWidth = props.id && props.athlete_heat_id ? 12 : 2
-	const phases = data.map((e) => e.phase_foreign || []).flat()
+	const phases = data ? data.map((e) => e.phase_foreign || []).flat() : []
 
 	return (
 		<Grid container spacing={1} alignItems="stretch">
@@ -387,11 +389,13 @@ const AddAthletesToHeat = (props: {
 							fullWidth
 							autoWidth
 						>
-							{heatData.map((heat) => (
-								<MenuItem key={heat.id} value={heat.id}>
-									{heat.name}
-								</MenuItem>
-							))}
+							{heatData
+								? heatData.map((heat) => (
+										<MenuItem key={heat.id} value={heat.id}>
+											{heat.name}
+										</MenuItem>
+								  ))
+								: null}
 						</Select>
 					</FormControl>
 				</Grid>

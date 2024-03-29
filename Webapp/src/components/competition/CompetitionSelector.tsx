@@ -147,6 +147,7 @@ const AddCompetition = () => {
 					fullWidth
 					onChange={handleChange}
 					value={competitionName}
+					// eslint-disable-next-line @typescript-eslint/no-misused-promises
 					onKeyUp={submitCompetition}
 				/>
 			</Grid>
