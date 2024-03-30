@@ -1,10 +1,21 @@
 /* eslint-disable camelcase */
 
+import FormControlLabel from "@mui/material/FormControlLabel"
+import FormGroup from "@mui/material/FormGroup"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid"
+import Switch from "@mui/material/Switch"
+import Typography from "@mui/material/Typography"
+import {
+	DataGrid,
+	GridColDef,
+	GridRenderCellParams,
+	GridRowHeightParams,
+	GridRowsProp
+} from "@mui/x-data-grid"
 import { flatten } from "lodash"
+import { useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
 import {
@@ -25,13 +36,39 @@ export const HeatScoreTable = () => {
 			},
 			{ refetchOnMountOrArgChange: true }
 		)
+	const [showJudgeScores, setShowJudgeScores] = useState<boolean>(false)
 	if (data && scoreData && selectedHeat && !isLoading && !isScoreLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={1} alignItems="stretch">
-					<Grid item xs={12}>
+				<Grid
+					container
+					spacing={1}
+					alignItems="center"
+					justifyContent="space-between"
+				>
+					<Grid item xs={6}>
 						<h3>{`Heat: ${data.name || ""}`}</h3>
-						<HeatAthleteScoreTable athletes={scoreData} />
+					</Grid>
+					<Grid item xs={6} alignContent="right">
+						<FormGroup sx={{ alignContent: "end" }}>
+							<FormControlLabel
+								control={
+									<Switch
+										value={showJudgeScores}
+										onClick={() =>
+											setShowJudgeScores(!showJudgeScores)
+										}
+									/>
+								}
+								label="Show Judge Scores"
+							/>
+						</FormGroup>
+					</Grid>
+					<Grid item xs={12}>
+						<HeatAthleteScoreTable
+							athletes={scoreData}
+							showIndividualJudgeScores={showJudgeScores}
+						/>
 					</Grid>
 				</Grid>
 			</Paper>
@@ -44,14 +81,54 @@ export const HeatScoreTable = () => {
 }
 
 export const HeatAthleteScoreTable = ({
-	athletes
+	athletes,
+	showIndividualJudgeScores = false
 }: {
 	athletes: HeatScoresResponse
+	showIndividualJudgeScores?: boolean
 }) => {
 	const maxRuns = Math.max(...athletes.scores.map((a) => a.run_scores.length))
 	const runCols: GridColDef[] = []
 	for (let i = 0; i < maxRuns; i++) {
-		runCols.push({ field: `run_${i + 1}`, headerName: `Run ${i + 1}` })
+		runCols.push({
+			field: `run_${i + 1}`,
+			headerName: `Run ${i + 1}`,
+			renderCell: (params: GridRenderCellParams<any, DetailScores>) => (
+				<Grid
+					container
+					direction="column"
+					justifyContent={
+						showIndividualJudgeScores ? "flex-end" : "center"
+					}
+					alignItems="center"
+					sx={{ height: "80%" }}
+				>
+					{showIndividualJudgeScores ? (
+						params.value?.judgeScores.map((s, j) => (
+							<Grid item key={j}>
+								<Typography variant={"body2"}>
+									{`J${s.judgeId}: ${
+										s.score.toFixed(2) || "0"
+									}`}
+								</Typography>
+							</Grid>
+						))
+					) : (
+						<></>
+					)}
+					<Typography
+						variant="body1"
+						sx={
+							showIndividualJudgeScores
+								? { textDecoration: "underline" }
+								: {}
+						}
+					>
+						{params.value?.meanScore.toFixed(2) ?? 0}
+					</Typography>
+				</Grid>
+			)
+		})
 	}
 
 	const columns: GridColDef[] = [
@@ -64,12 +141,18 @@ export const HeatAthleteScoreTable = ({
 
 	const rows: GridRowsProp = flatten(
 		athletes.scores.map((a, i) => {
-			const runScores: Record<string, string> = {}
-			runCols.forEach(
-				(r, j) =>
-					(runScores[r.field] =
-						a.run_scores[j]?.mean_run_score.toFixed(2) || "0")
-			)
+			const runScores: Record<string, DetailScores> = {}
+			runCols.forEach((r, j) => {
+				const detailScores: DetailScores = {
+					meanScore: a.run_scores[j]?.mean_run_score || 0,
+					judgeScores:
+						a.run_scores[j]?.judge_scores.map((js) => ({
+							score: js.score_info.score,
+							judgeId: js.judge_id
+						})) ?? []
+				}
+				runScores[r.field] = detailScores
+			})
 
 			return {
 				id: i,
@@ -88,6 +171,16 @@ export const HeatAthleteScoreTable = ({
 				rows={rows}
 				columns={columns}
 				disableRowSelectionOnClick
+				getRowHeight={({ id, densityFactor }: GridRowHeightParams) => {
+					if (!showIndividualJudgeScores) {
+						return 52
+					}
+					if ((id as number) % 2 === 0) {
+						return 100 * densityFactor
+					}
+
+					return null
+				}}
 			/>
 		)
 	}
@@ -97,4 +190,9 @@ export const HeatAthleteScoreTable = ({
 			<h4>No athletes in heat</h4>
 		</div>
 	)
+}
+
+interface DetailScores {
+	judgeScores: { score: number; judgeId: string }[]
+	meanScore: number
 }
