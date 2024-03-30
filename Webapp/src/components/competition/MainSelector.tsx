@@ -9,15 +9,22 @@ export const SelectorDisplay = ({
 	showCompetition = true,
 	showEvent = true,
 	showPhase = true,
-	showHeat = true
+	showHeat = true,
+	vertical = false
 }: {
 	showDetailed?: boolean
 	showCompetition?: boolean
 	showEvent?: boolean
 	showPhase?: boolean
 	showHeat?: boolean
+	vertical?: boolean
 }) => (
-	<Grid container spacing={1} alignItems="stretch">
+	<Grid
+		container
+		spacing={1}
+		alignItems="stretch"
+		direction={vertical ? "column" : "row"}
+	>
 		{showCompetition && (
 			<Grid item xs>
 				<CompetitionSelector showDetailed={showDetailed} />
