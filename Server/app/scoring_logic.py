@@ -405,7 +405,7 @@ def calculate_tied_rank(
         ranking=sorted_athlete_score.index(
             next(filter(lambda n: n.athlete_id == athlete_id, sorted_athlete_score))
         ),
-        reason="Highest Scoring Run",
+        reason="Resolved by Tiebreak Engine",
     )
 
 

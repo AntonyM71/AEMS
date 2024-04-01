@@ -1586,7 +1586,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -1621,7 +1621,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=30.0,
                 ranking=1,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
         ]
 
@@ -1767,7 +1767,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -1802,7 +1802,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=30.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -1837,7 +1837,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
         ]
 
@@ -2022,7 +2022,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2070,7 +2070,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -2105,7 +2105,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
         ]
 
@@ -2251,7 +2251,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=20.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2286,7 +2286,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -2321,7 +2321,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Highest Scoring Run",
+                reason="TieBreak: Resolved by Tiebreak Engine",
             ),
         ]
 
