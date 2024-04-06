@@ -3,7 +3,6 @@
 import FormControlLabel from "@mui/material/FormControlLabel"
 import FormGroup from "@mui/material/FormGroup"
 import Grid from "@mui/material/Grid"
-import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
@@ -39,39 +38,37 @@ export const HeatScoreTable = () => {
 	const [showJudgeScores, setShowJudgeScores] = useState<boolean>(false)
 	if (data && scoreData && selectedHeat && !isLoading && !isScoreLoading) {
 		return (
-			<Paper sx={{ padding: "1em" }}>
-				<Grid
-					container
-					spacing={1}
-					alignItems="center"
-					justifyContent="space-between"
-				>
-					<Grid item xs={6}>
-						<h3>{`Heat: ${data.name || ""}`}</h3>
-					</Grid>
-					<Grid item xs={6} alignContent="right">
-						<FormGroup sx={{ alignContent: "end" }}>
-							<FormControlLabel
-								control={
-									<Switch
-										value={showJudgeScores}
-										onClick={() =>
-											setShowJudgeScores(!showJudgeScores)
-										}
-									/>
-								}
-								label="Show Judge Scores"
-							/>
-						</FormGroup>
-					</Grid>
-					<Grid item xs={12}>
-						<HeatAthleteScoreTable
-							athletes={scoreData}
-							showIndividualJudgeScores={showJudgeScores}
-						/>
-					</Grid>
+			<Grid
+				container
+				spacing={1}
+				alignItems="center"
+				justifyContent="space-between"
+			>
+				<Grid item xs={6}>
+					<h3>{`Heat: ${data.name || ""}`}</h3>
 				</Grid>
-			</Paper>
+				<Grid item xs={6} alignContent="right">
+					<FormGroup sx={{ alignContent: "end" }}>
+						<FormControlLabel
+							control={
+								<Switch
+									value={showJudgeScores}
+									onClick={() =>
+										setShowJudgeScores(!showJudgeScores)
+									}
+								/>
+							}
+							label="Show Judge Scores"
+						/>
+					</FormGroup>
+				</Grid>
+				<Grid item xs={12}>
+					<HeatAthleteScoreTable
+						athletes={scoreData}
+						showIndividualJudgeScores={showJudgeScores}
+					/>
+				</Grid>
+			</Grid>
 		)
 	} else if (isLoading) {
 		return <Skeleton variant="rectangular" />

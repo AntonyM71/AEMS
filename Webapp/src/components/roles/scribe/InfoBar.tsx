@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Modal from "@mui/material/Modal"
@@ -64,9 +63,9 @@ export const InfoBar = ({
 				aria-labelledby="modal-modal-title"
 				aria-describedby="modal-modal-description"
 			>
-				<Box sx={style}>
+				<Paper sx={style}>
 					<HeatScoreTable />
-				</Box>
+				</Paper>
 			</Modal>
 			<Grid container spacing={1}>
 				<Grid item xs={10}>
@@ -144,7 +143,6 @@ const style = {
 	width: "70%",
 	height: "80%",
 	bgcolor: "background.paper",
-	border: "2px solid #000",
 	boxShadow: 24,
 	p: 4
 }
