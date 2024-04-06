@@ -1,0 +1,20 @@
+.container {
+	display: grid;
+	grid-template-areas:
+		"header"
+		"content";
+	height: 100vh;
+	max-height: 100vh;
+	grid-template-rows: min-content 1fr;
+}
+.header {
+	grid-area: "header";
+	display: grid;
+}
+.content {
+	grid-area: "content";
+	display: grid;
+	overflow-y: auto;
+	grid-row-end: 3;
+	height: "100%";
+}
