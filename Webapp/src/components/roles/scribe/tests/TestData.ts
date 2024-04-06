@@ -4,7 +4,7 @@ export const testMoves: movesType[] = [
 	{
 		id: "mf01",
 		name: "Single Test",
-		direction: "SINGLE",
+		direction: "S",
 		fl_score: 10,
 		rb_score: 10
 	},
@@ -25,7 +25,7 @@ export const testMoves: movesType[] = [
 	{
 		id: "mf27",
 		name: "LRFB Test",
-		direction: "LRFB",
+		direction: "S",
 		fl_score: 10,
 		rb_score: 10
 	}

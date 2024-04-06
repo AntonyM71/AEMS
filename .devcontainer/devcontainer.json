@@ -40,7 +40,8 @@
         "yzhang.markdown-all-in-one",
         "ms-azuretools.vscode-docker",
         "Zignd.html-css-class-completion",
-        "donjayamanne.python-environment-manager"
+        "donjayamanne.python-environment-manager",
+        "VisualStudioExptTeam.vscodeintellicode"
       ]
     }
   }

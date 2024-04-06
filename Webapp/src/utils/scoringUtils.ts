@@ -13,6 +13,18 @@ export function calculateSingleJudgeRunScore(
 	availableMoves: movesType[],
 	availableBonuses: AvailableBonusType[]
 ): RunScoreInfo {
+	const trophyMoveIDs = availableMoves
+		.map((a) => {
+			if (
+				["trophy 1", "trophy 2", "trophy 3"].includes(
+					a.name.toLowerCase()
+				)
+			) {
+				return a.id
+			}
+		})
+		.filter((n) => n)
+	console.log(trophyMoveIDs)
 	const groupedMoves = groupBy(scoredMoves, (m) => m.moveId)
 	const uniqueScoredMoves = Object.keys(groupedMoves)
 	const scoredMoveScores = uniqueScoredMoves.map((id) => {
@@ -34,7 +46,8 @@ export function calculateSingleJudgeRunScore(
 		scoredMoveScores && scoredMoves.length
 			? scoredMoveScores
 					.flat()
-					.reduce(getMaximumScoredMoveFromArrayByValue).value
+					.map((a) => a.value)
+					?.reduce(getMaximumScoredMoveFromArrayByValue)
 			: 0
 
 	let runScore = 0
@@ -45,13 +58,20 @@ export function calculateSingleJudgeRunScore(
 			const leftRightPartition = partition(am, (ami) =>
 				frontLeftDirectionValues.includes(ami.direction)
 			)
+
 			leftRightPartition.map((directionalScoredMoves) => {
+				console.log(directionalScoredMoves)
+				const moveScore = trophyMoveIDs.includes(
+					directionalScoredMoves[0]?.baseMove
+				)
+					? directionalScoredMoves
+							.map((a) => a.value)
+							?.reduce(getSumOfMoves, 0)
+					: directionalScoredMoves
+							.map((a) => a.value)
+							?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
 				if (directionalScoredMoves.length !== 0) {
-					runScore =
-						runScore +
-						directionalScoredMoves.reduce(
-							getMaximumScoredMoveFromArrayByValue
-						).value
+					runScore = runScore + moveScore
 				}
 			})
 		}
@@ -60,10 +80,10 @@ export function calculateSingleJudgeRunScore(
 	return { score: runScore, highestMove: highestScoredMove }
 }
 
-const getMaximumScoredMoveFromArrayByValue = (
-	prev: MoveScoreInfo,
-	current: MoveScoreInfo
-) => (prev.value > current.value ? prev : current)
+const getSumOfMoves = (prev: number, current: number): number => prev + current
+
+const getMaximumScoredMoveFromArrayByValue = (prev: number, current: number) =>
+	prev > current ? prev : current
 
 export const calculateMoveScore = (
 	scoredMove: scoredMovesType,
@@ -126,4 +146,4 @@ export interface RunScoreInfo {
 	highestMove: number
 }
 
-const frontLeftDirectionValues = ["LF", "L", "F"]
+const frontLeftDirectionValues = ["LF", "L", "F", "S"]

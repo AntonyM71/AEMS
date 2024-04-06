@@ -17,7 +17,7 @@ class PydanticAvailableMoves(BaseModel):
     name: str
     fl_score: int
     rb_score: int
-    direction: Literal["LR", "FB", "LRFB"]
+    direction: Literal["LR", "FB", "S"]
 
     class Config:
         orm_mode = True

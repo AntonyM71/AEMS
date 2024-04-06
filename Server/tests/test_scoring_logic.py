@@ -36,9 +36,9 @@ def available_moves() -> list[AvailableMoves]:
             id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
             sheet_id="3e1104be-6a11-4541-a6e2-00445cd94421",
             name="Trophy 1",
-            fl_score=10,
+            fl_score=9,
             rb_score=0,
-            direction="SINGLE",
+            direction="S",
         ),
     ]
 
@@ -155,7 +155,7 @@ class TestScoring:
 
         assert got.score == 10
 
-    def test_it_returns_20_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
+    def test_it_returns_18_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
         self,
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
@@ -169,7 +169,7 @@ class TestScoring:
                 phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
                 judge_id="meg",
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                direction="F",
+                direction="S",
             ),
             PydanticScoredMovesResponse(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
@@ -179,7 +179,7 @@ class TestScoring:
                 phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
                 judge_id="meg",
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                direction="F",
+                direction="S",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = []
@@ -191,7 +191,7 @@ class TestScoring:
             available_moves=available_moves,
         )
 
-        assert got.score == 20
+        assert got.score == 18
 
     def test_it_returns_20_with_scored_back_move_and_a_valid_scoresheet(
         self,

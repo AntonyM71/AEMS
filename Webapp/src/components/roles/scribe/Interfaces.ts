@@ -17,8 +17,8 @@ export interface movesType {
 	rb_score: number
 }
 
-export type AvailableMoveDirections = "SINGLE" | "LR" | "FB" | "LRFB"
-export type directionType = frontLeftDirections | rightBackDirections | "SINGLE"
+export type AvailableMoveDirections = "S" | "LR" | "FB"
+export type directionType = frontLeftDirections | rightBackDirections | "S"
 export type frontLeftDirections = "LF" | "L" | "F"
 export type rightBackDirections = "RB" | "R" | "B"
 export type removeScoredMoveType = (id: string) => void

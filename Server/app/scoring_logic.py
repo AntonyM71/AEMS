@@ -14,7 +14,7 @@ def all_equal(iterable: list) -> bool:
 class PydanticScoredMoves(BaseModel):
     id: UUID
     move_id: UUID
-    direction: Literal["L", "R", "F", "B", "LF", "RB"]
+    direction: Literal["L", "R", "F", "B", "S"]
 
 
 class PydanticScoredBonuses(BaseModel):
@@ -180,7 +180,7 @@ def calculate_individual_move_scores(
         )
         this_scored_move_score = (
             this_move_scoredata.fl_score
-            if move.direction in ("FL")
+            if move.direction in ([ "F", "L", "S"])
             else this_move_scoredata.rb_score
         )
         bonus_total = calculate_bonus_total(

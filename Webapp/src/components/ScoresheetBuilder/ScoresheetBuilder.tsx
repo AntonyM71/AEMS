@@ -9,6 +9,7 @@ import {
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../redux/services/aemsApi"
+import { AvailableMoveDirections } from "../roles/scribe/Interfaces"
 import { AddNewMove } from "./AddMove"
 import { EditDeleteMove } from "./EditDeleteMove"
 import { MoveData } from "./EditMove"
@@ -222,7 +223,7 @@ interface AvailableMoves {
 	name: string
 	fl_score: number
 	rb_score: number
-	direction: "LR" | "FB" | "LRFB"
+	direction: AvailableMoveDirections
 }
 
 interface NewBonusInfo {

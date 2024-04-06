@@ -57,5 +57,5 @@ docker-compose -f docker-compose.yaml  up
 This may take a few minutes
 
 ```
-docker-compose -f docker-compose.yaml  up
+docker-compose -f docker-compose.yaml  up --build
 ```

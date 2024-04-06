@@ -86,7 +86,7 @@ const LinkList = () => (
 						href={"/Score"}
 						color="inherit"
 					>
-						Score
+						Results
 					</Link>
 				</Typography>
 			</ListItemText>

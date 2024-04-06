@@ -121,12 +121,12 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				</div>
 			</Paper>
 		)
-	} else if (props.move.direction === "LRFB") {
+	} else if (props.move.direction === "S") {
 		return (
 			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
-					<Grid container spacing={1}>
+					<Grid container spacing={1} justifyContent="center">
 						<Grid item xs={6}>
 							<Button
 								variant="contained"
@@ -134,25 +134,11 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								aria-label={"button1"}
 								color="primary"
 								onClick={() =>
-									addScoredMove(props.move.id, "LF")
+									addScoredMove(props.move.id, "S")
 								}
 								data-testid={"button-" + props.move.id + "-lf"}
 							>
-								L/F
-							</Button>
-						</Grid>
-						<Grid item xs={6}>
-							<Button
-								variant="contained"
-								fullWidth
-								aria-label={"button2"}
-								color="secondary"
-								onClick={() =>
-									addScoredMove(props.move.id, "RB")
-								}
-								data-testid={"button-" + props.move.id + "-rb"}
-							>
-								R/B
+								Single
 							</Button>
 						</Grid>
 					</Grid>
