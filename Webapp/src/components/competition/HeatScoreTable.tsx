@@ -90,41 +90,7 @@ export const HeatAthleteScoreTable = ({
 		runCols.push({
 			field: `run_${i + 1}`,
 			headerName: `Run ${i + 1}`,
-			renderCell: (params: GridRenderCellParams<any, DetailScores>) => (
-				<Grid
-					container
-					direction="column"
-					justifyContent={
-						showIndividualJudgeScores ? "flex-end" : "center"
-					}
-					alignItems="center"
-					sx={{ height: "80%" }}
-				>
-					{showIndividualJudgeScores ? (
-						params.value?.judgeScores.map((s, j) => (
-							<Grid item key={j}>
-								<Typography variant={"body2"}>
-									{`J${s.judgeId}: ${
-										s.score.toFixed(2) || "0"
-									}`}
-								</Typography>
-							</Grid>
-						))
-					) : (
-						<></>
-					)}
-					<Typography
-						variant="body1"
-						sx={
-							showIndividualJudgeScores
-								? { textDecoration: "underline" }
-								: {}
-						}
-					>
-						{params.value?.meanScore.toFixed(2) ?? 0}
-					</Typography>
-				</Grid>
-			)
+			renderCell: DetailScoreView(showIndividualJudgeScores)
 		})
 	}
 
@@ -168,15 +134,12 @@ export const HeatAthleteScoreTable = ({
 				rows={rows}
 				columns={columns}
 				disableRowSelectionOnClick
-				getRowHeight={({ id, densityFactor }: GridRowHeightParams) => {
+				getRowHeight={({ densityFactor }: GridRowHeightParams) => {
 					if (!showIndividualJudgeScores) {
 						return 52
 					}
-					if ((id as number) % 2 === 0) {
-						return 100 * densityFactor
-					}
 
-					return null
+					return 100 * densityFactor
 				}}
 			/>
 		)
@@ -193,3 +156,43 @@ interface DetailScores {
 	judgeScores: { score: number; judgeId: string }[]
 	meanScore: number
 }
+
+export const DetailScoreView =
+	(showIndividualJudgeScores: boolean) =>
+	(params: GridRenderCellParams<any, DetailScores>) => {
+		console.log(params.value)
+
+		return (
+			<Grid
+				container
+				direction="column"
+				justifyContent={
+					showIndividualJudgeScores ? "flex-end" : "center"
+				}
+				alignItems="center"
+				sx={{ height: "80%" }}
+			>
+				{showIndividualJudgeScores ? (
+					params.value?.judgeScores?.map((s, j) => (
+						<Grid item key={j}>
+							<Typography variant={"body2"}>
+								{`J${s.judgeId}: ${s.score?.toFixed(2) || "0"}`}
+							</Typography>
+						</Grid>
+					))
+				) : (
+					<></>
+				)}
+				<Typography
+					variant="body1"
+					sx={
+						showIndividualJudgeScores
+							? { textDecoration: "underline" }
+							: {}
+					}
+				>
+					{params.value?.meanScore?.toFixed(2) ?? 0}
+				</Typography>
+			</Grid>
+		)
+	}

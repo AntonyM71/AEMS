@@ -24,7 +24,6 @@ export function calculateSingleJudgeRunScore(
 			}
 		})
 		.filter((n) => n)
-	console.log(trophyMoveIDs)
 	const groupedMoves = groupBy(scoredMoves, (m) => m.moveId)
 	const uniqueScoredMoves = Object.keys(groupedMoves)
 	const scoredMoveScores = uniqueScoredMoves.map((id) => {
@@ -60,7 +59,6 @@ export function calculateSingleJudgeRunScore(
 			)
 
 			leftRightPartition.map((directionalScoredMoves) => {
-				console.log(directionalScoredMoves)
 				const moveScore = trophyMoveIDs.includes(
 					directionalScoredMoves[0]?.baseMove
 				)
