@@ -31,7 +31,15 @@ def available_moves() -> list[AvailableMoves]:
             fl_score=10,
             rb_score=20,
             direction="fb",
-        )
+        ),
+        AvailableMoves(
+            id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
+            sheet_id="3e1104be-6a11-4541-a6e2-00445cd94421",
+            name="Trophy 1",
+            fl_score=10,
+            rb_score=0,
+            direction="SINGLE",
+        ),
     ]
 
 
@@ -146,6 +154,44 @@ class TestScoring:
         )
 
         assert got.score == 10
+
+    def test_it_returns_20_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
+        self,
+        available_moves: list[AvailableMoves],
+        available_bonuses: list[AvailableBonuses],
+    ) -> None:
+        scored_moves: list[PydanticScoredMovesResponse] = [
+            PydanticScoredMovesResponse(
+                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
+                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                run_number="1",
+                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                judge_id="meg",
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                direction="F",
+            ),
+            PydanticScoredMovesResponse(
+                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
+                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
+                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                run_number="1",
+                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                judge_id="meg",
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                direction="F",
+            ),
+        ]
+        scored_bonuses: list[PydanticScoredBonusesResponse] = []
+
+        got = calculate_run_score(
+            scored_moves,
+            scored_bonuses,
+            available_bonuses=available_bonuses,
+            available_moves=available_moves,
+        )
+
+        assert got.score == 20
 
     def test_it_returns_20_with_scored_back_move_and_a_valid_scoresheet(
         self,
