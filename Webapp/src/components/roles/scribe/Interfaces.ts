@@ -19,8 +19,8 @@ export interface movesType {
 
 export type AvailableMoveDirections = "S" | "LR" | "FB"
 export type directionType = frontLeftDirections | rightBackDirections | "S"
-export type frontLeftDirections = "LF" | "L" | "F"
-export type rightBackDirections = "RB" | "R" | "B"
+export type frontLeftDirections = "L" | "F"
+export type rightBackDirections = "R" | "B"
 export type removeScoredMoveType = (id: string) => void
 
 export interface scoredMovesType {
