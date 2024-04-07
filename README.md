@@ -87,7 +87,7 @@ A machine running a docker runtime
 ### Run Docker Compose
 
 ```
-docker-compose -f docker-compose.yaml  up
+docker compose -f docker-compose.yaml  up
 ```
 
 ### Rebuild Docker compose based on latest code
@@ -95,7 +95,7 @@ docker-compose -f docker-compose.yaml  up
 This may take a few minutes
 
 ```
-docker-compose -f docker-compose.yaml  up --build
+docker compose -f docker-compose.yaml  up --build
 ```
 
 ### Set the docker compose to run automatically on startup
