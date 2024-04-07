@@ -28,8 +28,7 @@
       "source.organizeImports": "explicit"
     },
     "[scss]": {
-      "editor.suggest.insertMode": "replace",
-      "gitlens.codeLens.scopes": ["document"]
+      "editor.suggest.insertMode": "replace"
     },
     "[typescriptreact]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -55,17 +54,9 @@
     },
     "editor.formatOnType": true,
     "terminal.integrated.inheritEnv": false,
-    "python.diagnostics.sourceMapsEnabled": true,
-    "python.formatting.provider": "black",
-    "python.linting.flake8Enabled": true,
-    "python.linting.mypyEnabled": true,
     "eslint.configFile": "./Webapp/.eslintrc.js",
     "python.envFile": "${workspaceFolder}/Server/.env",
-    "python.experiments.enabled": false,
-    "material-ui-snippets.showNotesOnStartup": false,
-    "material-ui-snippets.importPaths": "second level",
-    "atlascode.jira.enabled": false,
-    "atlascode.helpExplorerEnabled": false,
+
     "breadcrumbs.showMethods": false,
     "zenMode.hideLineNumbers": false,
     "zenMode.hideStatusBar": false,
