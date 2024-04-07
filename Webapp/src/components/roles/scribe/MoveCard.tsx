@@ -47,11 +47,11 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 	}
 	if (props.move.direction === "LR") {
 		return (
-			<Paper sx={{ padding: "0.5em" }}>
+			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
-					<Grid container spacing={1} alignItems="stretch">
-						<Grid item xs={6}>
+					<Grid container alignItems="stretch">
+						<Grid item xs={6} sx={{ padding: "4px" }}>
 							<Button
 								variant="contained"
 								aria-label={"button1"}
@@ -65,7 +65,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								L
 							</Button>
 						</Grid>
-						<Grid item xs={6}>
+						<Grid item xs={6} sx={{ padding: "4px" }}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -88,8 +88,8 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
-					<Grid container spacing={1}>
-						<Grid item xs={6}>
+					<Grid container>
+						<Grid item xs={6} sx={{ padding: "4px" }}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -103,7 +103,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								F
 							</Button>
 						</Grid>
-						<Grid item xs={6}>
+						<Grid item xs={6} sx={{ padding: "4px" }}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -126,8 +126,8 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 			<Paper>
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
-					<Grid container spacing={1} justifyContent="center">
-						<Grid item xs={6}>
+					<Grid container justifyContent="center">
+						<Grid item xs={6} sx={{ padding: "4px" }}>
 							<Button
 								variant="contained"
 								fullWidth

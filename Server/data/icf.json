@@ -122,6 +122,7 @@
   {
     "Move": "Loop",
     "Value": 60,
+    "ReverseValue": 90,
     "Clean": 30,
     "SuperClean": 40,
     "Air": 30,
@@ -129,16 +130,7 @@
     "Link": 20,
     "Direction": "FB"
   },
-  {
-    "Move": "Back Loop",
-    "Value": 90,
-    "Clean": 30,
-    "SuperClean": 40,
-    "Air": 30,
-    "Huge": 40,
-    "Link": 20,
-    "Direction": "S"
-  },
+
   {
     "Move": "Space Godzilla",
     "Value": 100,

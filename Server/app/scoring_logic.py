@@ -180,7 +180,7 @@ def calculate_individual_move_scores(
         )
         this_scored_move_score = (
             this_move_scoredata.fl_score
-            if move.direction in ([ "F", "L", "S"])
+            if move.direction in (["F", "L", "S"])
             else this_move_scoredata.rb_score
         )
         bonus_total = calculate_bonus_total(
