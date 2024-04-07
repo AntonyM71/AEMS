@@ -92,7 +92,7 @@ export const PhaseScoreTable = () => {
 									// eslint-disable-next-line @typescript-eslint/no-misused-promises
 									onClick={downloadFile}
 								>
-									Download PDF
+									Create PDF
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
