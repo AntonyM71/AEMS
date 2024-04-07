@@ -7,7 +7,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Entry 2",
@@ -17,7 +17,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Entry 3",
@@ -27,7 +27,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Shuvit",
@@ -37,7 +37,7 @@
     "Air": 10,
     "Huge": 10,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Spin",
@@ -47,7 +47,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Felix",
@@ -57,7 +57,7 @@
     "Air": 0,
     "Huge": 0,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Cartwheel",
@@ -67,7 +67,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Splitwheel",
@@ -77,7 +77,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Tricky Woo",
@@ -87,7 +87,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Tricky Loop",
@@ -97,7 +97,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Woo Tricky",
@@ -107,7 +107,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Pirouette",
@@ -117,7 +117,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Loop",
@@ -127,7 +127,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": false
+    "Direction": "FB"
   },
   {
     "Move": "Back Loop",
@@ -137,7 +137,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Space Godzilla",
@@ -147,7 +147,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Lunar Orbit",
@@ -157,7 +157,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Lunar Loop",
@@ -167,7 +167,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "McNasty",
@@ -177,7 +177,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Phonics Monkey",
@@ -187,7 +187,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Roundhouse",
@@ -197,7 +197,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Back Roundhouse",
@@ -207,7 +207,7 @@
     "Air": 10,
     "Huge": 20,
     "Link": 10,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Blunt",
@@ -217,7 +217,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Back Blunt",
@@ -227,7 +227,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Pan Am",
@@ -237,7 +237,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Back Pan Am",
@@ -247,7 +247,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 20,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Flip Turn",
@@ -257,7 +257,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Donkey Flip",
@@ -267,7 +267,7 @@
     "Air": 0,
     "Huge": 40,
     "Link": 20,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Airscrew",
@@ -277,7 +277,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Helix",
@@ -287,7 +287,7 @@
     "Air": 0,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Pistol Flip",
@@ -297,7 +297,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": true
+    "Direction": "LR"
   },
   {
     "Move": "Trophy 1",
@@ -307,7 +307,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Trophy 2",
@@ -317,7 +317,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": false
+    "Direction": "S"
   },
   {
     "Move": "Trophy 3",
@@ -327,6 +327,6 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Reverse": false
+    "Direction": "S"
   }
 ]
