@@ -84,6 +84,36 @@ async def get_heat_info(
     return heat_info_response
 
 
+class PhaseResponse(BaseModel):
+
+    id : UUID
+    event_id : UUID
+    name : str
+    number_of_runs : int
+    number_of_runs_for_score: int
+    number_of_judges : int
+    scoresheet: UUID
+
+    class Config:
+        orm_mode = True
+
+
+@scoring_router.get(
+    "/getHeatInfo/{heat_id}/phase",
+    response_class=ORJSONResponse,
+    response_model=list[PhaseResponse],
+)
+async def get_heat_phases(
+    heat_id: str,
+    db: Session = Depends(get_transaction_session),
+) -> list[HeatInfoResponse]:
+    heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
+
+    phases = (set([h.__dict__["phase_id"] for h in heat_info]))
+    phase_info = db.query(Phase).where(Phase.id.in_(list(phases) )).all()
+    return parse_obj_as(list[PhaseResponse], phase_info)
+
+
 @scoring_router.post(
     "/addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}"
 )

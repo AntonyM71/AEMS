@@ -8,15 +8,26 @@ import { getSelectedHeat } from "../../redux/atoms/competitions"
 
 import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../components/competition/MainSelector"
+import { useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery } from "../../redux/services/aemsApi"
 
 const Judging = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
-
-	const judgeNumberArray = new Array(3).fill(null).map((_, i) => i + 1)
+	const { data: phaseData, isLoading: isPhaseDataLoading } =
+		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
+			{ heatId: selectedHeat },
+			{ skip: !selectedHeat }
+		)
+	const maxJudges = phaseData
+		? Math.max(...phaseData.map((p) => p.number_of_judges))
+		: 3
+	console.log(maxJudges)
+	const judgeNumberArray = new Array(maxJudges)
+		.fill(null)
+		.map((_, i) => i + 1)
 
 	const heat = selectedHeat
 
-	if (heat) {
+	if (heat && !isPhaseDataLoading) {
 		return (
 			<Grid
 				container
@@ -32,6 +43,9 @@ const Judging = () => {
 									<ScribeButton n={j} />
 								</Grid>
 							))}
+							<Grid item xs>
+								<HeadJudgeButton />
+							</Grid>
 						</Grid>
 					</Paper>
 				</Grid>
@@ -63,4 +77,11 @@ const ScribeButton = ({ n }: { n: number }) => (
 	</Link>
 )
 
+const HeadJudgeButton = () => (
+	<Link component={RouterLink} href={"HeadJudge"} color="inherit">
+		<Button variant="contained" fullWidth>
+			Head Judge
+		</Button>
+	</Link>
+)
 export default Judging
