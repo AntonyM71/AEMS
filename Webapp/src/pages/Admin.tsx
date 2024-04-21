@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography"
 import { useSelector } from "react-redux"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../components/competition/MainSelector"
+import UploadCsv from "../components/competition/UploadCsv"
 import { getSelectedHeat } from "../redux/atoms/competitions"
 
 export default function Admin() {
@@ -55,6 +56,19 @@ export default function Admin() {
 						</Grid>
 					</Grid>
 				</AccordionDetails>
+			</Accordion>
+
+			<Accordion>
+				<AccordionSummary
+					expandIcon={<ExpandMoreIcon />}
+					aria-controls="panel1-content"
+					id="panel1-header"
+				>
+					Upload Paddlers from CSV
+				</AccordionSummary>
+				<AccordionDetails>
+					<UploadCsv />
+				</AccordionDetails>{" "}
 			</Accordion>
 		</>
 	)

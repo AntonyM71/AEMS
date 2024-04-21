@@ -15,6 +15,7 @@ from app.autogenEndpoints import (
     crud_route_scoresheet,
 )
 from app.customScoringEndpoints import scoring_router
+from app.ingestUpload import ingest_router
 from app.pdfEndpoints import pdf_router
 from app.scoresheetEndpoints import scoresheet_router
 
@@ -25,6 +26,7 @@ app = FastAPI()
 [
     app.include_router(i)
     for i in [
+        ingest_router,
         scoring_router,
         scoresheet_router,
         pdf_router,
