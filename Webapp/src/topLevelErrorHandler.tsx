@@ -11,7 +11,6 @@ export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
 	if (process.env.NODE_ENV === "development" || "test") {
 		// eslint-disable-next-line no-console
-		console.log(e)
 		const message =
 			typeof e == "string"
 				? e

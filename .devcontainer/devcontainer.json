@@ -41,7 +41,9 @@
         "ms-azuretools.vscode-docker",
         "Zignd.html-css-class-completion",
         "donjayamanne.python-environment-manager",
-        "VisualStudioExptTeam.vscodeintellicode"
+        "VisualStudioExptTeam.vscodeintellicode",
+        "ms-vscode.vscode-typescript-next",
+        "dbaeumer.vscode-eslint"
       ]
     }
   }

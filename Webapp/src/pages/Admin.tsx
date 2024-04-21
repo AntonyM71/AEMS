@@ -35,7 +35,7 @@ export default function Admin() {
 					Manage Paddlers in Heat{" "}
 				</AccordionSummary>
 				<AccordionDetails>
-					<Grid container>
+					<Grid container spacing={1}>
 						<Grid item xs={3}>
 							<SelectorDisplay
 								showCompetition={true}

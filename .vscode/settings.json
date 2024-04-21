@@ -2,12 +2,13 @@
   "mui-snippets.importPaths": "second level",
   "mui-snippets.showNotesOnStartup": false,
   "python.linting.mypyEnabled": true,
-  "python.analysis.extraPaths": [
-    "Server"
-  ],
+  "python.analysis.extraPaths": ["Server"],
   "python.createEnvironment.trigger": "prompt",
   "python.languageServer": "Pylance",
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.testing.pytestEnabled": true,
-  "eslint.format.enable": true
+  "eslint.format.enable": true,
+  "python.analysis.autoFormatStrings": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "standard"
 }

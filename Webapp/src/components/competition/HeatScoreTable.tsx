@@ -159,10 +159,8 @@ interface DetailScores {
 
 export const DetailScoreView =
 	(showIndividualJudgeScores: boolean) =>
-	(params: GridRenderCellParams<any, DetailScores>) => {
-		console.log(params.value)
-
-		return (
+	(params: GridRenderCellParams<any, DetailScores>) =>
+		(
 			<Grid
 				container
 				direction="column"
@@ -195,4 +193,3 @@ export const DetailScoreView =
 				</Typography>
 			</Grid>
 		)
-	}

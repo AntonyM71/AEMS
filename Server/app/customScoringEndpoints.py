@@ -36,7 +36,7 @@ scoring_router = APIRouter()
 
 
 class HeatInfoResponse(BaseModel):
-    id: UUID
+    athlete_heat_id: UUID
     heat_id: UUID
     athlete_id: UUID
     phase_id: UUID
@@ -65,7 +65,7 @@ async def get_heat_info(
 
     heat_info_response = [
         HeatInfoResponse(
-            id=h.__dict__["id"],
+            athlete_heat_id=h.__dict__["id"],
             heat_id=h.__dict__["heat_id"],
             athlete_id=h.__dict__["athlete_id"],
             phase_id=h.__dict__["phase_id"],
@@ -79,7 +79,7 @@ async def get_heat_info(
         )
         for h in heat_info
     ]
-    heat_info_response.sort(key=lambda x: x.bib)
+    heat_info_response.sort(key=lambda x: int(x.bib))
     heat_info_response.sort(key=lambda x: x.last_phase_rank or 0)
     return heat_info_response
 
@@ -262,7 +262,7 @@ async def get_heat_scores(
                 bib_number=a_info.bib,
             )
         )
-    athlete_scores_with_info.sort(key=lambda x: x.bib_number)
+    athlete_scores_with_info.sort(key=lambda x: int(x.bib_number))
     athlete_scores_with_info.sort(key=lambda x: x.last_phase_rank or 0)
     return HeatScoresResponse(heat_id=heat_id, scores=athlete_scores_with_info)
 
@@ -345,7 +345,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]
     athletes_without_scores = [a for a in athlete_scores_with_info if not a.ranking]
     athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
-    athletes_without_scores.sort(key=lambda x: x.bib_number)
+    athletes_without_scores.sort(key=lambda x: int(x.bib_number))
 
     return PhaseScoresResponse(
         phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores]

@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 
+import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
@@ -92,12 +93,13 @@ export const HeatAthleteTable = ({
 	const [open, setOpen] = useState<boolean>(false)
 	const handleClose = () => setOpen(false)
 	const [rowData, setRowData] = useState<{
-		id?: string
+		id: string
+		athlete_heat_id?: string
 		first_name?: string
 		last_name?: string
 		bib?: number
 		phase_id?: string
-		athlete_heat_id?: string
+		athlete_id?: string
 	}>({})
 	const editCol = showAdmin
 		? [
@@ -134,7 +136,9 @@ export const HeatAthleteTable = ({
 		heatId: selectedHeat
 	})
 
-	const rows: GridRowsProp = athletes.data ?? []
+	const rows: GridRowsProp = athletes?.data
+		? athletes.data.map((a) => ({ id: v4(), ...a }))
+		: []
 
 	if (athletes.isLoading) {
 		return <Skeleton variant="rectangular" />
@@ -144,7 +148,7 @@ export const HeatAthleteTable = ({
 				<EditAthletDialog
 					open={open}
 					handleClose={handleClose}
-					id={rowData.id ?? ""}
+					athlete_id={rowData.athlete_id ?? ""}
 					first_name={rowData.first_name ?? ""}
 					last_name={rowData.last_name ?? ""}
 					bib={rowData.bib ?? 1}
@@ -171,7 +175,7 @@ export const HeatAthleteTable = ({
 const EditAthletDialog = ({
 	open,
 	handleClose,
-	id,
+	athlete_id,
 	first_name,
 	last_name,
 	bib,
@@ -180,7 +184,7 @@ const EditAthletDialog = ({
 }: {
 	open: boolean
 	handleClose: () => void
-	id?: string
+	athlete_id?: string
 	first_name?: string
 	last_name?: string
 	bib?: number
@@ -200,9 +204,10 @@ const EditAthletDialog = ({
 				last_name={last_name}
 				first_name={first_name}
 				athlete_heat_id={athlete_heat_id}
-				id={id}
+				athlete_id={athlete_id}
 				bib={bib}
 				phase_id={phase_id}
+				handleClose={handleClose}
 			/>
 		</div>
 	</Dialog>
@@ -210,13 +215,14 @@ const EditAthletDialog = ({
 
 // eslint-disable-next-line complexity
 const AddAthletesToHeat = (props: {
-	id?: string
+	athlete_id?: string
 	first_name?: string
 	last_name?: string
 	bib?: number
 	phase_id?: string
 	athlete_heat_id?: string
 	showHeat?: boolean
+	handleClose?: () => void
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedCompetition = useSelector(getSelectedCompetition)
@@ -265,8 +271,9 @@ const AddAthletesToHeat = (props: {
 	// eslint-disable-next-line complexity
 	const handleNewPaddlerSubmit = async () => {
 		if (athleteFirstName && athleteLastName && bibNumber) {
-			const athleteId = props.id ?? v4()
-			if (props.id && props.athlete_heat_id) {
+			const athleteHeatId = props.athlete_heat_id ?? v4()
+			const athleteId = props.athlete_id ?? v4()
+			if (props.athlete_id && props.athlete_heat_id) {
 				HandlePostResponse(
 					await updateAthlete({
 						id: athleteId,
@@ -280,7 +287,7 @@ const AddAthletesToHeat = (props: {
 				)
 				HandlePostResponse(
 					await updateAthleteHeat({
-						id: props.athlete_heat_id ?? v4(),
+						id: athleteHeatId,
 						bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: {
 							heat_id: newHeat,
 							athlete_id: athleteId,
@@ -331,8 +338,12 @@ const AddAthletesToHeat = (props: {
 				)
 			}
 			await athletes.refetch()
+			if (props.handleClose) {
+				props.handleClose()
+			}
 			setAthleteFirstName("")
 			setAthleteLastName("")
+			setBibNumber(bibNumber + 1)
 		} else {
 			toast.error("Please fill in all the fields")
 		}
@@ -340,11 +351,22 @@ const AddAthletesToHeat = (props: {
 	if (!isSuccess || !heatIsSuccess) {
 		return <h4>Failed to get data from server</h4>
 	}
-	const colWidth = props.id && props.athlete_heat_id ? 12 : 2
+	const colWidth = props.athlete_id && props.athlete_heat_id ? 12 : 2
 	const phases = data ? data.map((e) => e.phase_foreign || []).flat() : []
 
 	return (
 		<Grid container spacing={1} alignItems="stretch">
+			{props.athlete_id && props.athlete_heat_id && (
+				<Grid item xs={colWidth}>
+					{" "}
+					<Alert severity="info">
+						Warning: Moving an athlete between heats or phases will
+						delete any previously scored moves for that athlete in
+						that heat/phase{" "}
+					</Alert>
+				</Grid>
+			)}
+
 			<Grid item xs={colWidth}>
 				<TextField
 					label="First Name"
@@ -421,21 +443,11 @@ const AddAthletesToHeat = (props: {
 					fullWidth
 					sx={{ height: "100%" }}
 				>
-					{props.id && props.athlete_heat_id
+					{props.athlete_id && props.athlete_heat_id
 						? "Edit Athlete"
 						: "Add Athlete"}
 				</Button>
 			</Grid>
-			{props.id && props.athlete_heat_id && (
-				<Grid item xs={colWidth}>
-					{" "}
-					<Typography variant="h6">
-						Warning: Moving an athlete between heats or phases will
-						delete any previously scored moves for that athlete in
-						that heat/phase{" "}
-					</Typography>
-				</Grid>
-			)}
 		</Grid>
 	)
 }
