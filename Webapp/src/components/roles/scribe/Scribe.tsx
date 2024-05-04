@@ -20,7 +20,7 @@ import {
 	useGetManyAvailablemovesGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { InfoBar } from "./InfoBar"
+import { AthleteInfo, InfoBar } from "./InfoBar"
 import {
 	directionType,
 	movesType,
@@ -59,7 +59,15 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const selectedAthlete = athletes.data
 		? athletes.data[currentPaddlerIndex]
 		: undefined
-
+	const selectedAthleteInfo: AthleteInfo | undefined = athletes.data
+		? {
+				id: athletes.data[currentPaddlerIndex].athlete_id,
+				first_name: athletes.data[currentPaddlerIndex].first_name,
+				last_name: athletes.data[currentPaddlerIndex].last_name,
+				bib: athletes.data[currentPaddlerIndex].bib,
+				scoresheet: athletes.data[currentPaddlerIndex].scoresheet
+		  }
+		: undefined
 	useEffect(() => {
 		if (selectedAthlete) {
 			setNumberOfRuns(selectedAthlete.number_of_runs)
@@ -159,7 +167,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	)
 
 	if (
-		selectedAthlete?.id &&
+		selectedAthleteInfo?.id &&
 		selectedAthlete.first_name &&
 		selectedAthlete.last_name &&
 		selectedAthlete.bib
@@ -180,7 +188,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				</Grid>
 				<Grid item xs={5}>
 					<InfoBar
-						paddlerInfo={selectedAthlete}
+						paddlerInfo={selectedAthleteInfo}
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
 						isFetchingScoredMoves={isMoveAndBonusFetching}

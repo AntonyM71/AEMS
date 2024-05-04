@@ -7,6 +7,7 @@ export const BonusChip = ({
 	availableBonus,
 	scoredMoveBonuses,
 	scoredMove,
+	chipActionsDisabled,
 	updateScoredMoveBonuses
 }: BonusChipProps) => {
 	const filteredBonuses = scoredMoveBonuses.find(
@@ -18,22 +19,26 @@ export const BonusChip = ({
 	const acronym = matches.join("").toUpperCase() // JSON
 
 	const updateScoredBonuses = () => {
-		const bonusAlreadyScored = scoredMoveBonuses.find(
-			(b) => b.bonusId === availableBonus.id
-		)
-		if (bonusAlreadyScored) {
-			updateScoredMoveBonuses(
-				scoredMoveBonuses.filter((b) => b.bonusId !== availableBonus.id)
+		if (!chipActionsDisabled) {
+			const bonusAlreadyScored = scoredMoveBonuses.find(
+				(b) => b.bonusId === availableBonus.id
 			)
-		} else {
-			updateScoredMoveBonuses([
-				...scoredMoveBonuses,
-				{
-					id: uuidv4(),
-					moveId: scoredMove.id,
-					bonusId: availableBonus.id
-				}
-			])
+			if (bonusAlreadyScored) {
+				updateScoredMoveBonuses(
+					scoredMoveBonuses.filter(
+						(b) => b.bonusId !== availableBonus.id
+					)
+				)
+			} else {
+				updateScoredMoveBonuses([
+					...scoredMoveBonuses,
+					{
+						id: uuidv4(),
+						moveId: scoredMove.id,
+						bonusId: availableBonus.id
+					}
+				])
+			}
 		}
 	}
 
@@ -59,5 +64,6 @@ export interface BonusChipProps {
 	availableBonus: AvailableBonusType
 	scoredMoveBonuses: scoredBonusType[]
 	scoredMove: scoredMovesType
+	chipActionsDisabled: boolean
 	updateScoredMoveBonuses: (newMoveBonusList: scoredBonusType[]) => void
 }

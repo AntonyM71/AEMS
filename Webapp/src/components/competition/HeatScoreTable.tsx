@@ -23,7 +23,11 @@ import {
 	useGetOneByPrimaryKeyHeatIdGetQuery
 } from "../../redux/services/aemsApi"
 
-export const HeatScoreTable = () => {
+export const HeatScoreTable = ({
+	defaultShowJudgeScores = false
+}: {
+	defaultShowJudgeScores?: boolean
+}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
 		id: selectedHeat
@@ -35,7 +39,9 @@ export const HeatScoreTable = () => {
 			},
 			{ refetchOnMountOrArgChange: true }
 		)
-	const [showJudgeScores, setShowJudgeScores] = useState<boolean>(false)
+	const [showJudgeScores, setShowJudgeScores] = useState<boolean>(
+		defaultShowJudgeScores
+	)
 	if (data && scoreData && selectedHeat && !isLoading && !isScoreLoading) {
 		return (
 			<Grid
@@ -52,7 +58,7 @@ export const HeatScoreTable = () => {
 						<FormControlLabel
 							control={
 								<Switch
-									value={showJudgeScores}
+									checked={showJudgeScores}
 									onClick={() =>
 										setShowJudgeScores(!showJudgeScores)
 									}
@@ -139,7 +145,7 @@ export const HeatAthleteScoreTable = ({
 						return 52
 					}
 
-					return 100 * densityFactor
+					return 110 * densityFactor
 				}}
 			/>
 		)
@@ -163,7 +169,6 @@ export const DetailScoreView =
 		(
 			<Grid
 				container
-				direction="column"
 				justifyContent={
 					showIndividualJudgeScores ? "flex-end" : "center"
 				}
@@ -172,7 +177,7 @@ export const DetailScoreView =
 			>
 				{showIndividualJudgeScores ? (
 					params.value?.judgeScores?.map((s, j) => (
-						<Grid item key={j}>
+						<Grid item xs={12} key={j}>
 							<Typography variant={"body2"}>
 								{`J${s.judgeId}: ${s.score?.toFixed(2) || "0"}`}
 							</Typography>
@@ -181,15 +186,17 @@ export const DetailScoreView =
 				) : (
 					<></>
 				)}
-				<Typography
-					variant="body1"
-					sx={
-						showIndividualJudgeScores
-							? { textDecoration: "underline" }
-							: {}
-					}
-				>
-					{params.value?.meanScore?.toFixed(2) ?? 0}
-				</Typography>
+				<Grid item xs={12}>
+					<Typography
+						variant="body1"
+						sx={
+							showIndividualJudgeScores
+								? { textDecoration: "underline" }
+								: {}
+						}
+					>
+						{params.value?.meanScore?.toFixed(2) ?? 0}
+					</Typography>
+				</Grid>
 			</Grid>
 		)

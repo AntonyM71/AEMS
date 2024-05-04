@@ -5,11 +5,14 @@ import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
 import React from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
-import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
+import {
+	calculateSingleJudgeRunScore,
+	RunScoreInfo
+} from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
 import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
@@ -17,7 +20,7 @@ import { RunSelector } from "./InfoBar/Runselector"
 import ScoredMove, { AvailableBonusType } from "./InfoBar/ScoredMove"
 import { movesType, scoredMovesType } from "./Interfaces"
 
-interface propsType {
+interface PropsType {
 	paddlerInfo: AthleteInfo
 	availableMoves: movesType[]
 	isFetchingScoredMoves: boolean
@@ -34,8 +37,7 @@ export const InfoBar = ({
 	paddlerInfo,
 	availableMoves,
 	isFetchingScoredMoves
-}: propsType) => {
-	const dispatch = useDispatch()
+}: PropsType) => {
 	const [open, setOpen] = React.useState(false)
 
 	const scoredMoves = useSelector(getScoredMoves)
@@ -86,17 +88,7 @@ export const InfoBar = ({
 					</Button>
 				</Grid>
 				<Grid item xs={3}>
-					<Paper
-						sx={{
-							padding: "1em",
-							height: "100%"
-						}}
-					>
-						<Typography>Score:</Typography>
-						<div style={{ textAlign: "center" }}>
-							<Typography>{currentScore.score}</Typography>
-						</div>
-					</Paper>
+					<CurrentScore currentScore={currentScore} />
 				</Grid>
 				<Grid item xs={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
@@ -104,35 +96,67 @@ export const InfoBar = ({
 				<Grid item xs={3}>
 					<RunSelector />
 				</Grid>
-				<Grid item xs={4}>
-					<Typography>Move Listing</Typography>
-				</Grid>
 			</Grid>
-			<Grid
-				container
-				spacing={1}
-				direction="row"
-				style={{
-					maxHeight: "calc(100vh - 410px)", // this is a bit fragile,
-					overflow: "auto"
-				}}
-			>
-				{isFetchingScoredMoves ? (
-					<Skeleton sx={{ width: "100%", height: "100%" }} />
-				) : (
-					[...scoredMoves] // put these into a new array so that reverse works
-						.reverse()
-						.map((scoredMove: scoredMovesType) => (
-							<Grid item xs={12} key={scoredMove.id}>
-								<ScoredMove
-									key={scoredMove.id}
-									scoredMove={scoredMove}
-								/>
-							</Grid>
-						))
-				)}
-			</Grid>
+			{isFetchingScoredMoves ? (
+				<Skeleton sx={{ width: "100%", height: "100%" }} />
+			) : (
+				<ScoredMoveList scoredMoves={scoredMoves} />
+			)}
 		</div>
+	)
+}
+
+export const CurrentScore = ({
+	currentScore
+}: {
+	currentScore: RunScoreInfo
+}) => (
+	<Paper
+		sx={{
+			padding: "1em",
+			height: "100%"
+		}}
+	>
+		<Typography>Score:</Typography>
+		<div style={{ textAlign: "center" }}>
+			<Typography>{currentScore.score}</Typography>
+		</div>
+	</Paper>
+)
+
+export const ScoredMoveList = ({
+	scoredMoves
+}: {
+	scoredMoves: scoredMovesType[]
+}) => {
+	const scoredBonuses = useSelector(getScoredBonuses)
+
+	return (
+		<Grid
+			container
+			spacing={1}
+			direction="row"
+			style={{
+				maxHeight: "calc(100vh - 410px)", // this is a bit fragile,
+				overflow: "auto"
+			}}
+		>
+			<Grid item xs={4}>
+				<Typography>Move Listing</Typography>
+			</Grid>
+			{[...scoredMoves] // put these into a new array so that reverse works
+				.reverse()
+				.map((scoredMove: scoredMovesType) => (
+					<Grid item xs={12} key={scoredMove.id}>
+						<ScoredMove
+							key={scoredMove.id}
+							scoredMove={scoredMove}
+							scoredMovesList={scoredMoves}
+							scoredBonuses={scoredBonuses}
+						/>
+					</Grid>
+				))}
+		</Grid>
 	)
 }
 const style = {

@@ -20,7 +20,6 @@ const Judging = () => {
 	const maxJudges = phaseData
 		? Math.max(...phaseData.map((p) => p.number_of_judges))
 		: 3
-	console.log(maxJudges)
 	const judgeNumberArray = new Array(maxJudges)
 		.fill(null)
 		.map((_, i) => i + 1)
