@@ -168,9 +168,10 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	if (
 		selectedAthleteInfo?.id &&
-		selectedAthlete.first_name &&
-		selectedAthlete.last_name &&
-		selectedAthlete.bib
+		selectedAthlete &&
+		selectedAthlete?.first_name &&
+		selectedAthlete?.last_name &&
+		selectedAthlete?.bib
 	) {
 		return (
 			<Grid container spacing={1}>

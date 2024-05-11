@@ -140,7 +140,6 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 		)
 		await refetch()
 		setHeatName("")
-		setCompetitionId("")
 	}
 
 	return (
@@ -166,8 +165,15 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 			<Grid item xs={12}>
 				{options ? (
 					<Autocomplete
-						// error={!!competitionId}
 						options={options}
+						value={
+							options.find((s) => s.value === competitionId) ??
+							null
+						}
+						inputValue={
+							options.find((s) => s.value === competitionId)
+								?.label ?? ""
+						}
 						fullWidth
 						renderInput={(params) => (
 							<TextField {...params} label="Competition" />

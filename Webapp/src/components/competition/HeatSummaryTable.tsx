@@ -93,7 +93,7 @@ export const HeatAthleteTable = ({
 	const [open, setOpen] = useState<boolean>(false)
 	const handleClose = () => setOpen(false)
 	const [rowData, setRowData] = useState<{
-		id: string
+		id?: string
 		athlete_heat_id?: string
 		first_name?: string
 		last_name?: string

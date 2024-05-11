@@ -23,6 +23,10 @@ export const SelectScoresheet = ({
 				value={
 					options.find((s) => s.value === selectedScoresheet) || null
 				}
+				inputValue={
+					options.find((s) => s.value === selectedScoresheet)
+						?.label ?? ""
+				}
 				options={options}
 				fullWidth
 				renderInput={(params) => (

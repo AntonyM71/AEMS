@@ -119,7 +119,8 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const [phaseId, setPhaseId] = useState<string>(selectedCompetition)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const [eventId, setEventId] = useState<string>(selectedEvent)
 	const [postNewPhase] = useInsertManyPhasePostMutation()
 	const { data } =
 		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
@@ -138,7 +139,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 					{
 						name: phaseName,
 						id: uuid4(),
-						event_id: phaseId,
+						event_id: eventId,
 						number_of_runs: numberOfRuns,
 						number_of_runs_for_score: numberOfScoringRuns,
 						scoresheet: selectedScoresheet,
@@ -149,7 +150,6 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 		)
 		await refetch()
 		setPhaseName("")
-		setPhaseId("")
 	}
 
 	return (
@@ -177,13 +177,18 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 					<Autocomplete
 						// error={!!phaseId}
 						options={options}
+						value={options.find((s) => s.value === eventId)}
+						inputValue={
+							options.find((s) => s.value === eventId)?.label ??
+							""
+						}
 						fullWidth
 						renderInput={(params) => (
 							<TextField {...params} label="Event" />
 						)}
 						onChange={(event, newValue) => {
 							if (newValue) {
-								setPhaseId(newValue.value)
+								setEventId(newValue.value)
 							}
 						}}
 					/>
@@ -249,7 +254,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 					fullWidth
 					onClick={() => void submitNewPhase()}
 				>
-					Add Phase
+					Add Phases
 				</Button>
 			</Grid>
 		</Grid>

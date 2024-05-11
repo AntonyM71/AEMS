@@ -141,7 +141,6 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 		)
 		await refetch()
 		setEventName("")
-		setCompetitionId("")
 	}
 
 	return (
@@ -169,6 +168,10 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 					<Autocomplete
 						// error={!!competitionId}
 						options={options}
+						inputValue={
+							options.find((s) => s.value === competitionId)
+								?.label ?? ""
+						}
 						fullWidth
 						renderInput={(params) => (
 							<TextField {...params} label="Competition" />
