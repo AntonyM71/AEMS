@@ -68,8 +68,10 @@ const UploadForm = () => {
 	const handleFileUpload: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement
 	> = (event) => {
-		if (event.target?.files) {
+		// @ts-ignore
+		if (event.target && event.target.files) {
 			// get the selected file from the input
+			// @ts-ignore
 			const fileData = event.target?.files![0] as Blob
 			// create a new FormData object and append the file to it
 			setFile(fileData)
@@ -83,7 +85,13 @@ const UploadForm = () => {
 		formData.append("file", file)
 
 		axios
-			.post("http://localhost:8000/upload", formData, {})
+			.post(
+				`http://localhost:${
+					process.env.NEXT_PUBLIC_SERVER_PORT || 8000
+				}/upload`,
+				formData,
+				{}
+			)
 
 			.then((response) => {
 				// handle the response

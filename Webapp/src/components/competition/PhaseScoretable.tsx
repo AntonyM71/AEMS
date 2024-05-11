@@ -38,7 +38,9 @@ export const PhaseScoreTable = () => {
 
 	const downloadFile = async () => {
 		const response = await axios.get(
-			`http://localhost:8000/phase_pdf/${selectedPhase}`,
+			`http://localhost:${
+				process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
+			}/phase_pdf/${selectedPhase}`,
 			{
 				method: "GET",
 				responseType: "blob"

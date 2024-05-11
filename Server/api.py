@@ -63,6 +63,6 @@ import uvicorn
 
 
 async def run_server() -> None:
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    config = uvicorn.Config(app, host="0.0.0.0", port=8001)
     server = uvicorn.Server(config)
     await server.serve()
