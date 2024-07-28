@@ -275,7 +275,7 @@ const AddAthletesToHeat = (props: {
 	handleClose?: () => void
 }) => {
 	const allowSetLastPhaseRank =
-		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK ?? false
+		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK === "true"
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [athleteFirstName, setAthleteFirstName] = useState<string>(
