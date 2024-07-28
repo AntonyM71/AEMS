@@ -17,10 +17,10 @@ const Judging = () => {
 			{ heatId: selectedHeat },
 			{ skip: !selectedHeat }
 		)
-	const maxJudges = phaseData
-		? Math.max(...phaseData.map((p) => p.number_of_judges))
-		: 3
-	const judgeNumberArray = new Array(maxJudges)
+	const maxJudges =
+		phaseData && Math.max(...phaseData.map((p) => p.number_of_judges), 1)
+
+	const judgeNumberArray = new Array(maxJudges || 1)
 		.fill(null)
 		.map((_, i) => i + 1)
 

@@ -20,6 +20,7 @@ import {
 	GridRowsProp,
 	GridTreeNodeWithRender
 } from "@mui/x-data-grid"
+import axios from "axios"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
@@ -41,6 +42,32 @@ import {
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
+export const downloadHeatPDF = async (heats: string[]) => {
+	const searchParams = new URLSearchParams()
+	heats.map((h) => {
+		searchParams.append("heat_ids", h)
+	})
+	const response = await axios.get(
+		`http://localhost:${
+			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
+		}/heat_pdf?${searchParams.toString()}`,
+		{
+			method: "GET",
+			responseType: "blob"
+		}
+	)
+	const file = new Blob([response.data], {
+		type: "application/pdf"
+	})
+	// Build a URL from the file
+	const fileURL = URL.createObjectURL(file)
+	// Open the URL on new Window
+	const pdfWindow = window.open()
+	if (pdfWindow) {
+		pdfWindow.location.href = fileURL
+	}
+}
+
 export const HeatSummaryTable = ({
 	showAddAthletes = false
 }: {
@@ -50,15 +77,38 @@ export const HeatSummaryTable = ({
 	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
 		id: selectedHeat
 	})
+
 	if (data && selectedHeat && !isLoading) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
 				<Grid container spacing={1} alignItems="stretch">
 					<Grid item xs={12}>
-						<Typography variant="h6">{`Heat: ${
-							data.name || ""
-						}`}</Typography>
-						<HeatAthleteTable showAdmin={showAddAthletes} />
+						<Grid
+							container
+							justifyContent="space-between"
+							alignItems="center"
+						>
+							<Grid item>
+								<Typography variant="h6">{`Heat: ${
+									data.name || ""
+								}`}</Typography>
+							</Grid>
+							<Grid item sx={{ padding: "0.5em" }}>
+								<Button
+									variant="contained"
+									color="info"
+									// eslint-disable-next-line @typescript-eslint/no-misused-promises
+									onClick={() =>
+										downloadHeatPDF([selectedHeat])
+									}
+								>
+									Create PDF
+								</Button>
+							</Grid>
+							<Grid item xs={12}>
+								<HeatAthleteTable showAdmin={showAddAthletes} />
+							</Grid>
+						</Grid>
 					</Grid>
 					{showAddAthletes && (
 						<>
@@ -224,6 +274,8 @@ const AddAthletesToHeat = (props: {
 	showHeat?: boolean
 	handleClose?: () => void
 }) => {
+	const allowSetLastPhaseRank =
+		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK ?? false
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [athleteFirstName, setAthleteFirstName] = useState<string>(
@@ -242,7 +294,11 @@ const AddAthletesToHeat = (props: {
 	const [athleteLastName, setAthleteLastName] = useState<string>(
 		props.last_name ?? ""
 	)
-	const [bibNumber, setBibNumber] = useState<number>(props.bib ?? 1)
+	const [bibNumber, setBibNumber] = useState<number>(Number(props.bib ?? 1))
+
+	const [lastPhaseRank, setLastPhaseRank] = useState<number | undefined>(
+		undefined
+	)
 	const { data, isSuccess } = useGetManyEventGetQuery({
 		competitionIdList: [selectedCompetition],
 		competitionIdListComparisonOperator: "Equal",
@@ -285,13 +341,15 @@ const AddAthletesToHeat = (props: {
 					}),
 					"Updated Athlete"
 				)
+
 				HandlePostResponse(
 					await updateAthleteHeat({
 						id: athleteHeatId,
 						bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: {
 							heat_id: newHeat,
 							athlete_id: athleteId,
-							phase_id: selectedPhase
+							phase_id: selectedPhase,
+							last_phase_rank: Number(lastPhaseRank ?? undefined)
 						}
 					}),
 					"Updated Athlete Competition Information"
@@ -330,7 +388,10 @@ const AddAthletesToHeat = (props: {
 								id: props.athlete_heat_id ?? v4(),
 								heat_id: newHeat,
 								athlete_id: athleteId,
-								phase_id: selectedPhase
+								phase_id: selectedPhase,
+								last_phase_rank: Number(
+									lastPhaseRank ?? undefined
+								)
 							}
 						]
 					}),
@@ -343,7 +404,7 @@ const AddAthletesToHeat = (props: {
 			}
 			setAthleteFirstName("")
 			setAthleteLastName("")
-			setBibNumber(bibNumber + 1)
+			setBibNumber(Number(bibNumber ?? 0) + 1)
 		} else {
 			toast.error("Please fill in all the fields")
 		}
@@ -352,7 +413,17 @@ const AddAthletesToHeat = (props: {
 		return <h4>Failed to get data from server</h4>
 	}
 	const colWidth = props.athlete_id && props.athlete_heat_id ? 12 : 2
-	const phases = data ? data.map((e) => e.phase_foreign || []).flat() : []
+	const phases = data
+		? data
+				.map(
+					(e) =>
+						e.phase_foreign?.map((p) => ({
+							...p,
+							eventName: e.name
+						})) || []
+				)
+				.flat()
+		: []
 
 	return (
 		<Grid container spacing={1} alignItems="stretch">
@@ -394,7 +465,9 @@ const AddAthletesToHeat = (props: {
 					>
 						{phases.map((phase) => (
 							<MenuItem key={phase.id} value={phase.id}>
-								{phase.name}
+								{(phase.eventName ?? "") +
+									" - " +
+									(phase.name ?? "")}
 							</MenuItem>
 						))}
 					</Select>
@@ -436,6 +509,26 @@ const AddAthletesToHeat = (props: {
 					value={bibNumber}
 				/>
 			</Grid>
+			{allowSetLastPhaseRank && (
+				<Grid item xs={colWidth}>
+					<TextField
+						label="Last Phase Rank"
+						variant="outlined"
+						fullWidth
+						type="number"
+						onChange={(
+							event: React.ChangeEvent<HTMLInputElement>
+						): void =>
+							setLastPhaseRank(
+								event.target.value
+									? (event.target.value as unknown as number)
+									: undefined
+							)
+						}
+						value={lastPhaseRank}
+					/>
+				</Grid>
+			)}
 			<Grid item xs={colWidth}>
 				<Button
 					onClick={() => void handleNewPaddlerSubmit()}

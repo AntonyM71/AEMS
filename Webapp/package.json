@@ -31,7 +31,7 @@
 		"eslint-plugin-prefer-arrow": "^1.2.2",
 		"eslint-plugin-testing-library": "^5.10.3",
 		"lodash": "^4.17.21",
-		"next": "^13.3.1",
+		"next": "^13.5.6",
 		"openapi-types": "^12.1.0",
 		"prettier": "^2.8.3",
 		"react": "^18.2.0",
