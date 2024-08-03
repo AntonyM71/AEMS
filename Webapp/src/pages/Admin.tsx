@@ -7,11 +7,14 @@ import Typography from "@mui/material/Typography"
 import { useSelector } from "react-redux"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../components/competition/MainSelector"
+import { MakeHeatPDFs } from "../components/competition/MakeHeatPDFs"
+import { PhaseScoreTable } from "../components/competition/PhaseScoretable"
 import UploadCsv from "../components/competition/UploadCsv"
 import { getSelectedHeat } from "../redux/atoms/competitions"
 
 export default function Admin() {
 	const selectedHeat = useSelector(getSelectedHeat)
+	console.log(process.env.NEXT_PUBLIC_SHOW_CSV_UPLOAD)
 
 	return (
 		<>
@@ -27,6 +30,7 @@ export default function Admin() {
 					<SelectorDisplay showDetailed={true} />
 				</AccordionDetails>{" "}
 			</Accordion>
+
 			<Accordion>
 				<AccordionSummary
 					expandIcon={<ExpandMoreIcon />}
@@ -57,19 +61,44 @@ export default function Admin() {
 					</Grid>
 				</AccordionDetails>
 			</Accordion>
-
 			<Accordion>
 				<AccordionSummary
 					expandIcon={<ExpandMoreIcon />}
 					aria-controls="panel1-content"
 					id="panel1-header"
 				>
-					Upload Paddlers from CSV
+					Create Many Heat PDFs
 				</AccordionSummary>
 				<AccordionDetails>
-					<UploadCsv />
+					<MakeHeatPDFs />
 				</AccordionDetails>{" "}
 			</Accordion>
+			<Accordion>
+				<AccordionSummary
+					expandIcon={<ExpandMoreIcon />}
+					aria-controls="panel1-content"
+					id="panel1-header"
+				>
+					Create Phase Result PDFs
+				</AccordionSummary>
+				<AccordionDetails>
+					<PhaseScoreTable />
+				</AccordionDetails>{" "}
+			</Accordion>
+			{process.env.NEXT_PUBLIC_SHOW_CSV_UPLOAD === "true" && (
+				<Accordion>
+					<AccordionSummary
+						expandIcon={<ExpandMoreIcon />}
+						aria-controls="panel1-content"
+						id="panel1-header"
+					>
+						Upload Paddlers from CSV
+					</AccordionSummary>
+					<AccordionDetails>
+						<UploadCsv />
+					</AccordionDetails>{" "}
+				</Accordion>
+			)}
 		</>
 	)
 }
