@@ -1,3 +1,4 @@
+import { Divider } from "@mui/material"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Modal from "@mui/material/Modal"
@@ -8,7 +9,6 @@ import React from "react"
 import { useSelector } from "react-redux"
 import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
-import { Divider } from "@mui/material"
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
 import {
 	calculateSingleJudgeRunScore,
@@ -120,7 +120,7 @@ export const CurrentScore = ({
 }) => (
 	<Paper
 		sx={{
-			padding: "1em",
+			padding: "0.5em",
 			height: "100%"
 		}}
 	>
