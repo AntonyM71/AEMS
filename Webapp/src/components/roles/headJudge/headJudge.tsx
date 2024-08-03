@@ -75,7 +75,12 @@ export default () => {
 						<HeatScoreTable defaultShowJudgeScores={true} />
 					</Paper>
 				</Modal>
-				<Grid container spacing={2} alignItems={"stretch"}>
+				<Grid
+					container
+					spacing={2}
+					alignItems={"stretch"}
+					sx={{ marginTop: "0.5em" }}
+				>
 					<Grid item xs={6}>
 						<SelectorDisplay
 							showDetailed={false}
@@ -103,6 +108,7 @@ export default () => {
 					<Grid item xs={12}>
 						<Divider />
 					</Grid>
+
 					{judgeNumberArray.map((jn) => (
 						<Grid item key={jn} xs={Math.floor(12 / maxJudges)}>
 							<JudgeCard
