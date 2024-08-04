@@ -17,7 +17,6 @@ import Image from "next/image"
 import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
 const Header = () => {
-	const preferDark = useSelector(getPreferDark)
 	const userRole = useSelector(getUserRole)
 
 	return (
@@ -30,14 +29,10 @@ const Header = () => {
 					alignItems="center"
 				>
 					<Image
-						src={
-							preferDark
-								? "/images/THFLogoWhiteOrange.png"
-								: "/images/THFLogoBlackOrange.png"
-						}
+						src="/images/icon.png"
 						alt="Hurley Foundation Events Logo"
-						height="40"
-						width="60"
+						height="30"
+						width="30"
 					/>
 					<Grid item>
 						<LinkList />
@@ -58,13 +53,6 @@ const Header = () => {
 const LinkList = () => (
 	<List component="nav" dense sx={{ paddingY: 0 }}>
 		<ListItem component="div">
-			<ListItemText inset>
-				<Typography color="textPrimary" variant="body1">
-					<Link component={RouterLink} href="/" color="inherit">
-						Home
-					</Link>
-				</Typography>
-			</ListItemText>
 			<ListItemText inset>
 				<Typography color="textPrimary" variant="body1">
 					<Link
