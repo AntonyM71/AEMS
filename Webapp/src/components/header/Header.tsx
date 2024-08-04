@@ -8,15 +8,12 @@ import ListItemText from "@mui/material/ListItemText"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-// import { Link as RouterLink } from "react-router-dom"
 import RouterLink from "next/link"
-// import darkLogo from "../../../public/images/images/THFLogoBlackOrange.png"
-// import lightLogo from "../../../public/images/images/THFLogoWhiteOrange.png"
 import Grid from "@mui/material/Grid"
 import Image from "next/image"
+import RouterLink from "next/link"
 import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
-const Header = () => {
 	const userRole = useSelector(getUserRole)
 
 	return (
