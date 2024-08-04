@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fpdf import FPDF
 from sqlalchemy.orm import Session
 
-from app.customScoringEndpoints import (
+from app.scoring.customScoringEndpoints import (
     calculate_phase_scores,
     get_heat_info_logic,
 )

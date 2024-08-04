@@ -2,13 +2,12 @@
 import codecs
 import csv
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, UploadFile
 
-ingest_router = APIRouter()
+competition_management_router = APIRouter(prefix="/competition_management")
 
 
-@ingest_router.post("/upload")
-def upload( competition_name: str = Form(...),file: UploadFile = File(...)) -> list:
+def upload_competiton_from_csv(competition_name: str, file: UploadFile) -> list:
     csv_reader = csv.DictReader(codecs.iterdecode(file.file, 'utf-8'))
     data = []
     for rows in csv_reader:

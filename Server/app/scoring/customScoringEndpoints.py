@@ -11,7 +11,7 @@ from app.scoresheetEndpoints import (
     PydanticAvailableBonuses,
     PydanticAvailableMoves,
 )
-from app.scoring_logic import (
+from app.scoring.scoring_logic import (
     AddUpdateScoredMovesRequest,
     AthleteMovesWithJudgeInfo,
     AthleteScores,
