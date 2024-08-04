@@ -100,8 +100,7 @@ async def phase_pdf(
                         row.cell(f"{athlete.run_scores[i].mean_run_score:.2f}")
                     except IndexError:
                         row.cell("0")
-                row.cell(
-                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
@@ -128,11 +127,12 @@ async def heat_pdf(
     try:
         pdf = FPDF(orientation="L", format="A4")
         if not heat_ids:
-            return Response(status_code=404, content="Please provide a list of Heat IDs")
+            return Response(
+                status_code=404, content="Please provide a list of Heat IDs"
+            )
         for heat_id in heat_ids:
             heat_athlete_info = get_heat_info_logic(heat_id=heat_id, db=db)
-            heat_info = db.query(Heat).where(
-                Heat.id == heat_id).one_or_none()
+            heat_info = db.query(Heat).where(Heat.id == heat_id).one_or_none()
             # Create a sample PDF file
 
             pdf.add_page()
@@ -160,8 +160,9 @@ async def heat_pdf(
                     row.cell(athlete.first_name)
                     row.cell(athlete.last_name)
                     row.cell(str(athlete.bib))
-                    row.cell(str(athlete.last_phase_rank)
-                             if athlete.last_phase_rank else "")
+                    row.cell(
+                        str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
+                    )
 
         # Prepare the filename and headers
         filename = f"heats{datetime.now().isoformat()}.pdf"

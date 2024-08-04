@@ -1,4 +1,3 @@
-
 import codecs
 import csv
 
@@ -8,7 +7,7 @@ competition_management_router = APIRouter(prefix="/competition_management")
 
 
 def upload_competiton_from_csv(competition_name: str, file: UploadFile) -> list:
-    csv_reader = csv.DictReader(codecs.iterdecode(file.file, 'utf-8'))
+    csv_reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
     data = []
     for rows in csv_reader:
         print(rows)
