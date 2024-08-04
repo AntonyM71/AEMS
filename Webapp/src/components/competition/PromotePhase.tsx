@@ -24,11 +24,11 @@ export const PromotePhase = () => {
 	const [newHeatNames, setNewHeatNames] = useState<string[]>([])
 	const [newHeatName, setNewHeatName] = useState<string>("")
 	const phaseId = useSelector(getSelectedPhase)
-	const submitForm = () => {
+	const submitForm = async () => {
 		if (newHeatNames.length === 0) {
 			toast.error("Please set at least one heat name")
 		}
-		postPromotedPhase({
+		await postPromotedPhase({
 			newPhaseInfo: {
 				new_heat_names: newHeatNames,
 				phase_id: phaseId,
