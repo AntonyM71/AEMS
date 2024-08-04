@@ -39,6 +39,7 @@ export const PromotePhase = () => {
 				number_of_judges: numberOfJudges
 			}
 		})
+		toast.success(`Created New Phase ${phaseName} and associated heat`)
 	}
 	const handleAddNewHeat = () => {
 		if (!newHeatName) {
@@ -145,7 +146,7 @@ export const PromotePhase = () => {
 				<Paper sx={{ padding: "0.5em" }}>
 					<Grid container spacing={2}>
 						{newHeatNames.map((h: string, i) => (
-							<Grid item key={h} xs={12}>
+							<Grid item key={i} xs={12}>
 								<TextField
 									label={`New Heat: ${i + 1}`}
 									variant="outlined"
