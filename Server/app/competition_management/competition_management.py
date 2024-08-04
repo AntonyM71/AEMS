@@ -53,13 +53,13 @@ async def promote_phase(
         if request_body.number_of_paddlers == 0:
             msg = "Cannot promote a phase for 0 paddlers"
             raise HTTPException(422, msg)
-        print(request_body.number_of_paddlers)
+
         top_paddlers = get_top_n_paddlers_for_phase(
             phase_id=request_body.phase_id,
             number_of_paddlers=request_body.number_of_paddlers,
             db=db,
         )
-        print(top_paddlers)
+
         new_heat_info = [
             {"name": h, "id": uuid4()} for h in request_body.new_heat_names
         ]
@@ -67,13 +67,14 @@ async def promote_phase(
         assigned_paddlers = assign_paddlers_to_heat(
             heat_ids=[str(h["id"]) for h in new_heat_info], paddlers=top_paddlers
         )
-        print(assigned_paddlers)
+
         new_phase_id = uuid4()
 
         current_phase_details = (
-            db.query(Phase).filter(Phase.id == request_body.phase_id).one_or_none()
+            db.query(Phase).filter(
+                Phase.id == request_body.phase_id).one_or_none()
         )
-        print(current_phase_details)
+
         db.add(
             Phase(
                 **{
