@@ -1,5 +1,6 @@
 import Brightness4Icon from "@mui/icons-material/Brightness4"
 import AppBar from "@mui/material/AppBar"
+import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
 import Link from "@mui/material/Link"
 import List from "@mui/material/List"
@@ -7,13 +8,12 @@ import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
-import { useDispatch, useSelector } from "react-redux"
-import RouterLink from "next/link"
-import Grid from "@mui/material/Grid"
 import Image from "next/image"
 import RouterLink from "next/link"
+import { useDispatch, useSelector } from "react-redux"
 import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
+const Header = () => {
 	const userRole = useSelector(getUserRole)
 
 	return (
