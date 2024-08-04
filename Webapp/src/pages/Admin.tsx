@@ -1,8 +1,8 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Alert } from "@mui/material"
 import Accordion from "@mui/material/Accordion"
 import AccordionDetails from "@mui/material/AccordionDetails"
 import AccordionSummary from "@mui/material/AccordionSummary"
+import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid"
 import Typography from "@mui/material/Typography"
 import { useSelector } from "react-redux"
@@ -16,7 +16,6 @@ import { getSelectedHeat } from "../redux/atoms/competitions"
 
 export default function Admin() {
 	const selectedHeat = useSelector(getSelectedHeat)
-	console.log(process.env.NEXT_PUBLIC_SHOW_CSV_UPLOAD)
 
 	return (
 		<>

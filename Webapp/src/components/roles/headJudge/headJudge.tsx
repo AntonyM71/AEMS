@@ -1,12 +1,10 @@
-import {
-	Button,
-	Divider,
-	Grid,
-	Modal,
-	Paper,
-	Skeleton,
-	Typography
-} from "@mui/material"
+import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
+import Grid from "@mui/material/Grid"
+import Modal from "@mui/material/Modal"
+import Paper from "@mui/material/Paper"
+import Skeleton from "@mui/material/Skeleton"
+import Typography from "@mui/material/Typography"
 import React from "react"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"

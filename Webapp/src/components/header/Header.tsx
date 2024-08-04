@@ -13,9 +13,9 @@ import RouterLink from "next/link"
 // import darkLogo from "../../../public/images/images/THFLogoBlackOrange.png"
 // import lightLogo from "../../../public/images/images/THFLogoWhiteOrange.png"
 import Grid from "@mui/material/Grid"
+import Image from "next/image"
 import { getUserRole } from "../../redux/atoms/scoring"
 import { getPreferDark, updatePreferDark } from "../../redux/atoms/utilities"
-
 const Header = () => {
 	const preferDark = useSelector(getPreferDark)
 	const userRole = useSelector(getUserRole)
@@ -29,18 +29,16 @@ const Header = () => {
 					justifyContent="space-between"
 					alignItems="center"
 				>
-					<img
+					<Image
 						src={
 							preferDark
 								? "/images/THFLogoWhiteOrange.png"
 								: "/images/THFLogoBlackOrange.png"
 						}
 						alt="Hurley Foundation Events Logo"
-						style={{
-							height: "40px",
-							justifyContent: "center"
-						}}
-					></img>
+						height="40"
+						width="60"
+					/>
 					<Grid item>
 						<LinkList />
 					</Grid>{" "}
