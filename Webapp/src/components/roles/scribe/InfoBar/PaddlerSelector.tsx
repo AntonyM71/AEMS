@@ -52,7 +52,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	return (
 		<Paper
 			sx={{
-				padding: "1em",
+				padding: "0.5em",
 				height: "100%"
 			}}
 		>
