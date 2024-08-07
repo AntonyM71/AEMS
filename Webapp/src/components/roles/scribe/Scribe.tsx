@@ -86,7 +86,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 					move_id: b.moveId,
 					bonus_id: b.bonusId
 				}))
-			// ToDo: if statement here to only send the moves if they don't match the most recent returned  moves?
+
 			void addUpdateMovesAndBonuses({
 				heatId: selectedHeat,
 				athleteId: selectedAthlete.athlete_id,
@@ -168,7 +168,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	if (
 		selectedAthleteInfo?.id &&
-		selectedAthlete &&
 		selectedAthlete?.first_name &&
 		selectedAthlete?.last_name &&
 		selectedAthlete?.bib

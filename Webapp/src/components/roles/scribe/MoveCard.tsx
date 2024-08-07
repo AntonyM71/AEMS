@@ -2,7 +2,7 @@ import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
-import React from "react"
+import React, { useEffect } from "react"
 
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuidv4 } from "uuid"
@@ -11,6 +11,7 @@ import {
 	updateCurrentMove,
 	updateScoredMoves
 } from "../../../redux/atoms/scoring"
+import { aemsApi } from "../../../redux/services/aemsApi"
 import {
 	MovePropsType,
 	addScoredMoveType,
@@ -18,13 +19,30 @@ import {
 	scoredMovesType
 } from "./Interfaces"
 
+const { usePrefetch } = aemsApi
+
 export const MoveCard = React.memo((props: MovePropsType) => {
+	const prefetchAvailableMoves = usePrefetch("getManyAvailablemovesGet")
+	const prefetchAvailableBonuses = usePrefetch("getManyAvailablebonusesGet")
 	const dispatch = useDispatch()
 	const setScoredMoves = (newMoves: scoredMovesType[]) =>
 		dispatch(updateScoredMoves(newMoves))
 	const setCurrentMove = (newMove: string) =>
 		dispatch(updateCurrentMove(newMove))
-
+	useEffect(() => {
+		try {
+			prefetchAvailableMoves({
+				idListComparisonOperator: "Equal",
+				idList: [props.move.id]
+			})
+			prefetchAvailableBonuses({
+				moveIdListComparisonOperator: "Equal",
+				moveIdList: [props.move.id]
+			})
+		} catch (err) {
+			// It doesn't matter if this fails, as the data will be when the scoredmovecard mounts
+		}
+	}, [])
 	const scoredMovesList = useSelector(getScoredMoves)
 
 	const addScoredMove: addScoredMoveType = (

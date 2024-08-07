@@ -193,6 +193,7 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 					variant="contained"
 					fullWidth
 					onClick={() => void submitNewHeat()}
+					disabled={!heatName}
 				>
 					Add Heat
 				</Button>

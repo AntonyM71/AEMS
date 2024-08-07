@@ -253,6 +253,7 @@ const AddPhase = ({ refetch }: { refetch: () => Promise<any> }) => {
 					variant="contained"
 					fullWidth
 					onClick={() => void submitNewPhase()}
+					disabled={!phaseName}
 				>
 					Add Phases
 				</Button>
