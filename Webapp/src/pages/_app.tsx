@@ -1,6 +1,5 @@
 import Container from "@mui/material/Container"
 import CssBaseline from "@mui/material/CssBaseline"
-import { cyan, orange, red } from "@mui/material/colors"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { AppProps } from "next/dist/shared/lib/router/router"
@@ -28,19 +27,16 @@ const App = ({ children }: any) => {
 				palette: {
 					mode: preferDark ? "dark" : "light",
 					primary: {
-						main: orange[500],
-						light: orange[300],
-						dark: orange[900]
+						main: preferDark ? "#fd9d50" : "#f77b00"
 					},
 					secondary: {
-						main: cyan[500],
-						light: cyan[300],
-						dark: cyan[700]
+						main: preferDark ? "#4db7fe" : "#08a7fd"
 					},
 					error: {
-						main: red[500],
-						light: red[300],
-						dark: red[700]
+						main: preferDark ? "#ff4ab3" : "#fc0085"
+					},
+					info: {
+						main: preferDark ? "#a565fd" : "#8842ee"
 					},
 					background: preferDark
 						? {}
