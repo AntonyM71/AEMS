@@ -32,7 +32,7 @@ const HeatCheckBoxes = () => {
 	const [selectedHeats, setSelectedHeats] = useState<string[]>([])
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
-	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery(
+	const { data } = useGetManyHeatGetQuery(
 		{
 			competitionIdList: [selectedCompetition],
 			competitionIdListComparisonOperator: "Equal"
@@ -56,16 +56,17 @@ const HeatCheckBoxes = () => {
 									<Checkbox
 										checked={selectedHeats.includes(h.id)}
 										onChange={() =>
-											selectedHeats.includes(h.id!)
+											h?.id &&
+											(selectedHeats.includes(h.id)
 												? setSelectedHeats(
 														selectedHeats.filter(
-															(i) => i !== h.id!
+															(i) => i !== h.id
 														)
 												  )
 												: setSelectedHeats([
 														...selectedHeats,
-														h.id!
-												  ])
+														h.id
+												  ]))
 										}
 									/>
 								</Stack>
