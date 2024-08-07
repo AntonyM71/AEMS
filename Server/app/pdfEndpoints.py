@@ -124,7 +124,7 @@ async def heat_pdf(
     heat_ids: list[str] = Query(None),
     db: Session = Depends(get_transaction_session),
 ) -> Response:
-    print(heat_ids)
+
     try:
         pdf = FPDF(orientation="L", format="A4")
         if not heat_ids:
