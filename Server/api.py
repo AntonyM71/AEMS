@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -44,6 +45,8 @@ app = FastAPI()
     ]
 ]
 
+app.mount("/api", app)
+
 
 @app.get("/")
 async def root() -> dict[str, str]:
@@ -57,9 +60,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-import uvicorn
 
 
 async def run_server() -> None:
