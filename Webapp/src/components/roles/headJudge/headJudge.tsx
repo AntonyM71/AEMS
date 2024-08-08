@@ -1,12 +1,10 @@
-import {
-	Button,
-	Divider,
-	Grid,
-	Modal,
-	Paper,
-	Skeleton,
-	Typography
-} from "@mui/material"
+import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
+import Grid from "@mui/material/Grid"
+import Modal from "@mui/material/Modal"
+import Paper from "@mui/material/Paper"
+import Skeleton from "@mui/material/Skeleton"
+import Typography from "@mui/material/Typography"
 import React from "react"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
@@ -75,7 +73,12 @@ export default () => {
 						<HeatScoreTable defaultShowJudgeScores={true} />
 					</Paper>
 				</Modal>
-				<Grid container spacing={2} alignItems={"stretch"}>
+				<Grid
+					container
+					spacing={2}
+					alignItems={"stretch"}
+					sx={{ marginTop: "0.5em" }}
+				>
 					<Grid item xs={6}>
 						<SelectorDisplay
 							showDetailed={false}
@@ -103,6 +106,7 @@ export default () => {
 					<Grid item xs={12}>
 						<Divider />
 					</Grid>
+
 					{judgeNumberArray.map((jn) => (
 						<Grid item key={jn} xs={Math.floor(12 / maxJudges)}>
 							<JudgeCard

@@ -25,9 +25,12 @@ import { SelectorDisplay } from "./MainSelector"
 
 export const PhaseScoreTable = () => {
 	const selectedPhase = useSelector(getSelectedPhase)
-	const { data, isLoading } = useGetOneByPrimaryKeyPhaseIdGetQuery({
-		id: selectedPhase
-	})
+	const { data, isLoading } = useGetOneByPrimaryKeyPhaseIdGetQuery(
+		{
+			id: selectedPhase
+		},
+		{ skip: !selectedPhase }
+	)
 	const { data: scoreData, isLoading: isScoreLoading } =
 		useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
 			{

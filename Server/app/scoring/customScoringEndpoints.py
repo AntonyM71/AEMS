@@ -11,7 +11,7 @@ from app.scoresheetEndpoints import (
     PydanticAvailableBonuses,
     PydanticAvailableMoves,
 )
-from app.scoring_logic import (
+from app.scoring.scoring_logic import (
     AddUpdateScoredMovesRequest,
     AthleteMovesWithJudgeInfo,
     AthleteScores,
@@ -91,7 +91,6 @@ def get_heat_info_logic(heat_id: str, db: Session) -> list[HeatInfoResponse]:
 
 
 class PhaseResponse(BaseModel):
-
     id: UUID
     event_id: UUID
     name: str
@@ -116,7 +115,7 @@ async def get_heat_phases(
     heat_info = db.query(AthleteHeat).where(
         AthleteHeat.heat_id == heat_id).all()
 
-    phases = (set([h.__dict__["phase_id"] for h in heat_info]))
+    phases = set([h.__dict__["phase_id"] for h in heat_info])
     phase_info = db.query(Phase).where(Phase.id.in_(list(phases))).all()
     return parse_obj_as(list[PhaseResponse], phase_info)
 
@@ -377,7 +376,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_score = [
             a for a in athlete_scores_with_rank if a.athlete_id == a_info.id
         ]
-        # print(athlete_score[0].dict())
+
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
                 **athlete_score[0].dict(exclude_none=True)

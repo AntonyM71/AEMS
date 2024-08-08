@@ -1,3 +1,4 @@
+import { Divider } from "@mui/material"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Modal from "@mui/material/Modal"
@@ -96,12 +97,18 @@ export const InfoBar = ({
 				<Grid item xs={3}>
 					<RunSelector />
 				</Grid>
+				<Grid item xs={12}>
+					<Divider />
+				</Grid>
+
+				{isFetchingScoredMoves ? (
+					<Skeleton sx={{ width: "100%", height: "100%" }} />
+				) : (
+					<Grid item xs={12}>
+						<ScoredMoveList scoredMoves={scoredMoves} />
+					</Grid>
+				)}
 			</Grid>
-			{isFetchingScoredMoves ? (
-				<Skeleton sx={{ width: "100%", height: "100%" }} />
-			) : (
-				<ScoredMoveList scoredMoves={scoredMoves} />
-			)}
 		</div>
 	)
 }
@@ -113,7 +120,7 @@ export const CurrentScore = ({
 }) => (
 	<Paper
 		sx={{
-			padding: "1em",
+			padding: "0.5em",
 			height: "100%"
 		}}
 	>
@@ -137,8 +144,8 @@ export const ScoredMoveList = ({
 			spacing={1}
 			direction="row"
 			style={{
-				maxHeight: "calc(100vh - 410px)", // this is a bit fragile,
-				overflow: "auto"
+				maxHeight: "calc(100vh - 310px)", // this is a bit fragile,
+				overflowY: "scroll"
 			}}
 		>
 			<Grid item xs={4}>

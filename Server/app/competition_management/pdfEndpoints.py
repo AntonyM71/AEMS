@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fpdf import FPDF
 from sqlalchemy.orm import Session
 
-from app.customScoringEndpoints import (
+from app.scoring.customScoringEndpoints import (
     calculate_phase_scores,
     get_heat_info_logic,
 )
@@ -124,15 +124,16 @@ async def heat_pdf(
     heat_ids: list[str] = Query(None),
     db: Session = Depends(get_transaction_session),
 ) -> Response:
-    print(heat_ids)
+
     try:
         pdf = FPDF(orientation="L", format="A4")
         if not heat_ids:
-            return Response(status_code=404, content="Please provide a list of Heat IDs")
+            return Response(
+                status_code=404, content="Please provide a list of Heat IDs"
+            )
         for heat_id in heat_ids:
             heat_athlete_info = get_heat_info_logic(heat_id=heat_id, db=db)
-            heat_info = db.query(Heat).where(
-                Heat.id == heat_id).one_or_none()
+            heat_info = db.query(Heat).where(Heat.id == heat_id).one_or_none()
             # Create a sample PDF file
 
             pdf.add_page()
@@ -160,8 +161,9 @@ async def heat_pdf(
                     row.cell(athlete.first_name)
                     row.cell(athlete.last_name)
                     row.cell(str(athlete.bib))
-                    row.cell(str(athlete.last_phase_rank)
-                             if athlete.last_phase_rank else "")
+                    row.cell(
+                        str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
+                    )
 
         # Prepare the filename and headers
         filename = f"heats{datetime.now().isoformat()}.pdf"

@@ -47,17 +47,19 @@ for file in scoresheet_files:
                     move_id = uuid4()
                     pydantic_move = SeedMoveData(**move)
                     # print(pydantic_move)
-                    db.bulk_save_objects([
-                        AvailableMoves(
-                            id=move_id,
-                            sheet_id=scoresheet_id,
-                            name=pydantic_move.Move,
-                            direction=pydantic_move.Direction,
-                            fl_score=pydantic_move.Value,
-                            rb_score=pydantic_move.ReverseValue
-                            if pydantic_move.ReverseValue
-                            else pydantic_move.Value,
-                        )]
+                    db.bulk_save_objects(
+                        [
+                            AvailableMoves(
+                                id=move_id,
+                                sheet_id=scoresheet_id,
+                                name=pydantic_move.Move,
+                                direction=pydantic_move.Direction,
+                                fl_score=pydantic_move.Value,
+                                rb_score=pydantic_move.ReverseValue
+                                if pydantic_move.ReverseValue
+                                else pydantic_move.Value,
+                            )
+                        ]
                     )
 
                     bonus_names = [
@@ -65,7 +67,16 @@ for file in scoresheet_files:
                         for field in pydantic_move.__dict__.keys()
                         if field not in SeedMoveData.__fields__.keys()
                     ]
-                    bonuses = [AvailableBonuses(id = uuid4(),    sheet_id=scoresheet_id, move_id = move_id,name = bonus_name, score = pydantic_move.dict()[bonus_name]) for bonus_name in bonus_names]
+                    bonuses = [
+                        AvailableBonuses(
+                            id=uuid4(),
+                            sheet_id=scoresheet_id,
+                            move_id=move_id,
+                            name=bonus_name,
+                            score=pydantic_move.dict()[bonus_name],
+                        )
+                        for bonus_name in bonus_names
+                    ]
 
                     db.bulk_save_objects(bonuses)
 

@@ -15,10 +15,12 @@ from app.autogenEndpoints import (
     crud_route_scoredmoves,
     crud_route_scoresheet,
 )
-from app.customScoringEndpoints import scoring_router
-from app.ingestUpload import ingest_router
-from app.pdfEndpoints import pdf_router
+from app.competition_management.competition_management import (
+    competition_management_router,
+)
+from app.competition_management.pdfEndpoints import pdf_router
 from app.scoresheetEndpoints import scoresheet_router
+from app.scoring.customScoringEndpoints import scoring_router
 
 frontend_url = "http://localhost:3000"
 request_origins = [frontend_url]
@@ -27,7 +29,7 @@ app = FastAPI()
 [
     app.include_router(i)
     for i in [
-        ingest_router,
+        competition_management_router,
         scoring_router,
         scoresheet_router,
         pdf_router,

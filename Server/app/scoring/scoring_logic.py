@@ -206,7 +206,8 @@ def calculate_bonus_total(
     bonus_scores: list[int] = []
     already_scored_bonuses = []
     for bonus in associated_bonuses:
-        bonus_info = [bi for bi in available_bonuses if bi.id == bonus.bonus_id]
+        bonus_info = [
+            bi for bi in available_bonuses if bi.id == bonus.bonus_id]
         if bonus_info[0].id not in already_scored_bonuses:
             bonus_scores.append(bonus_info[0].score)
             already_scored_bonuses.append(bonus_info[0].id)
@@ -276,15 +277,18 @@ def organise_moves_by_athlete_run_judge(
         unique_runs.sort()
         run_moves_list: list[RunMoves] = []
         for run in unique_runs:
-            this_run_noves = [m for m in this_athlete_moves if m.run_number == run]
+            this_run_noves = [
+                m for m in this_athlete_moves if m.run_number == run]
 
             unique_judges = list(set(m.judge_id for m in this_run_noves))
             unique_judges.sort()
             judge_moves_list: list[JudgeMoves] = []
             for judge in unique_judges:
-                this_judge_moves = [m for m in this_run_noves if m.judge_id == judge]
+                this_judge_moves = [
+                    m for m in this_run_noves if m.judge_id == judge]
                 this_judge_move_ids = [m.id for m in this_judge_moves]
-                this_judge_bonuses = [b for b in bonuses if b.judge_id == judge]
+                this_judge_bonuses = [
+                    b for b in bonuses if b.judge_id == judge]
                 judge_moves_list.append(
                     JudgeMoves(
                         judge_id=judge,
@@ -296,7 +300,8 @@ def organise_moves_by_athlete_run_judge(
                         ],
                     )
                 )
-            run_moves_list.append(RunMoves(run=run, judge_moves=judge_moves_list))
+            run_moves_list.append(
+                RunMoves(run=run, judge_moves=judge_moves_list))
         resp.append(AthleteMoves(run_moves=run_moves_list, athlete_id=athlete))
     return resp
 
@@ -319,7 +324,8 @@ def calculate_heat_scores(
                     available_moves=available_moves,
                     available_bonuses=available_bonuses,
                 )
-                judges.append(JudgeScores(score_info=score, judge_id=judge.judge_id))
+                judges.append(JudgeScores(
+                    score_info=score, judge_id=judge.judge_id))
             runs.append(
                 RunScores(
                     judge_scores=judges,
@@ -362,11 +368,12 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
             item for item in sorted_athletes_scores if item.total_score == s.total_score
         ]
         if len(athletes_with_same_score) == 1:
-            print(rank)
+
             rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
             s.ranking = rank
         else:
-            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+            rank_info = calculate_tied_rank(
+                s.athlete_id, athletes_with_same_score)
             s.ranking = rank + rank_info.ranking + 1
             s.reason = f"TieBreak: {rank_info.reason}"
 
@@ -403,7 +410,8 @@ def calculate_tied_rank(
             ranking=min(
                 [
                     sorted_athlete_score.index(
-                        next(filter(lambda n: n.athlete_id == a, sorted_athlete_score))
+                        next(filter(lambda n: n.athlete_id ==
+                             a, sorted_athlete_score))
                     )
                     for a in fully_tied_athletes
                 ]
@@ -422,7 +430,8 @@ def calculate_tied_rank(
 def athletes_with_this_exact_score_after_tiebreak(
     athlete_id: UUID, athlete_scores: list[AthleteScores]
 ) -> list[UUID]:
-    this_athlete = next(a for a in athlete_scores if a.athlete_id == athlete_id)
+    this_athlete = next(
+        a for a in athlete_scores if a.athlete_id == athlete_id)
     return [
         a.athlete_id for a in athlete_scores if athlete_is_fully_tied(a, this_athlete)
     ]
