@@ -48,6 +48,8 @@ export const PromotePhase = () => {
 				number_of_judges: numberOfJudges
 			}
 		})
+		await refetchHeats()
+		await refetchPhases()
 		toast.success(`Created New Phase ${phaseName} and associated heat`)
 	}
 	const { refetch: refetchHeats } = useGetManyHeatGetQuery(
@@ -73,8 +75,6 @@ export const PromotePhase = () => {
 		} else {
 			setNewHeatNames([...newHeatNames, newHeatName])
 			setNewHeatName("")
-			void refetchHeats()
-			void refetchPhases()
 		}
 	}
 
