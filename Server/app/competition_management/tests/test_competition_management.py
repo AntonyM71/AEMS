@@ -1,3 +1,5 @@
+
+
 from app.competition_management.competition_management import assign_paddlers_to_heat
 
 

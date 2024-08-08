@@ -44,6 +44,11 @@ class NewPhaseInfo(BaseModel):
     number_of_judges: Optional[int]
 
 
+class AthleteIDandRank(BaseModel):
+    athlete_id: str
+    ranking: Optional[int]
+
+
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)
 async def promote_phase(
     request_body: Annotated[NewPhaseInfo, Body(embed=True, default=None)],
@@ -65,7 +70,7 @@ async def promote_phase(
         ]
 
         assigned_paddlers = assign_paddlers_to_heat(
-            heat_ids=[str(h["id"]) for h in new_heat_info], paddlers=top_paddlers
+            heat_ids=[str(h["id"]) for h in new_heat_info], paddlers=[AthleteIDandRank(athlete_id=a.athlete_id, ranking=a.ranking) for a in top_paddlers]
         )
 
         new_phase_id = uuid4()
@@ -143,8 +148,8 @@ def get_top_n_paddlers_for_phase(
 
 
 def assign_paddlers_to_heat(
-    paddlers: list[AthleteScoresWithAthleteInfo], heat_ids: list[str]
-) -> dict[str, list[AthleteScoresWithAthleteInfo]]:
+    paddlers: list[AthleteIDandRank], heat_ids: list[str]
+) -> dict[str, list[AthleteIDandRank]]:
     number_of_heats = len(heat_ids)
     random.shuffle(paddlers)
     paddler_heats = {h: [] for h in heat_ids}
