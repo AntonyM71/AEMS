@@ -100,8 +100,7 @@ async def phase_pdf(
                         row.cell(f"{athlete.run_scores[i].mean_run_score:.2f}")
                     except IndexError:
                         row.cell("0")
-                row.cell(
-                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
@@ -124,7 +123,6 @@ async def heat_pdf(
     heat_ids: list[str] = Query(None),
     db: Session = Depends(get_transaction_session),
 ) -> Response:
-
     try:
         pdf = FPDF(orientation="L", format="A4")
         if not heat_ids:

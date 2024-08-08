@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.competition_management.ingestUpload import upload_competiton_from_csv
 from app.scoring.customScoringEndpoints import (
+    PhaseScoresResponse,
     calculate_phase_scores,
 )
 from app.scoring.scoring_logic import AthleteScoresWithAthleteInfo
@@ -44,6 +45,11 @@ class NewPhaseInfo(BaseModel):
     number_of_judges: Optional[int]
 
 
+class AthleteIDandRank(BaseModel):
+    athlete_id: str
+    ranking: Optional[int]
+
+
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)
 async def promote_phase(
     request_body: Annotated[NewPhaseInfo, Body(embed=True, default=None)],
@@ -53,11 +59,11 @@ async def promote_phase(
         if request_body.number_of_paddlers == 0:
             msg = "Cannot promote a phase for 0 paddlers"
             raise HTTPException(422, msg)
+        phase_scores = calculate_phase_scores(phase_id=request_body.phase_id, db=db)
 
         top_paddlers = get_top_n_paddlers_for_phase(
-            phase_id=request_body.phase_id,
+            phase_scores=phase_scores,
             number_of_paddlers=request_body.number_of_paddlers,
-            db=db,
         )
 
         new_heat_info = [
@@ -65,14 +71,17 @@ async def promote_phase(
         ]
 
         assigned_paddlers = assign_paddlers_to_heat(
-            heat_ids=[str(h["id"]) for h in new_heat_info], paddlers=top_paddlers
+            heat_ids=[str(h["id"]) for h in new_heat_info],
+            paddlers=[
+                AthleteIDandRank(athlete_id=a.athlete_id, ranking=a.ranking)
+                for a in top_paddlers
+            ],
         )
 
         new_phase_id = uuid4()
 
         current_phase_details = (
-            db.query(Phase).filter(
-                Phase.id == request_body.phase_id).one_or_none()
+            db.query(Phase).filter(Phase.id == request_body.phase_id).one_or_none()
         )
 
         db.add(
@@ -131,9 +140,8 @@ async def promote_phase(
 
 
 def get_top_n_paddlers_for_phase(
-    number_of_paddlers: int, phase_id: str, db: Session
+    number_of_paddlers: int, phase_scores: PhaseScoresResponse
 ) -> list[AthleteScoresWithAthleteInfo]:
-    phase_scores = calculate_phase_scores(phase_id=phase_id, db=db)
     if len(phase_scores.scores) == 0:
         msg = "No Paddlers in target phase"
         raise HTTPException(422, msg)
@@ -143,8 +151,8 @@ def get_top_n_paddlers_for_phase(
 
 
 def assign_paddlers_to_heat(
-    paddlers: list[AthleteScoresWithAthleteInfo], heat_ids: list[str]
-) -> dict[str, list[AthleteScoresWithAthleteInfo]]:
+    paddlers: list[AthleteIDandRank], heat_ids: list[str]
+) -> dict[str, list[AthleteIDandRank]]:
     number_of_heats = len(heat_ids)
     random.shuffle(paddlers)
     paddler_heats = {h: [] for h in heat_ids}
