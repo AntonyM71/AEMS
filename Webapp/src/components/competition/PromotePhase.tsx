@@ -10,8 +10,16 @@ import TextField from "@mui/material/TextField"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
-import { getSelectedPhase } from "../../redux/atoms/competitions"
-import { usePromotePhaseCompetitionManagementPromotePhasePostMutation } from "../../redux/services/aemsApi"
+import {
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedPhase
+} from "../../redux/atoms/competitions"
+import {
+	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
+	useGetManyHeatGetQuery,
+	usePromotePhaseCompetitionManagementPromotePhasePostMutation
+} from "../../redux/services/aemsApi"
 import { SelectorDisplay } from "./MainSelector"
 export const PromotePhase = () => {
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
@@ -24,6 +32,7 @@ export const PromotePhase = () => {
 	const [newHeatNames, setNewHeatNames] = useState<string[]>([])
 	const [newHeatName, setNewHeatName] = useState<string>("")
 	const phaseId = useSelector(getSelectedPhase)
+	const selectedCompetition = useSelector(getSelectedCompetition)
 	const submitForm = async () => {
 		if (newHeatNames.length === 0) {
 			toast.error("Please set at least one heat name")
@@ -41,12 +50,31 @@ export const PromotePhase = () => {
 		})
 		toast.success(`Created New Phase ${phaseName} and associated heat`)
 	}
+	const { refetch: refetchHeats } = useGetManyHeatGetQuery(
+		{
+			competitionIdList: [selectedCompetition],
+			competitionIdListComparisonOperator: "Equal"
+		},
+		{ skip: !selectedCompetition }
+	)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const { refetch: refetchPhases } =
+		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery(
+			{
+				eventPkId: selectedEvent,
+				joinForeignTable: ["event"]
+			},
+			{ skip: !selectedEvent }
+		)
+
 	const handleAddNewHeat = () => {
 		if (!newHeatName) {
 			toast.error("Please add a name to the new heat")
 		} else {
 			setNewHeatNames([...newHeatNames, newHeatName])
 			setNewHeatName("")
+			void refetchHeats()
+			void refetchPhases()
 		}
 	}
 
@@ -207,6 +235,10 @@ export const PromotePhase = () => {
 								variant="outlined"
 								fullWidth
 								value={newHeatName}
+								helperText={
+									newHeatNames.length === 0 &&
+									"Please add at least one heat"
+								}
 								onChange={(
 									event: React.ChangeEvent<HTMLInputElement>
 								): void => {
