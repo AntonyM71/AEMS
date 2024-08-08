@@ -47,8 +47,6 @@ app = FastAPI()
     ]
 ]
 
-app.mount("/api", app)
-
 
 @app.get("/")
 async def root() -> dict[str, str]:
