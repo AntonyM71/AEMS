@@ -88,9 +88,7 @@ const UploadForm = () => {
 
 		axios
 			.post(
-				`http://localhost:${
-					process.env.NEXT_PUBLIC_SERVER_PORT || 8000
-				}/upload`,
+				`${process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"}/upload`,
 				formData,
 				{}
 			)
