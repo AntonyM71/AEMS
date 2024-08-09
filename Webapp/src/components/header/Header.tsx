@@ -25,17 +25,19 @@ const Header = () => {
 					justifyContent="space-between"
 					alignItems="center"
 				>
-					<Image
-						src="/images/icon.png"
-						alt="Hurley Foundation Events Logo"
-						height="30"
-						width="30"
-					/>
+					<RouterLink href="/">
+						<Image
+							src="/images/icon.png"
+							alt="Hurley Foundation Events Logo"
+							height="30"
+							width="30"
+						/>
+					</RouterLink>
 					<Grid item>
 						<LinkList />
 					</Grid>{" "}
 					<Grid item>
-						<h4>{userRole}</h4>
+						<Typography variant="h5">{userRole}</Typography>
 						{/* <UserCard /> */}
 					</Grid>
 					<Grid item>

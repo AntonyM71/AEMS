@@ -108,7 +108,10 @@ const ScoredMove = React.memo(
 							<></>
 						)}
 						<Grid item>
-							<Typography align="center">
+							<Typography
+								fontWeight={"fontWeightBold"}
+								align="center"
+							>
 								{scoredMove.direction}
 							</Typography>
 						</Grid>
