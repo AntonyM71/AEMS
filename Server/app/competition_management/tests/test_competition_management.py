@@ -1,4 +1,5 @@
 import random
+from uuid import UUID
 
 from app.competition_management.competition_management import (
     AthleteIDandRank,
@@ -29,23 +30,32 @@ class TestAssignPaddlersToHeat:
         want = {
             "07c3f51c-79e1-41a5-9bca-634b13d194c0": [
                 AthleteIDandRank(
-                    athlete_id="186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac", ranking=None
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
+                    ranking=None,
                 ),
             ],
             "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e": [
                 AthleteIDandRank(
-                    athlete_id="835a97a3-7645-434b-8482-d442eeaf58de", ranking=None
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"),
+                    ranking=None,
                 ),
                 AthleteIDandRank(
-                    athlete_id="6f7d4493-af2a-4f3c-b832-609d966738c8", ranking=None
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"),
+                    ranking=None,
                 ),
             ],
         }
         got = assign_paddlers_to_heat(
             paddlers=[
-                AthleteIDandRank(athlete_id="186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
-                AthleteIDandRank(athlete_id="835a97a3-7645-434b-8482-d442eeaf58de"),
-                AthleteIDandRank(athlete_id="6f7d4493-af2a-4f3c-b832-609d966738c8"),
+                AthleteIDandRank(
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac")
+                ),
+                AthleteIDandRank(
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de")
+                ),
+                AthleteIDandRank(
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8")
+                ),
             ],
             heat_ids=[
                 "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e",
@@ -60,23 +70,32 @@ class TestAssignPaddlersToHeat:
         want = {
             "07c3f51c-79e1-41a5-9bca-634b13d194c0": [
                 AthleteIDandRank(
-                    athlete_id="835a97a3-7645-434b-8482-d442eeaf58de", ranking=None
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"),
+                    ranking=None,
                 ),
             ],
             "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e": [
                 AthleteIDandRank(
-                    athlete_id="186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac", ranking=None
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
+                    ranking=None,
                 ),
                 AthleteIDandRank(
-                    athlete_id="6f7d4493-af2a-4f3c-b832-609d966738c8", ranking=None
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"),
+                    ranking=None,
                 ),
             ],
         }
         got = assign_paddlers_to_heat(
             paddlers=[
-                AthleteIDandRank(athlete_id="186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
-                AthleteIDandRank(athlete_id="835a97a3-7645-434b-8482-d442eeaf58de"),
-                AthleteIDandRank(athlete_id="6f7d4493-af2a-4f3c-b832-609d966738c8"),
+                AthleteIDandRank(
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac")
+                ),
+                AthleteIDandRank(
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de")
+                ),
+                AthleteIDandRank(
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8")
+                ),
             ],
             heat_ids=[
                 "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e",

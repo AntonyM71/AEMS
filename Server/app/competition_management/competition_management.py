@@ -2,7 +2,7 @@ import functools
 import operator
 import random
 from typing import Annotated, Optional
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import (
     APIRouter,
@@ -46,7 +46,7 @@ class NewPhaseInfo(BaseModel):
 
 
 class AthleteIDandRank(BaseModel):
-    athlete_id: str
+    athlete_id: UUID
     ranking: Optional[int]
 
 
