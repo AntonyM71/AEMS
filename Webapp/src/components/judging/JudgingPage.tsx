@@ -33,9 +33,7 @@ const Judging = () => {
 		.fill(null)
 		.map((_, i) => i + 1)
 
-	const heat = selectedHeat
-
-	if (heat && !isPhaseDataLoading && !isAthleteHeatDataLoading) {
+	if (selectedHeat && !isPhaseDataLoading && !isAthleteHeatDataLoading) {
 		return (
 			<Grid
 				container
