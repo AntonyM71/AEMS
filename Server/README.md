@@ -5,7 +5,7 @@
 ### Run the app using:
 
 ```
-uvicorn api:app
+uvicorn main:app
 ```
 
 ### Migrate the database with:
