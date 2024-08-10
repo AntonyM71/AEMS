@@ -46,13 +46,21 @@ const Judging = () => {
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
-							{!heatHasPaddlers && (
-								<Grid item xs={12}>
+							<Grid item xs={6}>
+								<SelectorDisplay
+									showPhase={false}
+									showEvent={false}
+								/>
+							</Grid>
+
+							<Grid item xs={6}>
+								{!heatHasPaddlers && (
 									<Alert severity="warning">
 										Cannot Judge a heat with no paddlers.
 									</Alert>
-								</Grid>
-							)}
+								)}
+							</Grid>
+
 							{judgeNumberArray.map((j: number) => (
 								<Grid item xs key={j}>
 									<ScribeButton
