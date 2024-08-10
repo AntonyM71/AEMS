@@ -73,7 +73,7 @@ More instructions for running linting and tests can be found in [the Webapp READ
 ```
 cd Server \\ Navigate to the server directory
 alembic upgrade head \\ Upgrade the database to the latest version
-uvicorn api:app \\ run the backend service
+uvicorn main:app \\ run the backend service
 ```
 
 More instructions for running linting and tests can be found in [the Server README](./Server/README.md)

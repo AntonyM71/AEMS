@@ -10,7 +10,7 @@ services:
       - "0.0.0.0:8000:8000"
     restart: always
 
-    command: bash -c "alembic upgrade head && python seed_scoresheets.py && uvicorn api:app --host 0.0.0.0 --port 8000"
+    command: bash -c "alembic upgrade head && python seed_scoresheets.py && uvicorn main:app --host 0.0.0.0 --port 8000"
 
     depends_on:
       - db
