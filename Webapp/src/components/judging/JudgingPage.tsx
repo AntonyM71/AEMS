@@ -22,9 +22,12 @@ const Judging = () => {
 			{ skip: !selectedHeat }
 		)
 	const { data: athleteHeatData, isLoading: isAthleteHeatDataLoading } =
-		useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-			heatId: selectedHeat
-		})
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{
+				heatId: selectedHeat
+			},
+			{ skip: !selectedHeat }
+		)
 	const heatHasPaddlers = (athleteHeatData?.length || 0) > 0
 	const maxJudges =
 		phaseData && Math.max(...phaseData.map((p) => p.number_of_judges), 1)

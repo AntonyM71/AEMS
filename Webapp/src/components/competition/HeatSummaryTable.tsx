@@ -182,9 +182,12 @@ export const HeatAthleteTable = ({
 		{ field: "bib", headerName: "Bib Number" },
 		...editCol
 	]
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-		heatId: selectedHeat
-	})
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 
 	const rows: GridRowsProp = athletes?.data
 		? athletes.data.map((a) => ({ id: v4(), ...a }))
@@ -288,9 +291,12 @@ const AddAthletesToHeat = (props: {
 	useEffect(() => {
 		setNewHeat(selectedHeat)
 	}, [selectedHeat])
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-		heatId: selectedHeat
-	})
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 	const [athleteLastName, setAthleteLastName] = useState<string>(
 		props.last_name ?? ""
 	)
