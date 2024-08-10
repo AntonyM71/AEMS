@@ -28,9 +28,12 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	const currentRun = useSelector(getSelectedRun)
 	const currentHeat = useSelector(getSelectedHeat)
 
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-		heatId: currentHeat
-	})
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: currentHeat
+		},
+		{ skip: !currentHeat }
+	)
 	const paddlersInHeat = athletes.data ?? []
 	const numberOfPaddlers = paddlersInHeat.length
 	const changePaddler = (number: number) => {

@@ -51,9 +51,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		})
 	}
 
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-		heatId: selectedHeat
-	})
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedAthlete = athletes.data
@@ -121,7 +124,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		{ skip: !selectedAthlete?.athlete_id }
 	)
 
-	const getServerScores = async () => {
+	const getserverScores = async () => {
 		if (!isUninitialized) {
 			await refetchMoveAndBonusData()
 		}
@@ -149,7 +152,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	}, [moveAndBonusdata])
 	useEffect(() => {
-		void getServerScores()
+		void getserverScores()
 	}, [
 		scribeNumber,
 		selectedHeat,

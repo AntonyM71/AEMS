@@ -45,10 +45,13 @@ export default () => {
 	const judgeNumberArray = new Array(maxJudges)
 		.fill(null)
 		.map((_, i) => i + 1)
-
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery({
-		heatId: selectedHeat
-	})
+	console.log(selectedHeat)
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedAthlete: AthleteInfo | undefined = athletes.data
