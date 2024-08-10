@@ -1,3 +1,4 @@
+import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid"
 import Link from "@mui/material/Link"
@@ -8,7 +9,10 @@ import { getSelectedHeat } from "../../redux/atoms/competitions"
 
 import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../components/competition/MainSelector"
-import { useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery } from "../../redux/services/aemsApi"
+import {
+	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
+	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery
+} from "../../redux/services/aemsApi"
 
 const Judging = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
@@ -17,6 +21,11 @@ const Judging = () => {
 			{ heatId: selectedHeat },
 			{ skip: !selectedHeat }
 		)
+	const { data: athleteHeatData, isLoading: isAthleteHeatDataLoading } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery({
+			heatId: selectedHeat
+		})
+	const heatHasPaddlers = (athleteHeatData?.length || 0) > 0
 	const maxJudges =
 		phaseData && Math.max(...phaseData.map((p) => p.number_of_judges), 1)
 
@@ -24,9 +33,7 @@ const Judging = () => {
 		.fill(null)
 		.map((_, i) => i + 1)
 
-	const heat = selectedHeat
-
-	if (heat && !isPhaseDataLoading) {
+	if (selectedHeat && !isPhaseDataLoading && !isAthleteHeatDataLoading) {
 		return (
 			<Grid
 				container
@@ -37,13 +44,31 @@ const Judging = () => {
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
+							<Grid item xs={6}>
+								<SelectorDisplay
+									showPhase={false}
+									showEvent={false}
+								/>
+							</Grid>
+
+							<Grid item xs={6}>
+								{!heatHasPaddlers && (
+									<Alert severity="warning">
+										Cannot Judge a heat with no paddlers.
+									</Alert>
+								)}
+							</Grid>
+
 							{judgeNumberArray.map((j: number) => (
 								<Grid item xs key={j}>
-									<ScribeButton n={j} />
+									<ScribeButton
+										n={j}
+										disabled={!heatHasPaddlers}
+									/>
 								</Grid>
 							))}
 							<Grid item xs>
-								<HeadJudgeButton />
+								<HeadJudgeButton disabled={!heatHasPaddlers} />
 							</Grid>
 						</Grid>
 					</Paper>
@@ -68,17 +93,23 @@ const Judging = () => {
 	)
 }
 
-const ScribeButton = ({ n }: { n: number }) => (
+const ScribeButton = ({
+	n,
+	disabled = false
+}: {
+	n: number
+	disabled?: boolean
+}) => (
 	<Link component={RouterLink} href={`scribe/${n}`} color="inherit">
-		<Button variant="contained" fullWidth>
+		<Button variant="contained" fullWidth disabled={disabled}>
 			Scribe {n}
 		</Button>
 	</Link>
 )
 
-const HeadJudgeButton = () => (
+const HeadJudgeButton = ({ disabled = false }: { disabled?: boolean }) => (
 	<Link component={RouterLink} href={"HeadJudge"} color="inherit">
-		<Button variant="contained" fullWidth>
+		<Button variant="contained" fullWidth disabled={disabled}>
 			Head Judge
 		</Button>
 	</Link>
