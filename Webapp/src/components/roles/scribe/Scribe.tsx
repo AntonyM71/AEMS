@@ -72,10 +72,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		  }
 		: undefined
 	useEffect(() => {
-		if (selectedAthlete) {
-			setNumberOfRuns(selectedAthlete.number_of_runs)
+		if (athletes?.data) {
+			setNumberOfRuns(
+				Math.max(...athletes.data.map((a) => a.number_of_runs), 1)
+			)
 		}
-	}, [dispatch, selectedAthlete, selectedAthlete?.number_of_runs])
+	}, [dispatch, selectedAthlete, athletes.data])
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
 	const submitScores = () => {
