@@ -50,7 +50,7 @@ export const downloadHeatPDF = async (heats: string[]) => {
 	const response = await axios.get(
 		`${
 			process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"
-		}/heat_pdf?${searchParams.toString()}`,
+		}heat_pdf?${searchParams.toString()}`,
 		{
 			method: "GET",
 			responseType: "blob"
