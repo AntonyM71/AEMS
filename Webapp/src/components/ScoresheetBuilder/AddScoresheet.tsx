@@ -1,3 +1,4 @@
+import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import TextField from "@mui/material/TextField"
 import { useState } from "react"
@@ -43,7 +44,7 @@ export const AddScoresheet = ({
 	return (
 		<Grid container spacing={1}>
 			<Grid item xs={12}>
-				<hr></hr>
+				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
 			<Grid item xs={12}>
 				<h4>Add New Scoresheet</h4>
