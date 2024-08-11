@@ -60,6 +60,138 @@
     "Direction": "LR"
   },
   {
+    "Move": "Cartwheel",
+    "Value": 30,
+    "Clean": 10,
+    "SuperClean": 20,
+    "Air": 10,
+    "Huge": 20,
+    "Link": 10,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Splitwheel",
+    "Value": 40,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 30,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Pirouette",
+    "Value": 25,
+    "Clean": 10,
+    "SuperClean": 20,
+    "Air": 10,
+    "Huge": 20,
+    "Link": 10,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Loop",
+    "Value": 60,
+    "ReverseValue": 90,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 30,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "FB"
+  },
+  {
+    "Move": "Lunar Orbit",
+    "Value": 150,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 40,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "LR"
+  },
+  {
+    "Move": "McNasty",
+    "Value": 120,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 40,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "LR"
+  },
+
+  {
+    "Move": "Space Godzilla",
+    "Value": 100,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 0,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Roundhouse",
+    "Value": 15,
+    "Clean": 10,
+    "SuperClean": 20,
+    "Air": 10,
+    "Huge": 20,
+    "Link": 10,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Back Roundhouse",
+    "Value": 20,
+    "Clean": 10,
+    "SuperClean": 20,
+    "Air": 10,
+    "Huge": 20,
+    "Link": 10,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Blunt",
+    "Value": 50,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 30,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Back Blunt",
+    "Value": 70,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 30,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Donkey Flip",
+    "Value": 90,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 0,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "LR"
+  },
+  {
+    "Move": "Airscrew",
+    "Value": 140,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 0,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "LR"
+  },
+  {
     "Move": "Paddle Spin",
     "Value": 10,
     "Clean": 20,
@@ -168,5 +300,35 @@
     "Huge": 20,
     "Link": 0,
     "Direction": "LR"
+  },
+  {
+    "Move": "Trophy 1",
+    "Value": 50,
+    "Clean": 30,
+    "SuperClean": 40,
+    "Air": 30,
+    "Huge": 40,
+    "Link": 20,
+    "Direction": "S"
+  },
+  {
+    "Move": "Trophy 2",
+    "Value": 170,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 40,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "S"
+  },
+  {
+    "Move": "Trophy 3",
+    "Value": 240,
+    "Clean": 50,
+    "SuperClean": 60,
+    "Air": 40,
+    "Huge": 50,
+    "Link": 30,
+    "Direction": "S"
   }
 ]
