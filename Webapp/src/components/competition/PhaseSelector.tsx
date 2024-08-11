@@ -103,12 +103,12 @@ const PhasesSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
-									showDetailed ? (
+									showDetailed && selectedPhase ? (
 										<IconButton
 											aria-label="toggle password visibility"
 											onClick={() => setOpen(true)}
 										>
-											<Tooltip title="Edit">
+											<Tooltip title="Edit Selected Phase">
 												<EditNoteIcon />
 											</Tooltip>
 										</IconButton>
