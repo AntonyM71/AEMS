@@ -19,7 +19,7 @@ export default function Admin() {
 
 	return (
 		<>
-			<Accordion>
+			<Accordion sx={{ marginTop: "0.5em" }}>
 				<AccordionSummary
 					expandIcon={<ExpandMoreIcon />}
 					aria-controls="panel1-content"

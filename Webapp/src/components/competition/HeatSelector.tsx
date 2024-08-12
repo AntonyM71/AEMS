@@ -1,5 +1,6 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
 import InputLabel from "@mui/material/InputLabel"
@@ -145,7 +146,7 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 	return (
 		<Grid container spacing="2">
 			<Grid item xs={12}>
-				<hr></hr>
+				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
 			<Grid item xs={12}>
 				<h4>Add New Heat</h4>
