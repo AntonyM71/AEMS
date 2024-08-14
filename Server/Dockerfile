@@ -1,6 +1,8 @@
 #
 FROM python:3.10
 
+ENV LOG_JSON_FORMAT true
+ENV DD_TRACE_ENABLED true
 #
 WORKDIR /code
 

@@ -61,6 +61,11 @@ dependencies = [
     "fastapi-quickcrud",
     "sqlalchemy_utils",
     "pydantic-sqlalchemy",
+    "structlog",
+    "rich",
+    "asgi-correlation-id",
+    "ddtrace",
+
 
 ]
 name = "aems_backend"
