@@ -1,5 +1,6 @@
 import logging
 import sys
+from types import TracebackType
 
 import structlog
 from ddtrace import tracer
@@ -7,7 +8,7 @@ from structlog.types import EventDict, Processor
 
 
 # https://github.com/hynek/structlog/issues/35#issuecomment-591321744
-def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
+def rename_event_key(_, __, event_dict: EventDict) -> EventDict:  # noqa: ANN001
     """
     Log entries keep the text message in the `event` field, but Datadog
     uses the `message` field. This processor moves the value from one field to
@@ -18,7 +19,7 @@ def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
+def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # noqa: ANN001
     """
     Uvicorn logs the message a second time in the extra `color_message`, but we don't
     need it. This processor drops the key from the event dict if it exists.
@@ -27,7 +28,7 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def tracer_injection(_, __, event_dict: EventDict) -> EventDict:
+def tracer_injection(_, __, event_dict: EventDict) -> EventDict:  # noqa: ANN001
     # get correlation ids from current tracer context
     span = tracer.current_span()
     trace_id, span_id = (span.trace_id, span.span_id) if span else (None, None)
@@ -39,7 +40,7 @@ def tracer_injection(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
+def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
     timestamper = structlog.processors.TimeStamper(fmt="iso")
 
     shared_processors: list[Processor] = [
@@ -63,11 +64,11 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
         shared_processors.append(structlog.processors.format_exc_info)
 
     structlog.configure(
-        processors=shared_processors
-        + [
-            # Prepare event dict for `ProcessorFormatter`.
-            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-        ],
+        processors=[* shared_processors,
+
+                    # Prepare event dict for `ProcessorFormatter`.
+                    structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+                    ],
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
@@ -111,7 +112,7 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
     logging.getLogger("uvicorn.access").handlers.clear()
     logging.getLogger("uvicorn.access").propagate = False
 
-    def handle_exception(exc_type, exc_value, exc_traceback):
+    def handle_exception(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: TracebackType) -> None:
         """
         Log any uncaught exception instead of letting it be printed by Python
         (but leave KeyboardInterrupt untouched to allow users to Ctrl+C to stop)
