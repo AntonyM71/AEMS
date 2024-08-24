@@ -44,7 +44,6 @@ class HeatInfoResponse(BaseModel):
     number_of_runs: int
     number_of_runs_for_score: int
     scoresheet: UUID
-    event_name: str
     first_name: str
     last_name: str
     bib: str
