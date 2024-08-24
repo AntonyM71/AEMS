@@ -1,7 +1,6 @@
 from math import inf
 from typing import Optional
 from uuid import UUID
-from xml.dom import NotFoundErr
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import ORJSONResponse
@@ -330,7 +329,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
-        raise NotFoundErr(msg)
+        raise ValueError(msg)
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
     athlete_heat = db.query(AthleteHeat).filter(
         AthleteHeat.phase_id == phase_id).all()
