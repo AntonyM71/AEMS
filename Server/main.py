@@ -1,10 +1,12 @@
 import os
 import time
+from collections.abc import Awaitable, Callable
 
 import structlog
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
 from asgi_correlation_id.context import correlation_id
+from ddtrace.contrib.asgi.middleware import TraceMiddleware
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import parse_obj_as
@@ -34,7 +36,7 @@ frontend_url = "http://localhost:3000"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", False))
+LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
@@ -65,7 +67,9 @@ app = FastAPI()
 
 
 @app.middleware("http")
-async def logging_middleware(request: Request, call_next) -> Response:
+async def logging_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     structlog.contextvars.clear_contextvars()
     # These context vars will be added to all log entries emitted during the request
     request_id = correlation_id.get()
@@ -90,8 +94,9 @@ async def logging_middleware(request: Request, call_next) -> Response:
         http_method = request.method
         http_version = request.scope["http_version"]
         # Recreate the Uvicorn access log format, but add all parameters as structured information
+        msg = f"""{client_host}:{client_port} - "{http_method} {url} HTTP/{http_version}" {status_code}"""
         access_logger.info(
-            f"""{client_host}:{client_port} - "{http_method} {url} HTTP/{http_version}" {status_code}""",
+            msg,
             http={
                 "url": str(request.url),
                 "status_code": status_code,
@@ -103,7 +108,7 @@ async def logging_middleware(request: Request, call_next) -> Response:
             duration=process_time,
         )
         response.headers["X-Process-Time"] = str(process_time / 10**9)
-        return response
+        return response  # noqa: B012
 
 
 # This middleware must be placed after the logging, to populate the context with the request ID
@@ -111,6 +116,17 @@ async def logging_middleware(request: Request, call_next) -> Response:
 # Answer: middlewares are applied in the reverse order of when they are added (you can verify this
 # by debugging `app.middleware_stack` and recursively drilling down the `app` property).
 app.add_middleware(CorrelationIdMiddleware)
+
+tracing_middleware = next(
+    (m for m in app.user_middleware if m.cls == TraceMiddleware), None
+)
+if tracing_middleware is not None:
+    app.user_middleware = [m for m in app.user_middleware if m.cls != TraceMiddleware]
+    structlog.stdlib.get_logger("api.datadog_patch").info(
+        "Patching Datadog tracing middleware to be the outermost middleware..."
+    )
+    app.user_middleware.insert(0, tracing_middleware)
+    app.middleware_stack = app.build_middleware_stack()
 
 
 @app.get("/")

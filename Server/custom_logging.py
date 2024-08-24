@@ -1,5 +1,6 @@
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 from types import TracebackType
 
 import structlog
@@ -64,22 +65,17 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
         shared_processors.append(structlog.processors.format_exc_info)
 
     structlog.configure(
-        processors=[* shared_processors,
-
-                    # Prepare event dict for `ProcessorFormatter`.
-                    structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-                    ],
+        processors=[
+            *shared_processors,
+            # Prepare event dict for `ProcessorFormatter`.
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
 
-    log_renderer: structlog.types.Processor
-    if json_logs:
-        log_renderer = structlog.processors.JSONRenderer()
-    else:
-        log_renderer = structlog.dev.ConsoleRenderer()
-
-    formatter = structlog.stdlib.ProcessorFormatter(
+    json_log_renderer = structlog.processors.JSONRenderer()
+    json_formatter = structlog.stdlib.ProcessorFormatter(
         # These run ONLY on `logging` entries that do NOT originate within
         # structlog.
         foreign_pre_chain=shared_processors,
@@ -87,16 +83,37 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
         processors=[
             # Remove _record & _from_structlog.
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            log_renderer,
+            json_log_renderer,
+        ],
+    )
+
+    pretty_log_renderer = structlog.dev.ConsoleRenderer()
+
+    pretty_formatter = structlog.stdlib.ProcessorFormatter(
+        # These run ONLY on `logging` entries that do NOT originate within
+        # structlog.
+        foreign_pre_chain=shared_processors,
+        # These run on ALL entries after the pre_chain is done.
+        processors=[
+            # Remove _record & _from_structlog.
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            pretty_log_renderer,
         ],
     )
 
     handler = logging.StreamHandler()
     # Use OUR `ProcessorFormatter` to format all `logging` entries.
-    handler.setFormatter(formatter)
+    handler.setFormatter(pretty_formatter)
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)
     root_logger.setLevel(log_level.upper())
+    if json_logs:
+        rotating_file_handler = RotatingFileHandler(
+            "server.log",
+            maxBytes=100000,
+        )
+        rotating_file_handler.setFormatter(json_formatter)
+        root_logger.addHandler(rotating_file_handler)
 
     for _log in ["uvicorn", "uvicorn.error"]:
         # Clear the log handlers for uvicorn loggers, and enable propagation
@@ -112,7 +129,11 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
     logging.getLogger("uvicorn.access").handlers.clear()
     logging.getLogger("uvicorn.access").propagate = False
 
-    def handle_exception(exc_type: type[BaseException], exc_value: BaseException, exc_traceback: TracebackType) -> None:
+    def handle_exception(
+        exc_type: type[BaseException],
+        exc_value: BaseException,
+        exc_traceback: TracebackType,
+    ) -> None:
         """
         Log any uncaught exception instead of letting it be printed by Python
         (but leave KeyboardInterrupt untouched to allow users to Ctrl+C to stop)
