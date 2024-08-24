@@ -51,6 +51,7 @@ dependencies = [
     "python-multipart",
     "pydantic<=1.8.2",
     "SQLAlchemy<=1.4.30",
+
     "starlette==0.14.2",
     "fpdf2",
     # Dev
@@ -60,6 +61,7 @@ dependencies = [
     "pytest",
     "fastapi-quickcrud",
     "sqlalchemy_utils",
+    "sqlalchemy[mypy]",    # remove when we upgrade to 2.0
     "pydantic-sqlalchemy",
 
 ]
