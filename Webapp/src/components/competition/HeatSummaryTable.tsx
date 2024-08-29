@@ -150,6 +150,7 @@ export const HeatAthleteTable = ({
 		bib?: number
 		phase_id?: string
 		athlete_id?: string
+		event_name?: string
 	}>({})
 	const editCol = showAdmin
 		? [
@@ -180,6 +181,7 @@ export const HeatAthleteTable = ({
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
+		{ field: "event_name", headerName: "Event Name", width: 200 },
 		...editCol
 	]
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(

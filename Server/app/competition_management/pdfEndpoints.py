@@ -100,7 +100,8 @@ async def phase_pdf(
                         row.cell(f"{athlete.run_scores[i].mean_run_score:.2f}")
                     except IndexError:
                         row.cell("0")
-                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(
+                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
@@ -132,36 +133,52 @@ async def heat_pdf(
         for heat_id in heat_ids:
             heat_athlete_info = get_heat_info_logic(heat_id=heat_id, db=db)
             heat_info = db.query(Heat).where(Heat.id == heat_id).one_or_none()
-            # Create a sample PDF file
+
+            competition_metadata = (
+                db.query(Competition)
+                .filter(Competition.id == heat_info.competition_id)
+                .one()
+            )
 
             pdf.add_page()
             pdf.set_font("Helvetica", size=24)
-            pdf.cell(
-                0,
-                10,
-                text=f"Heat: {heat_info.name}",
-                align="C",
-                new_x="LMARGIN",
-                new_y="NEXT",
-            )
-            pdf.set_font("Helvetica", size=12)
+        pdf.cell(
+            0,
+            10,
+            text=f"Competition: {competition_metadata.name}",
+            align="C",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+        pdf.set_font("Helvetica", size=20)
+        pdf.cell(
+            0,
+            10,
+            text=f"Heat: {heat_info.name}",
+            align="C",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+        pdf.set_font("Helvetica", size=12)
 
-            with pdf.table() as table:
-                header = table.row()
-                header.cell("First Name")
-                header.cell("Last Name")
-                header.cell("Bib")
-                header.cell("Previous Round Rank")
+        with pdf.table() as table:
+            header = table.row()
+            header.cell("First Name")
+            header.cell("Last Name")
+            header.cell("Event Name")
+            header.cell("Bib")
+            header.cell("Previous Round Rank")
 
-                for athlete in heat_athlete_info:
-                    row = table.row()
+            for athlete in heat_athlete_info:
+                row = table.row()
 
-                    row.cell(athlete.first_name)
-                    row.cell(athlete.last_name)
-                    row.cell(str(athlete.bib))
-                    row.cell(
-                        str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
-                    )
+                row.cell(athlete.first_name)
+                row.cell(athlete.last_name)
+                row.cell(athlete.event_name)
+                row.cell(str(athlete.bib))
+                row.cell(
+                    str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
+                )
 
         # Prepare the filename and headers
         filename = f"heats{datetime.now().isoformat()}.pdf"
