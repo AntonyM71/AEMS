@@ -211,6 +211,11 @@ async def get_athlete_moves_and_bonnuses(
 
     move_ids = [m.id for m in pydantic_moves]
 
+    bonuses = db.query(ScoredBonuses).filter(
+        ScoredBonuses.move_id.in_(move_ids)).all()
+    pydantic_bonuses = parse_obj_as(
+        list[PydanticScoredBonusesResponse], bonuses)
+
     return ScoredMovesAndBonusesResponse.parse_obj(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
     )
@@ -277,6 +282,9 @@ async def get_heat_scores(
     ]
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
+        available_moves=parse_obj_as(
+            list[PydanticAvailableMoves], scoresheet_available_moves
+        ),
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
@@ -389,8 +397,6 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
             )
         )
     athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]
-    athletes_without_scores = [
-        a for a in athlete_scores_with_info if not a.ranking]
     athletes_without_scores = [
         a for a in athlete_scores_with_info if not a.ranking]
     athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
