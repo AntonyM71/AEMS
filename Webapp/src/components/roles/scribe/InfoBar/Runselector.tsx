@@ -5,8 +5,16 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-import { getNumberOfRuns } from "../../../../redux/atoms/competitions"
-import { getSelectedRun, updateRun } from "../../../../redux/atoms/scoring"
+import {
+	getNumberOfRuns,
+	getSelectedHeat
+} from "../../../../redux/atoms/competitions"
+import {
+	getCurrentPaddlerIndex,
+	getSelectedRun,
+	updateRun
+} from "../../../../redux/atoms/scoring"
+import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
 import { calculateNewIndex } from "../InfoBar"
 
 export const RunSelector = () => {
@@ -14,11 +22,23 @@ export const RunSelector = () => {
 	const selectedRun = useSelector(getSelectedRun)
 	const numberOfRuns = useSelector(getNumberOfRuns)
 	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
+	const selectedHeat = useSelector(getSelectedHeat)
 	const changeRun = (number: number) => {
 		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
 
 		setselectedRun(newRun)
 	}
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
+
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const selectedAthlete = athletes.data
+		? athletes.data[currentPaddlerIndex]
+		: undefined
 
 	return (
 		<Paper
@@ -32,7 +52,7 @@ export const RunSelector = () => {
 					<Typography>Run:</Typography>
 				</Grid>
 
-				<Grid item xs={4}>
+				<Grid item xs={4} alignItems="right">
 					<IconButton
 						edge="start"
 						onClick={() => changeRun(-1)}
@@ -42,7 +62,17 @@ export const RunSelector = () => {
 					</IconButton>
 				</Grid>
 				<Grid item alignContent="center" textAlign="center" xs={4}>
-					{selectedRun + 1}
+					<Typography
+						fontWeight={"fontWeightBold"}
+						color={
+							selectedAthlete?.number_of_runs &&
+							selectedRun + 1 > selectedAthlete?.number_of_runs
+								? "red"
+								: "black"
+						}
+					>
+						{selectedRun + 1}
+					</Typography>
 				</Grid>
 				<Grid item xs={4}>
 					<IconButton
