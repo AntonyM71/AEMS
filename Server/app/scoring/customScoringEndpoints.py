@@ -48,6 +48,7 @@ class HeatInfoResponse(BaseModel):
     last_name: str
     bib: str
     last_phase_rank: Optional[int]
+    event_name: str
 
     class Config:
         orm_mode = True
@@ -82,6 +83,7 @@ def get_heat_info_logic(heat_id: str, db: Session) -> list[HeatInfoResponse]:
             last_name=h.athletes.last_name,
             bib=h.athletes.bib,
             last_phase_rank=h.last_phase_rank,
+            event_name=h.phases.event.name,
         )
         for h in heat_info
     ]
