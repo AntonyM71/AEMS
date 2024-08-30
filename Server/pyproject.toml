@@ -63,6 +63,11 @@ dependencies = [
     "sqlalchemy_utils",
     "sqlalchemy[mypy]",    # remove when we upgrade to 2.0
     "pydantic-sqlalchemy",
+    "structlog",
+    "rich",
+    "asgi-correlation-id",
+    "ddtrace",
+
 
 ]
 name = "aems_backend"

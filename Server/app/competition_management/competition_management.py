@@ -31,7 +31,7 @@ competition_management_router = APIRouter(prefix="/competition_management")
 
 
 @competition_management_router.post("/upload")
-def upload(competition_name: str = Form(...), file: UploadFile = File(...)) -> list:
+def upload(competition_name: str = Form(...), file: UploadFile = File(...)) -> list:  # noqa: B008
     return upload_competiton_from_csv(competition_name=competition_name, file=file)
 
 
