@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Extra
 
-from db.client import Session
+from db.client import session
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
 
 scoresheet_files = os.listdir(path=Path("data"))
@@ -28,7 +28,7 @@ for file in scoresheet_files:
     scoresheet_name = file.split(".")[0] or ""
     print(scoresheet_name)
 
-    with Session() as db:
+    with session() as db:
         if (
             db.query(ScoreSheet).filter(ScoreSheet.name == scoresheet_name)
         ).one_or_none():
@@ -37,7 +37,8 @@ for file in scoresheet_files:
         else:
             print("Making Scoresheet")
             scoresheet_id = uuid4()
-            db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
+            db.bulk_save_objects(
+                [ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
             with open(Path("data", file)) as json_file:
                 data = json.loads(json_file.read())
 

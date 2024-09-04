@@ -20,10 +20,16 @@ alembic upgrade head
 alembic revision --autogenerate
 ```
 
+## Seed default scoresheets
+
+```
+python -m scripts.seed_scoresheets
+```
+
 ## Build openapi.json
 
 ```
-python buildOpenApiJson.py
+python -m scripts.buildOpenApiJson
 
 ctrl + c
 ```
