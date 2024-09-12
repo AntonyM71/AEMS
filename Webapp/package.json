@@ -14,7 +14,7 @@
 		"@rjsf/mui": "^5.0.2",
 		"@rjsf/utils": "^5.0.2",
 		"@rjsf/validator-ajv8": "^5.0.2",
-		"@rtk-query/codegen-openapi": "^1.0.0",
+		"@rtk-query/codegen-openapi": "^1.2.0",
 		"@swc/helpers": "^0.4.14",
 		"@types/convict": "^5.2.2",
 		"@types/jest": "^26.0.24",
