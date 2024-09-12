@@ -5,7 +5,7 @@ services:
     build: ./Server
 
     environment:
-      - CONNECTION_STRING=postgresql://postgres:postgres@db:5432/postgres
+      - CONNECTION_STRING=postgresql+psycopg2://postgres:postgres@db:5432/postgres
     ports:
       - "0.0.0.0:8000:8000"
     restart: always
