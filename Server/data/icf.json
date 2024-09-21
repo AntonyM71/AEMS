@@ -103,7 +103,7 @@
     "Move": "Woo Tricky",
     "Value": 120,
     "Clean": 0,
-    "SuperClean": 60,
+    "SuperClean": 0,
     "Air": 40,
     "Huge": 50,
     "Link": 30,
@@ -277,16 +277,6 @@
     "Clean": 50,
     "SuperClean": 60,
     "Air": 0,
-    "Huge": 50,
-    "Link": 30,
-    "Direction": "LR"
-  },
-  {
-    "Move": "Pistol Flip",
-    "Value": 120,
-    "Clean": 50,
-    "SuperClean": 60,
-    "Air": 40,
     "Huge": 50,
     "Link": 30,
     "Direction": "LR"
