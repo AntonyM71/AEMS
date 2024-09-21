@@ -160,7 +160,7 @@ const JudgeCard = ({
 		},
 		{
 			skip: !selectedAthlete?.id,
-			pollingInterval: 5000
+			pollingInterval: 1000
 		}
 	)
 
