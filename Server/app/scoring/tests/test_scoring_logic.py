@@ -154,7 +154,7 @@ class TestScoring:
 
         assert got.score == 10
 
-    def test_it_returns_18_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
+    def test_it_returns_9_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
         self,
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
@@ -190,7 +190,7 @@ class TestScoring:
             available_moves=available_moves,
         )
 
-        assert got.score == 18
+        assert got.score == 9
 
     def test_it_returns_20_with_scored_back_move_and_a_valid_scoresheet(
         self,

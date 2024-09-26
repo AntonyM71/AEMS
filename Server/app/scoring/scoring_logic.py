@@ -111,22 +111,12 @@ def calculate_run_score(
         available_moves=available_moves,
         available_bonuses=available_bonuses,
     )
-    trophy_move_names = ["trophy 1", "trophy 2", "trophy 3"]
-    trophy_move_ids_list = [
-        available_move.id
-        for available_move in available_moves
-        if available_move.name.lower() in trophy_move_names
-    ]
+
     for scored_move in scored_move_list_with_scores:
         move_metahash = make_move_string(scored_move)
 
         if not filtered_move_scores.get(move_metahash):
             filtered_move_scores[move_metahash] = scored_move.total_score_with_bonuses
-        else:
-            if scored_move.move_id in trophy_move_ids_list:
-                filtered_move_scores[f"trophy_${scored_move.id}"] = (
-                    scored_move.total_score_with_bonuses
-                )
 
             if (
                 filtered_move_scores[move_metahash]

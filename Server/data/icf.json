@@ -289,7 +289,7 @@
     "Air": 30,
     "Huge": 40,
     "Link": 20,
-    "Direction": "S"
+    "Direction": "LR"
   },
   {
     "Move": "Trophy 2",
@@ -299,7 +299,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Direction": "S"
+    "Direction": "LR"
   },
   {
     "Move": "Trophy 3",
@@ -309,6 +309,6 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Direction": "S"
+    "Direction": "LR"
   }
 ]

@@ -1,4 +1,3 @@
-import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
 import _, { cloneDeep } from "lodash"
@@ -162,10 +161,6 @@ export const ScoresheetMoves = ({
 	} else if (newMoves) {
 		return (
 			<>
-				<Alert severity="info">
-					Moves with the names "Trophy 1", "Trophy 2", and "Trophy 3"
-					can be scored multiple times in the same run.
-				</Alert>
 				<ScoresheetBuilderHeader
 					bonuses={uniqueBonusNamesList}
 					setBonuses={addNewBonusType}

@@ -13,17 +13,6 @@ export function calculateSingleJudgeRunScore(
 	availableMoves: movesType[],
 	availableBonuses: AvailableBonusType[]
 ): RunScoreInfo {
-	const trophyMoveIDs = availableMoves
-		.map((a) => {
-			if (
-				["trophy 1", "trophy 2", "trophy 3"].includes(
-					a.name.toLowerCase()
-				)
-			) {
-				return a.id
-			}
-		})
-		.filter((n) => n)
 	const groupedMoves = groupBy(scoredMoves, (m) => m.moveId)
 	const uniqueScoredMoves = Object.keys(groupedMoves)
 	const scoredMoveScores = uniqueScoredMoves.map((id) => {
@@ -59,15 +48,9 @@ export function calculateSingleJudgeRunScore(
 			)
 
 			leftRightPartition.map((directionalScoredMoves) => {
-				const moveScore = trophyMoveIDs.includes(
-					directionalScoredMoves[0]?.baseMove
-				)
-					? directionalScoredMoves
-							.map((a) => a.value)
-							?.reduce(getSumOfMoves, 0)
-					: directionalScoredMoves
-							.map((a) => a.value)
-							?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
+				const moveScore = directionalScoredMoves
+					.map((a) => a.value)
+					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
 				if (directionalScoredMoves.length !== 0) {
 					runScore = runScore + moveScore
 				}
