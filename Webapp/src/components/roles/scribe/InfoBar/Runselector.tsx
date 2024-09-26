@@ -64,6 +64,7 @@ export const RunSelector = () => {
 				<Grid item alignContent="center" textAlign="center" xs={4}>
 					<Typography
 						fontWeight={"fontWeightBold"}
+						variant="h5"
 						color={
 							selectedAthlete?.number_of_runs &&
 							selectedRun + 1 > selectedAthlete?.number_of_runs
