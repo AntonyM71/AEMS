@@ -59,7 +59,9 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 				height: "100%"
 			}}
 		>
-			<Typography>Paddler No: {paddlerInfo.bib}</Typography>
+			<Typography variant="h5">
+				Bib No: <strong>{paddlerInfo.bib}</strong>
+			</Typography>
 			<div style={{ textAlign: "center" }}>
 				<Grid
 					container
