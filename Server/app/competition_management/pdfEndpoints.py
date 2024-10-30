@@ -100,8 +100,7 @@ async def phase_pdf(
                         row.cell(f"{athlete.run_scores[i].mean_run_score:.2f}")
                     except IndexError:
                         row.cell("0")
-                row.cell(
-                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
@@ -130,16 +129,16 @@ async def heat_pdf(
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
-        heat_info_list = db.query(Heat).where(
-            Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
+        heat_info_list = (
+            db.query(Heat).where(Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
+        )
         if not heat_info_list or len(heat_info_list) != len(heat_ids):
             return Response(
-                status_code=404, content="Could not find any heat Info corresponding to provided IDs"
+                status_code=404,
+                content="Could not find any heat Info corresponding to provided IDs",
             )
         for heat_info in heat_info_list:
-
-            heat_athlete_info = get_heat_info_logic(
-                heat_id=heat_info.id, db=db)
+            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
 
             competition_metadata = (
                 db.query(Competition)
