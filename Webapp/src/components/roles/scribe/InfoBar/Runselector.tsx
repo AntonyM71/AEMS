@@ -49,7 +49,7 @@ export const RunSelector = () => {
 		>
 			<Grid container alignItems="center" justifyContent="space-between">
 				<Grid item xs={12}>
-					<Typography>Run:</Typography>
+					<Typography variant="h5">Run:</Typography>
 				</Grid>
 
 				<Grid item xs={4} alignItems="right">

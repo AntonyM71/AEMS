@@ -85,7 +85,7 @@ export const InfoBar = ({
 						fullWidth
 						sx={{ height: "100%" }}
 					>
-						Heat Summary
+						Heat Scores
 					</Button>
 				</Grid>
 				<Grid item xs={3}>
