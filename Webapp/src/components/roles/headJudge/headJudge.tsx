@@ -29,10 +29,10 @@ import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
 import { directionType, movesType, scoredMovesType } from "../scribe/Interfaces"
 
 export default () => {
-	const [open, setOpen] = React.useState(false)
+	const [scoresOpen, setScoresOpen] = React.useState(false)
 
-	const handleOpen = () => setOpen(true)
-	const handleClose = () => setOpen(false)
+	const handleScoresOpen = () => setScoresOpen(true)
+	const handleScoresClose = () => setScoresOpen(false)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
@@ -40,7 +40,9 @@ export default () => {
 			{ skip: !selectedHeat }
 		)
 	const maxJudges =
-		phaseData && Math.max(...phaseData.map((p) => p.number_of_judges), 1)
+		(phaseData &&
+			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
+		1
 	const judgeNumberArray = new Array(maxJudges)
 		.fill(null)
 		.map((_, i) => i + 1)
@@ -66,8 +68,8 @@ export default () => {
 		return (
 			<>
 				<Modal
-					open={open}
-					onClose={handleClose}
+					open={scoresOpen}
+					onClose={handleScoresClose}
 					aria-labelledby="modal-modal-title"
 					aria-describedby="modal-modal-description"
 				>
@@ -97,12 +99,12 @@ export default () => {
 					</Grid>
 					<Grid item xs={1}>
 						<Button
-							onClick={handleOpen}
+							onClick={handleScoresOpen}
 							variant="contained"
 							fullWidth
 							sx={{ height: "100%" }}
 						>
-							Heat Summary
+							Heat Scores
 						</Button>
 					</Grid>
 					<Grid item xs={12}>
