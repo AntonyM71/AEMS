@@ -51,7 +51,14 @@ def available_bonuses() -> list[AvailableBonuses]:
             move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
             name="test_bonus_1",
             score=5,
-        )
+        ),
+        AvailableBonuses(
+            id="3883d4f2-7592-45a2-b7d4-22ca20d546b2",
+            sheet_id="3e1104be-6a11-4541-a6e2-00445cd94421",
+            move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+            name="test_bonus_2",
+            score=5,
+        ),
     ]
 
 
@@ -295,6 +302,57 @@ class TestScoring:
         )
 
         assert got.score == 25
+
+    def test_it_returns_30_with_two_of_the_same_moves_that_have_different_bonuses_scored(
+        self,
+        available_moves: list[AvailableMoves],
+        available_bonuses: list[AvailableBonuses],
+    ) -> None:
+        scored_moves: list[PydanticScoredMovesResponse] = [
+            PydanticScoredMovesResponse(
+                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                run_number="1",
+                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                judge_id="meg",
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                direction="B",
+            ),
+            PydanticScoredMovesResponse(
+                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
+                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                run_number="1",
+                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                judge_id="meg",
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                direction="B",
+            ),
+        ]
+        scored_bonuses: list[PydanticScoredBonusesResponse] = [
+            PydanticScoredBonusesResponse(
+                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
+                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
+                judge_id="meg",
+            ),
+            PydanticScoredBonusesResponse(
+                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
+                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
+                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b2",
+                judge_id="meg",
+            ),
+        ]
+
+        got = calculate_run_score(
+            scored_moves,
+            scored_bonuses,
+            available_bonuses=available_bonuses,
+            available_moves=available_moves,
+        )
+
+        assert got.score == 30
 
     def test_it_returns_20_with_a_duplicated_scored_back_move_and_a_valid_scoresheet(
         self,
