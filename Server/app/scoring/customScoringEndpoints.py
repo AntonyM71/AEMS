@@ -87,7 +87,7 @@ def get_heat_info_logic(heat_id: str, db: Session) -> list[HeatInfoResponse]:
         for h in heat_info
     ]
     heat_info_response.sort(key=lambda x: int(x.bib))
-    heat_info_response.sort(key=lambda x: x.last_phase_rank or inf)
+    heat_info_response.sort(key=lambda x: -x.last_phase_rank if x.last_phase_rank else -inf) # minus sign to order paddlers in ascending order, i.e. highest scoring paddler last
     return heat_info_response
 
 
