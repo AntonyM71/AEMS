@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedCompetition } from "../../redux/atoms/competitions"
 import { useGetManyHeatGetQuery } from "../../redux/services/aemsApi"
@@ -39,6 +39,9 @@ const HeatCheckBoxes = () => {
 		},
 		{ skip: !selectedCompetition }
 	)
+	useEffect(() => {
+		setSelectedHeats([])
+	}, [selectedCompetition])
 
 	return (
 		<Paper sx={{ padding: "1em", height: "100%" }}>
