@@ -118,14 +118,6 @@ def calculate_run_score(
         if not filtered_move_scores.get(move_metahash):
             filtered_move_scores[move_metahash] = scored_move.total_score_with_bonuses
 
-            if (
-                filtered_move_scores[move_metahash]
-                < scored_move.total_score_with_bonuses
-            ):
-                filtered_move_scores[move_metahash] = (
-                    scored_move.total_score_with_bonuses
-                )
-
     return AthleteScoreInfo(
         score=sum(filtered_move_scores.values()),
         highest_scoring_move=max([*filtered_move_scores.values(), 0]),
@@ -165,34 +157,40 @@ def calculate_individual_move_scores(
     scored_move_scores: list[PydanticScoredMoveWithBonus] = []
 
     for move in scored_moves:
-        this_move_scoredata = next(
-            sd for sd in available_moves if sd.id == move.move_id
-        )
-        this_scored_move_score = (
-            this_move_scoredata.fl_score
-            if move.direction in (["F", "L", "S"])
-            else this_move_scoredata.rb_score
-        )
-        bonus_total = calculate_bonus_total(
-            move_id=move.id,
-            scored_bonuses=scored_bonuses,
-            available_bonuses=available_bonuses,
-        )
-        scored_move_scores.append(
-            PydanticScoredMoveWithBonus(
-                **move.dict(),
-                total_score_with_bonuses=this_scored_move_score + bonus_total,
+        if move.move_id not in [sms.move_id for sms in scored_move_scores]:
+            same_move_ids = [
+                m.id
+                for m in scored_moves
+                if m.move_id == move.move_id and m.direction == move.direction
+            ]
+            this_move_scoredata = next(
+                sd for sd in available_moves if sd.id == move.move_id
             )
-        )
+            this_scored_move_score = (
+                this_move_scoredata.fl_score
+                if move.direction in (["F", "L", "S"])
+                else this_move_scoredata.rb_score
+            )
+            bonus_total = calculate_bonus_total(
+                move_ids=same_move_ids,
+                scored_bonuses=scored_bonuses,
+                available_bonuses=available_bonuses,
+            )
+            scored_move_scores.append(
+                PydanticScoredMoveWithBonus(
+                    **move.dict(),
+                    total_score_with_bonuses=this_scored_move_score + bonus_total,
+                )
+            )
     return scored_move_scores
 
 
 def calculate_bonus_total(
-    move_id: UUID,
+    move_ids: list[UUID],
     scored_bonuses: list[PydanticScoredBonusesResponse],
     available_bonuses: list[AvailableBonuses],
 ) -> int:
-    associated_bonuses = [ab for ab in scored_bonuses if ab.move_id == move_id]
+    associated_bonuses = [ab for ab in scored_bonuses if ab.move_id in move_ids]
     bonus_scores: list[int] = []
     already_scored_bonuses = []
     for bonus in associated_bonuses:

@@ -16,6 +16,7 @@ export function calculateSingleJudgeRunScore(
 	const groupedMoves = groupBy(scoredMoves, (m) => m.moveId)
 	const uniqueScoredMoves = Object.keys(groupedMoves)
 	const scoredMoveScores = uniqueScoredMoves.map((id) => {
+		const same_move_ids = groupedMoves[id].map((gm) => gm.id)
 		const moveAvailableBonuses = availableBonuses.filter(
 			(b) => b.move_id === id
 		)
@@ -24,7 +25,7 @@ export function calculateSingleJudgeRunScore(
 		return groupedMoves[id].map((m) =>
 			calculateMoveScore(
 				m,
-				scoredBonuses.filter((b) => b.moveId === m.id),
+				scoredBonuses.filter((b) => same_move_ids.includes(b.moveId)),
 				moveData,
 				moveAvailableBonuses
 			)
@@ -61,7 +62,6 @@ export function calculateSingleJudgeRunScore(
 	return { score: runScore, highestMove: highestScoredMove }
 }
 
-const getSumOfMoves = (prev: number, current: number): number => prev + current
 
 const getMaximumScoredMoveFromArrayByValue = (prev: number, current: number) =>
 	prev > current ? prev : current
