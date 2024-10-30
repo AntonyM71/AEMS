@@ -21,6 +21,7 @@ import {
 } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
+import { HeatSummaryTable } from "../../competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
 import { AthleteInfo, CurrentScore } from "../scribe/InfoBar"
 import { PaddlerSelector } from "../scribe/InfoBar/PaddlerSelector"
@@ -33,6 +34,11 @@ export default () => {
 
 	const handleScoresOpen = () => setScoresOpen(true)
 	const handleScoresClose = () => setScoresOpen(false)
+
+	const [listOpen, setListOpen] = React.useState(false)
+
+	const handleListOpen = () => setListOpen(true)
+	const handleListClose = () => setListOpen(false)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
@@ -77,6 +83,16 @@ export default () => {
 						<HeatScoreTable defaultShowJudgeScores={true} />
 					</Paper>
 				</Modal>
+				<Modal
+					open={listOpen}
+					onClose={handleListClose}
+					aria-labelledby="modal-modal-title"
+					aria-describedby="modal-modal-description"
+				>
+					<Paper sx={style}>
+						<HeatSummaryTable />
+					</Paper>
+				</Modal>
 				<Grid
 					container
 					spacing={2}
@@ -90,12 +106,21 @@ export default () => {
 							showPhase={false}
 						/>
 					</Grid>
-
-					<Grid item xs={3}>
+					<Grid item xs={2}>
 						<PaddlerSelector paddlerInfo={selectedAthlete} />
 					</Grid>
-					<Grid item xs={2}>
+					<Grid item xs={1}>
 						<RunSelector />
+					</Grid>{" "}
+					<Grid item xs={1}>
+						<Button
+							onClick={handleListOpen}
+							variant="contained"
+							fullWidth
+							sx={{ height: "100%" }}
+						>
+							Heat List
+						</Button>
 					</Grid>
 					<Grid item xs={1}>
 						<Button
@@ -110,7 +135,6 @@ export default () => {
 					<Grid item xs={12}>
 						<Divider />
 					</Grid>
-
 					{judgeNumberArray.map((jn) => (
 						<Grid item key={jn} xs={Math.floor(12 / maxJudges)}>
 							<JudgeCard
