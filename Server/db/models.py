@@ -10,7 +10,6 @@ class Competition(Base):
     __tablename__ = "competition"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     name = Column(String, nullable=False)
-    # users = ARRAY(String)
     events = relationship("Event")
     schema = "public"
 
