@@ -1,9 +1,11 @@
 import functools
 import operator
 import random
+from io import BytesIO
 from typing import Annotated, Optional
 from uuid import UUID, uuid4
 
+import pandas as pd
 from fastapi import (
     APIRouter,
     Body,
@@ -18,7 +20,10 @@ from fastapi import (
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.competition_management.ingestUpload import upload_competiton_from_csv
+from app.competition_management.create_competition_from_xlsx import (
+    process_competitors_df,
+    validate_columns_and_data_types,
+)
 from app.scoring.customScoringEndpoints import (
     PhaseScoresResponse,
     calculate_phase_scores,
@@ -30,9 +35,44 @@ from db.models import AthleteHeat, Heat, Phase
 competition_management_router = APIRouter(prefix="/competition_management")
 
 
+class InvalidFileTypeError(Exception):
+    """Raised when the file type does not match what is expected"""
+
+
 @competition_management_router.post("/upload")
-def upload(competition_name: str = Form(...), file: UploadFile = File(...)) -> list:  # noqa: B008
-    return upload_competiton_from_csv(competition_name=competition_name, file=file)
+def upload(
+    competition_name: str = Form(...),
+    scoresheet_name: str = Form(...),
+    number_of_runs: int = Form(...),
+    number_of_runs_for_score: int = Form(...),
+    number_of_judges: int = Form(...),
+    file: UploadFile = File(...),
+) -> Response:
+
+    if file.filename.endswith(".xlsx"):
+        sheets_dict = pd.read_excel(
+            BytesIO(file.file.read()), sheet_name=None)
+        competitors_df = pd.concat(sheets_dict.values(), ignore_index=True)
+    elif file.filename.endswith(".csv"):
+
+        competitors_df = pd.read_csv(
+            BytesIO(file.file.read()))
+
+    else:
+        msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
+        raise InvalidFileTypeError(msg)
+    print(competitors_df)
+    validate_columns_and_data_types(competitors_df)
+    process_competitors_df(
+        competitors_df=competitors_df,
+        competition_name=competition_name,
+        scoresheet_name=scoresheet_name,
+        number_of_runs=number_of_runs,
+        number_of_runs_for_score=number_of_runs_for_score,
+        number_of_judges=number_of_judges,
+    )
+
+    return Response(status_code=201)
 
 
 class NewPhaseInfo(BaseModel):
@@ -59,7 +99,8 @@ async def promote_phase(
         if request_body.number_of_paddlers == 0:
             msg = "Cannot promote a phase for 0 paddlers"
             raise HTTPException(422, msg)
-        phase_scores = calculate_phase_scores(phase_id=request_body.phase_id, db=db)
+        phase_scores = calculate_phase_scores(
+            phase_id=request_body.phase_id, db=db)
 
         top_paddlers = get_top_n_paddlers_for_phase(
             phase_scores=phase_scores,
@@ -81,7 +122,8 @@ async def promote_phase(
         new_phase_id = uuid4()
 
         current_phase_details = (
-            db.query(Phase).filter(Phase.id == request_body.phase_id).one_or_none()
+            db.query(Phase).filter(
+                Phase.id == request_body.phase_id).one_or_none()
         )
 
         db.add(
@@ -136,7 +178,7 @@ async def promote_phase(
             )
         )
 
-    return Response(status_code=200)
+    return Response(status_code=201)
 
 
 def get_top_n_paddlers_for_phase(

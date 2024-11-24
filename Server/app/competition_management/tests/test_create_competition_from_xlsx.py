@@ -5,8 +5,11 @@ import pandas as pd
 import pytest
 
 from app.competition_management.create_competition_from_xlsx import (
+    ColumnTypeError,
+    MissingColumnError,
     ScoresheetWithSpecifiedNameDoesNotExistError,
     process_competitors_df,
+    validate_columns_and_data_types,
 )
 
 TEST_UUIDS_COUNT = 0
@@ -45,9 +48,9 @@ class TestScoring:
         with pytest.raises(ScoresheetWithSpecifiedNameDoesNotExistError):
             process_competitors_df(test_df, "test_comp")
         mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": ANY}]
+            [{"name": "test_comp", "id": ANY}], db=ANY
         )
-        mock_get_scoresheets.assert_called_once_with()
+        mock_get_scoresheets.assert_called_once_with(db=ANY)
 
     @patch.object(uuid, "uuid4", side_effect=mock_uuid)
     @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
@@ -75,7 +78,8 @@ class TestScoring:
 
         process_competitors_df(test_df, "test_comp")
         mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}]
+            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}],
+            db=ANY,
         )
         assert mock_get_scoresheets.call_count == 1
         assert (
@@ -86,7 +90,8 @@ class TestScoring:
                         "id": "00000000-0000-0000-0000-000000000002",
                         "competition_id": "00000000-0000-0000-0000-000000000001",
                     }
-                ]
+                ],
+                db=ANY,
             )
             in mock_post_event.call_args_list
         )
@@ -98,7 +103,8 @@ class TestScoring:
                         "id": "00000000-0000-0000-0000-000000000004",
                         "competition_id": "00000000-0000-0000-0000-000000000001",
                     }
-                ]
+                ],
+                db=ANY,
             )
             in mock_post_event.call_args_list
         )
@@ -110,14 +116,13 @@ class TestScoring:
                         "id": "00000000-0000-0000-0000-000000000006",
                         "competition_id": "00000000-0000-0000-0000-000000000001",
                     }
-                ]
+                ],
+                db=ANY,
             )
             in mock_post_event.call_args_list
         )
-
-        # mock_post_phase.to()
         mock_post_heat.assert_called_with(
-            [{"name": "Heat 1", "id": ANY, "competition_id": ANY}]
+            [{"name": "Heat 1", "id": ANY, "competition_id": ANY}], db=ANY
         )
         mock_post_phase.assert_has_calls(
             [
@@ -127,12 +132,13 @@ class TestScoring:
                             "name": "Prelim",
                             "id": "00000000-0000-0000-0000-000000000003",
                             "event_id": "00000000-0000-0000-0000-000000000002",
-                            "number_of_runs": "1",
-                            "number_of_runs_for_score": "1",
+                            "number_of_runs": 1,
+                            "number_of_runs_for_score": 1,
                             "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": "2",
+                            "number_of_judges": 2,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -140,12 +146,13 @@ class TestScoring:
                             "name": "Prelim",
                             "id": "00000000-0000-0000-0000-000000000005",
                             "event_id": "00000000-0000-0000-0000-000000000004",
-                            "number_of_runs": "1",
-                            "number_of_runs_for_score": "1",
+                            "number_of_runs": 1,
+                            "number_of_runs_for_score": 1,
                             "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": "2",
+                            "number_of_judges": 2,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -153,12 +160,13 @@ class TestScoring:
                             "name": "Prelim",
                             "id": "00000000-0000-0000-0000-000000000007",
                             "event_id": "00000000-0000-0000-0000-000000000006",
-                            "number_of_runs": "1",
-                            "number_of_runs_for_score": "1",
+                            "number_of_runs": 1,
+                            "number_of_runs_for_score": 1,
                             "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": "2",
+                            "number_of_judges": 2,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
             ],
             any_order=True,
@@ -173,7 +181,8 @@ class TestScoring:
                             "last_name": "Wilkinson",
                             "bib": "1",
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -183,7 +192,8 @@ class TestScoring:
                             "last_name": "Hutchinson",
                             "bib": "126",
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -193,7 +203,8 @@ class TestScoring:
                             "last_name": "Taylor",
                             "bib": "110",
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -203,7 +214,8 @@ class TestScoring:
                             "last_name": "Keegan",
                             "bib": "91",
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -213,7 +225,8 @@ class TestScoring:
                             "last_name": "Blunt",
                             "bib": "99",
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
             ],
             any_order=True,
@@ -229,7 +242,8 @@ class TestScoring:
                             "phase_id": "00000000-0000-0000-0000-000000000003",
                             "last_phase_rank": None,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -240,7 +254,8 @@ class TestScoring:
                             "phase_id": "00000000-0000-0000-0000-000000000005",
                             "last_phase_rank": None,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -251,7 +266,8 @@ class TestScoring:
                             "phase_id": "00000000-0000-0000-0000-000000000007",
                             "last_phase_rank": None,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -262,7 +278,8 @@ class TestScoring:
                             "phase_id": "00000000-0000-0000-0000-000000000005",
                             "last_phase_rank": None,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
                 call(
                     [
@@ -273,8 +290,55 @@ class TestScoring:
                             "phase_id": "00000000-0000-0000-0000-000000000005",
                             "last_phase_rank": None,
                         }
-                    ]
+                    ],
+                    db=ANY,
                 ),
             ],
             any_order=True,
         )
+
+
+MANDATORY_COLUMNS = ["first_name", "last_name", "bib", "Event", "Heat"]
+
+
+class TestValidateColumnsAndDataTypes:
+    def test_it_passes_when_mandatory_columns_are_there(
+        self, test_df: pd.DataFrame
+    ) -> None:
+        validate_columns_and_data_types(competition_df=test_df)
+
+    @pytest.mark.parametrize("column", MANDATORY_COLUMNS)
+    def test_it_raises_an_error_when_mandatory_columns_not_there(
+        self, column: str, test_df: pd.DataFrame
+    ) -> None:
+        modified_test_df = test_df.drop([column], axis=1)
+        with pytest.raises(MissingColumnError) as excinfo:
+            validate_columns_and_data_types(competition_df=modified_test_df)
+        assert str(excinfo.value) == f"Column '{column}' is missing from the file"
+
+    def test_it_passes_when_columns_are_there_and_dtypes_are_correct(
+        self, test_df: pd.DataFrame
+    ) -> None:
+        validate_columns_and_data_types(competition_df=test_df)
+
+
+@pytest.mark.parametrize(
+    "column, incorrect_value",
+    [
+        ("first_name", 123),  # Incorrect type (int instead of string)
+        ("last_name", 456),  # Incorrect type (int instead of string)
+        ("Event", 789),  # Incorrect type (int instead of string)
+        # Incorrect type (string instead of int)
+        ("Heat", "one"),
+        # Incorrect type (string instead of int)
+        ("bib", "two"),
+    ],
+)
+def test_incorrect_dtype_raises_error(
+    column: str, incorrect_value: str | int, test_df: pd.DataFrame
+) -> None:
+    test_df.loc[0, column] = incorrect_value
+    with pytest.raises(
+        ColumnTypeError, match=f"Column '{column}' is not of type '<function is_[^']+'"
+    ):
+        validate_columns_and_data_types(test_df)
