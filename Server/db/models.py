@@ -6,7 +6,12 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
-class Competition(Base):
+class ToDictMixin:
+    def to_dict(self) -> dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class Competition(ToDictMixin, Base):
     __tablename__ = "competition"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     name = Column(String, nullable=False)
@@ -29,13 +34,15 @@ class Event(Base):
 class Phase(Base):
     __tablename__ = "phase"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey(
+        "event.id"), nullable=False)
     event = relationship("Event", back_populates="phases")
     name = Column(String, nullable=False)
     number_of_runs = Column(Integer, nullable=False, default=3)
     number_of_runs_for_score = Column(Integer, nullable=False, default=2)
     number_of_judges = Column(Integer, nullable=False, default=3)
-    scoresheet = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    scoresheet = Column(UUID(as_uuid=True), ForeignKey(
+        "scoreSheet.id"), nullable=False)
     athletes = relationship("AthleteHeat", back_populates="phases")
 
     schema = "public"
@@ -57,8 +64,10 @@ class AthleteHeat(Base):
     __tablename__ = "athleteheat"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"), nullable=False)
-    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
-    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(
+        "athlete.id"), nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(
+        "phase.id"), nullable=False)
     heats = relationship("Heat", back_populates="athletes")
     athletes = relationship("Athlete", back_populates="heats")
     phases = relationship("Phase", back_populates="athletes")
@@ -76,7 +85,7 @@ class Athlete(Base):
     schema = "public"
 
 
-class ScoreSheet(Base):
+class ScoreSheet(ToDictMixin, Base):
     __tablename__ = "scoreSheet"
     id = Column(UUID(as_uuid=True), primary_key=True, comment="Competition ID")
     name = Column(String, nullable=False)
@@ -86,7 +95,8 @@ class ScoreSheet(Base):
 class AvailableMoves(Base):
     __tablename__ = "availableMoves"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
-    sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    sheet_id = Column(UUID(as_uuid=True), ForeignKey(
+        "scoreSheet.id"), nullable=False)
 
     name = Column(String, nullable=False)
     fl_score = Column(Integer, nullable=False)
@@ -98,7 +108,8 @@ class AvailableMoves(Base):
 class AvailableBonuses(Base):
     __tablename__ = "availableBonuses"
     id = Column(UUID(as_uuid=True), primary_key=True)
-    sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    sheet_id = Column(UUID(as_uuid=True), ForeignKey(
+        "scoreSheet.id"), nullable=False)
     move_id = Column(
         UUID(as_uuid=True), ForeignKey("availableMoves.id"), nullable=False
     )
@@ -116,11 +127,13 @@ class ScoredMoves(Base):
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)
-    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(
+        "phase.id"), nullable=False)
     phase = relationship("Phase", foreign_keys=[phase_id])
     move = relationship("AvailableMoves", foreign_keys=[move_id])
     judge_id = Column(String, nullable=False)
-    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(
+        "athlete.id"), nullable=False)
     athlete = relationship("Athlete", foreign_keys=[athlete_id])
     direction = Column(String, nullable=False)
     schema = "public"
@@ -132,7 +145,8 @@ class ScoredBonuses(Base):
     bonus_id = Column(
         UUID(as_uuid=True), ForeignKey("availableBonuses.id"), nullable=False
     )
-    move_id = Column(UUID(as_uuid=True), ForeignKey("scoredMoves.id"), nullable=False)
+    move_id = Column(UUID(as_uuid=True), ForeignKey(
+        "scoredMoves.id"), nullable=False)
     bonus = relationship("AvailableBonuses", foreign_keys=[bonus_id])
     move = relationship("ScoredMoves", foreign_keys=[move_id])
     judge_id = Column(String, nullable=False)

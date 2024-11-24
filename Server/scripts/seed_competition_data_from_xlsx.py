@@ -19,13 +19,17 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-if args.excel_file.suffix == ".xlsx":
-    competitors_df = pd.read_excel(args.excel_file)
-elif args.excel_file.suffix == ".csv":
-    competitors_df = pd.read_csv(args.excel_file)
+excel_path: Path = Path(args.excel_file)
+print(f"Attempting to read file: {excel_path}")
+if not excel_path.exists():
+    print(f"File: {excel_path} does not exist")
+    exit(1)
+if excel_path.suffix == ".xlsx":
+    competitors_df = pd.read_excel(excel_path)
+elif excel_path.suffix == ".csv":
+    competitors_df = pd.read_csv(excel_path)
 else:
-    print(f"File: {args.excel_file} must have suffix '.xlsx>' or  'csv'")
+    print(f"File: {excel_path} must have suffix '.xlsx' or  '.csv'")
     exit(1)
 process_competitors_df(
     competitors_df=competitors_df, competition_name=args.competition_name

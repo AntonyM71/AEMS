@@ -1,7 +1,11 @@
 import uuid
 
 import pandas as pd
-import requests
+from numpy import ndarray
+from sqlalchemy.orm import Session
+
+from db.client import get_transaction_session
+from db.models import Athlete, AthleteHeat, Competition, Event, Heat, Phase, ScoreSheet
 
 # Set API endpoint URLs
 base_url = "http://localhost:8000/"
@@ -29,42 +33,20 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
-def post_competition(competition_data: list[dict]) -> dict | None:
-    response = requests.post(competition_url, json=competition_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode competition response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add competition: {competition_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_competition(competition_data: list[dict], db: Session) -> None:
+    db.bulk_save_objects([Competition(**c) for c in competition_data])
 
 
-def get_scoresheets() -> dict | None:
-    response = requests.get(scoresheet_url)
-    if response.status_code == 200:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode scoresheets response as JSON")
-            print(response.text)
-            return None
-    else:
-        print("Failed to retrieve scoresheets")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def get_scoresheets(db: Session) -> list[dict] | None:
+
+    query_response = db.query(ScoreSheet).all()
+    return [qr.to_dict() for qr in query_response]
 
 
 # Function to select the scoresheet by name
 
 
-def select_scoresheet_by_name(scoresheets: dict, name: str) -> dict | None:
+def select_scoresheet_by_name(scoresheets: dict, name: str) -> str | None:
     for scoresheet in scoresheets:
         if scoresheet["name"].lower() == name.lower():
             return scoresheet["id"]
@@ -73,115 +55,38 @@ def select_scoresheet_by_name(scoresheets: dict, name: str) -> dict | None:
 
 # Function to post event data
 
-
-def post_event(event_data: list[dict]) -> dict | None:
-    response = requests.post(event_url, json=event_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode event response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add event: {event_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_event(event_data: list[dict], db: Session) -> None:
+    db.bulk_save_objects([Event(**c) for c in event_data])
 
 
 # Function to post phase data
 
 
-def post_phase(phase_data: list[dict]) -> dict | None:
-    response = requests.post(phase_url, json=phase_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode phase response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add phase: {phase_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_phase(phase_data: list[dict], db: Session) -> None:
+    db.bulk_save_objects([Phase(**p) for p in phase_data])
 
 
-def post_heat(heat_data: list[dict]) -> dict | None:
-    response = requests.post(heat_url, json=heat_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode heat response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add heat: {heat_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_heat(heat_data: list[dict], db: Session) -> dict | None:
+    db.bulk_save_objects([Heat(**h) for h in heat_data])
 
 
-def post_athlete(athlete_data: list[dict]) -> dict | None:
-    response = requests.post(athlete_url, json=athlete_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode athlete response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add athlete: {athlete_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_athlete(athlete_data: list[dict], db: Session) -> dict | None:
+    db.bulk_save_objects([Athlete(**a) for a in athlete_data])
 
 
-def post_athlete_heat(athlete_heat_data: list[dict]) -> dict | None:
-    response = requests.post(athlete_heat_url, json=athlete_heat_data)
-    if response.status_code == 201:
-        try:
-            return response.json()
-        except requests.exceptions.JSONDecodeError:
-            print("Failed to decode athlete heat response as JSON")
-            print(response.text)
-            return None
-    else:
-        print(f"Failed to add athlete heat: {athlete_heat_data}")
-        print(f"Response status code: {response.status_code}")
-        print(response.text)
-        return None
+def post_athlete_heat(athlete_heat_data: list[dict], db: Session) -> dict | None:
+    db.bulk_save_objects([AthleteHeat(**ah) for ah in athlete_heat_data])
 
 
-def process_competitors_df(competitors_df: pd.DataFrame, competition_name: str) -> None:
-    event_count = 0
-    phase_count = 0
-    heat_count = 0
-    paddler_count = 0
-    competition_id = generate_uuid()
-
-    competition_data = [{"name": competition_name, "id": competition_id}]
-
-    competition_response = post_competition(competition_data)
-
-    if competition_response:
-        print(f"Competition '{competition_name}' created with ID {competition_id}")
-    else:
-        print("Failed to create competition")
-        msg = "Could not create competition"
-        raise ConnectionError(msg)
-
-    scoresheets = get_scoresheets()
-
+def check_scoresheet_exists(scoresheet_name: str, db: Session) -> str:
+    scoresheets = get_scoresheets(db=db)
     if scoresheets:
         scoresheet_id = select_scoresheet_by_name(scoresheets, scoresheet_name)
 
         if scoresheet_id:
-            print(f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
+            print(
+                f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
+            return scoresheet_id
         else:
             msg = f"Could not find scoresheet with name: {scoresheet_name}"
             raise (ScoresheetWithSpecifiedNameDoesNotExistError(msg))
@@ -189,22 +94,63 @@ def process_competitors_df(competitors_df: pd.DataFrame, competition_name: str) 
         print("Failed to retrieve scoresheets")
         msg = "Could not read scoresheets from server"
         raise ConnectionError(msg)
-    unique_events = competitors_df["Event"].unique()
-    unique_heats = competitors_df["Heat"].unique()
-    print("VVVVVVV")
-    print(unique_events)
-    event_phase_map = {}
+
+
+def create_heats(heat_list: ndarray, competition_id: str, db: Session):
     heat_map = {}
 
-    for event_name in unique_events:
-        event_id = generate_uuid()
-        event_data = [
-            {"name": event_name, "id": event_id, "competition_id": competition_id}
+    for heat_number in heat_list:
+        heat_id = generate_uuid()
+        heat_data = [
+            {
+                "name": f"Heat {heat_number}",
+                "id": heat_id,
+                "competition_id": competition_id,
+            }
         ]
 
-        event_response = post_event(event_data)
+        post_heat(heat_data, db=db)
 
-        if event_response:
+        heat_map[heat_number] = heat_id
+
+    return heat_map
+
+
+def process_competitors_df(competitors_df: pd.DataFrame, competition_name: str, scoresheet_name: str = "icf",
+                           number_of_runs: int = 1,
+                           number_of_runs_for_score: int = 1,
+                           number_of_judges: int = 2,
+                           ) -> None:
+    event_count = 0
+    phase_count = 0
+
+    paddler_count = 0
+    competition_id = generate_uuid()
+
+    session_generator = get_transaction_session()
+    db = next(session_generator)
+    with db.begin():
+        competition_data = [{"name": competition_name, "id": competition_id}]
+
+        post_competition(competition_data, db=db)
+
+        scoresheet_id = check_scoresheet_exists(
+            scoresheet_name=scoresheet_name, db=db)
+
+        unique_events = competitors_df["Event"].unique()
+        unique_heats = competitors_df["Heat"].unique()
+
+        event_phase_map = {}
+
+        for event_name in unique_events:
+            event_id = generate_uuid()
+            event_data = [
+                {"name": event_name, "id": str(event_id),
+                    "competition_id": competition_id}
+            ]
+
+            post_event(event_data, db=db)
+
             event_count += 1
             phase_id = generate_uuid()
             phase_data = [
@@ -219,54 +165,35 @@ def process_competitors_df(competitors_df: pd.DataFrame, competition_name: str) 
                 }
             ]
 
-            phase_response = post_phase(phase_data)
+            post_phase(phase_data, db=db)
 
-            if phase_response:
-                phase_count += 1
-                event_phase_map[event_name] = phase_id
-            else:
-                print(f"Failed to create phase for event {event_name}")
-        else:
-            print(f"Failed to create event {event_name}")
+            phase_count += 1
+            event_phase_map[event_name] = phase_id
 
-    for heat_number in unique_heats:
-        heat_id = generate_uuid()
-        heat_data = [
-            {
-                "name": f"Heat {heat_number}",
-                "id": heat_id,
-                "competition_id": competition_id,
-            }
-        ]
+        heat_map = create_heats(heat_list=unique_heats,
+                                competition_id=competition_id, db=db)
 
-        heat_response = post_heat(heat_data)
+        for _index, row in competitors_df.iterrows():
+            athlete_id = generate_uuid()
 
-        if heat_response:
-            heat_count += 1
-            heat_map[heat_number] = heat_id
-        else:
-            print(f"Failed to create heat {heat_number}")
+            athlete_data = [
+                {
+                    "id": athlete_id,
+                    "first_name": row["first_name"],
+                    "last_name": row["last_name"],
+                    "bib": str(row["bib"]),
+                }
+            ]
 
-    for _index, row in competitors_df.iterrows():
-        athlete_id = generate_uuid()
-
-        athlete_data = [
-            {
-                "id": athlete_id,
-                "first_name": row["first_name"],
-                "last_name": row["last_name"],
-                "bib": str(row["bib"]),
-            }
-        ]
-
-        if post_athlete(athlete_data):
+            post_athlete(athlete_data, db=db)
             paddler_count += 1
             athlete_heat_id = generate_uuid()
 
             phase_id = event_phase_map.get(row["Event"].strip(), None)
 
             if phase_id is None:
-                print(f"Event '{row['Event']}' not found in event_phase_map.")
+                print(
+                    f"Event '{row['Event']}' not found in event_phase_map.")
                 continue
 
             heat_id = heat_map.get(row["Heat"], None)
@@ -285,13 +212,14 @@ def process_competitors_df(competitors_df: pd.DataFrame, competition_name: str) 
                 }
             ]
 
-            post_athlete_heat(athlete_heat_data)
+            post_athlete_heat(athlete_heat_data, db=db)
 
-    print("\n--- Final Report ---")
-    print(f"Total Events Added: {event_count}")
-    print(f"Total Phases Added: {phase_count}")
-    print(f"Total Heats Added: {heat_count}")
-    print(f"Total Paddlers Added: {paddler_count}")
+        db.commit()
+        print("\n--- Final Report ---")
+        print(f"Total Events Added: {event_count}")
+        print(f"Total Phases Added: {phase_count}")
+        print(f"Total Heats Added: {len(heat_map)}")
+        print(f"Total Paddlers Added: {paddler_count}")
 
 
 # competitors_df = pd.read_excel(spreadsheet_path, sheet_name=sheet_name)
