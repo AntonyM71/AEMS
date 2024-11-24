@@ -11,6 +11,7 @@ import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
+import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import {
@@ -42,7 +43,7 @@ import {
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
-export const downloadHeatPDF = async (heats: string[]) => {
+export const downloadHeatSummaryPDF = async (heats: string[]) => {
 	const searchParams = new URLSearchParams()
 	heats.map((h) => {
 		searchParams.append("heat_ids", h)
@@ -67,7 +68,31 @@ export const downloadHeatPDF = async (heats: string[]) => {
 		pdfWindow.location.href = fileURL
 	}
 }
+export const downloadHeatResultsPDF = async (heats: string) => {
+	const searchParams = new URLSearchParams()
 
+	searchParams.append("heat_id", heats)
+
+	const response = await axios.get(
+		`${
+			process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"
+		}heat_results_pdf?${searchParams.toString()}`,
+		{
+			method: "GET",
+			responseType: "blob"
+		}
+	)
+	const file = new Blob([response.data], {
+		type: "application/pdf"
+	})
+	// Build a URL from the file
+	const fileURL = URL.createObjectURL(file)
+	// Open the URL on new Window
+	const pdfWindow = window.open()
+	if (pdfWindow) {
+		pdfWindow.location.href = fileURL
+	}
+}
 export const HeatSummaryTable = ({
 	showAddAthletes = false
 }: {
@@ -94,16 +119,31 @@ export const HeatSummaryTable = ({
 								}`}</Typography>
 							</Grid>
 							<Grid item sx={{ padding: "0.5em" }}>
-								<Button
-									variant="contained"
-									color="info"
-									// eslint-disable-next-line @typescript-eslint/no-misused-promises
-									onClick={() =>
-										downloadHeatPDF([selectedHeat])
-									}
-								>
-									Create PDF
-								</Button>
+								<Stack spacing={2} direction="row">
+									<Button
+										variant="contained"
+										color="info"
+										// eslint-disable-next-line @typescript-eslint/no-misused-promises
+										onClick={() =>
+											downloadHeatResultsPDF(selectedHeat)
+										}
+									>
+										Heat Results PDF
+									</Button>
+
+									<Button
+										variant="contained"
+										color="info"
+										// eslint-disable-next-line @typescript-eslint/no-misused-promises
+										onClick={() =>
+											downloadHeatSummaryPDF([
+												selectedHeat
+											])
+										}
+									>
+										Heat Summary PDF
+									</Button>
+								</Stack>
 							</Grid>
 							<Grid item xs={12}>
 								<HeatAthleteTable showAdmin={showAddAthletes} />
