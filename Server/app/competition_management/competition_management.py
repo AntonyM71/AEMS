@@ -17,6 +17,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -48,22 +49,17 @@ def upload(
     number_of_judges: int = Form(...),
     file: UploadFile = File(...),
 ) -> Response:
-
     if file.filename.endswith(".xlsx"):
-        sheets_dict = pd.read_excel(
-            BytesIO(file.file.read()), sheet_name=None)
+        sheets_dict = pd.read_excel(BytesIO(file.file.read()), sheet_name=None)
         competitors_df = pd.concat(sheets_dict.values(), ignore_index=True)
     elif file.filename.endswith(".csv"):
-
-        competitors_df = pd.read_csv(
-            BytesIO(file.file.read()))
+        competitors_df = pd.read_csv(BytesIO(file.file.read()))
 
     else:
         msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
         raise InvalidFileTypeError(msg)
-    print(competitors_df)
     validate_columns_and_data_types(competitors_df)
-    process_competitors_df(
+    number_of_paddlers_added = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,
         scoresheet_name=scoresheet_name,
@@ -72,7 +68,10 @@ def upload(
         number_of_judges=number_of_judges,
     )
 
-    return Response(status_code=201)
+    return JSONResponse(
+        status_code=201,
+        content=f"Succesfully made competition {competition_name} with {number_of_paddlers_added} athletes.",
+    )
 
 
 class NewPhaseInfo(BaseModel):

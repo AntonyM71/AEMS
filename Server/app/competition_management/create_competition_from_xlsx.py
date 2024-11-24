@@ -131,7 +131,7 @@ def process_competitors_df(
     number_of_runs: int = 1,
     number_of_runs_for_score: int = 1,
     number_of_judges: int = 2,
-) -> None:
+) -> int:
     event_count = 0
     phase_count = 0
 
@@ -228,11 +228,7 @@ def process_competitors_df(
             post_athlete_heat(athlete_heat_data, db=db)
 
         db.commit()
-        print("\n--- Final Report ---")
-        print(f"Total Events Added: {event_count}")
-        print(f"Total Phases Added: {phase_count}")
-        print(f"Total Heats Added: {len(heat_map)}")
-        print(f"Total Paddlers Added: {paddler_count}")
+        return paddler_count
 
 
 def validate_columns_and_data_types(competition_df: pd.DataFrame) -> None:
