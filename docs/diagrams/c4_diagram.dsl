@@ -17,23 +17,39 @@ workspace {
             webApp = container "React Web Application" "Provides UI for competition management, scoring, and review" "React"
             api = container "FastAPI Backend" "Handles business logic and data processing" "Python, FastAPI"
             database = container "Database" "Stores competition data, scores, and athlete information" "PostgreSQL"
+            nginx = container "Nginx" "Reverse proxy for the web application and API" "Nginx"
         }
 
-        externalSystem -> csvFiles "Generates initial"
-        competitionAdmin -> csvFiles "Modifies"
-        competitionAdmin -> athleteEventSystem "Manages competitions and uploads CSV files"
-        headJudge -> athleteEventSystem "Runs the competition and reviews judges' scores"
-        judge -> athleteEventSystem "Inputs scores for athletes"
-        api -> athlete "Provides printed PDF outputs to"
+        # Deployment nodes
+        live = deploymentEnvironment "Live" {
+            dockerHost = deploymentNode "Docker Host" "" "Docker" {
+                webAppContainer = containerInstance webApp
+                apiContainer = containerInstance api
+                databaseContainer = containerInstance database
+                nginxContainer = containerInstance nginx
+            }
+        }
 
-        competitionAdmin -> webApp "Manages Competition with"
-        competitionAdmin -> api "Uploads modified competition CSV files to"
-        headJudge -> webApp "Reviews Judge scores with"
-        judge -> webApp "Inputs scores to"
-        
-        webApp -> api "Makes API calls to" "JSON/HTTPS"
+        # External data flow
+        externalSystem -> csvFiles "Generates initial"
+        csvFiles -> api "Provides data to" "File I/O"
+
+        # User interactions
+        competitionAdmin -> webApp "Manages competition and uploads CSV files using"
+        competitionAdmin -> csvFiles "Edits and Uploads"
+        webApp -> headJudge "provides Judges' scores to"
+        headJudge -> judge "gives feedback to"
+        judge -> webApp "Inputs scores using"
+
+        # Internal system flow
+        nginx -> webApp "Routes requests to" "HTTP"
+        nginx -> api "Routes requests to" "HTTP"
+        webApp -> api "Sends requests to" "JSON/HTTPS"
         api -> database "Reads from and writes to" "SQL/TCP"
-        api -> csvFiles "Processes and imports data from" "File I/O"
+        api -> webApp "Sends responses to" "JSON/HTTPS"
+        
+        # Output flow
+        api -> athlete "Generates PDF outputs for"
     }
 
     views {
@@ -43,6 +59,11 @@ workspace {
         }
 
         container athleteEventSystem "Containers" {
+            include *
+            autoLayout
+        }
+
+        deployment athleteEventSystem "Live" "DockerDeployment" {
             include *
             autoLayout
         }
