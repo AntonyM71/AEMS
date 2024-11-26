@@ -6,11 +6,15 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
-class Competition(Base):
+class ToDictMixin:
+    def to_dict(self) -> dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class Competition(ToDictMixin, Base):
     __tablename__ = "competition"
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     name = Column(String, nullable=False)
-    # users = ARRAY(String)
     events = relationship("Event")
     schema = "public"
 
@@ -77,7 +81,7 @@ class Athlete(Base):
     schema = "public"
 
 
-class ScoreSheet(Base):
+class ScoreSheet(ToDictMixin, Base):
     __tablename__ = "scoreSheet"
     id = Column(UUID(as_uuid=True), primary_key=True, comment="Competition ID")
     name = Column(String, nullable=False)
