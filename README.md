@@ -1,5 +1,5 @@
 # AEMS
- 
+
 ## Introduction
 
 The Athlete and Event Management System (AEMS) is designed for running freeestyle kayaking competitions, it can either be ran locally, on a touchscreen laptop for small events, or configured with a laptop, router and 11" tablets to provide a full multi-judge, ICF style system.
@@ -17,9 +17,8 @@ For running an ICF style competition, we recommend the following setup:
 
 In addition to deployin the app on the server machine [deploying to local production](#deploying-to-local-production), for multiple devices you'll need to do some network configuration, we're aiming to provide some documentation for this in the near future.
 
-
-
 I also have a simple scoring app, available on [Google Play](https://play.google.com/store/apps/details?id=com.kayakfreestyle.kayakfreestyleapp&pcampaignid=web_share) and the [Apple Store](https://apps.apple.com/sk/app/kayak-freestyle-app/id1627445855), these are great for small informal competitions, or athletes to use when designing their rides.
+
 ## Contributing
 
 ### Building dev environment
@@ -38,6 +37,7 @@ git config --global user.email "your.email@address"
 4. Install an editor, such as [VSCode](https://code.visualstudio.com/download) and click `Clone git repository...` and enter the repository details from github.
 5. Once the repo is cloned, open it, and it should prompt you to install the devcontainers extension, and to build and run the repository in a dev container.
 6. To give yourself permissions to manipulate the repo directly from your Linux distribution, run:
+
 ```
 cd ../
 sudo chown -R your_unix_username AEMS
@@ -76,6 +76,24 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 ```
 
 4. Start docker with `sudo service docker start`
+
+> To set docker to un automatically on system startup, we can enable systemd by adding the following code to /etc/wsl.conf
+>
+> ```
+> [boot]
+> systemd=true
+> ```
+>
+> And then running:
+>
+> ```
+> sudo groupadd docker
+> sudo usermod -aG docker $USER
+> sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+> sudo chmod g+rwx "$HOME/.docker" -R
+> sudo systemctl enable docker.service
+> sudo systemctl enable containerd.service
+> ```
 
 5. To help you manage your containers, you might want to use a tool like [Lazydocker](https://github.com/jesseduffield/lazydocker). Which you can install with:
 
@@ -123,7 +141,9 @@ This may take a few minutes
 ```
 docker compose -f docker-compose.yaml  up --build
 ```
+
 The user interface should now be available on `http://localhost:80` on the machine running the container.
+
 ### Set the docker compose to run automatically on startup
 
 This will run the docker in deamon mode, which will continue running indefinetely, without depending on a specific terminal being open. The service should start whenever docker is running.
