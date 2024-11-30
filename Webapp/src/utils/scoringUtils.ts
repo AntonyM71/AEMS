@@ -62,7 +62,6 @@ export function calculateSingleJudgeRunScore(
 	return { score: runScore, highestMove: highestScoredMove }
 }
 
-
 const getMaximumScoredMoveFromArrayByValue = (prev: number, current: number) =>
 	prev > current ? prev : current
 
@@ -87,7 +86,7 @@ export const calculateMoveScore = (
 	}
 }
 
-const getMoveBaseScore = (
+export const getMoveBaseScore = (
 	scoredMove: scoredMovesType,
 	availableMoves: movesType[]
 ): number => {
@@ -99,12 +98,12 @@ const getMoveBaseScore = (
 		return scoredMoveValues?.rb_score ?? 0
 	}
 }
-const getScoredMoveValues = (
+export const getScoredMoveValues = (
 	scoredMove: scoredMovesType,
 	availableMoves: movesType[]
 ) => availableMoves.find((m) => m.id === scoredMove.moveId)
 
-const getBonusScore = (
+export const getBonusScore = (
 	scoredBonus: scoredBonusType,
 	availableBonuses: AvailableBonusType[]
 ): number => {

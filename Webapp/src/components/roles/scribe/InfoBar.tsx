@@ -1,5 +1,5 @@
-import { Divider } from "@mui/material"
 import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"

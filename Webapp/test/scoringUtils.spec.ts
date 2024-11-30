@@ -1,127 +1,320 @@
-import { v4 } from "uuid"
 import { AvailableBonusType } from "../src/components/roles/scribe/InfoBar/ScoredMove"
 import {
 	movesType,
 	scoredBonusType,
 	scoredMovesType
 } from "../src/components/roles/scribe/Interfaces"
-import { calculateMoveScore } from "../src/utils/scoringUtils"
+import {
+	calculateMoveScore,
+	calculateSingleJudgeRunScore,
+	getBonusScore,
+	getMoveBaseScore,
+	getScoredMoveValues,
+	MoveScoreInfo,
+	RunScoreInfo
+} from "../src/utils/scoringUtils"
 
-describe("The user can see the correct score for a list of moves", () => {
-	it("calculates the score of a move  when scored left without any bonuses", () => {
-		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
-		const scoredMove: scoredMovesType = {
-			id: v4(),
-			direction: "L",
-			moveId: exampleMoveId
-		}
-		const availableMoves: movesType = {
-			id: v4(),
-			name: "SuperCoolMove",
-			direction: "LR",
-			fl_score: 30,
-			rb_score: 40
-		}
-		const got = calculateMoveScore(scoredMove, [], [availableMoves], [])
+describe("calculateSingleJudgeRunScore", () => {
+	const mockScoredMoves = [
+		{ id: "1", moveId: "move1", direction: "L" },
+		{ id: "2", moveId: "move2", direction: "R" }
+	]
 
-		const want = 30
-		expect(got).toEqual(want)
-	})
-	it("calculates the score of a move  when scored left without any bonuses", () => {
-		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
-		const scoredMove: scoredMovesType = {
-			id: v4(),
-			direction: "L",
-			moveId: exampleMoveId
-		}
-		const availableMoves: movesType = {
-			id: v4(),
-			name: "SuperCoolMove",
-			direction: "LR",
-			fl_score: 30,
-			rb_score: 40
-		}
-		const got = calculateMoveScore(scoredMove, [], [availableMoves], [])
+	const mockScoredBonuses = [{ id: "bonus1", moveId: "1", bonusId: "bonus1" }]
 
-		const want = 30
-		expect(got).toEqual(want)
-	})
-	it("calculates the score of a move  when scored right without any bonuses", () => {
-		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
-		const scoredMove: scoredMovesType = {
-			id: v4(),
-			direction: "R",
-			moveId: exampleMoveId
-		}
-		const availableMoves: movesType = {
-			id: v4(),
-			name: "SuperCoolMove",
+	const mockAvailableMoves = [
+		{
+			id: "move1",
+			name: "Move 1",
+			direction: "FB",
+			fl_score: 10,
+			rb_score: 5
+		},
+		{
+			id: "move2",
+			name: "Move 2",
 			direction: "LR",
-			fl_score: 30,
-			rb_score: 40
+			fl_score: 15,
+			rb_score: 20
 		}
-		const got = calculateMoveScore(scoredMove, [], [availableMoves], [])
+	]
 
-		const want = 40
-		expect(got).toEqual(want)
-	})
-	it("returns zero if the score doesn't exist", () => {
-		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
-		const scoredMove: scoredMovesType = {
-			id: v4(),
-			direction: "R",
-			moveId: exampleMoveId
+	const mockAvailableBonuses = [
+		{
+			id: "bonus1",
+			name: "Bonus 1",
+			shortName: "B1",
+			move_id: "move1",
+			score: 5
 		}
-		const availableMoves: movesType = {
-			id: v4(),
-			name: "SuperCoolMove",
-			direction: "LR",
-			fl_score: 30,
-			rb_score: 40
-		}
-		const got = calculateMoveScore(scoredMove, [], [availableMoves], [])
+	]
 
-		const want = 0
-		expect(got).toEqual(want)
-	})
-	it("calculates the score of a move  when scored right without a bonus", () => {
-		const exampleMoveId = "e347dce3-9da6-4ad4-93fc-1719e92e7c37"
-		const exampleSheetId = "e347dce3-9da6-4ad4-93fc-1719e92e7c36"
-		const exampleBonusId = "e347dce3-9da6-4ad4-93fc-1719e92e7c38"
-		const scoredMove: scoredMovesType = {
-			id: v4(),
-			direction: "R",
-			moveId: exampleMoveId
-		}
-		const availableMoves: movesType = {
-			id: v4(),
-			name: "SuperCoolMove",
-			direction: "LR",
-			fl_score: 30,
-			rb_score: 40
-		}
-		const availableBonus: AvailableBonusType = {
-			id: exampleBonusId,
-			move_id: exampleMoveId,
-			name: "Awesome Bonus",
-			score: 35,
-			sheet_id: exampleSheetId
-		}
-		const scoredBonuses: scoredBonusType[] = [
-			{
-				id: "e347dce3-9da6-4ad4-93fc-1719e92e7c35",
-				moveId: exampleMoveId,
-				bonusId: exampleBonusId
-			}
-		]
-		const got = calculateMoveScore(
-			scoredMove,
-			scoredBonuses,
-			[availableMoves],
-			[availableBonus]
+	it("should calculate the correct run score and highest move", () => {
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			mockScoredMoves,
+			mockScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
 		)
 
-		const want = 75
-		expect(got).toEqual(want)
+		expect(result).toEqual({
+			score: 35,
+			highestMove: 20
+		})
+	})
+
+	it("should return zero score and highest move when inputs are empty", () => {
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			[],
+			[],
+			[],
+			[]
+		)
+
+		expect(result).toEqual({
+			score: 0,
+			highestMove: 0
+		})
+	})
+
+	// Add more test cases to cover different scenarios and edge cases
+})
+describe("calculateMoveScore", () => {
+	const mockScoredMove = { id: "1", moveId: "move1", direction: "L" }
+	const mockScoredBonuses = [{ id: "bonus1", moveId: "1", bonusId: "bonus1" }]
+	const mockAvailableMoves = [
+		{
+			id: "move1",
+			name: "Move 1",
+			direction: "FB",
+			fl_score: 10,
+			rb_score: 5
+		}
+	]
+	const mockAvailableBonuses = [
+		{
+			id: "bonus1",
+			name: "Bonus 1",
+			shortName: "B1",
+			move_id: "move1",
+			score: 5
+		}
+	]
+
+	it("should calculate the correct move score", () => {
+		const result: MoveScoreInfo = calculateMoveScore(
+			mockScoredMove,
+			mockScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+
+		expect(result).toEqual({
+			baseMove: "move1",
+			value: 15,
+			direction: "L",
+			moveType: "move1"
+		})
+	})
+
+	it("should return zero score when no bonuses are applied", () => {
+		const result: MoveScoreInfo = calculateMoveScore(
+			mockScoredMove,
+			[],
+			mockAvailableMoves,
+			[]
+		)
+
+		expect(result).toEqual({
+			baseMove: "move1",
+			value: 10,
+			direction: "L",
+			moveType: "move1"
+		})
+	})
+
+	// Add more test cases to cover different scenarios and edge cases
+})
+describe("calculateSingleJudgeRunScore", () => {
+	const mockScoredMoves: scoredMovesType[] = [
+		{ id: "1", moveId: "move1", direction: "LF" },
+		{ id: "2", moveId: "move1", direction: "RB" }
+	]
+	const mockScoredBonuses: scoredBonusType[] = [
+		{ id: "bonus1", moveId: "1", bonusId: "bonus1" }
+	]
+	const mockAvailableMoves: movesType[] = [
+		{
+			id: "move1",
+			name: "Move 1",
+			direction: "FB",
+			fl_score: 10,
+			rb_score: 5
+		},
+		{
+			id: "move2",
+			name: "Move 2",
+			direction: "LR",
+			fl_score: 15,
+			rb_score: 20
+		}
+	]
+	const mockAvailableBonuses: AvailableBonusType[] = [
+		{
+			id: "bonus1",
+			name: "Bonus 1",
+			shortName: "B1",
+			move_id: "move1",
+			score: 5
+		}
+	]
+	it("should partition correctly and calculate run score for multiple directions", () => {
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			mockScoredMoves,
+			mockScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+		expect(result).toEqual({ score: 25, highestMove: 15 })
+	})
+	it("should calculate correct score when no directional scored moves are found", () => {
+		const mockScoredMovesNoDirection: scoredMovesType[] = [
+			{ id: "3", moveId: "move2", direction: "S" }
+		]
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			mockScoredMovesNoDirection,
+			mockScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+		expect(result).toEqual({ score: 15, highestMove: 15 })
+	})
+	it("should handle cases where leftRightPartition is empty", () => {
+		const mockScoredMovesEmptyPartition: scoredMovesType[] = [
+			{ id: "4", moveId: "move2", direction: "RB" }
+		]
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			mockScoredMovesEmptyPartition,
+			mockScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+		expect(result).toEqual({ score: 20, highestMove: 20 })
+	})
+	// Additional edge case: No moves or bonuses
+	it("should return zero score and highest move when no moves or bonuses are provided", () => {
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			[],
+			[],
+			[],
+			[]
+		)
+		expect(result).toEqual({ score: 0, highestMove: 0 })
+	})
+})
+
+describe("getMoveBaseScore", () => {
+	const mockAvailableMoves: movesType[] = [
+		{
+			id: "move1",
+			name: "Move 1",
+			direction: "LF",
+			fl_score: 10,
+			rb_score: 5
+		}
+	]
+
+	it("should return fl_score when direction is in frontLeftDirectionValues", () => {
+		const mockScoredMove: scoredMovesType = {
+			id: "1",
+			moveId: "move1",
+			direction: "LF"
+		}
+		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
+		expect(result).toBe(10)
+	})
+
+	it("should return rb_score when direction is not in frontLeftDirectionValues", () => {
+		const mockScoredMove: scoredMovesType = {
+			id: "2",
+			moveId: "move1",
+			direction: "RB"
+		}
+		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
+		expect(result).toBe(5)
+	})
+
+	it("should return 0 when move is not found", () => {
+		const mockScoredMove: scoredMovesType = {
+			id: "3",
+			moveId: "move2",
+			direction: "LF"
+		}
+		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
+		expect(result).toBe(0)
+	})
+})
+
+describe("getScoredMoveValues", () => {
+	const mockAvailableMoves: movesType[] = [
+		{
+			id: "move1",
+			name: "Move 1",
+			direction: "LF",
+			fl_score: 10,
+			rb_score: 5
+		}
+	]
+
+	it("should return move details when move is found", () => {
+		const mockScoredMove: scoredMovesType = {
+			id: "1",
+			moveId: "move1",
+			direction: "LF"
+		}
+		const result = getScoredMoveValues(mockScoredMove, mockAvailableMoves)
+		expect(result).toEqual(mockAvailableMoves[0])
+	})
+
+	it("should return undefined when move is not found", () => {
+		const mockScoredMove: scoredMovesType = {
+			id: "2",
+			moveId: "move2",
+			direction: "LF"
+		}
+		const result = getScoredMoveValues(mockScoredMove, mockAvailableMoves)
+		expect(result).toBeUndefined()
+	})
+})
+
+describe("getBonusScore", () => {
+	const mockAvailableBonuses: AvailableBonusType[] = [
+		{
+			id: "bonus1",
+			name: "Bonus 1",
+			shortName: "B1",
+			move_id: "move1",
+			score: 5
+		}
+	]
+
+	it("should return bonus score when bonus is found", () => {
+		const mockScoredBonus: scoredBonusType = {
+			id: "bonus1",
+			moveId: "1",
+			bonusId: "bonus1"
+		}
+		const result = getBonusScore(mockScoredBonus, mockAvailableBonuses)
+		expect(result).toBe(5)
+	})
+
+	it("should return 0 when bonus is not found", () => {
+		const mockScoredBonus: scoredBonusType = {
+			id: "bonus2",
+			moveId: "1",
+			bonusId: "bonus2"
+		}
+		const result = getBonusScore(mockScoredBonus, mockAvailableBonuses)
+		expect(result).toBe(0)
 	})
 })
