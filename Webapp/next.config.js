@@ -1,4 +1,6 @@
+const path = require("path")
+
 module.exports = {
-	// ... rest of the configuration.
+	pageExtensions: ["js", "jsx", "ts", "tsx"],
 	output: "standalone"
 }
