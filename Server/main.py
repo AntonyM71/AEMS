@@ -20,6 +20,7 @@ from app.autogenEndpoints import (
     crud_route_event,
     crud_route_heat,
     crud_route_phase,
+    crud_route_run_status,
     crud_route_scoredbonuses,
     crud_route_scoredmoves,
     crud_route_scoresheet,
@@ -36,7 +37,8 @@ frontend_url = "http://localhost:3000"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(
+    bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
@@ -61,7 +63,7 @@ app = FastAPI()
         crud_route_availablebonuses,
         crud_route_scoredmoves,
         crud_route_scoredbonuses,
-        crud_route_athleteheat,
+        crud_route_athleteheat, crud_route_run_status,
     ]
 ]
 
@@ -83,7 +85,8 @@ async def logging_middleware(
         response = await call_next(request)
     except Exception:
         # TODO: Validate that we don't swallow exceptions (unit test?)
-        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger(
+            "api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time
@@ -121,7 +124,8 @@ tracing_middleware = next(
     (m for m in app.user_middleware if m.cls == TraceMiddleware), None
 )
 if tracing_middleware is not None:
-    app.user_middleware = [m for m in app.user_middleware if m.cls != TraceMiddleware]
+    app.user_middleware = [
+        m for m in app.user_middleware if m.cls != TraceMiddleware]
     structlog.stdlib.get_logger("api.datadog_patch").info(
         "Patching Datadog tracing middleware to be the outermost middleware..."
     )

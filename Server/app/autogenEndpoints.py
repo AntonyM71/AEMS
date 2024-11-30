@@ -10,6 +10,7 @@ from db.models import (
     Event,
     Heat,
     Phase,
+    RunStatus,
     ScoredBonuses,
     ScoredMoves,
     ScoreSheet,
@@ -23,7 +24,13 @@ crud_route_competition = generic_sql_crud_router_builder(
     sql_type=SqlType("postgresql"),
     foreign_include=[Event],
 )
-
+crud_route_run_status = generic_sql_crud_router_builder(
+    db_model=RunStatus,
+    prefix="/run_status",
+    tags=["run_status"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+)
 crud_route_event = generic_sql_crud_router_builder(
     db_model=Event,
     prefix="/event",
@@ -98,6 +105,13 @@ crud_route_athleteheat = generic_sql_crud_router_builder(
     db_model=AthleteHeat,
     prefix="/athleteheat",
     tags=["athleteheat"],
+    db_session=get_transaction_session,
+    sql_type=SqlType("postgresql"),
+)
+crud_route_run_status = generic_sql_crud_router_builder(
+    db_model=RunStatus,
+    prefix="/run_status",
+    tags=["run_status"],
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
 )
