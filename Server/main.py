@@ -33,7 +33,7 @@ from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
 
-frontend_url = "http://localhost:3000"
+frontend_url = f"http://localhost:{os.getenv('PORT', default= 3000)}"
 request_origins = [frontend_url]
 
 
