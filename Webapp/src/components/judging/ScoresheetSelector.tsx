@@ -5,10 +5,12 @@ import { useGetManyScoresheetGetQuery } from "../../redux/services/aemsApi"
 
 export const SelectScoresheet = ({
 	selectedScoresheet,
-	setSelectedScoresheet
+	setSelectedScoresheet,
+	useName = false
 }: {
 	selectedScoresheet: string
 	setSelectedScoresheet: React.Dispatch<React.SetStateAction<string>>
+	useName: boolean
 }) => {
 	const { data, isLoading, isSuccess } = useGetManyScoresheetGetQuery({})
 	const options: ScoresheetOptions[] =
@@ -21,11 +23,16 @@ export const SelectScoresheet = ({
 			<Autocomplete
 				// error={!!competitionId}
 				value={
-					options.find((s) => s.value === selectedScoresheet) || null
+					options.find(
+						(s) =>
+							(useName ? s.label : s.value) === selectedScoresheet
+					) || null
 				}
 				inputValue={
-					options.find((s) => s.value === selectedScoresheet)
-						?.label ?? ""
+					options.find(
+						(s) =>
+							(useName ? s.label : s.value) === selectedScoresheet
+					)?.label ?? ""
 				}
 				options={options}
 				fullWidth
@@ -34,7 +41,9 @@ export const SelectScoresheet = ({
 				)}
 				onChange={(event, newValue) => {
 					if (newValue) {
-						setSelectedScoresheet(newValue.value)
+						setSelectedScoresheet(
+							useName ? newValue.label : newValue.value
+						)
 					}
 				}}
 			/>

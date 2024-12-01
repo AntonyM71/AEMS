@@ -9,6 +9,7 @@ from asgi_correlation_id.context import correlation_id
 from ddtrace.contrib.asgi.middleware import TraceMiddleware
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import parse_obj_as
 
 from app.autogenEndpoints import (
@@ -66,6 +67,22 @@ app = FastAPI()
         crud_route_athleteheat, crud_route_run_status,
     ]
 ]
+
+
+@app.exception_handler(Exception)
+async def validation_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    # Change here to Logger
+    return JSONResponse(
+        status_code=500,
+        content={
+            "message": (
+                f"Failed method {request.method} at URL {request.url}."
+                f" Exception message is {exc!r}."
+            )
+        },
+    )
 
 
 @app.middleware("http")
