@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedCompetition } from "../../redux/atoms/competitions"
 import { useGetManyHeatGetQuery } from "../../redux/services/aemsApi"
-import { downloadHeatPDF } from "./HeatSummaryTable"
+import { downloadHeatSummaryPDF } from "./HeatSummaryTable"
 import { SelectorDisplay } from "./MainSelector"
 
 export const MakeHeatPDFs = () => (
@@ -89,9 +89,11 @@ const HeatCheckBoxes = () => {
 							variant="contained"
 							disabled={selectedHeats.length === 0}
 							// eslint-disable-next-line @typescript-eslint/no-misused-promises
-							onClick={() => downloadHeatPDF(selectedHeats)}
+							onClick={() =>
+								downloadHeatSummaryPDF(selectedHeats)
+							}
 						>
-							Create PDF for selected Heats
+							Create Summary PDF for selected Heats
 						</Button>
 
 						{selectedHeats.length === 0 && (
