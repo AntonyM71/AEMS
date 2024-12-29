@@ -1,5 +1,6 @@
 import UploadIcon from "@mui/icons-material/Upload"
 import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
