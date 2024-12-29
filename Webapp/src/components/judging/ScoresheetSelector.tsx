@@ -10,7 +10,7 @@ export const SelectScoresheet = ({
 }: {
 	selectedScoresheet: string
 	setSelectedScoresheet: React.Dispatch<React.SetStateAction<string>>
-	useName: boolean
+	useName?: boolean
 }) => {
 	const { data, isLoading, isSuccess } = useGetManyScoresheetGetQuery({})
 	const options: ScoresheetOptions[] =
