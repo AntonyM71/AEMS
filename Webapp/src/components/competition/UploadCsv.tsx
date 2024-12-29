@@ -1,7 +1,8 @@
 import UploadIcon from "@mui/icons-material/Upload"
-import { Divider, IconButton } from "@mui/material"
 import Button from "@mui/material/Button"
+import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
+import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
@@ -89,7 +90,6 @@ const UploadForm = () => {
 	> = (event) => {
 		// @ts-ignore
 		if (event.target && event.target.files) {
-			console.log(event.target)
 			// get the selected file from the input
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
