@@ -7,6 +7,7 @@ import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
 import React from "react"
 import { useSelector } from "react-redux"
+import { v4 } from "uuid"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
@@ -17,7 +18,10 @@ import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
 	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery
+	useGetManyAvailablemovesGetQuery,
+	useGetManyRunStatusGetQuery,
+	useInsertManyRunStatusPostMutation,
+	usePartialUpdateOneByPrimaryKeyRunStatusIdPatchMutation
 } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
@@ -40,15 +44,17 @@ export default () => {
 	const handleListOpen = () => setListOpen(true)
 	const handleListClose = () => setListOpen(false)
 	const selectedHeat = useSelector(getSelectedHeat)
+
+	const [postUpdateRunStatus] =
+		usePartialUpdateOneByPrimaryKeyRunStatusIdPatchMutation()
+	const [postNewRunStatus] = useInsertManyRunStatusPostMutation()
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
 			{ heatId: selectedHeat },
 			{ skip: !selectedHeat }
 		)
 	const maxJudges =
-		(phaseData &&
-			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
-		1
+		Math.max(...phaseData.map((p) => p.number_of_judges), 1) ?? 1
 	const judgeNumberArray = new Array(maxJudges)
 		.fill(null)
 		.map((_, i) => i + 1)
@@ -59,8 +65,10 @@ export default () => {
 		},
 		{ skip: !selectedHeat }
 	)
-
+	// const selectedPhaseData = phaseData?.filter(p => p.athlete_id)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const selectedRun = useSelector(getSelectedRun)
+
 	const selectedAthlete: AthleteInfo | undefined = athletes.data
 		? {
 				id: athletes.data[currentPaddlerIndex].athlete_id,
@@ -70,9 +78,56 @@ export default () => {
 				scoresheet: athletes.data[currentPaddlerIndex].scoresheet
 		  }
 		: undefined
+
 	if (selectedAthlete && !isPhaseDataLoading) {
+		const runStatus = useGetManyRunStatusGetQuery({
+			heatIdList: [selectedHeat],
+			athleteIdList: [selectedAthlete.id],
+			runNumberList: [selectedRun]
+		})
+		const updateRunStatus = async (
+			locked?: boolean,
+			did_not_start?: boolean
+		) => {
+			console.log(did_not_start)
+			if (runStatus?.data?.[0]) {
+				const existingStatus = runStatus?.data?.[0]
+				await postUpdateRunStatus({
+					id: existingStatus.id ?? "",
+					bodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch: {
+						run_number: existingStatus.run_number,
+						phase_id: existingStatus.phase_id,
+						heat_id: existingStatus.heat_id,
+						athlete_id: existingStatus.athlete_id,
+						locked: locked ?? existingStatus.locked,
+						did_not_start:
+							did_not_start ?? existingStatus.did_not_start
+					}
+				})
+			} else {
+				await postNewRunStatus({
+					body: [
+						{
+							id: v4().toString(),
+							locked: locked ?? false,
+							did_not_start: did_not_start ?? false,
+
+							run_number: selectedRun,
+							phase_id:
+								athletes?.data?.[currentPaddlerIndex]
+									.phase_id ?? "",
+							heat_id: selectedHeat,
+							athlete_id: selectedAthlete.id
+						}
+					]
+				})
+			}
+			await runStatus.refetch()
+		}
+
 		return (
 			<>
+				InsertManyRunStatusPostApiArg
 				<Modal
 					open={scoresOpen}
 					onClose={handleScoresClose}
@@ -130,6 +185,23 @@ export default () => {
 							sx={{ height: "100%" }}
 						>
 							Heat Scores
+						</Button>
+					</Grid>
+					<Grid item xs={1}>
+						<Button
+							variant="contained"
+							fullWidth
+							disabled={runStatus.isFetching}
+							sx={{ height: "100%" }}
+							onClick={() =>
+								void updateRunStatus(
+									!runStatus?.data?.[0].locked
+								)
+							}
+						>
+							{runStatus?.data?.[0].locked
+								? "Unlock Run"
+								: "Lock Run"}
 						</Button>
 					</Grid>
 					<Grid item xs={12}>
