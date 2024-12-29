@@ -54,6 +54,7 @@ dependencies = [
 
     "starlette==0.14.2",
     "fpdf2",
+    "pandas",
     # Dev
     "ruff",
     "mypy",
