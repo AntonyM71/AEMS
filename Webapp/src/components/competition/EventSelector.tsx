@@ -1,8 +1,10 @@
+import RefreshIcon from "@mui/icons-material/Refresh"
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
+import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -92,6 +94,11 @@ const EventSelector = ({
 								value={selectedEvent}
 								onChange={onSelect}
 								variant="outlined"
+								startAdornment={
+									<IconButton onClick={() => void refetch()}>
+										<RefreshIcon />
+									</IconButton>
+								}
 							>
 								{data.map((event) => (
 									<MenuItem key={event.id} value={event.id}>
