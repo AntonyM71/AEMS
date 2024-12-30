@@ -1,5 +1,6 @@
 import EditNoteIcon from "@mui/icons-material/EditNote"
 
+import RefreshIcon from "@mui/icons-material/Refresh"
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
@@ -18,6 +19,7 @@ import Typography from "@mui/material/Typography"
 import { Fragment, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
+
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
@@ -107,6 +109,11 @@ const PhasesSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
+									<IconButton onClick={() => void refetch()}>
+										<RefreshIcon />
+									</IconButton>
+								}
+								endAdornment={
 									showDetailed && selectedPhase ? (
 										<IconButton
 											aria-label="toggle password visibility"
