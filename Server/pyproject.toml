@@ -52,7 +52,7 @@ dependencies = [
     "pydantic<=1.8.2",
     "SQLAlchemy<=1.4.30",
 
-    "starlette==0.14.2",
+    "starlette==0.45.1",
     "fpdf2",
     "pandas",
     # Dev
