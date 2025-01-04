@@ -191,24 +191,26 @@ export default () => {
 							Heat Scores
 						</Button>
 					</Grid>
-					<Grid item xs={1}>
-						<Button
-							variant="contained"
-							fullWidth
-							disabled={runStatus.isFetching}
-							sx={{ height: "100%" }}
-							onClick={() =>
-								void updateRunStatus(
-									!runStatus?.data?.[0].locked,
-									runStatus?.data?.[0].did_not_start ?? false
-								)
-							}
-						>
-							{runStatus?.data?.[0].locked
-								? "Unlock Run"
-								: "Lock Run"}
-						</Button>
-					</Grid>
+					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN &&
+						<Grid item xs={1}>
+
+							<Button
+								variant="contained"
+								fullWidth
+								disabled={runStatus.isFetching}
+								sx={{ height: "100%" }}
+								onClick={() =>
+									void updateRunStatus(
+										!runStatus?.data?.[0].locked,
+										runStatus?.data?.[0].did_not_start ?? false
+									)
+								}
+							>
+								{runStatus?.data?.[0].locked
+									? "Unlock Run"
+									: "Lock Run"}
+							</Button>
+						</Grid>}
 					<Grid item xs={1}>
 						<Button
 							variant="contained"
