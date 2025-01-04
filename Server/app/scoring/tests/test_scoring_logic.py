@@ -1173,6 +1173,7 @@ class TestAthleteScoreCalculation:
             available_moves=available_moves,
             run_statuses=[
                 PydanticRunStatus(
+                    id="c7476320-6c48-11ee-b962-0242ac120002",
                     athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                     heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                     run_number=1,
@@ -1280,8 +1281,8 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0 / 3,
-                        highest_scoring_move=20.0,
+                        mean_run_score=0,
+                        highest_scoring_move=0,
                     ),
                 ],
                 highest_scoring_move=25.0,
@@ -1294,6 +1295,7 @@ class TestAthleteScoreCalculation:
             available_moves=available_moves,
             run_statuses=[
                 PydanticRunStatus(
+                    id="c7476320-6c48-11ee-b962-0242ac120002",
                     athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                     heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                     run_number=1,

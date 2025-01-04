@@ -16,6 +16,7 @@ from app.scoring.scoring_logic import (
     AthleteMovesWithJudgeInfo,
     AthleteScores,
     AthleteScoresWithAthleteInfo,
+    PydanticRunStatus,
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
     calculate_heat_scores,
@@ -240,6 +241,7 @@ async def get_heat_scores(
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
+    run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
     move_ids = [m.id for m in pydantic_moves]
@@ -275,6 +277,7 @@ async def get_heat_scores(
         )
         for a in athlete_moves_list
     ]
+    # print(run_statuses.__dict__)
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
@@ -283,7 +286,9 @@ async def get_heat_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
-        run_statuses=[],
+        run_statuses=parse_obj_as(
+            list[PydanticRunStatus], run_statuses if run_statuses else []
+        ),
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:
@@ -321,6 +326,7 @@ async def get_phase_scores(
 
 def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
+    run_statuses = db.query(RunStatus).filter(RunStatus.phase_id == phase_id).all()
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
@@ -348,7 +354,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
-        moves=pydantic_moves, bonuses=pydantic_bonuses
+        moves=pydantic_moves,
+        bonuses=pydantic_bonuses,
+        number_of_runs=phase.number_of_runs,
     )
     athlete_moves_with_judges = [
         AthleteMovesWithJudgeInfo(**a.dict(), number_of_judges=phase.number_of_judges)
@@ -363,7 +371,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
-        run_statuses=[],
+        run_statuses=parse_obj_as(list[PydanticRunStatus], run_statuses),
         scoring_runs=phase.number_of_runs_for_score,
     )
 
@@ -414,7 +422,7 @@ class RunStatusSchema(BaseModel):
 @scoring_router.post("/upsert_run_status/")
 def upsert_run_status(
     run_status: RunStatusSchema, db: Session = Depends(get_transaction_session)
-):
+) -> dict:
     existing_run_status = (
         db.query(RunStatus)
         .filter(

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -75,9 +76,15 @@ async def phase_pdf(
             text=f"Number of Scoring Runs: {phase_metadata.number_of_runs_for_score}",
             align="C",
             new_x="LMARGIN",
+        )
+        pdf.cell(
+            0,
+            10,
+            text="Bold scores confirmed by head judge, italic are not.",
+            align="R",
+            new_x="LMARGIN",
             new_y="NEXT",
         )
-
         with pdf.table() as table:
             header = table.row()
             header.cell("Rank")
@@ -96,12 +103,30 @@ async def phase_pdf(
                 row.cell(athlete.first_name)
                 row.cell(athlete.last_name)
                 row.cell(str(athlete.bib_number))
+                runs_confirmed = []
                 for i in range(phase_metadata.number_of_runs):
-                    try:
-                        row.cell(f"{athlete.run_scores[i].mean_run_score:.2f}")
-                    except IndexError:
-                        row.cell("0")
-                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                    runs_confirmed.append(
+                        True
+                        if i < len(athlete.run_scores) and athlete.run_scores[i].locked
+                        else False
+                    )
+                    pdf.set_font(
+                        style="B"
+                        if i < len(athlete.run_scores) and athlete.run_scores[i].locked
+                        else "I"
+                    )
+                    row.cell(
+                        "0"
+                        if i >= len(athlete.run_scores)
+                        else "DNS"
+                        if athlete.run_scores[i].did_not_start
+                        else str(athlete.run_scores[i].mean_run_score)
+                    )
+                pdf.set_font(style="B" if all(runs_confirmed) else "I")
+
+                row.cell(
+                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                pdf.set_font("")
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
@@ -114,6 +139,7 @@ async def phase_pdf(
         )
 
     except Exception as e:
+        logging.exception("Error Creating PDF")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from e
@@ -131,7 +157,8 @@ async def heat_pdf(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
         heat_info_list = (
-            db.query(Heat).where(Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
+            db.query(Heat).where(Heat.id.in_(heat_ids)
+                                 ).order_by(Heat.name.asc()).all()
         )
         if not heat_info_list or len(heat_info_list) != len(heat_ids):
             return Response(
@@ -139,7 +166,8 @@ async def heat_pdf(
                 content="Could not find any heat Info corresponding to provided IDs",
             )
         for heat_info in heat_info_list:
-            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
+            heat_athlete_info = get_heat_info_logic(
+                heat_id=heat_info.id, db=db)
 
             competition_metadata = (
                 db.query(Competition)
@@ -225,7 +253,8 @@ async def heat_results_pdf(
         )
         pdf.add_page()
         pdf.set_font("Helvetica", size=24)
-        pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 10, text="Heat Results", align="C",
+                 new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", size=20)
         pdf.cell(
             0,
@@ -262,12 +291,17 @@ async def heat_results_pdf(
 
                 row.cell(str(athlete.bib_number))
                 for i in range(max_runs):
+                    if i < len(athlete.run_scores):
+                        pdf.set_font(
+                            style="B" if athlete.run_scores[i].locked else "I")
                     row.cell(
-                        str(athlete.run_scores[i].mean_run_score)
-                        if i < len(athlete.run_scores)
-                        else ""
+                        ""
+                        if i >= len(athlete.run_scores)
+                        else "DNS"
+                        if athlete.run_scores[i].did_not_start
+                        else str(athlete.run_scores[i].mean_run_score)
                     )
-
+                pdf.set_font(style="")
         # Prepare the filename and headers
         filename = f"heats{datetime.now().isoformat()}.pdf"
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
@@ -278,6 +312,7 @@ async def heat_results_pdf(
         )
 
     except Exception as e:
+        logging.exception("Error Creating PDF")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from e
