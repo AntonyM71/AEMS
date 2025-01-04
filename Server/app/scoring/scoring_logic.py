@@ -291,16 +291,34 @@ def organise_moves_by_athlete_run_judge(
     return resp
 
 
+class PydanticRunStatus(BaseModel):
+    athlete_id: UUID
+    heat_id: UUID
+    run_number: int
+    phase_id: UUID
+    locked: bool
+    did_not_start: bool
+
+
 def calculate_heat_scores(
     athlete_moves_list: list[AthleteMovesWithJudgeInfo],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
+    run_statuses: list[PydanticRunStatus],
     scoring_runs: Optional[int] = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
         runs: list[RunScores] = []
-        for run in athlete.run_moves:
+        for i, run in enumerate(athlete.run_moves):
+            matching_run_statuses = [
+                rs
+                for rs in run_statuses
+                if rs.athlete_id == athlete.athlete_id and rs.run_number == i
+            ]
+            run_status = (
+                matching_run_statuses[0] if len(matching_run_statuses) > 0 else None
+            )
             judges: list[JudgeScores] = []
             for judge in run.judge_moves:
                 score = calculate_run_score(
@@ -319,8 +337,8 @@ def calculate_heat_scores(
                     highest_scoring_move=max(
                         [j.score_info.highest_scoring_move for j in judges]
                     ),
-                    did_not_start=False,
-                    locked=False,
+                    did_not_start=run_status.did_not_start if run_status else False,
+                    locked=run_status.locked if run_status else False,
                 )
             )
         run_scores: list[float] = [r.mean_run_score for r in runs]

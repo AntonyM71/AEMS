@@ -283,6 +283,7 @@ async def get_heat_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+        run_statuses=[],
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:
@@ -362,6 +363,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+        run_statuses=[],
         scoring_runs=phase.number_of_runs_for_score,
     )
 

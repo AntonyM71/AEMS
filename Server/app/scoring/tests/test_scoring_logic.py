@@ -9,6 +9,7 @@ from scoring_logic import (
     JudgeMoves,
     JudgeScores,
     MixedUpScoresheetExceptionError,
+    PydanticRunStatus,
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
     RunMoves,
@@ -1058,6 +1059,249 @@ class TestAthleteScoreCalculation:
             athlete_moves_list=athlete_moves,
             available_bonuses=available_bonuses,
             available_moves=available_moves,
+            run_statuses=[],
+            scoring_runs=1,
+        )
+
+        assert got == want
+
+    def test_it_assigns_a_run_as_locked_based_on_its_runstatus(
+        self,
+        available_moves: list[AvailableMoves],
+        available_bonuses: list[AvailableBonuses],
+    ) -> None:
+        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
+            AthleteMovesWithJudgeInfo(
+                number_of_judges=3,
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                run_moves=[
+                    RunMoves(
+                        run=1,
+                        judge_moves=[
+                            JudgeMoves(
+                                judge_id="meg",
+                                scored_moves=[
+                                    PydanticScoredMovesResponse(
+                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                                        run_number="1",
+                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                                        judge_id="meg",
+                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                                        direction="B",
+                                    )
+                                ],
+                                scored_bonuses=[
+                                    PydanticScoredBonusesResponse(
+                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
+                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
+                                        judge_id="meg",
+                                    )
+                                ],
+                            )
+                        ],
+                    ),
+                    RunMoves(
+                        run=2,
+                        judge_moves=[
+                            JudgeMoves(
+                                judge_id="meg",
+                                scored_moves=[
+                                    PydanticScoredMovesResponse(
+                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
+                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                                        run_number="2",
+                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                                        judge_id="meg",
+                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                                        direction="B",
+                                    )
+                                ],
+                                scored_bonuses=[],
+                            )
+                        ],
+                    ),
+                ],
+            )
+        ]
+
+        want = [
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
+                run_scores=[
+                    RunScores(
+                        did_not_start=False,
+                        locked=False,
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0 / 3,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        did_not_start=False,
+                        locked=True,
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=20, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=20.0 / 3,
+                        highest_scoring_move=20.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                total_score=25 / 3,
+            )
+        ]
+        got = calculate_heat_scores(
+            athlete_moves_list=athlete_moves,
+            available_bonuses=available_bonuses,
+            available_moves=available_moves,
+            run_statuses=[
+                PydanticRunStatus(
+                    athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                    heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                    run_number=1,
+                    phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                    locked=True,
+                    did_not_start=False,
+                )
+            ],
+            scoring_runs=1,
+        )
+
+        assert got == want
+
+    def test_it_assigns_a_run_as_dns_based_on_its_runstatus(
+        self,
+        available_moves: list[AvailableMoves],
+        available_bonuses: list[AvailableBonuses],
+    ) -> None:
+        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
+            AthleteMovesWithJudgeInfo(
+                number_of_judges=3,
+                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                run_moves=[
+                    RunMoves(
+                        run=1,
+                        judge_moves=[
+                            JudgeMoves(
+                                judge_id="meg",
+                                scored_moves=[
+                                    PydanticScoredMovesResponse(
+                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                                        run_number="1",
+                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                                        judge_id="meg",
+                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                                        direction="B",
+                                    )
+                                ],
+                                scored_bonuses=[
+                                    PydanticScoredBonusesResponse(
+                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
+                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
+                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
+                                        judge_id="meg",
+                                    )
+                                ],
+                            )
+                        ],
+                    ),
+                    RunMoves(
+                        run=2,
+                        judge_moves=[
+                            JudgeMoves(
+                                judge_id="meg",
+                                scored_moves=[
+                                    PydanticScoredMovesResponse(
+                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
+                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                                        run_number="2",
+                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                                        judge_id="meg",
+                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                                        direction="B",
+                                    )
+                                ],
+                                scored_bonuses=[],
+                            )
+                        ],
+                    ),
+                ],
+            )
+        ]
+
+        want = [
+            AthleteScores(
+                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
+                run_scores=[
+                    RunScores(
+                        did_not_start=False,
+                        locked=False,
+                        run_number=1,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=25, highest_scoring_move=25
+                                ),
+                            )
+                        ],
+                        mean_run_score=25.0 / 3,
+                        highest_scoring_move=25.0,
+                    ),
+                    RunScores(
+                        did_not_start=True,
+                        locked=False,
+                        run_number=2,
+                        judge_scores=[
+                            JudgeScores(
+                                judge_id="meg",
+                                score_info=AthleteScoreInfo(
+                                    score=20, highest_scoring_move=20
+                                ),
+                            )
+                        ],
+                        mean_run_score=20.0 / 3,
+                        highest_scoring_move=20.0,
+                    ),
+                ],
+                highest_scoring_move=25.0,
+                total_score=25 / 3,
+            )
+        ]
+        got = calculate_heat_scores(
+            athlete_moves_list=athlete_moves,
+            available_bonuses=available_bonuses,
+            available_moves=available_moves,
+            run_statuses=[
+                PydanticRunStatus(
+                    athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                    heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+                    run_number=1,
+                    phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
+                    locked=False,
+                    did_not_start=True,
+                )
+            ],
             scoring_runs=1,
         )
 
@@ -1329,6 +1573,7 @@ class TestAthleteScoreCalculation:
             athlete_moves_list=athlete_moves,
             available_bonuses=available_bonuses,
             available_moves=available_moves,
+            run_statuses=[],
             scoring_runs=1,
         )
 
@@ -1440,6 +1685,7 @@ class TestAthleteScoreCalculation:
             athlete_moves_list=athlete_moves,
             available_bonuses=available_bonuses,
             available_moves=available_moves,
+            run_statuses=[],
             scoring_runs=2,
         )
 
