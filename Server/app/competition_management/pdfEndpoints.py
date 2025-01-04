@@ -124,8 +124,7 @@ async def phase_pdf(
                     )
                 pdf.set_font(style="B" if all(runs_confirmed) else "I")
 
-                row.cell(
-                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 pdf.set_font("")
                 row.cell(athlete.reason if athlete.reason else "")
 
@@ -157,8 +156,7 @@ async def heat_pdf(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
         heat_info_list = (
-            db.query(Heat).where(Heat.id.in_(heat_ids)
-                                 ).order_by(Heat.name.asc()).all()
+            db.query(Heat).where(Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
         )
         if not heat_info_list or len(heat_info_list) != len(heat_ids):
             return Response(
@@ -166,8 +164,7 @@ async def heat_pdf(
                 content="Could not find any heat Info corresponding to provided IDs",
             )
         for heat_info in heat_info_list:
-            heat_athlete_info = get_heat_info_logic(
-                heat_id=heat_info.id, db=db)
+            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
 
             competition_metadata = (
                 db.query(Competition)
@@ -253,8 +250,7 @@ async def heat_results_pdf(
         )
         pdf.add_page()
         pdf.set_font("Helvetica", size=24)
-        pdf.cell(0, 10, text="Heat Results", align="C",
-                 new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", size=20)
         pdf.cell(
             0,
@@ -292,8 +288,7 @@ async def heat_results_pdf(
                 row.cell(str(athlete.bib_number))
                 for i in range(max_runs):
                     if i < len(athlete.run_scores):
-                        pdf.set_font(
-                            style="B" if athlete.run_scores[i].locked else "I")
+                        pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
                     row.cell(
                         ""
                         if i >= len(athlete.run_scores)

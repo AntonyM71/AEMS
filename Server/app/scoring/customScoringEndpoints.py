@@ -21,6 +21,7 @@ from app.scoring.scoring_logic import (
     PydanticScoredMovesResponse,
     calculate_heat_scores,
     calculate_rank,
+    check_athlete_started_at_least_one_ride,
     organise_moves_by_athlete_run_judge,
 )
 from db.client import get_transaction_session
@@ -388,7 +389,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
                 if len(athlete_score) != 0
                 else (
                     AthleteScores(
-                        athlete_id=a_info.id, highest_scoring_move=0, run_scores=[]
+                        athlete_id=a_info.id,
+                        highest_scoring_move=0,
+                        run_scores=[],
                     ).dict(exclude_none=True)
                 ),
                 first_name=a_info.first_name,
@@ -396,13 +399,28 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
                 bib_number=a_info.bib,
             )
         )
-    athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]
-    athletes_without_scores = [a for a in athlete_scores_with_info if not a.ranking]
+    dns_athletes = [
+        a
+        for a in athlete_scores_with_info
+        if (not check_athlete_started_at_least_one_ride(a))
+    ]
+
+    starting_athletes = [
+        a
+        for a in athlete_scores_with_info
+        if check_athlete_started_at_least_one_ride(a)
+    ]
+    athletes_with_scores = [a for a in starting_athletes if a.ranking]
+    athletes_without_scores = [a for a in starting_athletes if not a.ranking]
+
     athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
     athletes_without_scores.sort(key=lambda x: int(x.bib_number))
+    dns_athletes.sort(key=lambda x: int(x.bib_number))
 
+    # Add in specific category for DNS athletes
     return PhaseScoresResponse(
-        phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores]
+        phase_id=phase_id,
+        scores=[*athletes_with_scores, *athletes_without_scores, *dns_athletes],
     )
 
 

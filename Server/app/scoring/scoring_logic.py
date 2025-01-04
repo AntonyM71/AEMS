@@ -373,6 +373,16 @@ class RankInfo(BaseModel):
     reason: Optional[str]
 
 
+def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:
+    dns_list = [a.did_not_start for a in athlete_info.run_scores]
+
+    if len(dns_list) == 0:
+        return True
+    if all(dns_list):
+        return False
+    return True
+
+
 def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
     sorted_athletes_scores = sorted(
         athlete_scores, key=lambda x: (x.total_score or 0), reverse=True
@@ -383,13 +393,14 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
         athletes_with_same_score = [
             item for item in sorted_athletes_scores if item.total_score == s.total_score
         ]
-        if len(athletes_with_same_score) == 1:
-            rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
-            s.ranking = rank
-        else:
-            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
-            s.ranking = rank + rank_info.ranking + 1
-            s.reason = f"TieBreak: {rank_info.reason}"
+        if check_athlete_started_at_least_one_ride(s):
+            if len(athletes_with_same_score) == 1:
+                rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
+                s.ranking = rank
+            else:
+                rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+                s.ranking = rank + rank_info.ranking + 1
+                s.reason = f"TieBreak: {rank_info.reason}"
 
     return sorted_athletes_scores
 
