@@ -21,7 +21,7 @@ import {
 	useGetManyAvailablemovesGetQuery,
 	useGetManyRunStatusGetQuery,
 	useInsertManyRunStatusPostMutation,
-	usePartialUpdateOneByPrimaryKeyRunStatusIdPatchMutation
+	useUpsertRunStatusUpsertRunStatusPostMutation
 } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
@@ -46,7 +46,7 @@ export default () => {
 	const selectedHeat = useSelector(getSelectedHeat)
 
 	const [postUpdateRunStatus] =
-		usePartialUpdateOneByPrimaryKeyRunStatusIdPatchMutation()
+		useUpsertRunStatusUpsertRunStatusPostMutation()
 	const [postNewRunStatus] = useInsertManyRunStatusPostMutation()
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
@@ -87,6 +87,7 @@ export default () => {
 			athleteIdList: [selectedAthlete.id],
 			runNumberList: [selectedRun]
 		})
+		// eslint-disable-next-line complexity
 		const updateRunStatus = async (
 			locked?: boolean,
 			did_not_start?: boolean
@@ -95,33 +96,34 @@ export default () => {
 			if (runStatus?.data?.[0]) {
 				const existingStatus = runStatus?.data?.[0]
 				await postUpdateRunStatus({
-					id: existingStatus.id ?? "",
-					bodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch: {
-						run_number: existingStatus.run_number,
-						phase_id: existingStatus.phase_id,
-						heat_id: existingStatus.heat_id,
-						athlete_id: existingStatus.athlete_id,
-						locked: locked ?? existingStatus.locked,
+					runStatusSchema: {
+						id: existingStatus.id!,
+						run_number: existingStatus.run_number ?? selectedRun,
+						phase_id: existingStatus.phase_id!,
+						heat_id: existingStatus.heat_id ?? selectedHeat,
+						athlete_id:
+							existingStatus.athlete_id ?? selectedAthlete.id,
+						locked: locked ?? existingStatus.locked ?? false,
 						did_not_start:
-							did_not_start ?? existingStatus.did_not_start
+							did_not_start ??
+							existingStatus.did_not_start ??
+							false
 					}
 				})
 			} else {
-				await postNewRunStatus({
-					body: [
-						{
-							id: v4().toString(),
-							locked: locked ?? false,
-							did_not_start: did_not_start ?? false,
+				await postUpdateRunStatus({
+					runStatusSchema: {
+						id: v4(),
+						locked: locked ?? false,
+						did_not_start: did_not_start ?? false,
 
-							run_number: selectedRun,
-							phase_id:
-								athletes?.data?.[currentPaddlerIndex]
-									.phase_id ?? "",
-							heat_id: selectedHeat,
-							athlete_id: selectedAthlete.id
-						}
-					]
+						run_number: selectedRun,
+						phase_id:
+							athletes?.data?.[currentPaddlerIndex].phase_id ??
+							"",
+						heat_id: selectedHeat,
+						athlete_id: selectedAthlete.id
+					}
 				})
 			}
 			await runStatus.refetch()
@@ -156,7 +158,7 @@ export default () => {
 					alignItems={"stretch"}
 					sx={{ marginTop: "0.5em" }}
 				>
-					<Grid item xs={6}>
+					<Grid item xs={5}>
 						<SelectorDisplay
 							showDetailed={false}
 							showEvent={false}
@@ -197,13 +199,32 @@ export default () => {
 							sx={{ height: "100%" }}
 							onClick={() =>
 								void updateRunStatus(
-									!runStatus?.data?.[0].locked
+									!runStatus?.data?.[0].locked,
+									runStatus?.data?.[0].did_not_start ?? false
 								)
 							}
 						>
 							{runStatus?.data?.[0].locked
 								? "Unlock Run"
 								: "Lock Run"}
+						</Button>
+					</Grid>
+					<Grid item xs={1}>
+						<Button
+							variant="contained"
+							fullWidth
+							disabled={runStatus.isFetching}
+							sx={{ height: "100%" }}
+							onClick={() =>
+								void updateRunStatus(
+									runStatus?.data?.[0].locked ?? false,
+									!runStatus?.data?.[0].did_not_start
+								)
+							}
+						>
+							{runStatus?.data?.[0].did_not_start
+								? "Unset DNS"
+								: "SET DNS"}
 						</Button>
 					</Grid>
 					<Grid item xs={12}>

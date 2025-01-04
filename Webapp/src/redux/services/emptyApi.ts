@@ -5,9 +5,9 @@ import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react"
 export const emptySplitApi = createApi({
 	baseQuery: retry(
 		fetchBaseQuery({
-			baseUrl: process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"
+			baseUrl: process.env.NEXT_PUBLIC_API_URL_DEV ?? "/api/"
 		}),
-		{ maxRetries: 5 }
+		{ maxRetries: process.env.NEXT_PUBLIC_ENV === "prod" ? 5 : undefined }
 	),
 	endpoints: () => ({})
 })
