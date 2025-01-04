@@ -54,7 +54,9 @@ export default () => {
 			{ skip: !selectedHeat }
 		)
 	const maxJudges =
-		Math.max(...phaseData.map((p) => p.number_of_judges), 1) ?? 1
+		(phaseData &&
+			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
+		1
 	const judgeNumberArray = new Array(maxJudges)
 		.fill(null)
 		.map((_, i) => i + 1)
