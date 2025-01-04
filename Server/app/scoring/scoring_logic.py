@@ -232,6 +232,8 @@ class RunScores(BaseModel):
     judge_scores: list[JudgeScores]
     mean_run_score: float
     highest_scoring_move: float
+    locked: bool
+    did_not_start: bool
 
 
 class AthleteScores(BaseModel):
@@ -317,6 +319,8 @@ def calculate_heat_scores(
                     highest_scoring_move=max(
                         [j.score_info.highest_scoring_move for j in judges]
                     ),
+                    did_not_start=False,
+                    locked=False,
                 )
             )
         run_scores: list[float] = [r.mean_run_score for r in runs]

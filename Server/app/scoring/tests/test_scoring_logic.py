@@ -1020,6 +1020,8 @@ class TestAthleteScoreCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1033,6 +1035,8 @@ class TestAthleteScoreCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1284,6 +1288,8 @@ class TestAthleteScoreCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1396,6 +1402,8 @@ class TestAthleteScoreCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1409,6 +1417,8 @@ class TestAthleteScoreCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1445,6 +1455,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1458,6 +1470,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1478,6 +1492,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1491,6 +1507,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1514,6 +1532,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1527,6 +1547,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1548,6 +1570,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1561,6 +1585,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1591,6 +1617,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1604,6 +1632,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1624,6 +1654,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1637,6 +1669,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1660,6 +1694,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1673,6 +1709,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1695,6 +1733,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1708,6 +1748,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1739,6 +1781,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1752,6 +1796,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1772,6 +1818,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1785,6 +1833,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1805,6 +1855,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1818,6 +1870,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1841,6 +1895,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1854,6 +1910,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1876,6 +1934,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1889,6 +1949,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1911,6 +1973,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1924,6 +1988,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1955,6 +2021,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1968,6 +2036,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1981,6 +2051,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -2001,6 +2073,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2014,6 +2088,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -2027,6 +2103,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2047,6 +2125,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2060,6 +2140,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2083,6 +2165,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2096,6 +2180,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2109,6 +2195,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -2131,6 +2219,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2144,6 +2234,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=3,
                         judge_scores=[
                             JudgeScores(
@@ -2157,6 +2249,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2179,6 +2273,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2192,6 +2288,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2223,6 +2321,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2236,6 +2336,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=20.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2256,6 +2358,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2269,6 +2373,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2289,6 +2395,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2302,6 +2410,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2325,6 +2435,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2338,6 +2450,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=20.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2360,6 +2474,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2373,6 +2489,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2395,6 +2513,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2408,6 +2528,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=35.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2439,6 +2561,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2452,6 +2576,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2472,6 +2598,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2485,6 +2613,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2505,6 +2635,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2518,6 +2650,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2541,6 +2675,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2554,6 +2690,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2576,6 +2714,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2589,6 +2729,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -2611,6 +2753,8 @@ class TestAthleteRankCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
                 run_scores=[
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -2624,6 +2768,8 @@ class TestAthleteRankCalculation:
                         highest_scoring_move=30.0,
                     ),
                     RunScores(
+                        did_not_start=False,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
