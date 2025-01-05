@@ -26,6 +26,7 @@ FROM base AS runner
 WORKDIR /Webapp
 
 ENV NODE_ENV production
+ENV NEXT_PUBLIC_SHOW_CSV_UPLOAD true
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 

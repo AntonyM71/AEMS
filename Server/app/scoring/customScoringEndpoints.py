@@ -1,8 +1,16 @@
+import logging
 from math import inf
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
@@ -16,10 +24,12 @@ from app.scoring.scoring_logic import (
     AthleteMovesWithJudgeInfo,
     AthleteScores,
     AthleteScoresWithAthleteInfo,
+    PydanticRunStatus,
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
     calculate_heat_scores,
     calculate_rank,
+    check_athlete_started_at_least_one_ride,
     organise_moves_by_athlete_run_judge,
 )
 from db.client import get_transaction_session
@@ -29,6 +39,7 @@ from db.models import (
     AvailableBonuses,
     AvailableMoves,
     Phase,
+    RunStatus,
     ScoredBonuses,
     ScoredMoves,
 )
@@ -67,7 +78,8 @@ async def get_heat_info(
 
 
 def get_heat_info_logic(heat_id: str, db: Session) -> list[HeatInfoResponse]:
-    heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
+    heat_info = db.query(AthleteHeat).where(
+        AthleteHeat.heat_id == heat_id).all()
 
     heat_info_response = [
         HeatInfoResponse(
@@ -115,11 +127,16 @@ async def get_heat_phases(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[PhaseResponse]:
-    heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
+    heat_info = db.query(AthleteHeat).where(
+        AthleteHeat.heat_id == heat_id).all()
 
     phases = set([h.__dict__["phase_id"] for h in heat_info])
     phase_info = db.query(Phase).where(Phase.id.in_(list(phases))).all()
     return parse_obj_as(list[PhaseResponse], phase_info)
+
+
+class UpdatingLockedRunError(Exception):
+    pass
 
 
 @scoring_router.post(
@@ -134,48 +151,61 @@ async def update_athlete_score(
     scored_moves_list: AddUpdateScoredMovesRequest,
     db: Session = Depends(get_transaction_session),
 ) -> None:
-    with db.begin():
-        scored_moves = (
-            db.query(ScoredMoves.id)
-            .filter(ScoredMoves.heat_id == heat_id)
-            .filter(ScoredMoves.athlete_id == athlete_id)
-            .filter(ScoredMoves.run_number == run_number)
-            .filter(ScoredMoves.judge_id == judge_id)
-        )
+    try:
+        with db.begin():
+            run_is_locked = check_run_is_locked(db=db,     heat_id=heat_id,
+                                                athlete_id=athlete_id,
+                                                run_number=run_number, phase_id=phase_id)
+            if run_is_locked:
+                msg = "Score Update not processed as the run is locked"
+                raise UpdatingLockedRunError(
+                    msg)
+            scored_moves = (
+                db.query(ScoredMoves.id)
+                .filter(ScoredMoves.heat_id == heat_id)
+                .filter(ScoredMoves.athlete_id == athlete_id)
+                .filter(ScoredMoves.run_number == run_number)
+                .filter(ScoredMoves.judge_id == judge_id)
+            )
 
-        delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
-            ScoredBonuses.move_id.in_(scored_moves)
-        )
-        db.execute(delete_scored_bonuses_statement)
-        delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
-            ScoredMoves.id.in_(scored_moves)
-        )
-        db.execute(delete_scored_moves_statement)
+            delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
+                ScoredBonuses.move_id.in_(scored_moves)
+            )
+            db.execute(delete_scored_bonuses_statement)
+            delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
+                ScoredMoves.id.in_(scored_moves)
+            )
+            db.execute(delete_scored_moves_statement)
 
-        db.bulk_save_objects(
-            [
-                ScoredMoves(
-                    **move.dict(),
-                    judge_id=judge_id,
-                    heat_id=heat_id,
-                    phase_id=phase_id,
-                    athlete_id=athlete_id,
-                    run_number=run_number,
-                )
-                for move in scored_moves_list.moves
-            ]
-        )
-        db.bulk_save_objects(
-            [
-                ScoredBonuses(
-                    **bonus.dict(),
-                    judge_id=judge_id,
-                )
-                for bonus in scored_moves_list.bonuses
-            ]
-        )
+            db.bulk_save_objects(
+                [
+                    ScoredMoves(
+                        **move.dict(),
+                        judge_id=judge_id,
+                        heat_id=heat_id,
+                        phase_id=phase_id,
+                        athlete_id=athlete_id,
+                        run_number=run_number,
+                    )
+                    for move in scored_moves_list.moves
+                ]
+            )
+            db.bulk_save_objects(
+                [
+                    ScoredBonuses(
+                        **bonus.dict(),
+                        judge_id=judge_id,
+                    )
+                    for bonus in scored_moves_list.bonuses
+                ]
+            )
 
-        db.commit()
+            db.commit()
+    except Exception as e:
+        logging.exception("Error Updating Score")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from e
 
 
 class ScoredMovesAndBonusesResponse(BaseModel):
@@ -211,8 +241,10 @@ async def get_athlete_moves_and_bonnuses(
 
     move_ids = [m.id for m in pydantic_moves]
 
-    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
-    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
+    bonuses = db.query(ScoredBonuses).filter(
+        ScoredBonuses.move_id.in_(move_ids)).all()
+    pydantic_bonuses = parse_obj_as(
+        list[PydanticScoredBonusesResponse], bonuses)
 
     return ScoredMovesAndBonusesResponse.parse_obj(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
@@ -239,8 +271,11 @@ async def get_heat_scores(
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
+    run_statuses = db.query(RunStatus).filter(
+        RunStatus.heat_id == heat_id).all()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
-    athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
+    athlete_heat = db.query(AthleteHeat).filter(
+        AthleteHeat.heat_id == heat_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes = db.query(Athlete).filter(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
@@ -248,7 +283,8 @@ async def get_heat_scores(
 
     scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
     scoresheet_available_moves = (
-        db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
+        db.query(AvailableMoves).filter(
+            AvailableMoves.sheet_id.in_(scoresheets)).all()
     )
 
     scoresheet_available_bonuses = (
@@ -256,9 +292,11 @@ async def get_heat_scores(
         .filter(AvailableBonuses.sheet_id.in_(scoresheets))
         .all()
     )
-    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
+    bonuses = db.query(ScoredBonuses).filter(
+        ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
+    pydantic_bonuses = parse_obj_as(
+        list[PydanticScoredBonusesResponse], bonuses)
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
@@ -274,6 +312,7 @@ async def get_heat_scores(
         )
         for a in athlete_moves_list
     ]
+    # print(run_statuses.__dict__)
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
@@ -282,10 +321,14 @@ async def get_heat_scores(
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+        run_statuses=parse_obj_as(
+            list[PydanticRunStatus], run_statuses if run_statuses else []
+        ),
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
     for a_info in athletes:
-        athlete_score = [a for a in athlete_scores if a.athlete_id == a_info.id]
+        athlete_score = [
+            a for a in athlete_scores if a.athlete_id == a_info.id]
         athlete_scores_with_info.append(
             AthleteScoresWithAthleteInfo(
                 **athlete_score[0].dict()
@@ -318,13 +361,17 @@ async def get_phase_scores(
 
 
 def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
-    moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
+    moves = db.query(ScoredMoves).filter(
+        ScoredMoves.phase_id == phase_id).all()
+    run_statuses = db.query(RunStatus).filter(
+        RunStatus.phase_id == phase_id).all()
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
         raise ValueError(msg)
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
-    athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
+    athlete_heat = db.query(AthleteHeat).filter(
+        AthleteHeat.phase_id == phase_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes: list[Athlete] = (
         db.query(Athlete)
@@ -333,7 +380,8 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     )
     scoresheets = list(set([a.phases.scoresheet for a in athlete_heat]))
     scoresheet_available_moves = (
-        db.query(AvailableMoves).filter(AvailableMoves.sheet_id.in_(scoresheets)).all()
+        db.query(AvailableMoves).filter(
+            AvailableMoves.sheet_id.in_(scoresheets)).all()
     )
 
     scoresheet_available_bonuses = (
@@ -341,15 +389,20 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         .filter(AvailableBonuses.sheet_id.in_(scoresheets))
         .all()
     )
-    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
+    bonuses = db.query(ScoredBonuses).filter(
+        ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = parse_obj_as(list[PydanticScoredBonusesResponse], bonuses)
+    pydantic_bonuses = parse_obj_as(
+        list[PydanticScoredBonusesResponse], bonuses)
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
-        moves=pydantic_moves, bonuses=pydantic_bonuses
+        moves=pydantic_moves,
+        bonuses=pydantic_bonuses,
+        number_of_runs=phase.number_of_runs,
     )
     athlete_moves_with_judges = [
-        AthleteMovesWithJudgeInfo(**a.dict(), number_of_judges=phase.number_of_judges)
+        AthleteMovesWithJudgeInfo(
+            **a.dict(), number_of_judges=phase.number_of_judges)
         for a in athlete_moves_list
     ]
 
@@ -361,6 +414,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         available_bonuses=parse_obj_as(
             list[PydanticAvailableBonuses], scoresheet_available_bonuses
         ),
+        run_statuses=parse_obj_as(list[PydanticRunStatus], run_statuses),
         scoring_runs=phase.number_of_runs_for_score,
     )
 
@@ -377,7 +431,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
                 if len(athlete_score) != 0
                 else (
                     AthleteScores(
-                        athlete_id=a_info.id, highest_scoring_move=0, run_scores=[]
+                        athlete_id=a_info.id,
+                        highest_scoring_move=0,
+                        run_scores=[],
                     ).dict(exclude_none=True)
                 ),
                 first_name=a_info.first_name,
@@ -385,11 +441,112 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
                 bib_number=a_info.bib,
             )
         )
-    athletes_with_scores = [a for a in athlete_scores_with_info if a.ranking]
-    athletes_without_scores = [a for a in athlete_scores_with_info if not a.ranking]
+    dns_athletes = [
+        a
+        for a in athlete_scores_with_info
+        if (not check_athlete_started_at_least_one_ride(a))
+    ]
+
+    starting_athletes = [
+        a
+        for a in athlete_scores_with_info
+        if check_athlete_started_at_least_one_ride(a)
+    ]
+    athletes_with_scores = [a for a in starting_athletes if a.ranking]
+    athletes_without_scores = [a for a in starting_athletes if not a.ranking]
+
     athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
     athletes_without_scores.sort(key=lambda x: int(x.bib_number))
+    dns_athletes.sort(key=lambda x: int(x.bib_number))
 
+    # Add in specific category for DNS athletes
     return PhaseScoresResponse(
-        phase_id=phase_id, scores=[*athletes_with_scores, *athletes_without_scores]
+        phase_id=phase_id,
+        scores=[*athletes_with_scores, *
+                athletes_without_scores, *dns_athletes],
     )
+
+
+class RunStatusSchema(BaseModel):
+    id: UUID
+    heat_id: UUID
+    run_number: int
+    phase_id: UUID
+    athlete_id: UUID
+    locked: bool
+    did_not_start: bool
+
+    class Config:
+        orm_mode = True
+
+
+active_connections = []
+
+
+async def broadcast(message: str):
+    for connection in active_connections:
+        await connection.send_text(message)
+
+
+@scoring_router.websocket("/api/runstatus")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            run_status = RunStatusSchema.parse_raw(data)
+            with next(get_transaction_session()) as db:
+                existing_run_status = (
+                    db.query(RunStatus)
+                    .filter(
+                        RunStatus.heat_id == run_status.heat_id,
+                        RunStatus.run_number == run_status.run_number,
+                        RunStatus.phase_id == run_status.phase_id,
+                        RunStatus.athlete_id == run_status.athlete_id,
+                    )
+                    .first()
+                )
+
+                if existing_run_status:
+                    existing_run_status.locked = run_status.locked
+                    existing_run_status.did_not_start = run_status.did_not_start
+                    db.add(existing_run_status)
+                    db.commit()
+                    db.refresh(existing_run_status)
+
+                else:
+                    new_run_status = RunStatus(
+                        id=run_status.id,
+                        heat_id=run_status.heat_id,
+                        run_number=run_status.run_number,
+                        phase_id=run_status.phase_id,
+                        athlete_id=run_status.athlete_id,
+                        locked=run_status.locked,
+                        did_not_start=run_status.did_not_start,
+                    )
+                    db.add(new_run_status)
+                    db.commit()
+                    db.refresh(new_run_status)
+            await broadcast(run_status.json())
+    except WebSocketDisconnect:
+        active_connections.remove(websocket)
+
+
+def check_run_is_locked(db: Session,     heat_id: str,
+                        athlete_id: str,
+                        run_number: str,
+                        phase_id: str) -> bool:
+    existing_run_status = (
+        db.query(RunStatus)
+        .filter(
+            RunStatus.heat_id == heat_id,
+            RunStatus.run_number == run_number,
+            RunStatus.phase_id == phase_id,
+            RunStatus.athlete_id == athlete_id,
+        )
+        .first()
+    )
+    if existing_run_status and existing_run_status.locked:
+        return True
+    return False

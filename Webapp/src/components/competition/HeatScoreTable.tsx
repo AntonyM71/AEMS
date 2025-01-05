@@ -113,6 +113,8 @@ export const HeatAthleteScoreTable = ({
 			const runScores: Record<string, DetailScores> = {}
 			runCols.forEach((r, j) => {
 				const detailScores: DetailScores = {
+					locked: a.run_scores[j]?.locked,
+					didNotStart: a.run_scores[j]?.did_not_start,
 					meanScore: a.run_scores[j]?.mean_run_score || 0,
 					judgeScores:
 						a.run_scores[j]?.judge_scores.map((js) => ({
@@ -120,6 +122,7 @@ export const HeatAthleteScoreTable = ({
 							judgeId: js.judge_id
 						})) ?? []
 				}
+				console.log(detailScores.didNotStart)
 				runScores[r.field] = detailScores
 			})
 
@@ -158,9 +161,11 @@ export const HeatAthleteScoreTable = ({
 	)
 }
 
-interface DetailScores {
+export interface DetailScores {
 	judgeScores: { score: number; judgeId: string }[]
 	meanScore: number
+	didNotStart: boolean
+	locked: boolean
 }
 
 export const DetailScoreView =
@@ -178,8 +183,19 @@ export const DetailScoreView =
 				{showIndividualJudgeScores ? (
 					params.value?.judgeScores?.map((s, j) => (
 						<Grid item xs={12} key={j}>
-							<Typography variant={"body2"}>
-								{`J${s.judgeId}: ${s.score?.toFixed(2) || "0"}`}
+							<Typography
+								variant={"body2"}
+								sx={{
+									fontStyle: params.value?.locked
+										? "bold"
+										: "italic"
+								}}
+							>
+								{`J${s.judgeId}: ${
+									params.value?.didNotStart
+										? "DNS"
+										: s.score?.toFixed(2) || "0"
+								}`}
 							</Typography>
 						</Grid>
 					))
@@ -189,13 +205,17 @@ export const DetailScoreView =
 				<Grid item xs={12}>
 					<Typography
 						variant="body1"
-						sx={
-							showIndividualJudgeScores
-								? { textDecoration: "underline" }
-								: {}
-						}
+						sx={{
+							textDecoration: showIndividualJudgeScores
+								? "underline"
+								: "",
+							fontStyle: params.value?.locked ? "bold" : "italic",
+							fontWeight: params.value?.locked ? 700 : 500
+						}}
 					>
-						{params.value?.meanScore?.toFixed(2) ?? 0}
+						{params.value?.didNotStart
+							? "DNS"
+							: params.value?.meanScore?.toFixed(2) ?? 0}
 					</Typography>
 				</Grid>
 			</Grid>

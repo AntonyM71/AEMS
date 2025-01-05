@@ -5,8 +5,10 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
+import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
+import { v4 } from "uuid"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
@@ -17,7 +19,8 @@ import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
 	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery
+	useGetManyAvailablemovesGetQuery,
+	useGetManyRunStatusGetQuery
 } from "../../../redux/services/aemsApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
@@ -29,6 +32,7 @@ import { RunSelector } from "../scribe/InfoBar/Runselector"
 import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
 import { directionType, movesType, scoredMovesType } from "../scribe/Interfaces"
 
+// eslint-disable-next-line complexity
 export default () => {
 	const [scoresOpen, setScoresOpen] = React.useState(false)
 
@@ -39,7 +43,86 @@ export default () => {
 
 	const handleListOpen = () => setListOpen(true)
 	const handleListClose = () => setListOpen(false)
+	const [selectedAthlete, setSelectedAthlete] = useState<
+		AthleteInfo | undefined
+	>(undefined)
 	const selectedHeat = useSelector(getSelectedHeat)
+	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const selectedRun = useSelector(getSelectedRun)
+	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
+	useEffect(() => {
+		if (athleteData) {
+			setSelectedAthlete({
+				id: athleteData[currentPaddlerIndex].athlete_id,
+				first_name: athleteData[currentPaddlerIndex].first_name,
+				last_name: athleteData[currentPaddlerIndex].last_name,
+				bib: athleteData[currentPaddlerIndex].bib,
+				scoresheet: athleteData[currentPaddlerIndex].scoresheet
+			})
+		} else {
+			setSelectedAthlete(undefined)
+		}
+	}, [currentPaddlerIndex, athleteData, selectedHeat])
+
+	const httpRunStatus = useGetManyRunStatusGetQuery(
+		{
+			heatIdList: [selectedHeat],
+			athleteIdList: [selectedAthlete?.id ?? ""],
+			runNumberList: [selectedRun]
+		},
+		{
+			skip: !selectedHeat || !selectedAthlete?.id
+		}
+	)
+	useEffect(() => {
+		if (!httpRunStatus?.isUninitialized) {
+			void httpRunStatus.refetch()
+		}
+	}, [selectedHeat, selectedRun, currentPaddlerIndex])
+	const socketRef = useRef<WebSocket | null>(null)
+	const connectWebSocket = () => {
+		socketRef.current = connectWebRunStatusSocket()
+	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+	if (socketRef.current) {
+		socketRef.current.onmessage = (event) => {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			const jsonData = JSON.parse(event.data) as RunStatus
+
+			if (
+				jsonData?.run_number === selectedRun &&
+				jsonData?.athlete_id === selectedAthlete?.id &&
+				jsonData?.heat_id === selectedHeat
+			) {
+				setRunStatus(jsonData)
+			}
+		}
+		socketRef.current.onclose = () => {
+			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
+		}
+		socketRef.current.onerror = (error) => {
+			console.error("WebSocket error:", error)
+			if (socketRef?.current) {
+				socketRef.current.close() // Trigger onclose event for reconnection
+			}
+		}
+	}
+
+	useEffect(() => {
+		if (httpRunStatus.data) {
+			setRunStatus(httpRunStatus.data[0] as RunStatus)
+		} else {
+			setRunStatus(undefined)
+		}
+	}, [httpRunStatus])
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
 			{ heatId: selectedHeat },
@@ -53,24 +136,50 @@ export default () => {
 		.fill(null)
 		.map((_, i) => i + 1)
 
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: selectedHeat
-		},
-		{ skip: !selectedHeat }
-	)
+	// const selectedPhaseData = phaseData?.filter(p => p.athlete_id)
 
-	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const selectedAthlete: AthleteInfo | undefined = athletes.data
-		? {
-				id: athletes.data[currentPaddlerIndex].athlete_id,
-				first_name: athletes.data[currentPaddlerIndex].first_name,
-				last_name: athletes.data[currentPaddlerIndex].last_name,
-				bib: athletes.data[currentPaddlerIndex].bib,
-				scoresheet: athletes.data[currentPaddlerIndex].scoresheet
-		  }
-		: undefined
 	if (selectedAthlete && !isPhaseDataLoading) {
+		// eslint-disable-next-line complexity
+		const updateRunStatus = async (
+			locked?: boolean,
+			did_not_start?: boolean
+		) => {
+			if (!socketRef.current) {
+				toast.error(
+					"Websocket Connection not ready, please try again in a few seconds"
+				)
+			}
+			if (runStatus) {
+				socketRef.current!.send(
+					JSON.stringify({
+						id: runStatus.id ?? v4(),
+						run_number: selectedRun,
+						phase_id: athleteData?.[currentPaddlerIndex].phase_id,
+						heat_id: selectedHeat,
+						athlete_id: selectedAthlete.id,
+						locked: locked ?? runStatus.locked ?? false,
+						did_not_start:
+							did_not_start ?? runStatus.did_not_start ?? false
+					})
+				)
+			} else {
+				console.log("New thing!")
+				socketRef.current!.send(
+					JSON.stringify({
+						id: v4(),
+
+						run_number: selectedRun,
+						phase_id:
+							athleteData?.[currentPaddlerIndex].phase_id ?? "",
+						heat_id: selectedHeat,
+						athlete_id: selectedAthlete.id,
+						locked: locked ?? false,
+						did_not_start: did_not_start ?? false
+					})
+				)
+			}
+		}
+
 		return (
 			<>
 				<Modal
@@ -99,7 +208,7 @@ export default () => {
 					alignItems={"stretch"}
 					sx={{ marginTop: "0.5em" }}
 				>
-					<Grid item xs={6}>
+					<Grid item xs={5}>
 						<SelectorDisplay
 							showDetailed={false}
 							showEvent={false}
@@ -132,6 +241,38 @@ export default () => {
 							Heat Scores
 						</Button>
 					</Grid>
+					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN && (
+						<Grid item xs={1}>
+							<Button
+								variant="contained"
+								fullWidth
+								sx={{ height: "100%" }}
+								onClick={() =>
+									void updateRunStatus(
+										!runStatus?.locked,
+										runStatus?.did_not_start ?? false
+									)
+								}
+							>
+								{runStatus?.locked ? "Unlock Run" : "Lock Run"}
+							</Button>
+						</Grid>
+					)}
+					<Grid item xs={1}>
+						<Button
+							variant="contained"
+							fullWidth
+							sx={{ height: "100%" }}
+							onClick={() =>
+								void updateRunStatus(
+									runStatus?.locked ?? false,
+									!runStatus?.did_not_start
+								)
+							}
+						>
+							{runStatus?.did_not_start ? "Unset DNS" : "SET DNS"}
+						</Button>
+					</Grid>
 					<Grid item xs={12}>
 						<Divider />
 					</Grid>
@@ -149,6 +290,16 @@ export default () => {
 	}
 
 	return <Skeleton />
+}
+
+export interface RunStatus {
+	id: string
+	heat_id: string
+	run_number: number
+	phase_id: string
+	athlete_id: string
+	locked: boolean
+	did_not_start: boolean
 }
 
 const JudgeCard = ({
@@ -174,20 +325,21 @@ const JudgeCard = ({
 	)
 	const {
 		data: moveAndBonusdata,
-		isFetching: isMoveAndBonusFetching,
+
 		isUninitialized
-	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
-		{
-			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete?.id ?? "",
-			judgeId: judgeNumber.toString(),
-			heatId: selectedHeat
-		},
-		{
-			skip: !selectedAthlete?.id,
-			pollingInterval: 1000
-		}
-	)
+	} =
+		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
+			{
+				runNumber: selectedRun.toString(),
+				athleteId: selectedAthlete?.id ?? "",
+				judgeId: judgeNumber.toString(),
+				heatId: selectedHeat
+			},
+			{
+				skip: !selectedAthlete?.id,
+				pollingInterval: 1000
+			}
+		)
 
 	const scoredMoves = moveAndBonusdata?.moves
 		? moveAndBonusdata.moves.map((m) => ({
@@ -248,6 +400,12 @@ const JudgeCard = ({
 	return <Skeleton />
 }
 
+export const connectWebRunStatusSocket = (): WebSocket =>
+	new WebSocket(
+		`ws://localhost:${
+			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
+		}/api/runstatus`
+	)
 const style = {
 	position: "absolute" as const,
 	top: "50%",

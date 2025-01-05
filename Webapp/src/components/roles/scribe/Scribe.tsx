@@ -1,5 +1,6 @@
+import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid"
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { batch, useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
@@ -18,8 +19,10 @@ import {
 	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyAvailablemovesGetQuery,
+	useGetManyRunStatusGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
+import { connectWebRunStatusSocket, RunStatus } from "../headJudge/headJudge"
 import { AthleteInfo, InfoBar } from "./InfoBar"
 import {
 	directionType,
@@ -29,14 +32,91 @@ import {
 } from "./Interfaces"
 import { MoveCard } from "./MoveCard"
 
+// eslint-disable-next-line complexity
 const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const dispatch = useDispatch()
 	const scoredMoves = useSelector(getScoredMoves)
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const setNumberOfRuns = (n: number) => dispatch(updateNumberOfRuns(n))
+	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
+	const [selectedAthlete, setSelectedAthlete] = useState<
+		AthleteInfo | undefined
+	>(undefined)
+	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
+	useEffect(() => {
+		if (athleteData) {
+			setSelectedAthlete({
+				id: athleteData[currentPaddlerIndex].athlete_id,
+				first_name: athleteData[currentPaddlerIndex].first_name,
+				last_name: athleteData[currentPaddlerIndex].last_name,
+				bib: athleteData[currentPaddlerIndex].bib,
+				scoresheet: athleteData[currentPaddlerIndex].scoresheet
+			})
+		} else {
+			setSelectedAthlete(undefined)
+		}
+	}, [currentPaddlerIndex, athleteData, selectedHeat])
 
+	const httpRunStatus = useGetManyRunStatusGetQuery(
+		{
+			heatIdList: [selectedHeat],
+			athleteIdList: [selectedAthlete?.id ?? ""],
+			runNumberList: [selectedRun]
+		},
+		{
+			skip: !selectedHeat || !selectedAthlete?.id
+		}
+	)
+	useEffect(() => {
+		if (!httpRunStatus?.isUninitialized) {
+			void httpRunStatus.refetch()
+		}
+	}, [selectedHeat, selectedRun, currentPaddlerIndex])
+	const socketRef = useRef<WebSocket | null>(null)
+	const connectWebSocket = () => {
+		socketRef.current = connectWebRunStatusSocket()
+	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+	if (socketRef.current) {
+		socketRef.current.onmessage = (event) => {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			const jsonData = JSON.parse(event.data) as RunStatus
+
+			if (
+				jsonData?.run_number === selectedRun &&
+				jsonData?.athlete_id === selectedAthlete?.id &&
+				jsonData?.heat_id === selectedHeat
+			) {
+				setRunStatus(jsonData)
+			}
+		}
+		socketRef.current.onclose = () => {
+			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
+		}
+		socketRef.current.onerror = (error) => {
+			console.error("WebSocket error:", error)
+			if (socketRef?.current) {
+				socketRef.current.close() // Trigger onclose event for reconnection
+			}
+		}
+	}
+	useEffect(() => {
+		if (httpRunStatus.data) {
+			setRunStatus(httpRunStatus.data[0] as RunStatus)
+		} else {
+			setRunStatus(undefined)
+		}
+	}, [httpRunStatus])
 	const setScoredMovesAndBonuses = (
 		movesList: scoredMovesType[],
 		bonusList: scoredBonusType[]
@@ -58,19 +138,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		{ skip: !selectedHeat }
 	)
 
-	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const selectedAthlete = athletes.data
-		? athletes.data[currentPaddlerIndex]
-		: undefined
-	const selectedAthleteInfo: AthleteInfo | undefined = athletes.data
-		? {
-				id: athletes.data[currentPaddlerIndex].athlete_id,
-				first_name: athletes.data[currentPaddlerIndex].first_name,
-				last_name: athletes.data[currentPaddlerIndex].last_name,
-				bib: athletes.data[currentPaddlerIndex].bib,
-				scoresheet: athletes.data[currentPaddlerIndex].scoresheet
-		  }
-		: undefined
 	useEffect(() => {
 		if (athletes?.data) {
 			setNumberOfRuns(
@@ -81,7 +148,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
 	const submitScores = () => {
-		if (selectedAthlete) {
+		if (selectedAthlete && athleteData) {
 			const formattedScoredMoves: PydanticScoredMoves[] = scoredMoves.map(
 				(m: scoredMovesType) => ({ ...m, move_id: m.moveId })
 			)
@@ -94,9 +161,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 			void addUpdateMovesAndBonuses({
 				heatId: selectedHeat,
-				athleteId: selectedAthlete.athlete_id,
+				athleteId: selectedAthlete.id,
 				runNumber: selectedRun.toString(),
-				phaseId: selectedAthlete.phase_id,
+				phaseId: athleteData[currentPaddlerIndex].phase_id,
 				judgeId: scribeNumber,
 				addUpdateScoredMovesRequest: {
 					moves: formattedScoredMoves,
@@ -119,11 +186,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
 		{
 			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete?.athlete_id ?? "",
+			athleteId: selectedAthlete?.id ?? "",
 			judgeId: scribeNumber,
 			heatId: selectedHeat
 		},
-		{ skip: !selectedAthlete?.athlete_id }
+		{ skip: !selectedAthlete?.id }
 	)
 
 	const getserverScores = async () => {
@@ -160,7 +227,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		selectedHeat,
 		selectedRun,
 		selectedAthlete,
-		selectedAthlete?.athlete_id
+		selectedAthlete?.id
 	])
 
 	const availableMoves = useGetManyAvailablemovesGetQuery(
@@ -172,7 +239,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	)
 
 	if (
-		selectedAthleteInfo?.id &&
+		selectedAthlete?.id &&
 		selectedAthlete?.first_name &&
 		selectedAthlete?.last_name &&
 		selectedAthlete?.bib
@@ -180,12 +247,18 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		return (
 			<Grid container spacing={1}>
 				<Grid item xs={7}>
+					{runStatus?.locked && (
+						<Alert severity="info">
+							Run has been locked by head judge
+						</Alert>
+					)}
 					<Grid container spacing={1}>
 						{availableMoves.data?.map((move) => (
 							<Grid item xs={3} key={move.id}>
 								<MoveCard
 									key={move.id}
 									move={move as movesType}
+									isRunLocked={runStatus?.locked ?? false}
 								/>
 							</Grid>
 						))}
@@ -193,10 +266,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				</Grid>
 				<Grid item xs={5}>
 					<InfoBar
-						paddlerInfo={selectedAthleteInfo}
+						paddlerInfo={selectedAthlete}
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
 						isFetchingScoredMoves={isMoveAndBonusFetching}
+						isRunLocked={runStatus?.locked ?? false}
 					/>
 				</Grid>
 			</Grid>

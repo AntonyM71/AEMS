@@ -98,8 +98,7 @@ async def promote_phase(
         if request_body.number_of_paddlers == 0:
             msg = "Cannot promote a phase for 0 paddlers"
             raise HTTPException(422, msg)
-        phase_scores = calculate_phase_scores(
-            phase_id=request_body.phase_id, db=db)
+        phase_scores = calculate_phase_scores(phase_id=request_body.phase_id, db=db)
 
         top_paddlers = get_top_n_paddlers_for_phase(
             phase_scores=phase_scores,
@@ -121,8 +120,7 @@ async def promote_phase(
         new_phase_id = uuid4()
 
         current_phase_details = (
-            db.query(Phase).filter(
-                Phase.id == request_body.phase_id).one_or_none()
+            db.query(Phase).filter(Phase.id == request_body.phase_id).one_or_none()
         )
 
         db.add(

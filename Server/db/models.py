@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -141,4 +141,19 @@ class ScoredBonuses(Base):
     bonus = relationship("AvailableBonuses", foreign_keys=[bonus_id])
     move = relationship("ScoredMoves", foreign_keys=[move_id])
     judge_id = Column(String, nullable=False)
+    schema = "public"
+
+
+class RunStatus(Base):
+    __tablename__ = "runStatus"
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
+    heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
+    heat = relationship("Heat", foreign_keys=[heat_id])
+    run_number = Column(Integer, nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    phase = relationship("Phase", foreign_keys=[phase_id])
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
+    athlete = relationship("Athlete", foreign_keys=[athlete_id])
+    locked = Column(Boolean, nullable=False)
+    did_not_start = Column(Boolean, nullable=False)
     schema = "public"

@@ -21,6 +21,7 @@ import {
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../redux/services/aemsApi"
+import { DetailScores, DetailScoreView } from "./HeatScoreTable"
 import { SelectorDisplay } from "./MainSelector"
 
 export const PhaseScoreTable = () => {
@@ -126,7 +127,11 @@ export const PhaseAthleteScoreTable = ({
 	const maxRuns = numberOfRuns
 	const runCols: GridColDef[] = []
 	for (let i = 0; i < maxRuns; i++) {
-		runCols.push({ field: `run_${i + 1}`, headerName: `Run ${i + 1}` })
+		runCols.push({
+			field: `run_${i + 1}`,
+			headerName: `Run ${i + 1}`,
+			renderCell: DetailScoreView(false)
+		})
 	}
 
 	const columns: GridColDef[] = [
@@ -136,19 +141,30 @@ export const PhaseAthleteScoreTable = ({
 		{ field: "last_name", headerName: "Last Name", width: 200 },
 		{ field: "bib", headerName: "Bib Number" },
 		...runCols,
-		{ field: "total_score", headerName: "Total" },
+		{
+			field: "total_score",
+			headerName: "Total"
+		},
 		{ field: "reason", headerName: "Notes", width: 200 }
 	]
 
 	const rows: GridRowsProp =
 		flatten(
 			athletes.scores.map((a: AthleteScoresWithAthleteInfo, i) => {
-				const runScores: Record<string, string> = {}
-				runCols.forEach(
-					(r, j) =>
-						(runScores[r.field] =
-							a.run_scores[j]?.mean_run_score.toFixed(2) || "0")
-				)
+				const runScores: Record<string, DetailScores> = {}
+				runCols.forEach((r, j) => {
+					const detailScores: DetailScores = {
+						locked: a.run_scores[j]?.locked,
+						didNotStart: a.run_scores[j]?.did_not_start,
+						meanScore: a.run_scores[j]?.mean_run_score || 0,
+						judgeScores:
+							a.run_scores[j]?.judge_scores.map((js) => ({
+								score: js.score_info.score,
+								judgeId: js.judge_id
+							})) ?? []
+					}
+					runScores[r.field] = detailScores
+				})
 
 				const formattedRow: GridValidRowModel = {
 					ranking: a.ranking ?? 0,

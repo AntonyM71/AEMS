@@ -21,6 +21,7 @@ from app.autogenEndpoints import (
     crud_route_event,
     crud_route_heat,
     crud_route_phase,
+    crud_route_run_status,
     crud_route_scoredbonuses,
     crud_route_scoredmoves,
     crud_route_scoresheet,
@@ -33,7 +34,7 @@ from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
 
-frontend_url = "http://localhost:3000"
+frontend_url = f"http://localhost:{os.getenv('PORT', default= 3000)}"
 request_origins = [frontend_url]
 
 
@@ -63,6 +64,7 @@ app = FastAPI()
         crud_route_scoredmoves,
         crud_route_scoredbonuses,
         crud_route_athleteheat,
+        crud_route_run_status,
     ]
 ]
 

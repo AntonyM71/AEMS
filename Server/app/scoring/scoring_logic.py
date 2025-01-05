@@ -232,6 +232,8 @@ class RunScores(BaseModel):
     judge_scores: list[JudgeScores]
     mean_run_score: float
     highest_scoring_move: float
+    locked: bool
+    did_not_start: bool
 
 
 class AthleteScores(BaseModel):
@@ -253,6 +255,7 @@ class AthleteScoresWithAthleteInfo(AthleteScores):
 def organise_moves_by_athlete_run_judge(
     moves: list[PydanticScoredMovesResponse],
     bonuses: list[PydanticScoredBonusesResponse],
+    number_of_runs: int | None = None,
 ) -> list[AthleteMoves]:
     resp: list[AthleteMoves] = []
 
@@ -260,7 +263,10 @@ def organise_moves_by_athlete_run_judge(
     unique_athletes.sort()
     for athlete in unique_athletes:
         this_athlete_moves = [m for m in moves if m.athlete_id == athlete]
-        unique_runs = list(set(m.run_number for m in this_athlete_moves))
+        if number_of_runs:
+            unique_runs = list(range(0, number_of_runs))
+        else:
+            unique_runs = list(set(m.run_number for m in this_athlete_moves))
         unique_runs.sort()
         run_moves_list: list[RunMoves] = []
         for run in unique_runs:
@@ -289,16 +295,38 @@ def organise_moves_by_athlete_run_judge(
     return resp
 
 
+class PydanticRunStatus(BaseModel):
+    id: UUID
+    athlete_id: UUID
+    heat_id: UUID
+    run_number: int
+    phase_id: UUID
+    locked: bool
+    did_not_start: bool
+
+    class Config:
+        orm_mode = True
+
+
 def calculate_heat_scores(
     athlete_moves_list: list[AthleteMovesWithJudgeInfo],
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
+    run_statuses: list[PydanticRunStatus],
     scoring_runs: Optional[int] = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
         runs: list[RunScores] = []
-        for run in athlete.run_moves:
+        for i, run in enumerate(athlete.run_moves):
+            matching_run_statuses = [
+                rs
+                for rs in run_statuses
+                if rs.athlete_id == athlete.athlete_id and rs.run_number == i
+            ]
+            run_status = (
+                matching_run_statuses[0] if len(matching_run_statuses) > 0 else None
+            )
             judges: list[JudgeScores] = []
             for judge in run.judge_moves:
                 score = calculate_run_score(
@@ -312,11 +340,17 @@ def calculate_heat_scores(
                 RunScores(
                     judge_scores=judges,
                     run_number=run.run,
-                    mean_run_score=sum([j.score_info.score for j in judges])
+                    mean_run_score=0
+                    if run_status and run_status.did_not_start
+                    else sum([j.score_info.score for j in judges])
                     / max([athlete.number_of_judges, len(judges)]),
-                    highest_scoring_move=max(
-                        [j.score_info.highest_scoring_move for j in judges]
+                    highest_scoring_move=0
+                    if run_status and run_status.did_not_start
+                    else max(
+                        [j.score_info.highest_scoring_move for j in judges], default=0
                     ),
+                    did_not_start=run_status.did_not_start if run_status else False,
+                    locked=run_status.locked if run_status else False,
                 )
             )
         run_scores: list[float] = [r.mean_run_score for r in runs]
@@ -339,6 +373,16 @@ class RankInfo(BaseModel):
     reason: Optional[str]
 
 
+def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:
+    dns_list = [a.did_not_start for a in athlete_info.run_scores]
+
+    if len(dns_list) == 0:
+        return True
+    if all(dns_list):
+        return False
+    return True
+
+
 def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
     sorted_athletes_scores = sorted(
         athlete_scores, key=lambda x: (x.total_score or 0), reverse=True
@@ -349,13 +393,14 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
         athletes_with_same_score = [
             item for item in sorted_athletes_scores if item.total_score == s.total_score
         ]
-        if len(athletes_with_same_score) == 1:
-            rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
-            s.ranking = rank
-        else:
-            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
-            s.ranking = rank + rank_info.ranking + 1
-            s.reason = f"TieBreak: {rank_info.reason}"
+        if check_athlete_started_at_least_one_ride(s):
+            if len(athletes_with_same_score) == 1:
+                rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
+                s.ranking = rank
+            else:
+                rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+                s.ranking = rank + rank_info.ranking + 1
+                s.reason = f"TieBreak: {rank_info.reason}"
 
     return sorted_athletes_scores
 
