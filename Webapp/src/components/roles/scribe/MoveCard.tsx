@@ -74,6 +74,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								variant="contained"
 								aria-label={"button1"}
 								fullWidth
+								disabled={props.isRunLocked}
 								color="primary"
 								onClick={() =>
 									addScoredMove(props.move.id, "L")
@@ -88,6 +89,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								variant="contained"
 								fullWidth
 								aria-label={"button2"}
+								disabled={props.isRunLocked}
 								color="secondary"
 								onClick={() =>
 									addScoredMove(props.move.id, "R")
@@ -112,6 +114,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								variant="contained"
 								fullWidth
 								aria-label={"button1"}
+								disabled={props.isRunLocked}
 								color="primary"
 								onClick={() =>
 									addScoredMove(props.move.id, "F")
@@ -126,6 +129,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								variant="contained"
 								fullWidth
 								aria-label={"button2"}
+								disabled={props.isRunLocked}
 								color="secondary"
 								onClick={() =>
 									addScoredMove(props.move.id, "B")
@@ -150,6 +154,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								variant="contained"
 								fullWidth
 								aria-label={"button1"}
+								disabled={props.isRunLocked}
 								color="primary"
 								onClick={() =>
 									addScoredMove(props.move.id, "S")

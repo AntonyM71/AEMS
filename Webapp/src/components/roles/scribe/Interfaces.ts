@@ -48,4 +48,5 @@ export type addScoredBonusType = (id: string, moveId: string) => void
 
 export interface MovePropsType {
 	move: movesType
+	isRunLocked?: boolean
 }

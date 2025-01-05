@@ -20,13 +20,6 @@ import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
 import { RunSelector } from "./InfoBar/Runselector"
 import ScoredMove, { AvailableBonusType } from "./InfoBar/ScoredMove"
 import { movesType, scoredMovesType } from "./Interfaces"
-
-interface PropsType {
-	paddlerInfo: AthleteInfo
-	availableMoves: movesType[]
-	isFetchingScoredMoves: boolean
-}
-
 export interface AthleteInfo {
 	id: string
 	first_name: string
@@ -34,10 +27,18 @@ export interface AthleteInfo {
 	bib: string
 	scoresheet: string
 }
+interface PropsType {
+	paddlerInfo: AthleteInfo
+	availableMoves: movesType[]
+	isFetchingScoredMoves: boolean
+	isRunLocked?: boolean
+}
+
 export const InfoBar = ({
 	paddlerInfo,
 	availableMoves,
-	isFetchingScoredMoves
+	isFetchingScoredMoves,
+	isRunLocked
 }: PropsType) => {
 	const [open, setOpen] = React.useState(false)
 
@@ -105,7 +106,10 @@ export const InfoBar = ({
 					<Skeleton sx={{ width: "100%", height: "100%" }} />
 				) : (
 					<Grid item xs={12}>
-						<ScoredMoveList scoredMoves={scoredMoves} />
+						<ScoredMoveList
+							scoredMoves={scoredMoves}
+							isRunLocked={isRunLocked}
+						/>
 					</Grid>
 				)}
 			</Grid>
@@ -132,9 +136,11 @@ export const CurrentScore = ({
 )
 
 export const ScoredMoveList = ({
-	scoredMoves
+	scoredMoves,
+	isRunLocked
 }: {
 	scoredMoves: scoredMovesType[]
+	isRunLocked?: boolean
 }) => {
 	const scoredBonuses = useSelector(getScoredBonuses)
 
@@ -160,6 +166,7 @@ export const ScoredMoveList = ({
 							scoredMove={scoredMove}
 							scoredMovesList={scoredMoves}
 							scoredBonuses={scoredBonuses}
+							chipActionsDisabled={isRunLocked}
 						/>
 					</Grid>
 				))}
