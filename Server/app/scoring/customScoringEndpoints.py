@@ -153,13 +153,18 @@ async def update_athlete_score(
 ) -> None:
     try:
         with db.begin():
-            run_is_locked = check_run_is_locked(db=db,     heat_id=heat_id,
-                                                athlete_id=athlete_id,
-                                                run_number=run_number, phase_id=phase_id)
+            run_is_locked = check_run_is_locked(
+                db=db,
+                heat_id=heat_id,
+                athlete_id=athlete_id,
+                run_number=run_number,
+                phase_id=phase_id,
+            )
             if run_is_locked:
                 msg = "Score Update not processed as the run is locked"
-                raise UpdatingLockedRunError(
-                    msg)
+                raise UpdatingLockedRunError(  # noqa: TRY301
+                    msg
+                )
             scored_moves = (
                 db.query(ScoredMoves.id)
                 .filter(ScoredMoves.heat_id == heat_id)
@@ -201,6 +206,34 @@ async def update_athlete_score(
             )
 
             db.commit()
+            websocket_message = ScoredMovesAndBonusesResponseWithMetaData(
+                movesAndBonuses=ScoredMovesAndBonusesResponse(
+                    moves=[
+                        PydanticScoredMovesResponse(
+                            **move.dict(),
+                            judge_id=judge_id,
+                            heat_id=heat_id,
+                            phase_id=phase_id,
+                            athlete_id=athlete_id,
+                            run_number=run_number,
+                        )
+                        for move in scored_moves_list.moves
+                    ],
+                    bonuses=[
+                        PydanticScoredBonusesResponse(
+                            **bonus.dict(),
+                            judge_id=judge_id,
+                        )
+                        for bonus in scored_moves_list.bonuses
+                    ],
+                ),
+                heat_id=heat_id,
+                athlete_id=athlete_id,
+                run_number=run_number,
+                judge_id=judge_id,
+                phase_id=phase_id,
+            )
+            await broadcast(websocket_message.json(), current_scores_active_connections)
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -214,6 +247,15 @@ class ScoredMovesAndBonusesResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ScoredMovesAndBonusesResponseWithMetaData(BaseModel):
+    movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
+    heat_id: str
+    athlete_id: str
+    run_number: int
+    judge_id: int
+    phase_id: str
 
 
 @scoring_router.get(
@@ -480,18 +522,36 @@ class RunStatusSchema(BaseModel):
         orm_mode = True
 
 
-active_connections = []
+runstatus_active_connections = []
 
 
-async def broadcast(message: str):
+current_scores_active_connections = []
+
+
+async def broadcast(message: str, active_connections: list[WebSocket]) -> None:
     for connection in active_connections:
         await connection.send_text(message)
 
 
-@scoring_router.websocket("/api/runstatus")
-async def websocket_endpoint(websocket: WebSocket):
+@scoring_router.websocket("/api/current_scores")
+async def current_score_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
-    active_connections.append(websocket)
+    current_scores_active_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+
+    except WebSocketDisconnect as e:
+        if e.code != 1001:  # 1001 is a "happy" disconnect
+            logging.exception("Error with Current Score Websocket")
+
+        current_scores_active_connections.remove(websocket)
+
+
+@scoring_router.websocket("/api/runstatus")
+async def runstatus_websocket(websocket: WebSocket) -> None:
+    await websocket.accept()
+    runstatus_active_connections.append(websocket)
     try:
         while True:
             data = await websocket.receive_text()
@@ -528,15 +588,16 @@ async def websocket_endpoint(websocket: WebSocket):
                     db.add(new_run_status)
                     db.commit()
                     db.refresh(new_run_status)
-            await broadcast(run_status.json())
-    except WebSocketDisconnect:
-        active_connections.remove(websocket)
+            await broadcast(run_status.json(), runstatus_active_connections)
+    except WebSocketDisconnect as e:
+        if e.code != 1001:  # 1001 is a "happy" disconnect
+            logging.exception("Error with Run Status Websocket")
+        runstatus_active_connections.remove(websocket)
 
 
-def check_run_is_locked(db: Session,     heat_id: str,
-                        athlete_id: str,
-                        run_number: str,
-                        phase_id: str) -> bool:
+def check_run_is_locked(
+    db: Session, heat_id: str, athlete_id: str, run_number: str, phase_id: str
+) -> bool:
     existing_run_status = (
         db.query(RunStatus)
         .filter(

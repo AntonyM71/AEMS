@@ -15,6 +15,7 @@ import {
 	getSelectedRun
 } from "../../../redux/atoms/scoring"
 import {
+	ScoredMovesAndBonusesResponse,
 	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
@@ -138,12 +139,19 @@ export default () => {
 
 	// const selectedPhaseData = phaseData?.filter(p => p.athlete_id)
 
+	if (!selectedHeat) {
+		return (
+			<SelectorDisplay
+				showCompetition={true}
+				showEvent={false}
+				showPhase={false}
+				showHeat={true}
+			/>
+		)
+	}
 	if (selectedAthlete && !isPhaseDataLoading) {
 		// eslint-disable-next-line complexity
-		const updateRunStatus = async (
-			locked?: boolean,
-			did_not_start?: boolean
-		) => {
+		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
 			if (!socketRef.current) {
 				toast.error(
 					"Websocket Connection not ready, please try again in a few seconds"
@@ -163,7 +171,6 @@ export default () => {
 					})
 				)
 			} else {
-				console.log("New thing!")
 				socketRef.current!.send(
 					JSON.stringify({
 						id: v4(),
@@ -323,34 +330,78 @@ const JudgeCard = ({
 		},
 		{ skip: !selectedAthlete?.scoresheet }
 	)
+	const [moveAndBonusData, setMoveAndBonusData] = useState<
+		ScoredMovesAndBonusesResponse | undefined
+	>(undefined)
 	const {
-		data: moveAndBonusdata,
+		data: moveAndBonusHttpData,
 
-		isUninitialized
-	} =
-		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
-			{
-				runNumber: selectedRun.toString(),
-				athleteId: selectedAthlete?.id ?? "",
-				judgeId: judgeNumber.toString(),
-				heatId: selectedHeat
-			},
-			{
-				skip: !selectedAthlete?.id,
-				pollingInterval: 1000
+		isUninitialized,
+		refetch
+	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
+		{
+			runNumber: selectedRun.toString(),
+			athleteId: selectedAthlete?.id ?? "",
+			judgeId: judgeNumber.toString(),
+			heatId: selectedHeat
+		},
+		{
+			skip: !selectedAthlete?.id
+		}
+	)
+	const socketRef = useRef<WebSocket | null>(null)
+	const connectWebSocket = () => {
+		socketRef.current = connectCurrentScoreStatusSocket()
+	}
+	useEffect(() => {
+		if (!isUninitialized) {
+			void refetch()
+		}
+	}, [judgeNumber, selectedRun, selectedHeat])
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+	if (socketRef.current) {
+		socketRef.current.onmessage = (event) => {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			const jsonData = JSON.parse(
+				event.data as string
+			) as ScoredMovesAndBonusesWithMetadata
+
+			if (
+				jsonData?.run_number === selectedRun &&
+				jsonData?.athlete_id === selectedAthlete?.id &&
+				jsonData?.heat_id === selectedHeat &&
+				jsonData?.judge_id === judgeNumber
+			) {
+				setMoveAndBonusData(jsonData.movesAndBonuses)
 			}
-		)
-
-	const scoredMoves = moveAndBonusdata?.moves
-		? moveAndBonusdata.moves.map((m) => ({
+		}
+		socketRef.current.onclose = () => {
+			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
+		}
+		socketRef.current.onerror = (error) => {
+			console.error("WebSocket error:", error)
+			if (socketRef?.current) {
+				socketRef.current.close() // Trigger onclose event for reconnection
+			}
+		}
+	}
+	useEffect(() => {
+		if (!isUninitialized) {
+			setMoveAndBonusData(moveAndBonusHttpData)
+		}
+	}, [moveAndBonusHttpData])
+	const scoredMoves = moveAndBonusData?.moves
+		? moveAndBonusData.moves.map((m) => ({
 				moveId: m.move_id,
 				id: m.id,
 				direction: m.direction as directionType
 		  }))
 		: []
 
-	const scoredBonuses = moveAndBonusdata?.bonuses
-		? moveAndBonusdata.bonuses.map((b) => ({
+	const scoredBonuses = moveAndBonusData?.bonuses
+		? moveAndBonusData.bonuses.map((b) => ({
 				id: b.id,
 
 				moveId: b.move_id,
@@ -400,11 +451,27 @@ const JudgeCard = ({
 	return <Skeleton />
 }
 
+export interface ScoredMovesAndBonusesWithMetadata {
+	movesAndBonuses: ScoredMovesAndBonusesResponse
+	heat_id: string
+	athlete_id: string
+	run_number: number
+	judge_id: number
+	phase_id: string
+}
+
 export const connectWebRunStatusSocket = (): WebSocket =>
 	new WebSocket(
 		`ws://localhost:${
 			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
 		}/api/runstatus`
+	)
+
+export const connectCurrentScoreStatusSocket = (): WebSocket =>
+	new WebSocket(
+		`ws://localhost:${
+			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
+		}/api/current_scores`
 	)
 const style = {
 	position: "absolute" as const,

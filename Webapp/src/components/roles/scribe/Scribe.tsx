@@ -75,11 +75,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			skip: !selectedHeat || !selectedAthlete?.id
 		}
 	)
-	useEffect(() => {
-		if (!httpRunStatus?.isUninitialized) {
-			void httpRunStatus.refetch()
-		}
-	}, [selectedHeat, selectedRun, currentPaddlerIndex])
+
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectWebRunStatusSocket()
@@ -173,7 +169,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	}
 	useEffect(() => {
-		if (!isMoveAndBonusFetching && !athletes.isFetching) {
+		if (
+			!isMoveAndBonusFetching &&
+			!athletes.isFetching &&
+			!httpRunStatus.isFetching &&
+			!runStatus?.locked
+		) {
 			submitScores()
 		}
 	}, [scoredMoves, scoredBonuses])
@@ -222,6 +223,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	}, [moveAndBonusdata])
 	useEffect(() => {
 		void getserverScores()
+		if (!httpRunStatus?.isUninitialized) {
+			void httpRunStatus.refetch()
+		}
 	}, [
 		scribeNumber,
 		selectedHeat,

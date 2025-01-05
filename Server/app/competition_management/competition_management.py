@@ -47,7 +47,7 @@ def upload(
     number_of_runs: int = Form(...),
     number_of_runs_for_score: int = Form(...),
     number_of_judges: int = Form(...),
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),  # noqa: B008
 ) -> Response:
     if file.filename.endswith(".xlsx"):
         sheets_dict = pd.read_excel(BytesIO(file.file.read()), sheet_name=None)
