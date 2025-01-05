@@ -1,6 +1,8 @@
+import RefreshIcon from "@mui/icons-material/Refresh"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
+import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -23,7 +25,6 @@ import {
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-
 export const CompetitionSelector = ({
 	showDetailed = false
 }: {
@@ -32,7 +33,8 @@ export const CompetitionSelector = ({
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
-	const { data, isLoading, isSuccess } = useGetManyCompetitionGetQuery({})
+	const { data, isLoading, isSuccess, refetch } =
+		useGetManyCompetitionGetQuery({})
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
 	const setSelectedCompetition = (newComp: string) =>
@@ -78,6 +80,11 @@ export const CompetitionSelector = ({
 								variant="outlined"
 								fullWidth={true}
 								label="Competition"
+								startAdornment={
+									<IconButton onClick={() => void refetch()}>
+										<RefreshIcon />
+									</IconButton>
+								}
 							>
 								{data.map((competition) => {
 									if (competition.id) {
