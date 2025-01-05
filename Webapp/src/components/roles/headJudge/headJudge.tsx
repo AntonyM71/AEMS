@@ -288,6 +288,8 @@ export default () => {
 			</>
 		)
 	}
+
+	return <Skeleton />
 }
 
 export interface RunStatus {
