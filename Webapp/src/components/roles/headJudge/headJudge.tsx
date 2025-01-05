@@ -402,7 +402,7 @@ export const connectWebRunStatusSocket = (): WebSocket =>
 	new WebSocket(
 		`ws://localhost:${
 			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
-		}/runstatus`
+		}/api/runstatus`
 	)
 const style = {
 	position: "absolute" as const,

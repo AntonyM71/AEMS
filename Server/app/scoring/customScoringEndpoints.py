@@ -488,7 +488,7 @@ async def broadcast(message: str):
         await connection.send_text(message)
 
 
-@scoring_router.websocket("/runstatus")
+@scoring_router.websocket("/api/runstatus")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     active_connections.append(websocket)
