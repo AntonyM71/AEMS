@@ -122,7 +122,7 @@ export const HeatAthleteScoreTable = ({
 							judgeId: js.judge_id
 						})) ?? []
 				}
-				console.log(detailScores.didNotStart)
+
 				runScores[r.field] = detailScores
 			})
 

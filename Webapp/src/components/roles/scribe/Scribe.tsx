@@ -173,7 +173,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	}
 	useEffect(() => {
-		if (!isMoveAndBonusFetching && !athletes.isFetching) {
+		if (
+			!isMoveAndBonusFetching &&
+			!athletes.isFetching &&
+			!httpRunStatus.isFetching &&
+			!runStatus?.locked
+		) {
 			submitScores()
 		}
 	}, [scoredMoves, scoredBonuses])
