@@ -29,12 +29,6 @@ services:
     depends_on:
       - server
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
 
   nginx:
     image: nginx:latest
