@@ -50,7 +50,7 @@ dependencies = [
     "pytest",
     "uvicorn[standard]",
     "python-multipart",
-    "pydantic<=1.8.2",
+    "pydantic<=1.10.20",
     "SQLAlchemy<=1.4.30",
     "starlette==0.14.2",
     "fpdf2",
