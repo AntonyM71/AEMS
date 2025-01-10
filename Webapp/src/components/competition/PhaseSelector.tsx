@@ -1,6 +1,5 @@
 import EditNoteIcon from "@mui/icons-material/EditNote"
 
-import RefreshIcon from "@mui/icons-material/Refresh"
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
@@ -20,6 +19,7 @@ import { Fragment, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 
+import Stack from "@mui/material/Stack"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
@@ -35,6 +35,7 @@ import {
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { RefreshButton } from "./RefreshIconButton"
 
 const PhasesSelector = ({
 	showDetailed = false
@@ -73,14 +74,16 @@ const PhasesSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Grid container spacing="2">
-					<Grid item xs={12}>
-						<h4>No phases in event</h4>
-					</Grid>
-					<Grid container spacing="2">
+
+										<Stack direction="row"  sx={{
+    alignItems: "center",
+				}}>
+					<RefreshButton refetch={refetch} />
+							<h4>No phases in event</h4>
+							</Stack>
+
 						<AddPhase refetch={refetch} />
-					</Grid>
-				</Grid>
+
 			</Paper>
 		)
 	} else if (data) {
@@ -109,9 +112,8 @@ const PhasesSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
-									<IconButton onClick={() => void refetch()}>
-										<RefreshIcon />
-									</IconButton>
+					<RefreshButton refetch={refetch} />
+
 								}
 								endAdornment={
 									showDetailed && selectedPhase ? (
