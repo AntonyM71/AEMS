@@ -209,8 +209,7 @@ export const DetailScoreView =
 							textDecoration: showIndividualJudgeScores
 								? "underline"
 								: "",
-							fontStyle: params.value?.locked ? "bold" : "italic",
-							fontWeight: params.value?.locked ? 700 : 500
+							...makeLockedScoreStyle(params.value?.locked)
 						}}
 					>
 						{params.value?.didNotStart
@@ -220,3 +219,8 @@ export const DetailScoreView =
 				</Grid>
 			</Grid>
 		)
+
+export const makeLockedScoreStyle = (locked = false) => ({
+	fontStyle: locked ? "bold" : "italic",
+	fontWeight: locked ? 700 : 500
+})
