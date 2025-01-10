@@ -6,6 +6,12 @@ services:
 
     environment:
       - CONNECTION_STRING=postgresql+psycopg2://postgres:postgres@db:5432/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     ports:
       - "0.0.0.0:8000:8000"
     restart: always
@@ -13,9 +19,8 @@ services:
     command: bash -c "alembic upgrade head && python -m scripts.seed_scoresheets && uvicorn main:app --host 0.0.0.0 --port 8000"
 
     depends_on:
-      - db
-    #     condition: service_healthy
-    # network_mode: service:db
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./Webapp
@@ -34,15 +39,20 @@ services:
     depends_on:
       - frontend
       - server
-
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   db:
     image: postgres:latest
     restart: always
-    # healthcheck:
-    #   test: ["CMD-SHELL", "pg_isready"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     volumes:
       - ~/postgres-prod-data:/var/lib/postgresql/data
     environment:

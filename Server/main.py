@@ -7,10 +7,12 @@ import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
 from asgi_correlation_id.context import correlation_id
 from ddtrace.contrib.asgi.middleware import TraceMiddleware
-from fastapi import FastAPI, Request, Response
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import parse_obj_as
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from app.autogenEndpoints import (
     crud_route_athlete,
@@ -33,12 +35,14 @@ from app.competition_management.pdfEndpoints import pdf_router
 from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
+from db.client import get_transaction_session
 
 frontend_url = f"http://localhost:{os.getenv('PORT', default= 3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(
+    bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
@@ -102,7 +106,8 @@ async def logging_middleware(
         response = await call_next(request)
     except Exception:
         # TODO: Validate that we don't swallow exceptions (unit test?)
-        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger(
+            "api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time
@@ -140,7 +145,8 @@ tracing_middleware = next(
     (m for m in app.user_middleware if m.cls == TraceMiddleware), None
 )
 if tracing_middleware is not None:
-    app.user_middleware = [m for m in app.user_middleware if m.cls != TraceMiddleware]
+    app.user_middleware = [
+        m for m in app.user_middleware if m.cls != TraceMiddleware]
     structlog.stdlib.get_logger("api.datadog_patch").info(
         "Patching Datadog tracing middleware to be the outermost middleware..."
     )
@@ -151,6 +157,17 @@ if tracing_middleware is not None:
 @app.get("/")
 async def root() -> dict[str, str]:
     return {"message": "Go to /docs to see the swagger documentation"}
+
+
+@app.get("/health")
+async def health_check(db: Session = Depends(get_transaction_session)):
+    try:
+        # Execute a simple query to check the database connection
+        result = db.execute("SELECT 1")
+        if result.scalar() == 1:
+            return {"status": "healthy"}
+    except SQLAlchemyError:
+        return {"status": "unhealthy"}
 
 
 app.add_middleware(
