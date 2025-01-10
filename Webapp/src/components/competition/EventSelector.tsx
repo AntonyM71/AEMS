@@ -1,15 +1,14 @@
-import RefreshIcon from "@mui/icons-material/Refresh"
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
-import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
+import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import { Fragment, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -27,6 +26,7 @@ import {
 	useInsertManyEventPostMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { RefreshButton } from "./RefreshIconButton"
 
 const EventSelector = ({
 	showDetailed = false
@@ -66,14 +66,16 @@ const EventSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Grid container spacing="2">
-					<Grid item xs={12}>
-						<h4>No Events in competition</h4>
-					</Grid>
-					<Grid container spacing="2">
+
+										<Stack direction="row"  sx={{
+    alignItems: "center",
+				}}>
+					<RefreshButton refetch={refetch} />
+							<h4>No Events in competition</h4>
+							</Stack>
+
 						<AddEvent refetch={refetch} />
-					</Grid>
-				</Grid>
+
 			</Paper>
 		)
 	} else if (data) {
@@ -95,9 +97,7 @@ const EventSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
-									<IconButton onClick={() => void refetch()}>
-										<RefreshIcon />
-									</IconButton>
+<RefreshButton refetch={refetch} />
 								}
 							>
 								{data.map((event) => (
