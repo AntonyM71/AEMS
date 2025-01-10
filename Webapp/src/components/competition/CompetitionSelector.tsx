@@ -1,13 +1,12 @@
-import RefreshIcon from "@mui/icons-material/Refresh"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid"
-import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
+import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
@@ -25,6 +24,7 @@ import {
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { RefreshButton } from "./RefreshIconButton"
 export const CompetitionSelector = ({
 	showDetailed = false
 }: {
@@ -56,7 +56,13 @@ export const CompetitionSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<h4>No Competitions</h4>
+				<Stack direction="row"  sx={{
+    alignItems: "center",
+				}}>
+					<RefreshButton refetch={refetch} />
+					<h4>No Competitions</h4>
+
+					</Stack>
 				<AddCompetition />
 			</Paper>
 		)
@@ -67,6 +73,7 @@ export const CompetitionSelector = ({
 					{showDetailed ? (
 						<Grid item xs={12}>
 							<h4>Select a Competition</h4>
+
 						</Grid>
 					) : (
 						<></>
@@ -81,9 +88,7 @@ export const CompetitionSelector = ({
 								fullWidth={true}
 								label="Competition"
 								startAdornment={
-									<IconButton onClick={() => void refetch()}>
-										<RefreshIcon />
-									</IconButton>
+<RefreshButton refetch={refetch} />
 								}
 							>
 								{data.map((competition) => {
