@@ -84,7 +84,7 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
     root_logger.setLevel(log_level.upper())
     if json_logs:
         rotating_file_handler = RotatingFileHandler(
-            "server.log",
+            "../logs/server.log",
             maxBytes=100000,
         )
         rotating_file_handler.setFormatter(json_formatter)
