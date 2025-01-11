@@ -74,16 +74,17 @@ const PhasesSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-
-										<Stack direction="row"  sx={{
-    alignItems: "center",
-				}}>
+				<Stack
+					direction="row"
+					sx={{
+						alignItems: "center"
+					}}
+				>
 					<RefreshButton refetch={refetch} />
-							<h4>No phases in event</h4>
-							</Stack>
+					<h4>No phases in event</h4>
+				</Stack>
 
-						<AddPhase refetch={refetch} />
-
+				<AddPhase refetch={refetch} />
 			</Paper>
 		)
 	} else if (data) {
@@ -112,8 +113,7 @@ const PhasesSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
-					<RefreshButton refetch={refetch} />
-
+									<RefreshButton refetch={refetch} />
 								}
 								endAdornment={
 									showDetailed && selectedPhase ? (

@@ -4,7 +4,6 @@ from logging.handlers import RotatingFileHandler
 from types import TracebackType
 
 import structlog
-
 from structlog.types import EventDict, Processor
 
 
@@ -15,8 +14,6 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # noqa: 
     """
     event_dict.pop("color_message", None)
     return event_dict
-
-
 
 
 def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
@@ -34,13 +31,11 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
     ]
 
     if json_logs:
-
         shared_processors.append(structlog.processors.format_exc_info)
 
     structlog.configure(
         processors=[
             *shared_processors,
-
             # Prepare event dict for `ProcessorFormatter`.
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],

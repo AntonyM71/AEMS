@@ -63,16 +63,17 @@ const HeatsSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-
-										<Stack direction="row"  sx={{
-    alignItems: "center",
-				}}>
+				<Stack
+					direction="row"
+					sx={{
+						alignItems: "center"
+					}}
+				>
 					<RefreshButton refetch={refetch} />
-							<h4>No Heats in Competition</h4>
-							</Stack>
+					<h4>No Heats in Competition</h4>
+				</Stack>
 
-						<AddHeat refetch={refetch} />
-
+				<AddHeat refetch={refetch} />
 			</Paper>
 		)
 	} else if (data) {
