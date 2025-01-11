@@ -17,7 +17,7 @@ alembic upgrade head
 ###Â Create a new Database Revision with:
 
 ```
-alembic revision --autogenerate
+alembic revision --autogenerate -m "Some Descriptive Name"
 ```
 
 ## Seed default scoresheets
