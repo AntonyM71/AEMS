@@ -43,6 +43,7 @@ dependencies = [
     "sqlalchemy",
     "alembic",
     "psycopg2",
+    "gunicorn",
     "orjson",
     "asyncpg",
     "fastapi",
@@ -66,7 +67,6 @@ dependencies = [
     "structlog",
     "rich",
     "asgi-correlation-id",
-    "ddtrace",
     "openpyxl",
 
 

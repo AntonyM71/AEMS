@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir --upgrade .
 
 WORKDIR /code/
 #
-CMD ["ddtrace-run","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "-c", "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 8 -k uvicorn.workers.UvicornWorker --timeout 120 main:app -b 0.0.0.0:8000"]
