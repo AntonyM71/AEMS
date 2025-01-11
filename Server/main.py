@@ -1,12 +1,12 @@
 import os
 import time
 from collections.abc import Awaitable, Callable
-
+from starlette.middleware.base import BaseHTTPMiddleware
 import structlog
 import uvicorn
 from asgi_correlation_id import CorrelationIdMiddleware
 from asgi_correlation_id.context import correlation_id
-from ddtrace.contrib.asgi.middleware import TraceMiddleware
+import uuid
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -95,7 +95,7 @@ async def logging_middleware(
 ) -> Response:
     structlog.contextvars.clear_contextvars()
     # These context vars will be added to all log entries emitted during the request
-    request_id = correlation_id.get()
+    request_id = str(uuid.uuid4())
     structlog.contextvars.bind_contextvars(request_id=request_id)
 
     start_time = time.perf_counter_ns()
@@ -125,33 +125,13 @@ async def logging_middleware(
                 "url": str(request.url),
                 "status_code": status_code,
                 "method": http_method,
-                "request_id": request_id,
                 "version": http_version,
+                "duration":process_time,
             },
             network={"client": {"ip": client_host, "port": client_port}},
-            duration=process_time,
         )
         response.headers["X-Process-Time"] = str(process_time / 10**9)
         return response  # noqa: B012
-
-
-# This middleware must be placed after the logging, to populate the context with the request ID
-# NOTE: Why last??
-# Answer: middlewares are applied in the reverse order of when they are added (you can verify this
-# by debugging `app.middleware_stack` and recursively drilling down the `app` property).
-app.add_middleware(CorrelationIdMiddleware)
-
-tracing_middleware = next(
-    (m for m in app.user_middleware if m.cls == TraceMiddleware), None
-)
-if tracing_middleware is not None:
-    app.user_middleware = [
-        m for m in app.user_middleware if m.cls != TraceMiddleware]
-    structlog.stdlib.get_logger("api.datadog_patch").info(
-        "Patching Datadog tracing middleware to be the outermost middleware..."
-    )
-    app.user_middleware.insert(0, tracing_middleware)
-    app.middleware_stack = app.build_middleware_stack()
 
 
 @app.get("/")
