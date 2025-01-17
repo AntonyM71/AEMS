@@ -272,16 +272,24 @@ export default () => {
 						<Button
 							variant="contained"
 							fullWidth
-							sx={{ height: "100%" }}
+							sx={{
+								height: "100%"
+							}}
 							color={
 								runStatus?.did_not_start ? "error" : "primary"
 							}
-							onClick={() =>
-								void updateRunStatus(
-									runStatus?.locked ?? false,
-									!runStatus?.did_not_start
-								)
-							}
+							onClick={() => {
+								if (runStatus?.locked) {
+									toast.error(
+										"Please unlock run before setting DNS"
+									)
+								} else {
+									void updateRunStatus(
+										runStatus?.locked ?? false,
+										!runStatus?.did_not_start
+									)
+								}
+							}}
 						>
 							{runStatus?.did_not_start ? "Unset DNS" : "SET DNS"}
 						</Button>
