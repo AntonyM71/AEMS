@@ -254,6 +254,9 @@ export default () => {
 								variant="contained"
 								fullWidth
 								sx={{ height: "100%" }}
+								color={
+									runStatus?.locked ? "success" : "primary"
+								}
 								onClick={() =>
 									void updateRunStatus(
 										!runStatus?.locked,
@@ -270,6 +273,9 @@ export default () => {
 							variant="contained"
 							fullWidth
 							sx={{ height: "100%" }}
+							color={
+								runStatus?.did_not_start ? "error" : "primary"
+							}
 							onClick={() =>
 								void updateRunStatus(
 									runStatus?.locked ?? false,
