@@ -305,8 +305,7 @@ class TestValidateColumnsAndDataTypes:
     def test_it_passes_when_mandatory_columns_are_there(
         self, test_df: pd.DataFrame
     ) -> None:
-        validate_columns_and_data_types(
-            competition_df=test_df, random_heats=False)
+        validate_columns_and_data_types(competition_df=test_df, random_heats=False)
 
     @pytest.mark.parametrize("column", MANDATORY_COLUMNS)
     def test_it_raises_an_error_when_mandatory_columns_not_there(
@@ -315,15 +314,14 @@ class TestValidateColumnsAndDataTypes:
         modified_test_df = test_df.drop([column], axis=1)
         with pytest.raises(MissingColumnError) as excinfo:
             validate_columns_and_data_types(
-                competition_df=modified_test_df, random_heats=False)
-        assert str(
-            excinfo.value) == f"Column '{column}' is missing from the file"
+                competition_df=modified_test_df, random_heats=False
+            )
+        assert str(excinfo.value) == f"Column '{column}' is missing from the file"
 
     def test_it_passes_when_columns_are_there_and_dtypes_are_correct(
         self, test_df: pd.DataFrame
     ) -> None:
-        validate_columns_and_data_types(
-            competition_df=test_df, random_heats=False)
+        validate_columns_and_data_types(competition_df=test_df, random_heats=False)
 
 
 @pytest.mark.parametrize(

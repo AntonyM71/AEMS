@@ -1,4 +1,5 @@
 import UploadIcon from "@mui/icons-material/Upload"
+import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Checkbox from "@mui/material/Checkbox"
 import Divider from "@mui/material/Divider"
@@ -72,6 +73,14 @@ const CSVFormatTable = () => {
 							<TableCell>{row.format}</TableCell>
 						</TableRow>
 					))}
+					<TableRow>
+						<TableCell colSpan={2}>
+							<Alert severity="info">
+								The "Heats" column is optional if "Random Heat
+								Allocation" is selected in the form below.
+							</Alert>
+						</TableCell>
+					</TableRow>
 				</TableBody>
 			</Table>
 		</TableContainer>
@@ -130,7 +139,7 @@ const UploadForm = () => {
 			)
 			formData.append("number_of_judges", numberOfJudges.toString())
 			formData.append("file", file)
-			formData.append("random_heats", randomHeats)
+			formData.append("random_heats", randomHeats.toString())
 
 			axios
 				.post(
@@ -156,31 +165,36 @@ const UploadForm = () => {
 
 	// render a simple input element with an onChange event listener that calls the handleFileUpload function
 	return (
-		<Grid container spacing={2}>
+		<Grid container spacing={2} sx={{ width: "50%" }}>
 			{" "}
 			<Grid item xs={12}>
-				<TextField
-					label="Upload CSV or XLSX file"
-					required
-					error={!file || !fileName}
-					value={fileName}
-					InputProps={{
-						readOnly: true,
-						endAdornment: (
-							<IconButton
-								aria-label="upload"
-								component="label" // THIS IS THE GENIUS CHANGE
-							>
-								<UploadIcon />
-								<input
-									hidden
-									type="file"
-									onChange={handleFileUpload}
-								/>
-							</IconButton>
-						)
-					}}
-				/>
+				<Stack direction="row" spacing={2}>
+					<TextField
+						label="Upload CSV or XLSX file"
+						required
+						error={!file || !fileName}
+						value={fileName}
+						InputProps={{
+							readOnly: true,
+							endAdornment: (
+								<IconButton
+									aria-label="upload"
+									component="label" // THIS IS THE GENIUS CHANGE
+								>
+									<UploadIcon />
+									<input
+										hidden
+										type="file"
+										onChange={handleFileUpload}
+									/>
+								</IconButton>
+							)
+						}}
+					/>
+					<Alert severity="info">
+						Uploading files may take up to a 120 seconds.
+					</Alert>
+				</Stack>
 			</Grid>
 			<Grid item xs={12}>
 				<TextField

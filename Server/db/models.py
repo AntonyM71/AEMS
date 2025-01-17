@@ -1,7 +1,7 @@
 import uuid
 
 import sqlalchemy
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -24,12 +24,16 @@ class ToDictMixin:
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
+def generate_uuid() -> str:
+    return str(uuid.uuid4())
+
+
 class Competition(ToDictMixin, Base):
     __tablename__ = "competition"
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -43,7 +47,7 @@ class Event(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -61,7 +65,7 @@ class Phase(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -82,7 +86,7 @@ class Heat(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -99,7 +103,7 @@ class AthleteHeat(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -117,7 +121,7 @@ class Athlete(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -134,7 +138,7 @@ class ScoreSheet(ToDictMixin, Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -147,7 +151,7 @@ class AvailableMoves(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -165,7 +169,7 @@ class AvailableBonuses(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -185,7 +189,7 @@ class ScoredMoves(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -208,7 +212,7 @@ class ScoredBonuses(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
@@ -227,7 +231,7 @@ class RunStatus(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
         unique=True,
         nullable=False,
     )
