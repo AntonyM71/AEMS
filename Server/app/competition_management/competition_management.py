@@ -47,7 +47,10 @@ def upload(
     number_of_runs: int = Form(...),
     number_of_runs_for_score: int = Form(...),
     number_of_judges: int = Form(...),
+    random_heats: bool = Form(...),
     file: UploadFile = File(...),  # noqa: B008
+
+
 ) -> Response:
     if file.filename.endswith(".xlsx"):
         sheets_dict = pd.read_excel(BytesIO(file.file.read()), sheet_name=None)
@@ -58,7 +61,7 @@ def upload(
     else:
         msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
         raise InvalidFileTypeError(msg)
-    validate_columns_and_data_types(competitors_df)
+    validate_columns_and_data_types(competitors_df, random_heats=False)
     number_of_paddlers_added = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,
@@ -66,6 +69,7 @@ def upload(
         number_of_runs=number_of_runs,
         number_of_runs_for_score=number_of_runs_for_score,
         number_of_judges=number_of_judges,
+        random_heats=random_heats
     )
 
     return JSONResponse(
@@ -98,7 +102,8 @@ async def promote_phase(
         if request_body.number_of_paddlers == 0:
             msg = "Cannot promote a phase for 0 paddlers"
             raise HTTPException(422, msg)
-        phase_scores = calculate_phase_scores(phase_id=request_body.phase_id, db=db)
+        phase_scores = calculate_phase_scores(
+            phase_id=request_body.phase_id, db=db)
 
         top_paddlers = get_top_n_paddlers_for_phase(
             phase_scores=phase_scores,
@@ -120,7 +125,8 @@ async def promote_phase(
         new_phase_id = uuid4()
 
         current_phase_details = (
-            db.query(Phase).filter(Phase.id == request_body.phase_id).one_or_none()
+            db.query(Phase).filter(
+                Phase.id == request_body.phase_id).one_or_none()
         )
 
         db.add(

@@ -1,9 +1,11 @@
 import UploadIcon from "@mui/icons-material/Upload"
 import Button from "@mui/material/Button"
+import Checkbox from "@mui/material/Checkbox"
 import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
+import Stack from "@mui/material/Stack"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -11,6 +13,7 @@ import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
 import axios, { AxiosError } from "axios"
 import { ChangeEventHandler, useState } from "react"
 import toast from "react-hot-toast"
@@ -75,11 +78,13 @@ const CSVFormatTable = () => {
 	)
 }
 
+// eslint-disable-next-line complexity
 const UploadForm = () => {
 	const [fileName, setFileName] = useState<string>("")
 	const [competitionName, setCompetitionName] = useState<string>("")
 	const [scoresheetName, setScoresheetName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [randomHeats, setRandomHeats] = useState<boolean>(false)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(2)
 	const [file, setFile] = useState<Blob>(new Blob())
@@ -125,6 +130,7 @@ const UploadForm = () => {
 			)
 			formData.append("number_of_judges", numberOfJudges.toString())
 			formData.append("file", file)
+			formData.append("random_heats", randomHeats)
 
 			axios
 				.post(
@@ -240,6 +246,15 @@ const UploadForm = () => {
 					}
 					value={numberOfJudges}
 				/>
+			</Grid>
+			<Grid item xs={12}>
+				<Stack direction="row" alignItems="center">
+					<Typography>Randomise Heat Allocation:</Typography>
+					<Checkbox
+						value={randomHeats}
+						onClick={() => setRandomHeats(!randomHeats)}
+					/>
+				</Stack>
 			</Grid>
 			<Grid item xs={12}>
 				<Button

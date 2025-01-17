@@ -93,7 +93,8 @@ def check_scoresheet_exists(scoresheet_name: str, db: Session) -> str:
         scoresheet_id = select_scoresheet_by_name(scoresheets, scoresheet_name)
 
         if scoresheet_id:
-            print(f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
+            print(
+                f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
             return scoresheet_id
         else:
             msg = f"Could not find scoresheet with name: {scoresheet_name}"
@@ -130,7 +131,8 @@ def process_competitors_df(
     scoresheet_name: str = "icf",
     number_of_runs: int = 1,
     number_of_runs_for_score: int = 1,
-    number_of_judges: int = 2,
+    number_of_judges: int = 2, *,
+    random_heats: bool = False
 ) -> int:
     event_count = 0
     phase_count = 0
@@ -145,7 +147,8 @@ def process_competitors_df(
 
         post_competition(competition_data, db=db)
 
-        scoresheet_id = check_scoresheet_exists(scoresheet_name=scoresheet_name, db=db)
+        scoresheet_id = check_scoresheet_exists(
+            scoresheet_name=scoresheet_name, db=db)
 
         unique_events = competitors_df["Event"].unique()
         unique_heats = competitors_df["Heat"].unique()
@@ -186,7 +189,9 @@ def process_competitors_df(
         heat_map = create_heats(
             heat_list=unique_heats, competition_id=competition_id, db=db
         )
-
+        number_of_heats = len(heat_map)
+        if random_heats:
+            competitors_df = competitors_df.sample(frac=1)
         for _index, row in competitors_df.iterrows():
             athlete_id = generate_uuid()
 
@@ -208,8 +213,10 @@ def process_competitors_df(
             if phase_id is None:
                 print(f"Event '{row['Event']}' not found in event_phase_map.")
                 continue
-
-            heat_id = heat_map.get(row["Heat"], None)
+            if random_heats:
+                heat_id = heat_map[i % number_of_heats]
+            else:
+                heat_id = heat_map.get(row["Heat"], None)
 
             if heat_id is None:
                 print(f"Heat '{row['Heat']}' not found in heat_map.")
@@ -231,14 +238,23 @@ def process_competitors_df(
         return paddler_count
 
 
-def validate_columns_and_data_types(competition_df: pd.DataFrame) -> None:
-    mandatory_columns = ["first_name", "last_name", "bib", "Event", "Heat"]
+class NoHeatInfoForNonRandomHeatError(Exception):
+    pass
+
+
+def validate_columns_and_data_types(competition_df: pd.DataFrame, *, random_heats: bool) -> None:
+    mandatory_columns = ["first_name", "last_name", "bib", "Event"]
 
     got_columns = competition_df.columns
     for e in mandatory_columns:
         if e not in got_columns:
             msg = f"Column '{e}' is missing from the file"
             raise MissingColumnError(msg)
+
+    if not random_heats and "Heat" not in got_columns:
+        msg = "No heat information provided, and random heat allocation is disabled"
+        raise (NoHeatInfoForNonRandomHeatError(msg))
+
     expected_dtypes = {
         "first_name": ptypes.is_string_dtype,
         "last_name": ptypes.is_string_dtype,
