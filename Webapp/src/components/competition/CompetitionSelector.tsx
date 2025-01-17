@@ -56,13 +56,15 @@ export const CompetitionSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Stack direction="row"  sx={{
-    alignItems: "center",
-				}}>
+				<Stack
+					direction="row"
+					sx={{
+						alignItems: "center"
+					}}
+				>
 					<RefreshButton refetch={refetch} />
 					<h4>No Competitions</h4>
-
-					</Stack>
+				</Stack>
 				<AddCompetition />
 			</Paper>
 		)
@@ -73,7 +75,6 @@ export const CompetitionSelector = ({
 					{showDetailed ? (
 						<Grid item xs={12}>
 							<h4>Select a Competition</h4>
-
 						</Grid>
 					) : (
 						<></>
@@ -88,7 +89,7 @@ export const CompetitionSelector = ({
 								fullWidth={true}
 								label="Competition"
 								startAdornment={
-<RefreshButton refetch={refetch} />
+									<RefreshButton refetch={refetch} />
 								}
 							>
 								{data.map((competition) => {

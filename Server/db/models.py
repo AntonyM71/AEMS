@@ -1,18 +1,18 @@
 import uuid
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+
 import sqlalchemy
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-
 
 metadata = sqlalchemy.MetaData(
     naming_convention={
         "ix": "sth_ix_%(column_0_label)s",
         "uq": "sth_uq_%(table_name)s_%(column_0_name)s",
         "fk": "sth_fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-        "pk": "sth_pk_%(table_name)s"
-      }
+        "pk": "sth_pk_%(table_name)s",
+    }
 )
 
 
@@ -26,7 +26,13 @@ class ToDictMixin:
 
 class Competition(ToDictMixin, Base):
     __tablename__ = "competition"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = Column(String, nullable=False)
     events = relationship("Event")
     schema = "public"
@@ -34,7 +40,13 @@ class Competition(ToDictMixin, Base):
 
 class Event(Base):
     __tablename__ = "event"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     competition_id = Column(
         UUID(as_uuid=True), ForeignKey("competition.id"), nullable=False
     )
@@ -46,7 +58,13 @@ class Event(Base):
 
 class Phase(Base):
     __tablename__ = "phase"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
     event = relationship("Event", back_populates="phases")
     name = Column(String, nullable=False)
@@ -61,7 +79,13 @@ class Phase(Base):
 
 class Heat(Base):
     __tablename__ = "heat"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     competition_id = Column(
         UUID(as_uuid=True), ForeignKey("competition.id"), nullable=False
     )
@@ -72,7 +96,13 @@ class Heat(Base):
 
 class AthleteHeat(Base):
     __tablename__ = "athleteheat"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"), nullable=False)
     athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
     phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
@@ -84,7 +114,13 @@ class AthleteHeat(Base):
 
 class Athlete(Base):
     __tablename__ = "athlete"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     heats = relationship("AthleteHeat", back_populates="athletes")
 
     first_name = Column(String, nullable=False)
@@ -95,14 +131,26 @@ class Athlete(Base):
 
 class ScoreSheet(ToDictMixin, Base):
     __tablename__ = "scoreSheet"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     name = Column(String, nullable=False)
     schema = "public"
 
 
 class AvailableMoves(Base):
     __tablename__ = "availableMoves"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
 
     name = Column(String, nullable=False)
@@ -114,7 +162,13 @@ class AvailableMoves(Base):
 
 class AvailableBonuses(Base):
     __tablename__ = "availableBonuses"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
     move_id = Column(
         UUID(as_uuid=True), ForeignKey("availableMoves.id"), nullable=False
@@ -128,7 +182,13 @@ class AvailableBonuses(Base):
 
 class ScoredMoves(Base):
     __tablename__ = "scoredMoves"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     move_id = Column(UUID(as_uuid=True), ForeignKey("availableMoves.id"))
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
@@ -145,7 +205,13 @@ class ScoredMoves(Base):
 
 class ScoredBonuses(Base):
     __tablename__ = "scoredBonuses"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     bonus_id = Column(
         UUID(as_uuid=True), ForeignKey("availableBonuses.id"), nullable=False
     )
@@ -158,7 +224,13 @@ class ScoredBonuses(Base):
 
 class RunStatus(Base):
     __tablename__ = "runStatus"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)

@@ -316,7 +316,8 @@ class TestScoring:
                 judge_id="meg",
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
-            ),            PydanticScoredMovesResponse(
+            ),
+            PydanticScoredMovesResponse(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
                 heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
@@ -325,7 +326,7 @@ class TestScoring:
                 judge_id="meg",
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
-            )
+            ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
             PydanticScoredBonusesResponse(

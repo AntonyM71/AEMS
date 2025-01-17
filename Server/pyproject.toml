@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 py-modules = []
 
 [tool.ruff]
-lint.ignore = ["E501", "ANN101", "N999", "UP007"]
+lint.ignore = ["E501", "N999", "UP007"]
 lint.select = [
     "E",
     "F",

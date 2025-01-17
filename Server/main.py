@@ -1,12 +1,10 @@
 import os
 import time
+import uuid
 from collections.abc import Awaitable, Callable
-from starlette.middleware.base import BaseHTTPMiddleware
+
 import structlog
 import uvicorn
-from asgi_correlation_id import CorrelationIdMiddleware
-from asgi_correlation_id.context import correlation_id
-import uuid
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -37,12 +35,11 @@ from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
 from db.client import get_transaction_session
 
-frontend_url = f"http://localhost:{os.getenv('PORT', default= 3000)}"
+frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(
-    bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
@@ -106,8 +103,7 @@ async def logging_middleware(
         response = await call_next(request)
     except Exception:
         # TODO: Validate that we don't swallow exceptions (unit test?)
-        structlog.stdlib.get_logger(
-            "api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time
@@ -126,7 +122,7 @@ async def logging_middleware(
                 "status_code": status_code,
                 "method": http_method,
                 "version": http_version,
-                "duration":process_time,
+                "duration": process_time,
             },
             network={"client": {"ip": client_host, "port": client_port}},
         )
@@ -140,7 +136,7 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/health")
-async def health_check(db: Session = Depends(get_transaction_session)):
+async def health_check(db: Session = Depends(get_transaction_session)) -> dict:
     try:
         # Execute a simple query to check the database connection
         result = db.execute("SELECT 1")

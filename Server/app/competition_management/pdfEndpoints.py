@@ -92,7 +92,7 @@ async def phase_pdf(
             header.cell("Last Name")
             header.cell("Bib")
             for i in range(phase_metadata.number_of_runs):
-                header.cell(f"Run {i+1}")
+                header.cell(f"Run {i + 1}")
             header.cell("Total Score")
             header.cell("Notes")
 
@@ -276,7 +276,7 @@ async def heat_results_pdf(
             header.cell("Last Name")
             header.cell("Bib")
             for i in range(max_runs):
-                header.cell(f"Run: {i+1}")
+                header.cell(f"Run: {i + 1}")
 
             for athlete in heat_scores.scores:
                 print(athlete)

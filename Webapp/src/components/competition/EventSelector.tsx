@@ -66,16 +66,17 @@ const EventSelector = ({
 	} else if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-
-										<Stack direction="row"  sx={{
-    alignItems: "center",
-				}}>
+				<Stack
+					direction="row"
+					sx={{
+						alignItems: "center"
+					}}
+				>
 					<RefreshButton refetch={refetch} />
-							<h4>No Events in competition</h4>
-							</Stack>
+					<h4>No Events in competition</h4>
+				</Stack>
 
-						<AddEvent refetch={refetch} />
-
+				<AddEvent refetch={refetch} />
 			</Paper>
 		)
 	} else if (data) {
@@ -97,7 +98,7 @@ const EventSelector = ({
 								onChange={onSelect}
 								variant="outlined"
 								startAdornment={
-<RefreshButton refetch={refetch} />
+									<RefreshButton refetch={refetch} />
 								}
 							>
 								{data.map((event) => (
