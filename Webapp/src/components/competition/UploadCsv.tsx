@@ -93,6 +93,7 @@ const UploadForm = () => {
 	const [competitionName, setCompetitionName] = useState<string>("")
 	const [scoresheetName, setScoresheetName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [numberOfHeats, setNumberOfHeats] = useState<number>(3)
 	const [randomHeats, setRandomHeats] = useState<boolean>(false)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(2)
@@ -140,7 +141,7 @@ const UploadForm = () => {
 			formData.append("number_of_judges", numberOfJudges.toString())
 			formData.append("file", file)
 			formData.append("random_heats", randomHeats.toString())
-
+			formData.append("number_of_random_heats", numberOfHeats.toString())
 			axios
 				.post(
 					`${
@@ -179,7 +180,7 @@ const UploadForm = () => {
 							endAdornment: (
 								<IconButton
 									aria-label="upload"
-									component="label" // THIS IS THE GENIUS CHANGE
+									component="label"
 								>
 									<UploadIcon />
 									<input
@@ -262,11 +263,27 @@ const UploadForm = () => {
 				/>
 			</Grid>
 			<Grid item xs={12}>
-				<Stack direction="row" alignItems="center">
+				<Stack direction="row" alignItems="center" spacing={2}>
 					<Typography>Randomise Heat Allocation:</Typography>
 					<Checkbox
 						value={randomHeats}
 						onClick={() => setRandomHeats(!randomHeats)}
+					/>
+					<TextField
+						label="Number of Heats"
+						variant="outlined"
+						fullWidth
+						type="number"
+						disabled={!randomHeats}
+						error={!numberOfHeats && randomHeats}
+						onChange={(
+							event: React.ChangeEvent<HTMLInputElement>
+						): void =>
+							setNumberOfHeats(
+								event.target.value as unknown as number
+							)
+						}
+						value={numberOfHeats}
 					/>
 				</Stack>
 			</Grid>

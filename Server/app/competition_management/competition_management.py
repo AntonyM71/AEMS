@@ -48,6 +48,7 @@ def upload(
     number_of_runs_for_score: int = Form(...),
     number_of_judges: int = Form(...),
     random_heats: bool = Form(...),  # noqa: FBT001
+    number_of_random_heats: int = Form(...),
     file: UploadFile = File(...),  # noqa: B008
 ) -> Response:
     if file.filename.endswith(".xlsx"):
@@ -68,6 +69,7 @@ def upload(
         number_of_runs_for_score=number_of_runs_for_score,
         number_of_judges=number_of_judges,
         random_heats=random_heats,
+        number_of_random_heats=number_of_random_heats,
     )
 
     return JSONResponse(
