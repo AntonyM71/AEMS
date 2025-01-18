@@ -34,6 +34,14 @@ extend-immutable-calls = [
     "fastapi.Query",
     "fastapi.params.Query",
 ]
+[tool.pytest.ini_options]
+addopts = ["--cov", "--cov-report=term-missing"]
+[tool.coverage.run]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -48,7 +56,6 @@ dependencies = [
     "asyncpg",
     "fastapi",
     "pandas",
-    "pytest",
     "uvicorn[standard]",
     "python-multipart",
     "pydantic<=1.8.2",
@@ -60,6 +67,7 @@ dependencies = [
     "ruff",
     "mypy",
     "pytest",
+    "pytest-cov",
     "fastapi-quickcrud",
     "sqlalchemy_utils",
     "sqlalchemy[mypy]",    # remove when we upgrade to 2.0

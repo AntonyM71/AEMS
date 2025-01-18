@@ -324,3 +324,5 @@ Server/app/__pycache__/scoresheetEndpoints.cpython-310.pyc
 Server/app/__pycache__/scoring_logic.cpython-310.pyc
 Server/db/__pycache__/__init__.cpython-310.pyc
 Server/db/__pycache__/models.cpython-310.pyc
+Server/.coverage
+Webapp/tsconfig.tsbuildinfo

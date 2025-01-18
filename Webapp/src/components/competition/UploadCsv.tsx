@@ -1,9 +1,12 @@
 import UploadIcon from "@mui/icons-material/Upload"
+import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
+import Checkbox from "@mui/material/Checkbox"
 import Divider from "@mui/material/Divider"
 import Grid from "@mui/material/Grid"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
+import Stack from "@mui/material/Stack"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -11,6 +14,7 @@ import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
 import axios, { AxiosError } from "axios"
 import { ChangeEventHandler, useState } from "react"
 import toast from "react-hot-toast"
@@ -69,17 +73,28 @@ const CSVFormatTable = () => {
 							<TableCell>{row.format}</TableCell>
 						</TableRow>
 					))}
+					<TableRow>
+						<TableCell colSpan={2}>
+							<Alert severity="info">
+								The "Heats" column is optional if "Random Heat
+								Allocation" is selected in the form below.
+							</Alert>
+						</TableCell>
+					</TableRow>
 				</TableBody>
 			</Table>
 		</TableContainer>
 	)
 }
 
+// eslint-disable-next-line complexity
 const UploadForm = () => {
 	const [fileName, setFileName] = useState<string>("")
 	const [competitionName, setCompetitionName] = useState<string>("")
 	const [scoresheetName, setScoresheetName] = useState<string>("")
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(3)
+	const [numberOfHeats, setNumberOfHeats] = useState<number>(3)
+	const [randomHeats, setRandomHeats] = useState<boolean>(false)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(2)
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(2)
 	const [file, setFile] = useState<Blob>(new Blob())
@@ -125,7 +140,8 @@ const UploadForm = () => {
 			)
 			formData.append("number_of_judges", numberOfJudges.toString())
 			formData.append("file", file)
-
+			formData.append("random_heats", randomHeats.toString())
+			formData.append("number_of_random_heats", numberOfHeats.toString())
 			axios
 				.post(
 					`${
@@ -150,31 +166,36 @@ const UploadForm = () => {
 
 	// render a simple input element with an onChange event listener that calls the handleFileUpload function
 	return (
-		<Grid container spacing={2}>
+		<Grid container spacing={2} sx={{ width: "50%" }}>
 			{" "}
 			<Grid item xs={12}>
-				<TextField
-					label="Upload CSV or XLSX file"
-					required
-					error={!file || !fileName}
-					value={fileName}
-					InputProps={{
-						readOnly: true,
-						endAdornment: (
-							<IconButton
-								aria-label="upload"
-								component="label" // THIS IS THE GENIUS CHANGE
-							>
-								<UploadIcon />
-								<input
-									hidden
-									type="file"
-									onChange={handleFileUpload}
-								/>
-							</IconButton>
-						)
-					}}
-				/>
+				<Stack direction="row" spacing={2}>
+					<TextField
+						label="Upload CSV or XLSX file"
+						required
+						error={!file || !fileName}
+						value={fileName}
+						InputProps={{
+							readOnly: true,
+							endAdornment: (
+								<IconButton
+									aria-label="upload"
+									component="label"
+								>
+									<UploadIcon />
+									<input
+										hidden
+										type="file"
+										onChange={handleFileUpload}
+									/>
+								</IconButton>
+							)
+						}}
+					/>
+					<Alert severity="info">
+						Uploading files may take up to a 120 seconds.
+					</Alert>
+				</Stack>
 			</Grid>
 			<Grid item xs={12}>
 				<TextField
@@ -240,6 +261,31 @@ const UploadForm = () => {
 					}
 					value={numberOfJudges}
 				/>
+			</Grid>
+			<Grid item xs={12}>
+				<Stack direction="row" alignItems="center" spacing={2}>
+					<Typography>Randomise Heat Allocation:</Typography>
+					<Checkbox
+						value={randomHeats}
+						onClick={() => setRandomHeats(!randomHeats)}
+					/>
+					<TextField
+						label="Number of Heats"
+						variant="outlined"
+						fullWidth
+						type="number"
+						disabled={!randomHeats}
+						error={!numberOfHeats && randomHeats}
+						onChange={(
+							event: React.ChangeEvent<HTMLInputElement>
+						): void =>
+							setNumberOfHeats(
+								event.target.value as unknown as number
+							)
+						}
+						value={numberOfHeats}
+					/>
+				</Stack>
 			</Grid>
 			<Grid item xs={12}>
 				<Button

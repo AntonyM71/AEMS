@@ -1,5 +1,6 @@
 import uuid
 
+import numpy as np
 import pandas as pd
 import pandas.api.types as ptypes
 from numpy import ndarray
@@ -54,7 +55,7 @@ def get_scoresheets(db: Session) -> list[dict] | None:
 # Function to select the scoresheet by name
 
 
-def select_scoresheet_by_name(scoresheets: dict, name: str) -> str | None:
+def select_scoresheet_by_name(scoresheets: list[dict], name: str) -> str | None:
     for scoresheet in scoresheets:
         if scoresheet["name"].lower() == name.lower():
             return scoresheet["id"]
@@ -124,6 +125,13 @@ def create_heats(heat_list: ndarray, competition_id: str, db: Session) -> dict:
     return heat_map
 
 
+def make_random_heats(number_of_heats: int) -> list[str]:
+    heat_list: list[str] = []
+    for i in range(1, number_of_heats + 1):
+        heat_list.append(f"{i}")
+    return heat_list
+
+
 def process_competitors_df(
     competitors_df: pd.DataFrame,
     competition_name: str,
@@ -131,6 +139,9 @@ def process_competitors_df(
     number_of_runs: int = 1,
     number_of_runs_for_score: int = 1,
     number_of_judges: int = 2,
+    number_of_random_heats: int = 5,
+    *,
+    random_heats: bool = False,
 ) -> int:
     event_count = 0
     phase_count = 0
@@ -148,7 +159,12 @@ def process_competitors_df(
         scoresheet_id = check_scoresheet_exists(scoresheet_name=scoresheet_name, db=db)
 
         unique_events = competitors_df["Event"].unique()
-        unique_heats = competitors_df["Heat"].unique()
+        if random_heats:
+            unique_heats = np.array(
+                make_random_heats(number_of_heats=number_of_random_heats)
+            )
+        else:
+            unique_heats = competitors_df["Heat"].unique()
 
         event_phase_map = {}
 
@@ -186,8 +202,11 @@ def process_competitors_df(
         heat_map = create_heats(
             heat_list=unique_heats, competition_id=competition_id, db=db
         )
+        heat_list = list(heat_map.values())
 
-        for _index, row in competitors_df.iterrows():
+        if random_heats:
+            competitors_df = competitors_df.sample(frac=1)
+        for i, (_index, row) in enumerate(competitors_df.iterrows()):
             athlete_id = generate_uuid()
 
             athlete_data = [
@@ -208,8 +227,10 @@ def process_competitors_df(
             if phase_id is None:
                 print(f"Event '{row['Event']}' not found in event_phase_map.")
                 continue
-
-            heat_id = heat_map.get(row["Heat"], None)
+            if random_heats:
+                heat_id = heat_list[int(i) % number_of_random_heats]
+            else:
+                heat_id = heat_map.get(row["Heat"], None)
 
             if heat_id is None:
                 print(f"Heat '{row['Heat']}' not found in heat_map.")
@@ -231,24 +252,38 @@ def process_competitors_df(
         return paddler_count
 
 
-def validate_columns_and_data_types(competition_df: pd.DataFrame) -> None:
-    mandatory_columns = ["first_name", "last_name", "bib", "Event", "Heat"]
+class NoHeatInfoForNonRandomHeatError(Exception):
+    pass
+
+
+def validate_columns_and_data_types(
+    competition_df: pd.DataFrame, *, random_heats: bool
+) -> None:
+    mandatory_columns = ["first_name", "last_name", "bib", "Event"]
 
     got_columns = competition_df.columns
     for e in mandatory_columns:
         if e not in got_columns:
             msg = f"Column '{e}' is missing from the file"
             raise MissingColumnError(msg)
+
+    if not random_heats and "Heat" not in got_columns:
+        msg = "No heat information provided, and random heat allocation is disabled"
+        raise (NoHeatInfoForNonRandomHeatError(msg))
+
+    if not random_heats and not ptypes.is_integer_dtype(competition_df["Heat"]):
+        msg = f"Column 'Heat' is not of type '{ptypes.is_integer_dtype}', instead it is of type '{competition_df['Heat'].dtype}'"
+        raise ColumnTypeError(msg)
+
     expected_dtypes = {
         "first_name": ptypes.is_string_dtype,
         "last_name": ptypes.is_string_dtype,
         "Event": ptypes.is_string_dtype,
-        "Heat": ptypes.is_integer_dtype,
         "bib": ptypes.is_integer_dtype,
     }
 
     for column, check_dtype in expected_dtypes.items():
         actual_dtype = competition_df[column].dtype
         if not check_dtype(competition_df[column]):
-            msg = f"Column '{column}' is not of type '{check_dtype}, instead it is of type '{actual_dtype}'"
+            msg = f"Column '{column}' is not of type '{check_dtype}', instead it is of type '{actual_dtype}'"
             raise ColumnTypeError(msg)

@@ -47,6 +47,8 @@ def upload(
     number_of_runs: int = Form(...),
     number_of_runs_for_score: int = Form(...),
     number_of_judges: int = Form(...),
+    random_heats: bool = Form(...),  # noqa: FBT001
+    number_of_random_heats: int = Form(...),
     file: UploadFile = File(...),  # noqa: B008
 ) -> Response:
     if file.filename.endswith(".xlsx"):
@@ -58,7 +60,7 @@ def upload(
     else:
         msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
         raise InvalidFileTypeError(msg)
-    validate_columns_and_data_types(competitors_df)
+    validate_columns_and_data_types(competitors_df, random_heats=False)
     number_of_paddlers_added = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,
@@ -66,6 +68,8 @@ def upload(
         number_of_runs=number_of_runs,
         number_of_runs_for_score=number_of_runs_for_score,
         number_of_judges=number_of_judges,
+        random_heats=random_heats,
+        number_of_random_heats=number_of_random_heats,
     )
 
     return JSONResponse(
