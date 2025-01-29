@@ -5,3 +5,42 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom"
 import "@testing-library/jest-dom/extend-expect"
+
+// Fetch polyfill for tests
+import "whatwg-fetch"
+
+// Mock react-hot-toast
+const mockToast = {
+	error: jest.fn(),
+	success: jest.fn()
+}
+
+jest.mock("react-hot-toast", () => ({
+	__esModule: true,
+	toast: mockToast,
+	Toaster: () => null, // Mock Toaster component to render nothing
+	default: {
+		...mockToast,
+		error: mockToast.error,
+		success: mockToast.success
+	}
+}))
+
+// Clear mock calls between tests
+afterEach(() => {
+	mockToast.error.mockClear()
+	mockToast.success.mockClear()
+})
+
+// MSW Setup
+import { server } from "./src/mocks/server"
+
+// Establish API mocking before all tests.
+beforeAll(() => server.listen())
+
+// Reset any request handlers that we may add during the tests,
+// so they don't affect other tests.
+afterEach(() => server.resetHandlers())
+
+// Clean up after the tests are finished.
+afterAll(() => server.close())
