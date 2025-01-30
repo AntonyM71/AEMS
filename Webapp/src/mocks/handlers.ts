@@ -1,6 +1,39 @@
 import { rest } from "msw"
 
 export const handlers = [
+	// Existing handlers
+	rest.get("/api/availablemoves", (req, res, ctx) => {
+		const idList = req.url.searchParams.get("idList")?.split(",")
+
+		return res(
+			ctx.json(
+				idList?.map((id) => ({
+					id,
+					name:
+						id === "1"
+							? "Single Test"
+							: id === "2"
+							? "LR Test"
+							: "FB Test",
+					direction: id === "1" ? "S" : id === "2" ? "LR" : "FB"
+				})) || []
+			)
+		)
+	}),
+	rest.get("/api/availablebonuses", (req, res, ctx) => {
+		const moveIdList = req.url.searchParams.get("moveIdList")?.split(",")
+
+		return res(
+			ctx.json(
+				moveIdList?.map((moveId) => ({
+					id: `bonus-${moveId}`,
+					moveId,
+					name: `Bonus for move ${moveId}`,
+					value: 10
+				})) || []
+			)
+		)
+	}),
 	rest.get("/api/competition", (req, res, ctx) =>
 		res(
 			ctx.json([

@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { BonusChip } from "../BonusChip"
 
 // Mock data
@@ -17,6 +18,11 @@ const mockScoredMove = {
 }
 
 describe("BonusChip Component", () => {
+	let user: ReturnType<typeof userEvent.setup>
+
+	beforeEach(() => {
+		user = userEvent.setup()
+	})
 	it("renders without crashing", () => {
 		render(
 			<BonusChip
@@ -83,7 +89,7 @@ describe("BonusChip Component", () => {
 		expect(chip).toHaveClass("Mui-disabled")
 	})
 
-	it("calls updateScoredMoveBonuses when clicked", () => {
+	it("calls updateScoredMoveBonuses when clicked", async () => {
 		const mockUpdateBonuses = jest.fn()
 		render(
 			<BonusChip
@@ -95,8 +101,11 @@ describe("BonusChip Component", () => {
 			/>
 		)
 
-		const chip = screen.getByRole("button")
-		chip.click()
+		const chip = await screen.findByRole("button")
+
+		await act(async () => {
+			await user.click(chip)
+		})
 
 		expect(mockUpdateBonuses).toHaveBeenCalledWith([
 			expect.objectContaining({
@@ -127,7 +136,7 @@ describe("BonusChip Component", () => {
 		expect(chip).toHaveClass("MuiChip-colorPrimary")
 	})
 
-	it("does not call updateScoredMoveBonuses when chipActionsDisabled is true", () => {
+	it("does not call updateScoredMoveBonuses when chipActionsDisabled is true", async () => {
 		const mockUpdateBonuses = jest.fn()
 		render(
 			<BonusChip
@@ -139,13 +148,16 @@ describe("BonusChip Component", () => {
 			/>
 		)
 
-		const chip = screen.getByRole("button")
-		chip.click()
+		const chip = await screen.findByRole("button")
+
+		await act(async () => {
+			await user.click(chip)
+		})
 
 		expect(mockUpdateBonuses).not.toHaveBeenCalled()
 	})
 
-	it("removes bonus when clicking an already scored bonus", () => {
+	it("removes bonus when clicking an already scored bonus", async () => {
 		const scoredBonus = {
 			id: "bonus1",
 			moveId: mockScoredMove.id,
@@ -163,8 +175,11 @@ describe("BonusChip Component", () => {
 			/>
 		)
 
-		const chip = screen.getByRole("button")
-		chip.click()
+		const chip = await screen.findByRole("button")
+
+		await act(async () => {
+			await user.click(chip)
+		})
 
 		expect(mockUpdateBonuses).toHaveBeenCalledWith([])
 	})

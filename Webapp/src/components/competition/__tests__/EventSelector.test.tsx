@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { rest } from "msw"
 import { Provider } from "react-redux"
@@ -44,7 +44,7 @@ describe("EventSelector", () => {
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
 	})
 
-	it("shows loading state when fetching events", () => {
+	it("shows loading state when fetching events", async () => {
 		store.dispatch(updateSelectedCompetition("1"))
 
 		render(
@@ -53,10 +53,13 @@ describe("EventSelector", () => {
 			</Provider>
 		)
 
-		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
+		// Wait for the loading state to be rendered
+		const skeleton = await screen.findByTestId("skeleton")
+		expect(skeleton).toBeInTheDocument()
 	})
 
 	it("shows events when they are loaded", async () => {
+		const user = userEvent.setup()
 		store.dispatch(updateSelectedCompetition("1"))
 
 		render(
@@ -65,21 +68,17 @@ describe("EventSelector", () => {
 			</Provider>
 		)
 
-		// First wait for loading state to appear
-		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
+		// Wait for loading state to finish and component to be ready
+		await screen.findByText("Select Event")
 
-		// Wait for loading to finish
-		await waitFor(() => {
-			expect(screen.queryByTestId("skeleton")).not.toBeInTheDocument()
-		})
+		// Find and click the select element by its class
+		const selectElement = screen.getByRole("combobox")
+		await user.click(selectElement)
 
-		// Get and click the select
-		const select = screen.getByRole("combobox")
-		await userEvent.click(select)
-
-		// Verify options
-		const listbox = screen.getByRole("listbox")
+		// Wait for and verify options
+		const listbox = await screen.findByRole("listbox")
 		const options = within(listbox).getAllByRole("option")
+
 		expect(options).toHaveLength(2)
 		expect(options[0]).toHaveTextContent("Event 1")
 		expect(options[1]).toHaveTextContent("Event 2")
@@ -100,21 +99,14 @@ describe("EventSelector", () => {
 			</Provider>
 		)
 
-		// First wait for loading state to appear
-		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
-
-		// Wait for loading to finish
-		await waitFor(() => {
-			expect(screen.queryByTestId("skeleton")).not.toBeInTheDocument()
-		})
-
-		// Then check for no events message
+		// Wait for loading to finish and check for no events message
 		expect(
 			await screen.findByText(/No Events in competition/i)
 		).toBeInTheDocument()
 	})
 
 	it("allows selecting an event", async () => {
+		const user = userEvent.setup()
 		store.dispatch(updateSelectedCompetition("1"))
 
 		render(
@@ -123,24 +115,19 @@ describe("EventSelector", () => {
 			</Provider>
 		)
 
-		// First wait for loading state to appear
-		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
+		// Wait for loading state to finish and component to be ready
+		await screen.findByText("Select Event")
 
-		// Wait for loading to finish
-		await waitFor(() => {
-			expect(screen.queryByTestId("skeleton")).not.toBeInTheDocument()
-		})
+		// Find and click the select element
+		const selectElement = screen.getByRole("combobox")
+		await user.click(selectElement)
 
-		// Get and click the select
-		const select = screen.getByRole("combobox")
-		await userEvent.click(select)
-
-		// Click the first option
-		const listbox = screen.getByRole("listbox")
+		// Find and click the first option
+		const listbox = await screen.findByRole("listbox")
 		const option = within(listbox).getByText("Event 1")
-		await userEvent.click(option)
+		await user.click(option)
 
-		// Verify selection
+		// Verify the Redux store was updated
 		expect(store.getState().competitions.selectedEvent).toBe("event-1")
 	})
 })
