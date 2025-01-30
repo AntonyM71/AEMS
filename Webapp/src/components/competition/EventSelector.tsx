@@ -60,10 +60,10 @@ const EventSelector = ({
 		return <></>
 	}
 	if (isLoading) {
-		return <Skeleton variant="rectangular" />
+		return <Skeleton variant="rectangular" data-testid="skeleton" />
 	} else if (!isSuccess) {
 		return <h4>Failed to get data from the server</h4>
-	} else if (!data) {
+	} else if (!data || data.length === 0) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Stack

@@ -13,5 +13,28 @@ export const handlers = [
 		const body = await req.json()
 
 		return res(ctx.json(body))
+	}),
+	rest.get("/api/competition/:competitionPkId/event", (req, res, ctx) => {
+		const { competitionPkId } = req.params
+
+		return res(
+			ctx.json([
+				{
+					id: "event-1",
+					name: "Event 1",
+					competition_id: competitionPkId
+				},
+				{
+					id: "event-2",
+					name: "Event 2",
+					competition_id: competitionPkId
+				}
+			])
+		)
+	}),
+	rest.post("/api/event", async (req, res, ctx) => {
+		const body = await req.json()
+
+		return res(ctx.json(body))
 	})
 ]
