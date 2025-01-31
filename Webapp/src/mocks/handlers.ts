@@ -69,5 +69,58 @@ export const handlers = [
 		const body = await req.json()
 
 		return res(ctx.json(body))
+	}),
+	rest.get("/api/heat", (req, res, ctx) => {
+		const competitionIdList = req.url.searchParams.get("competitionIdList")
+		const competitionIdListComparisonOperator = req.url.searchParams.get(
+			"competitionIdListComparisonOperator"
+		)
+
+		if (!competitionIdList || !competitionIdListComparisonOperator) {
+			return res(ctx.json([]))
+		}
+
+		// For test cases that expect no heats
+		if (competitionIdList === "comp1") {
+			return res(ctx.json(null))
+		}
+
+		// For test cases that expect heats
+		if (competitionIdList === "1") {
+			return res(
+				ctx.json([
+					{
+						id: "heat-1",
+						name: "Heat 1",
+						competition_id: competitionIdList,
+						number_of_runs: 2
+					},
+					{
+						id: "heat-2",
+						name: "Heat 2",
+						competition_id: competitionIdList,
+						number_of_runs: 2
+					}
+				])
+			)
+		}
+
+		// For test cases that expect errors
+		if (
+			competitionIdList?.includes("2") &&
+			competitionIdListComparisonOperator === "Equal"
+		) {
+			return res(
+				ctx.status(500),
+				ctx.json({ message: "Internal server error" })
+			)
+		}
+
+		return res(ctx.json([]))
+	}),
+	rest.post("/api/heat", async (req, res, ctx) => {
+		const body = await req.json()
+
+		return res(ctx.json(body))
 	})
 ]

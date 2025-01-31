@@ -108,7 +108,7 @@ describe("MoveCard", () => {
 		await user.click(leftButton)
 
 		// Use async assertions to wait for state updates
-		await expect(async () => {
+		await expect(() => {
 			const state = store.getState()
 			expect(state.score.scoredMoves).toHaveLength(1)
 			expect(state.score.scoredMoves[0].direction).toBe("L")
@@ -136,7 +136,7 @@ describe("MoveCard", () => {
 		// Test front button click and wait for state updates
 		await user.click(frontButton)
 
-		await expect(async () => {
+		await expect(() => {
 			const state = store.getState()
 			expect(state.score.scoredMoves).toHaveLength(1)
 			expect(state.score.scoredMoves[0].direction).toBe("F")
@@ -146,7 +146,7 @@ describe("MoveCard", () => {
 		// Test back button click and wait for state updates
 		await user.click(backButton)
 
-		await expect(async () => {
+		await expect(() => {
 			const state = store.getState()
 			expect(state.score.scoredMoves).toHaveLength(2)
 			expect(state.score.scoredMoves[1].direction).toBe("B")
