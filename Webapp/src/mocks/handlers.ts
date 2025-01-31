@@ -1,6 +1,19 @@
 import { rest } from "msw"
 
 export const handlers = [
+	rest.get("/api/scoresheet", (req, res, ctx) =>
+		res(
+			ctx.json([
+				{ id: "1", name: "Scoresheet 1" },
+				{ id: "2", name: "Scoresheet 2" }
+			])
+		)
+	),
+	rest.post("/api/scoresheet", async (req, res, ctx) => {
+		const body = await req.json()
+
+		return res(ctx.json(body))
+	}),
 	// Existing handlers
 	rest.get("/api/availablemoves", (req, res, ctx) => {
 		const idList = req.url.searchParams.get("idList")?.split(",")
