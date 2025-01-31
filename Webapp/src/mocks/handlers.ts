@@ -135,5 +135,32 @@ export const handlers = [
 		const body = await req.json()
 
 		return res(ctx.json(body))
-	})
+	}),
+	rest.post(
+		"/api/addUpdateScoresheet/:scoresheetId",
+		async (req, res, ctx) => {
+			const { scoresheetId } = req.params
+			const body = await req.json()
+
+			// Validate request structure
+			if (
+				!body.addUpdateScoresheetRequest ||
+				!Array.isArray(body.addUpdateScoresheetRequest.moves) ||
+				!Array.isArray(body.addUpdateScoresheetRequest.bonuses)
+			) {
+				return res(
+					ctx.status(400),
+					ctx.json({ message: "Invalid request format" })
+				)
+			}
+
+			return res(
+				ctx.json({
+					success: true,
+					scoresheetId,
+					...body.addUpdateScoresheetRequest
+				})
+			)
+		}
+	)
 ]

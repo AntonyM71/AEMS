@@ -61,6 +61,7 @@ export const ScoresheetBuilderHeader = ({
 							<IconButton
 								onClick={() => deleteBonus(b)}
 								color="error"
+								data-testid={`delete-bonus-${b}`}
 							>
 								<DeleteIcon />
 							</IconButton>
