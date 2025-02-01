@@ -521,7 +521,11 @@ export const FinalScore = ({
 	>
 		<Typography variant="h6">Final Score:</Typography>
 		<div style={{ textAlign: "center" }}>
-			<Typography variant="h5" sx={makeLockedScoreStyle(locked)}>
+			<Typography
+				variant="h5"
+				data-testid="final-score-value"
+				sx={makeLockedScoreStyle(locked)}
+			>
 				{did_not_start
 					? "DNS"
 					: calculateAverage(allJudgeScores).toFixed(2)}
