@@ -22,7 +22,8 @@ import {
 	useGetManyRunStatusGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { connectWebRunStatusSocket, RunStatus } from "../headJudge/headJudge"
+import { RunStatus } from "../headJudge/RunStatus"
+import { connectWebRunStatusSocket } from "../headJudge/WebSocketConnections"
 import { AthleteInfo, InfoBar } from "./InfoBar"
 import {
 	directionType,

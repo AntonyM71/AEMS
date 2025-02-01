@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { FinalScore } from "../FinalScore"
+import { FinalScore } from "./FinalScore"
 
 describe("FinalScore", () => {
 	it("should display DNS when did_not_start is true", () => {

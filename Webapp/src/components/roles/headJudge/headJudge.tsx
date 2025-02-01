@@ -5,8 +5,7 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
-import Typography from "@mui/material/Typography"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
@@ -16,37 +15,28 @@ import {
 	getSelectedRun
 } from "../../../redux/atoms/scoring"
 import {
-	ScoredMovesAndBonusesResponse,
-	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
-	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery,
 	useGetManyRunStatusGetQuery
 } from "../../../redux/services/aemsApi"
-import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
-import {
-	HeatScoreTable,
-	makeLockedScoreStyle
-} from "../../competition/HeatScoreTable"
+import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { HeatSummaryTable } from "../../competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
-import { AthleteInfo, CurrentScore } from "../scribe/InfoBar"
+import { AthleteInfo } from "../scribe/InfoBar"
 import { PaddlerSelector } from "../scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../scribe/InfoBar/Runselector"
-import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
-import { directionType, movesType, scoredMovesType } from "../scribe/Interfaces"
+import { FinalScore } from "./FinalScore"
+import { JudgeCard } from "./JudgeCard"
+import { RunStatus } from "./RunStatus"
+import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
-const calculateAverage = (numbers: number[]): number =>
-	numbers.reduce((acc, curr) => acc + curr, 0) / numbers.length
-// eslint-disable-next-line complexity
 export default () => {
-	const [scoresOpen, setScoresOpen] = React.useState(false)
-	const [allJudgeScores, setAllJudgeScores] = React.useState<number[]>([])
+	const [scoresOpen, setScoresOpen] = useState(false)
+	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 	const handleScoresOpen = () => setScoresOpen(true)
 	const handleScoresClose = () => setScoresOpen(false)
 
-	const [listOpen, setListOpen] = React.useState(false)
+	const [listOpen, setListOpen] = useState(false)
 
 	const handleListOpen = () => setListOpen(true)
 	const handleListClose = () => setListOpen(false)
@@ -101,8 +91,7 @@ export default () => {
 	}, [])
 	if (socketRef.current) {
 		socketRef.current.onmessage = (event) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			const jsonData = JSON.parse(event.data) as RunStatus
+			const jsonData = JSON.parse(event.data as string) as RunStatus
 
 			if (
 				jsonData?.run_number === selectedRun &&
@@ -150,7 +139,6 @@ export default () => {
 	useEffect(() => {
 		setAllJudgeScores(new Array(maxJudges).fill(0))
 	}, [maxJudges])
-	// const selectedPhaseData = phaseData?.filter(p => p.athlete_id)
 
 	if (!selectedHeat) {
 		return (
@@ -163,7 +151,6 @@ export default () => {
 		)
 	}
 	if (selectedAthlete && !isPhaseDataLoading) {
-		// eslint-disable-next-line complexity
 		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
 			if (!socketRef.current) {
 				toast.error(
@@ -187,7 +174,6 @@ export default () => {
 				socketRef.current?.send(
 					JSON.stringify({
 						id: v4(),
-
 						run_number: selectedRun,
 						phase_id:
 							athleteData?.[currentPaddlerIndex].phase_id ?? "",
@@ -208,7 +194,19 @@ export default () => {
 					aria-labelledby="modal-modal-title"
 					aria-describedby="modal-modal-description"
 				>
-					<Paper sx={style}>
+					<Paper
+						sx={{
+							position: "absolute",
+							top: "50%",
+							left: "50%",
+							transform: "translate(-50%, -50%)",
+							width: "70%",
+							height: "80%",
+							bgcolor: "background.paper",
+							boxShadow: 24,
+							p: 4
+						}}
+					>
 						<HeatScoreTable defaultShowJudgeScores={true} />
 					</Paper>
 				</Modal>
@@ -218,7 +216,19 @@ export default () => {
 					aria-labelledby="modal-modal-title"
 					aria-describedby="modal-modal-description"
 				>
-					<Paper sx={style}>
+					<Paper
+						sx={{
+							position: "absolute",
+							top: "50%",
+							left: "50%",
+							transform: "translate(-50%, -50%)",
+							width: "70%",
+							height: "80%",
+							bgcolor: "background.paper",
+							boxShadow: 24,
+							p: 4
+						}}
+					>
 						<HeatSummaryTable />
 					</Paper>
 				</Modal>
@@ -344,226 +354,4 @@ export default () => {
 	}
 
 	return <Skeleton data-testid="loading-skeleton" />
-}
-
-export interface RunStatus {
-	id: string
-	heat_id: string
-	run_number: number
-	phase_id: string
-	athlete_id: string
-	locked: boolean
-	did_not_start: boolean
-}
-
-const JudgeCard = ({
-	judge,
-	selectedAthlete,
-	updateHeadJudgeScore
-}: {
-	judge: number
-	selectedAthlete: AthleteInfo
-	updateHeadJudgeScore: (newScore: number, judgeNumber: number) => void
-}) => {
-	const selectedRun = useSelector(getSelectedRun)
-	const selectedHeat = useSelector(getSelectedHeat)
-
-	const availableBonuses = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedAthlete.scoresheet]
-	})
-	const availableMoves = useGetManyAvailablemovesGetQuery(
-		{
-			sheetIdListComparisonOperator: "Equal",
-			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
-		},
-		{ skip: !selectedAthlete?.scoresheet }
-	)
-	const [moveAndBonusData, setMoveAndBonusData] = useState<
-		ScoredMovesAndBonusesResponse | undefined
-	>(undefined)
-	const {
-		data: moveAndBonusHttpData,
-
-		isUninitialized,
-		refetch
-	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
-		{
-			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete?.id ?? "",
-			judgeId: judge.toString(),
-			heatId: selectedHeat
-		},
-		{
-			skip: !selectedAthlete?.id
-		}
-	)
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current = connectCurrentScoreStatusSocket()
-	}
-	useEffect(() => {
-		if (!isUninitialized) {
-			void refetch()
-		}
-	}, [judge, selectedRun, selectedHeat])
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
-		socketRef.current.onmessage = (event) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			const jsonData = JSON.parse(
-				event.data as string
-			) as ScoredMovesAndBonusesWithMetadata
-
-			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id === selectedAthlete?.id &&
-				jsonData?.heat_id === selectedHeat &&
-				jsonData?.judge_id === judge
-			) {
-				setMoveAndBonusData(jsonData.movesAndBonuses)
-			}
-		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
-	useEffect(() => {
-		if (!isUninitialized) {
-			setMoveAndBonusData(moveAndBonusHttpData)
-		}
-	}, [moveAndBonusHttpData])
-	const scoredMoves = moveAndBonusData?.moves
-		? moveAndBonusData.moves.map((m) => ({
-				moveId: m.move_id,
-				id: m.id,
-				direction: m.direction as directionType
-		  }))
-		: []
-
-	const scoredBonuses = moveAndBonusData?.bonuses
-		? moveAndBonusData.bonuses.map((b) => ({
-				id: b.id,
-
-				moveId: b.move_id,
-				bonusId: b.bonus_id
-		  }))
-		: []
-	const currentScore = calculateSingleJudgeRunScore(
-		scoredMoves,
-		scoredBonuses,
-		(availableMoves.data as movesType[]) || [],
-		(availableBonuses.data as AvailableBonusType[]) || []
-	)
-	useEffect(() => {
-		updateHeadJudgeScore(currentScore.score, judge - 1) // compensate for zero index
-	}, [currentScore.score])
-	if (!isUninitialized) {
-		return (
-			<Grid container spacing={1} alignItems={"stretch"}>
-				<Grid item xs={6}>
-					<Paper
-						sx={{
-							padding: "1em",
-							height: "100%"
-						}}
-					>
-						<Typography>{`Judge: ${judge}`}</Typography>
-					</Paper>
-				</Grid>
-				<Grid item xs={6}>
-					<CurrentScore currentScore={currentScore} />
-				</Grid>
-
-				{[...scoredMoves] // put these into a new array so that reverse works
-					.reverse()
-					.map((scoredMove: scoredMovesType) => (
-						<Grid item xs={12} key={scoredMove.id}>
-							<ScoredMove
-								key={scoredMove.id}
-								scoredMove={scoredMove}
-								scoredMovesList={scoredMoves}
-								scoredBonuses={scoredBonuses}
-								chipActionsDisabled={true}
-							/>
-						</Grid>
-					))}
-			</Grid>
-		)
-	}
-
-	return <Skeleton />
-}
-
-export const FinalScore = ({
-	allJudgeScores,
-	locked,
-	did_not_start
-}: {
-	allJudgeScores: number[]
-	locked: boolean
-	did_not_start: boolean
-}) => (
-	<Paper
-		data-testid="final-score"
-		sx={{
-			padding: "0.5em",
-			height: "100%"
-		}}
-	>
-		<Typography variant="h6">Final Score:</Typography>
-		<div style={{ textAlign: "center" }}>
-			<Typography
-				variant="h5"
-				data-testid="final-score-value"
-				sx={makeLockedScoreStyle(locked)}
-			>
-				{did_not_start
-					? "DNS"
-					: calculateAverage(allJudgeScores).toFixed(2)}
-			</Typography>
-		</div>
-	</Paper>
-)
-
-export interface ScoredMovesAndBonusesWithMetadata {
-	movesAndBonuses: ScoredMovesAndBonusesResponse
-	heat_id: string
-	athlete_id: string
-	run_number: number
-	judge_id: number
-	phase_id: string
-}
-
-export const connectWebRunStatusSocket = (): WebSocket =>
-	new WebSocket(
-		`ws://localhost:${
-			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
-		}/api/runstatus`
-	)
-
-export const connectCurrentScoreStatusSocket = (): WebSocket =>
-	new WebSocket(
-		`ws://localhost:${
-			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
-		}/api/current_scores`
-	)
-const style = {
-	position: "absolute" as const,
-	top: "50%",
-	left: "50%",
-	transform: "translate(-50%, -50%)",
-	width: "70%",
-	height: "80%",
-	bgcolor: "background.paper",
-	boxShadow: 24,
-	p: 4
 }
