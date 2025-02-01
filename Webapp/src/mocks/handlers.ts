@@ -1,6 +1,68 @@
 import { rest } from "msw"
 
 export const handlers = [
+	rest.get("/api/phase/:id", (req, res, ctx) =>
+		res(
+			ctx.json({
+				id: req.params.id,
+				name: "Test Phase",
+				number_of_runs: 2
+			})
+		)
+	),
+	rest.get("/api/getPhaseScores/:phaseId", (req, res, ctx) =>
+		res(
+			ctx.json({
+				scores: [
+					{
+						bib_number: "123",
+						first_name: "John",
+						last_name: "Doe",
+						ranking: 1,
+						total_score: 85.5,
+						run_scores: [
+							{
+								locked: true,
+								did_not_start: false,
+								mean_run_score: 85.5,
+								judge_scores: [
+									{
+										judge_id: "1",
+										score_info: { score: 85 }
+									},
+									{
+										judge_id: "2",
+										score_info: { score: 86 }
+									}
+								]
+							},
+							{
+								locked: true,
+								did_not_start: false,
+								mean_run_score: 85.5,
+								judge_scores: [
+									{
+										judge_id: "1",
+										score_info: { score: 85 }
+									},
+									{
+										judge_id: "2",
+										score_info: { score: 86 }
+									}
+								]
+							}
+						]
+					}
+				]
+			})
+		)
+	),
+	rest.get("/api/phase_pdf/:phaseId", (req, res, ctx) =>
+		res(
+			ctx.set("Content-Type", "application/pdf"),
+			ctx.body("mock pdf content")
+		)
+	),
 	rest.get("/api/scoresheet", (req, res, ctx) =>
 		res(
 			ctx.json([
@@ -17,35 +79,53 @@ export const handlers = [
 	// Existing handlers
 	rest.get("/api/availablemoves", (req, res, ctx) => {
 		const idList = req.url.searchParams.get("idList")?.split(",")
-
-		return res(
-			ctx.json(
-				idList?.map((id) => ({
-					id,
-					name:
-						id === "1"
-							? "Single Test"
-							: id === "2"
-							? "LR Test"
-							: "FB Test",
-					direction: id === "1" ? "S" : id === "2" ? "LR" : "FB"
-				})) || []
-			)
+		const idListComparisonOperator = req.url.searchParams.get(
+			"idListComparisonOperator"
 		)
+
+		if (
+			idListComparisonOperator === "Equal" &&
+			idList?.includes("test-move-1")
+		) {
+			return res(
+				ctx.json([
+					{
+						id: "test-move-1",
+						name: "Test Move",
+						fl_score: 10,
+						rb_score: 20,
+						direction: "LR",
+						sheet_id: "test-id"
+					}
+				])
+			)
+		}
+
+		return res(ctx.json([]))
 	}),
 	rest.get("/api/availablebonuses", (req, res, ctx) => {
 		const moveIdList = req.url.searchParams.get("moveIdList")?.split(",")
-
-		return res(
-			ctx.json(
-				moveIdList?.map((moveId) => ({
-					id: `bonus-${moveId}`,
-					moveId,
-					name: `Bonus for move ${moveId}`,
-					value: 10
-				})) || []
-			)
+		const moveIdListComparisonOperator = req.url.searchParams.get(
+			"moveIdListComparisonOperator"
 		)
+
+		if (
+			moveIdListComparisonOperator === "Equal" &&
+			moveIdList?.includes("test-move-1")
+		) {
+			return res(
+				ctx.json([
+					{
+						id: "available-bonus-1",
+						move_id: "test-move-1",
+						name: "Test Bonus",
+						score: 5
+					}
+				])
+			)
+		}
+
+		return res(ctx.json([]))
 	}),
 	rest.get("/api/competition", (req, res, ctx) =>
 		res(
@@ -77,6 +157,37 @@ export const handlers = [
 				}
 			])
 		)
+	}),
+	rest.get("/api/event", (req, res, ctx) => {
+		const params = req.url.searchParams
+		const competitionIdList = params.get("competitionIdList[]")
+		const competitionIdListComparisonOperator = params.get(
+			"competitionIdListComparisonOperator"
+		)
+		const joinForeignTable = params.get("joinForeignTable[]")
+
+		if (
+			competitionIdList === "1" &&
+			competitionIdListComparisonOperator === "Equal" &&
+			joinForeignTable === "phase"
+		) {
+			return res(
+				ctx.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
+			)
+		}
+
+		return res(ctx.status(404))
 	}),
 	rest.post("/api/event", async (req, res, ctx) => {
 		const body = await req.json()
@@ -136,16 +247,96 @@ export const handlers = [
 
 		return res(ctx.json(body))
 	}),
+	rest.get("/api/heat/:id", (req, res, ctx) => {
+		const { id } = req.params
+
+		return res(
+			ctx.json({
+				id,
+				name: "Test Heat",
+				competition_id: "1",
+				number_of_runs: 2
+			})
+		)
+	}),
+	rest.get("/api/getHeatScores/:heatId", (req, res, ctx) => {
+		const { heatId } = req.params
+
+		return res(
+			ctx.json({
+				scores: [
+					{
+						bib_number: "123",
+						first_name: "John",
+						last_name: "Doe",
+						run_scores: [
+							{
+								locked: true,
+								did_not_start: false,
+								mean_run_score: 85.5,
+								judge_scores: [
+									{
+										judge_id: "1",
+										score_info: { score: 85 }
+									},
+									{
+										judge_id: "2",
+										score_info: { score: 86 }
+									}
+								]
+							},
+							{
+								locked: true,
+								did_not_start: true,
+								mean_run_score: 0,
+								judge_scores: [
+									{
+										judge_id: "1",
+										score_info: { score: 0 }
+									},
+									{
+										judge_id: "2",
+										score_info: { score: 0 }
+									}
+								]
+							}
+						]
+					}
+				]
+			})
+		)
+	}),
 	rest.post(
 		"/api/addUpdateScoresheet/:scoresheetId",
 		async (req, res, ctx) => {
 			const { scoresheetId } = req.params
-			const body = await req.json()
+			interface RequestBody {
+				addUpdateScoresheetRequest: {
+					moves: {
+						id: string
+						sheet_id: string
+						name: string
+						fl_score: number
+						rb_score: number
+						direction: string
+					}[]
+					bonuses: {
+						id: string
+						sheet_id: string
+						move_id: string
+						name: string
+						score: number
+					}[]
+				}
+			}
 
-			// Validate request structure
+			const rawBody: unknown = await req.json()
+			const body = rawBody as RequestBody
+
 			if (
-				!body.addUpdateScoresheetRequest ||
+				!body?.addUpdateScoresheetRequest?.moves ||
 				!Array.isArray(body.addUpdateScoresheetRequest.moves) ||
+				!body?.addUpdateScoresheetRequest?.bonuses ||
 				!Array.isArray(body.addUpdateScoresheetRequest.bonuses)
 			) {
 				return res(

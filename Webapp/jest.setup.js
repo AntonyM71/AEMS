@@ -32,7 +32,7 @@ afterEach(() => {
 	mockToast.success.mockClear()
 })
 
-// Suppress React act() warnings
+// Suppress React act() warnings and MSW network errors
 const originalError = console.error
 console.error = (...args) => {
 	if (/Warning.*not wrapped in act/.test(args[0])) {
@@ -53,3 +53,22 @@ afterEach(() => server.resetHandlers())
 
 // Clean up after the tests are finished.
 afterAll(() => server.close())
+
+// Mock MUI DataGrid
+const DataGridMock = jest.fn((props) => {
+	return (
+		<div
+			data-testid="mock-data-grid"
+			data-grid-props={JSON.stringify(props)}
+		/>
+	)
+})
+
+jest.mock("@mui/x-data-grid", () => ({
+	...jest.requireActual("@mui/x-data-grid"),
+	DataGrid: DataGridMock
+}))
+
+afterEach(() => {
+	DataGridMock.mockClear()
+})

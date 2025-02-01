@@ -77,7 +77,7 @@ export const HeatScoreTable = ({
 			</Grid>
 		)
 	} else if (isLoading) {
-		return <Skeleton variant="rectangular" />
+		return <Skeleton variant="rectangular" data-testid="skeleton" />
 	}
 
 	return <h4>Something went wrong</h4>

@@ -215,11 +215,13 @@ describe("ScoresheetMoves", () => {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				const body = await req.json()
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				expect(body.moves).toEqual(mockMoves)
+				expect(body.addUpdateScoresheetRequest.moves).toEqual(mockMoves)
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				expect(body.bonuses).toEqual(mockBonuses)
+				expect(body.addUpdateScoresheetRequest.bonuses).toEqual(
+					mockBonuses
+				)
 
-				return res(ctx.delay(10), ctx.json({}))
+				return res(ctx.json({ success: true }))
 			})
 		)
 
