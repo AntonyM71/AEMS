@@ -201,7 +201,7 @@ export default () => {
 		}
 
 		return (
-			<>
+			<div data-testid="head-judge-page">
 				<Modal
 					open={scoresOpen}
 					onClose={handleScoresClose}
@@ -251,6 +251,7 @@ export default () => {
 					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN && (
 						<Grid item xs={1}>
 							<Button
+								data-testid="lock-run-button"
 								variant="contained"
 								fullWidth
 								sx={{ height: "100%" }}
@@ -270,6 +271,7 @@ export default () => {
 					)}
 					<Grid item xs={1}>
 						<Button
+							data-testid="dns-button"
 							variant="contained"
 							fullWidth
 							sx={{
@@ -304,6 +306,7 @@ export default () => {
 							}}
 						>
 							<Button
+								data-testid="heat-list-button"
 								onClick={handleListOpen}
 								variant="contained"
 								fullWidth
@@ -313,6 +316,7 @@ export default () => {
 							</Button>
 
 							<Button
+								data-testid="heat-scores-button"
 								onClick={handleScoresOpen}
 								variant="contained"
 								fullWidth
@@ -335,11 +339,11 @@ export default () => {
 						</Grid>
 					))}
 				</Grid>
-			</>
+			</div>
 		)
 	}
 
-	return <Skeleton />
+	return <Skeleton data-testid="loading-skeleton" />
 }
 
 export interface RunStatus {
@@ -499,7 +503,7 @@ const JudgeCard = ({
 	return <Skeleton />
 }
 
-const FinalScore = ({
+export const FinalScore = ({
 	allJudgeScores,
 	locked,
 	did_not_start
@@ -509,6 +513,7 @@ const FinalScore = ({
 	did_not_start: boolean
 }) => (
 	<Paper
+		data-testid="final-score"
 		sx={{
 			padding: "0.5em",
 			height: "100%"

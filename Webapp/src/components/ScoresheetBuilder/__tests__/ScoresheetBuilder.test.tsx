@@ -170,7 +170,7 @@ describe("ScoresheetMoves", () => {
 		)
 
 		// Check move data is displayed
-		const moveNameInput = screen.getByDisplayValue("Test Move")
+		const moveNameInput = await screen.findByDisplayValue("Test Move")
 		expect(moveNameInput).toBeInTheDocument()
 
 		// Check score inputs

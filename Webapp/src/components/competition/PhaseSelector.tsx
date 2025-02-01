@@ -68,7 +68,12 @@ const PhasesSelector = ({
 		return <></>
 	}
 	if (isLoading) {
-		return <Skeleton variant="rectangular" />
+		return (
+			<Skeleton
+				variant="rectangular"
+				data-testid="phase-selector-loading"
+			/>
+		)
 	} else if (!isSuccess) {
 		return <h4>Failed to get data from the server</h4>
 	} else if (!data) {
@@ -109,6 +114,7 @@ const PhasesSelector = ({
 							<InputLabel>Select Phase</InputLabel>
 
 							<Select
+								data-testid="phase-select"
 								value={selectedPhase}
 								onChange={onSelect}
 								variant="outlined"
@@ -129,7 +135,11 @@ const PhasesSelector = ({
 								}
 							>
 								{data.map((Phase) => (
-									<MenuItem key={Phase.id} value={Phase.id}>
+									<MenuItem
+										key={Phase.id}
+										value={Phase.id}
+										data-testid={`phase-option-${Phase.id}`}
+									>
 										{Phase.name}
 									</MenuItem>
 								))}
@@ -182,7 +192,12 @@ const EditPhaseDialog = ({
 						padding: "1em"
 					}}
 				>
-					<Typography variant="h5">Edit Phase</Typography>
+					<Typography
+						variant="h5"
+						data-testid="edit-phase-dialog-title"
+					>
+						Edit Phase
+					</Typography>
 
 					<AddPhase
 						refetch={refetchPhaseListAndPhaseInfo}
@@ -205,23 +220,23 @@ const AddPhase = ({
 	existingPhaseData?: ExistingPhaseData
 }) => {
 	const [phaseName, setPhaseName] = useState<string>(
-		existingPhaseData?.name ?? ""
+		existingPhaseData?.name || ""
 	)
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(
-		existingPhaseData?.number_of_runs ?? 3
+		existingPhaseData?.number_of_runs || 3
 	)
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(
-		existingPhaseData?.number_of_judges ?? 3
+		existingPhaseData?.number_of_judges || 3
 	)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(
-		existingPhaseData?.number_of_runs_for_score ?? 2
+		existingPhaseData?.number_of_runs_for_score || 2
 	)
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>(
-		existingPhaseData?.scoresheet ?? ""
+		existingPhaseData?.scoresheet || ""
 	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
-	const [eventId, setEventId] = useState<string>(selectedEvent)
+	const [eventId, setEventId] = useState<string>(selectedEvent || "")
 	const [postNewPhase] = useInsertManyPhasePostMutation()
 	const [updateExistingPhase] =
 		usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation()
@@ -232,8 +247,8 @@ const AddPhase = ({
 		})
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
+		.map((d) => ({ value: d.id || "", label: d.name || "" }))
 
-		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewPhase = async () => {
 		if (!existingPhaseData) {
 			HandlePostResponse(
@@ -256,7 +271,7 @@ const AddPhase = ({
 		} else {
 			HandlePostResponse(
 				await updateExistingPhase({
-					id: existingPhaseData.id,
+					id: existingPhaseData.id || "",
 					bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch:
 						// eslint-disable-next-line camelcase
 						{
@@ -278,7 +293,6 @@ const AddPhase = ({
 		!eventId ||
 		!numberOfJudges ||
 		!numberOfRuns ||
-		!numberOfJudges ||
 		!selectedScoresheet ||
 		numberOfScoringRuns > numberOfRuns
 
@@ -298,6 +312,7 @@ const AddPhase = ({
 					label="New Phase"
 					variant="outlined"
 					fullWidth
+					data-testid="edit-phase-name-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setPhaseName(event.target.value)}
@@ -307,11 +322,10 @@ const AddPhase = ({
 			<Grid item xs={12}>
 				{options ? (
 					<Autocomplete
-						// error={!!phaseId}
 						options={options}
 						value={options.find((s) => s.value === eventId)}
 						inputValue={
-							options.find((s) => s.value === eventId)?.label ??
+							options.find((s) => s.value === eventId)?.label ||
 							""
 						}
 						fullWidth
@@ -340,6 +354,7 @@ const AddPhase = ({
 					variant="outlined"
 					fullWidth
 					type="number"
+					data-testid="number-of-runs-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void =>
@@ -354,6 +369,7 @@ const AddPhase = ({
 					variant="outlined"
 					fullWidth
 					type="number"
+					data-testid="number-of-scoring-runs-input"
 					error={numberOfScoringRuns > numberOfRuns}
 					helperText={
 						numberOfScoringRuns > numberOfRuns &&
@@ -375,6 +391,7 @@ const AddPhase = ({
 					variant="outlined"
 					fullWidth
 					type="number"
+					data-testid="number-of-judges-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void =>
@@ -389,6 +406,7 @@ const AddPhase = ({
 				<Button
 					variant="contained"
 					fullWidth
+					data-testid="submit-phase-button"
 					onClick={() => void submitNewPhase()}
 					disabled={disableSubmit}
 				>
@@ -400,12 +418,12 @@ const AddPhase = ({
 }
 
 interface ExistingPhaseData {
-	name: string
-	id: string
-	event_id: string
+	name?: string
+	id?: string
+	event_id?: string
 	number_of_runs?: number
 	number_of_runs_for_score?: number
-	scoresheet: string
+	scoresheet?: string
 	number_of_judges?: number
 }
 interface CompetitionOptions {

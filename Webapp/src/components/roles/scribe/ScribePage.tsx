@@ -23,6 +23,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				spacing={1}
 				alignContent="stretch"
 				sx={{ paddingTop: "0.5em" }}
+				data-testid="scribe-grid"
 			>
 				<Grid item xs={12}>
 					<Float scribeNumber={scribeNumber} />
