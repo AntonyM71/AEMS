@@ -50,7 +50,7 @@ describe("PaddlerSelector", () => {
 		jest.clearAllMocks()
 	})
 
-	it("renders paddler information correctly", async () => {
+	it("renders paddler information correctly", () => {
 		const mockPaddlerInfo = {
 			id: "123",
 			bib: "456",

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import Score from "../index"
+import Score from "../pages/index"
 
 describe("Score Page", () => {
 	it("renders gotchas section", () => {

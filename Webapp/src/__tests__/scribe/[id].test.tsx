@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { setupStore } from "../../../redux/store"
-import ScribePage from "../../scribe/[id]"
+import ScribePage from "../../pages/scribe/[id]"
+import { setupStore } from "../../redux/store"
 
 // Mock the Next.js router
 jest.mock("next/router", () => ({
@@ -11,7 +11,7 @@ jest.mock("next/router", () => ({
 }))
 
 // Mock the Scribe component
-jest.mock("../../../components/roles/scribe/ScribePage", () => ({
+jest.mock("../../components/roles/scribe/ScribePage", () => ({
 	__esModule: true,
 	default: () => <div data-testid="scribe-page">Scribe Page Component</div>
 }))

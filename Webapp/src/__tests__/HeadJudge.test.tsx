@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { setupStore } from "../../redux/store"
-import HeadJudge from "../HeadJudge"
+import HeadJudge from "../pages/HeadJudge"
+import { setupStore } from "../redux/store"
 
 // Mock the HeadJudge component
-jest.mock("../../components/roles/headJudge/headJudge", () => ({
+jest.mock("../components/roles/headJudge/headJudge", () => ({
 	__esModule: true,
 	default: () => <div data-testid="head-judge">Head Judge Component</div>
 }))

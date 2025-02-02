@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { setupStore } from "../../redux/store"
-import JudgingPage from "../Judging"
+import JudgingPage from "../pages/Judging"
+import { setupStore } from "../redux/store"
 
 // Mock the dynamic import
 jest.mock("next/dynamic", () => () => () => (

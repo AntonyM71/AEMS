@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { setupStore } from "../../redux/store"
-import Admin from "../Admin"
+import Admin from "../pages/Admin"
+import { setupStore } from "../redux/store"
 
 describe("Admin Page", () => {
 	it("renders main components", () => {

@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { setupStore } from "../../redux/store"
-import Score from "../Score"
+import Score from "../pages/Score"
+import { setupStore } from "../redux/store"
 
 // Mock the PhaseScoreTable component
-jest.mock("../../components/competition/PhaseScoretable", () => ({
+jest.mock("../components/competition/PhaseScoretable", () => ({
 	PhaseScoreTable: () => (
 		<div data-testid="phase-score-table">Phase Score Table Component</div>
 	)

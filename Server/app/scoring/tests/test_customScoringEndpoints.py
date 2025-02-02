@@ -1,16 +1,3 @@
-from db.models import (
-    Athlete,
-    AthleteHeat,
-    Event,
-    Phase,
-    RunStatus,
-    ScoredBonuses,
-    ScoredMoves,
-)
-from app.scoring.scoring_logic import (
-    PydanticScoredBonusesResponse,
-    PydanticScoredMovesResponse,
-)
 from uuid import UUID
 
 import pytest
@@ -21,6 +8,19 @@ from app.scoring.customScoringEndpoints import (
     check_run_is_locked,
     get_athlete_moves_and_bonnuses,
     get_heat_info_logic,
+)
+from app.scoring.scoring_logic import (
+    PydanticScoredBonusesResponse,
+    PydanticScoredMovesResponse,
+)
+from db.models import (
+    Athlete,
+    AthleteHeat,
+    Event,
+    Phase,
+    RunStatus,
+    ScoredBonuses,
+    ScoredMoves,
 )
 
 # Create a type alias to ensure the import is used
@@ -33,16 +33,13 @@ def mock_athlete():
         id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
         first_name="Test",
         last_name="Athlete",
-        bib="123"
+        bib="123",
     )
 
 
 @pytest.fixture
 def mock_event():
-    return Event(
-        id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
-        name="Test Event"
-    )
+    return Event(id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"), name="Test Event")
 
 
 @pytest.fixture
@@ -55,7 +52,7 @@ def mock_phase(mock_event):
         number_of_runs_for_score=1,
         number_of_judges=3,
         scoresheet=UUID("3e1104be-6a11-4541-a6e2-00445cd94421"),
-        event=mock_event
+        event=mock_event,
     )
 
 
@@ -68,11 +65,13 @@ def mock_athlete_heat(mock_athlete, mock_phase):
         phase_id=mock_phase.id,
         last_phase_rank=1,
         athletes=mock_athlete,
-        phases=mock_phase
+        phases=mock_phase,
     )
 
 
-def test_get_heat_info_logic(monkeypatch, mock_athlete_heat, mock_athlete, mock_event):
+def test_get_heat_info_logic(
+    monkeypatch, mock_athlete_heat, mock_athlete, mock_event
+) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
@@ -83,14 +82,14 @@ def test_get_heat_info_logic(monkeypatch, mock_athlete_heat, mock_athlete, mock_
 
             def all(self):
                 return [mock_athlete_heat]
+
         return QueryResult()
 
     monkeypatch.setattr(mock_session, "query", mock_query)
 
     # Call the function
     result = get_heat_info_logic(
-        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-        db=mock_session
+        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d", db=mock_session
     )
 
     # Verify the result
@@ -104,7 +103,7 @@ def test_get_heat_info_logic(monkeypatch, mock_athlete_heat, mock_athlete, mock_
     assert result[0].event_name == mock_event.name
 
 
-def test_check_run_is_locked_returns_true_when_locked(monkeypatch):
+def test_check_run_is_locked_returns_true_when_locked(monkeypatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
@@ -121,8 +120,9 @@ def test_check_run_is_locked_returns_true_when_locked(monkeypatch):
                     run_number=1,
                     phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
                     locked=True,
-                    did_not_start=False
+                    did_not_start=False,
                 )
+
         return QueryResult()
 
     monkeypatch.setattr(mock_session, "query", mock_query)
@@ -133,14 +133,14 @@ def test_check_run_is_locked_returns_true_when_locked(monkeypatch):
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
-        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7"
+        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
     )
 
     # Verify the result
     assert result is True
 
 
-def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch):
+def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
@@ -157,8 +157,9 @@ def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch):
                     run_number=1,
                     phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
                     locked=False,
-                    did_not_start=False
+                    did_not_start=False,
                 )
+
         return QueryResult()
 
     monkeypatch.setattr(mock_session, "query", mock_query)
@@ -169,7 +170,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch):
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
-        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7"
+        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
     )
 
     # Verify the result
@@ -177,7 +178,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonnuses(monkeypatch):
+async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
     # Create mock data
     mock_moves = [
         PydanticScoredMovesResponse(
@@ -217,6 +218,7 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch):
                 if len(args) > 0 and args[0] == ScoredBonuses:
                     return mock_bonuses
                 return []
+
         return QueryResult()
 
     monkeypatch.setattr(mock_session, "query", mock_query)
@@ -227,7 +229,7 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch):
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
         judge_id="meg",
-        db=mock_session
+        db=mock_session,
     )
 
     # Verify the result matches the expected response type
@@ -240,7 +242,7 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch):
     assert result.bonuses[0].bonus_id == mock_bonuses[0].bonus_id
 
 
-def test_check_run_is_locked_returns_false_when_no_status(monkeypatch):
+def test_check_run_is_locked_returns_false_when_no_status(monkeypatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
@@ -249,8 +251,9 @@ def test_check_run_is_locked_returns_false_when_no_status(monkeypatch):
             def filter(self, *args):
                 return self
 
-            def first(self):
+            def first(self) -> None:
                 return None
+
         return QueryResult()
 
     monkeypatch.setattr(mock_session, "query", mock_query)
@@ -261,7 +264,7 @@ def test_check_run_is_locked_returns_false_when_no_status(monkeypatch):
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
-        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7"
+        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
     )
 
     # Verify the result

@@ -45,7 +45,7 @@ describe("RunSelector", () => {
 		jest.resetAllMocks()
 	})
 
-	it("renders run information correctly", async () => {
+	it("renders run information correctly", () => {
 		const mockPaddlerInfo = {
 			id: "123",
 			bib: "456",
