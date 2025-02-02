@@ -176,9 +176,12 @@ const EditPhaseDialog = ({
 		data,
 		isSuccess,
 		refetch: refetchPhaseInfo
-	} = useGetOneByPrimaryKeyPhaseIdGetQuery({
-		id: selectedPhase
-	})
+	} = useGetOneByPrimaryKeyPhaseIdGetQuery(
+		{
+			id: selectedPhase
+		},
+		{ skip: !selectedPhase }
+	)
 	const refetchPhaseListAndPhaseInfo = async () => {
 		await refetch()
 		await refetchPhaseInfo()

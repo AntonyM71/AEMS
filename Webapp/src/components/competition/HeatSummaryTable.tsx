@@ -99,9 +99,12 @@ export const HeatSummaryTable = ({
 	showAddAthletes?: boolean
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
-		id: selectedHeat
-	})
+	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{
+			id: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 
 	if (data && selectedHeat && !isLoading) {
 		return (

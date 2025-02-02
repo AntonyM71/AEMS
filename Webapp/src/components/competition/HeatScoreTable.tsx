@@ -29,9 +29,12 @@ export const HeatScoreTable = ({
 	defaultShowJudgeScores?: boolean
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
-		id: selectedHeat
-	})
+	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{
+			id: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 	const { data: scoreData, isLoading: isScoreLoading } =
 		useGetHeatScoresGetHeatScoresHeatIdGetQuery(
 			{
