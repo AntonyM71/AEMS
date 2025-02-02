@@ -70,7 +70,7 @@ export const JudgeCard = ({
 		if (!isUninitialized) {
 			void refetch()
 		}
-	}, [judge, selectedRun, selectedHeat])
+	}, [judge, selectedRun, selectedHeat, selectedAthlete.id])
 	useEffect(() => {
 		connectWebSocket()
 	}, [])

@@ -7,12 +7,12 @@ import RouterLink from "next/link"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
 
-import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
-import { SelectorDisplay } from "../../components/competition/MainSelector"
 import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery
 } from "../../redux/services/aemsApi"
+import { HeatSummaryTable } from "../competition/HeatSummaryTable"
+import { SelectorDisplay } from "../competition/MainSelector"
 
 const Judging = () => {
 	const selectedHeat = useSelector(getSelectedHeat)

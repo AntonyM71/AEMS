@@ -30,6 +30,7 @@ import { JudgeCard } from "./JudgeCard"
 import { RunStatus } from "./RunStatus"
 import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
+// eslint-disable-next-line complexity
 export default () => {
 	const [scoresOpen, setScoresOpen] = useState(false)
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
@@ -151,6 +152,7 @@ export default () => {
 		)
 	}
 	if (selectedAthlete && !isPhaseDataLoading) {
+		// eslint-disable-next-line complexity
 		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
 			if (!socketRef.current) {
 				toast.error(

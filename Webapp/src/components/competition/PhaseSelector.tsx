@@ -34,8 +34,8 @@ import {
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
 import { RefreshButton } from "./RefreshIconButton"
+import { SelectScoresheet } from "./ScoresheetSelector"
 
 const PhasesSelector = ({
 	showDetailed = false
