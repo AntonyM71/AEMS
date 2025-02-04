@@ -18,7 +18,7 @@ import Typography from "@mui/material/Typography"
 import axios, { AxiosError } from "axios"
 import { ChangeEventHandler, useState } from "react"
 import toast from "react-hot-toast"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { SelectScoresheet } from "./ScoresheetSelector"
 export default () => (
 	<Grid container spacing={3}>
 		<Grid item xs={12}>

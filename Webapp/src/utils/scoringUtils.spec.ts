@@ -1,9 +1,9 @@
-import { AvailableBonusType } from "../src/components/roles/scribe/InfoBar/ScoredMove"
+import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
 	movesType,
 	scoredBonusType,
 	scoredMovesType
-} from "../src/components/roles/scribe/Interfaces"
+} from "../components/roles/scribe/Interfaces"
 import {
 	calculateMoveScore,
 	calculateSingleJudgeRunScore,
@@ -12,7 +12,7 @@ import {
 	getScoredMoveValues,
 	MoveScoreInfo,
 	RunScoreInfo
-} from "../src/utils/scoringUtils"
+} from "./scoringUtils"
 
 describe("calculateSingleJudgeRunScore", () => {
 	const mockScoredMoves = [

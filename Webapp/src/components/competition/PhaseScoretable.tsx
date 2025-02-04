@@ -68,6 +68,7 @@ export const PhaseScoreTable = () => {
 			spacing={1}
 			alignItems="stretch"
 			sx={{ paddingTop: "0.5em" }}
+			data-testid="phase-score-table"
 		>
 			<Grid item xs={12}>
 				<SelectorDisplay showHeat={false} />
@@ -88,6 +89,7 @@ export const PhaseScoreTable = () => {
 								<Typography
 									variant="h5"
 									sx={{ padding: "0.5em" }}
+									data-testid="phase-name"
 								>{`Phase: ${data.name || ""}`}</Typography>
 							</Grid>
 
@@ -95,6 +97,7 @@ export const PhaseScoreTable = () => {
 								<Button
 									variant="contained"
 									color="info"
+									data-testid="download-pdf-button"
 									// eslint-disable-next-line @typescript-eslint/no-misused-promises
 									onClick={downloadFile}
 								>
@@ -111,7 +114,10 @@ export const PhaseScoreTable = () => {
 					</Paper>
 				</Grid>
 			) : (
-				<Skeleton variant="rectangular" />
+				<Skeleton
+					variant="rectangular"
+					data-testid="loading-skeleton"
+				/>
 			)}
 		</Grid>
 	)
@@ -188,12 +194,13 @@ export const PhaseAthleteScoreTable = ({
 				rows={rows}
 				columns={columns}
 				disableRowSelectionOnClick
+				data-testid="athlete-score-grid"
 			/>
 		)
 	}
 
 	return (
-		<div>
+		<div data-testid="no-athletes-message">
 			<h4>No athletes in phase</h4>
 		</div>
 	)

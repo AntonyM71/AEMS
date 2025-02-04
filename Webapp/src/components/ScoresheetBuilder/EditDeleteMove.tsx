@@ -23,7 +23,11 @@ export const EditDeleteMove = ({
 		<Grid container spacing="2" alignItems="center">
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
 			<Grid item xs={1}>
-				<IconButton onClick={handleDelete} color="error">
+				<IconButton
+					onClick={handleDelete}
+					color="error"
+					data-testid="delete-button"
+				>
 					<DeleteIcon />
 				</IconButton>
 			</Grid>

@@ -33,8 +33,9 @@ export const CompetitionSelector = ({
 	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
-	const { data, isLoading, isSuccess, refetch } =
-		useGetManyCompetitionGetQuery({})
+	const { data, isLoading, error, refetch } = useGetManyCompetitionGetQuery(
+		{}
+	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
 	const setSelectedCompetition = (newComp: string) =>
@@ -49,11 +50,11 @@ export const CompetitionSelector = ({
 
 		setSelectedCompetition(event.target.value)
 	}
-	if (isLoading) {
-		return <Skeleton variant="rectangular" />
-	} else if (!isSuccess) {
+	if (error) {
 		return <h4>Failed to get data from the server</h4>
-	} else if (!data) {
+	} else if (isLoading) {
+		return <Skeleton variant="rectangular" data-testid="loading-skeleton" />
+	} else if (!data || data.length === 0) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
 				<Stack
@@ -137,6 +138,7 @@ const AddCompetition = () => {
 						body: [{ name: competitionName, id: uuid4() }]
 					})
 				)
+				setCompetitionName("") // Clear input after successful submission
 				await refetch()
 			} else {
 				toast.error(

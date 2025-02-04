@@ -2,6 +2,7 @@ import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
 import _, { cloneDeep } from "lodash"
 import { useEffect, useState } from "react"
+import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
 import {
 	useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation,
@@ -144,20 +145,24 @@ export const ScoresheetMoves = ({
 	const [updateScoresheetMoves] =
 		useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation()
 	const submitDataToDB = async () => {
-		await updateScoresheetMoves({
-			scoresheetId: selectedScoresheet,
-			addUpdateScoresheetRequest: {
-				bonuses: newBonusInfo,
-				moves: newMoves
-			}
-		})
-
-		await bonusInfo.refetch()
-		await moves.refetch()
+		try {
+			await updateScoresheetMoves({
+				scoresheetId: selectedScoresheet,
+				addUpdateScoresheetRequest: {
+					bonuses: newBonusInfo,
+					moves: newMoves
+				}
+			})
+			toast.success("Scoresheet updated successfully")
+			await bonusInfo.refetch()
+			await moves.refetch()
+		} catch (error) {
+			toast.error("Failed to update scoresheet")
+		}
 	}
 
 	if (moves.isLoading || bonusInfo.isLoading) {
-		return <Skeleton variant="rectangular" />
+		return <Skeleton variant="rectangular" data-testid="loading-skeleton" />
 	} else if (newMoves) {
 		return (
 			<>

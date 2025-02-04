@@ -18,6 +18,7 @@ export const EditMove = ({
 				label="Name"
 				variant="outlined"
 				fullWidth
+				data-testid="name-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
 						...moveData,
@@ -55,6 +56,7 @@ export const EditMove = ({
 				label="F/L"
 				variant="outlined"
 				fullWidth
+				data-testid="fl-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
 						...moveData,
@@ -87,6 +89,7 @@ export const EditMove = ({
 					label={`${b.name}`}
 					variant="outlined"
 					fullWidth
+					data-testid={`${b.name.toLowerCase()}-field`}
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => {

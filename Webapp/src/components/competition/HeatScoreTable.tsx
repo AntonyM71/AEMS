@@ -29,9 +29,12 @@ export const HeatScoreTable = ({
 	defaultShowJudgeScores?: boolean
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
-		id: selectedHeat
-	})
+	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{
+			id: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 	const { data: scoreData, isLoading: isScoreLoading } =
 		useGetHeatScoresGetHeatScoresHeatIdGetQuery(
 			{
@@ -77,7 +80,7 @@ export const HeatScoreTable = ({
 			</Grid>
 		)
 	} else if (isLoading) {
-		return <Skeleton variant="rectangular" />
+		return <Skeleton variant="rectangular" data-testid="skeleton" />
 	}
 
 	return <h4>Something went wrong</h4>

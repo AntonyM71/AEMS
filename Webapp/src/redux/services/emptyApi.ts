@@ -7,7 +7,7 @@ export const emptySplitApi = createApi({
 		fetchBaseQuery({
 			baseUrl: process.env.NEXT_PUBLIC_API_URL_DEV ?? "/api/"
 		}),
-		{ maxRetries: process.env.NEXT_PUBLIC_ENV === "prod" ? 5 : undefined }
+		{ maxRetries: process.env.NEXT_PUBLIC_ENV === "prod" ? 5 : 0 }
 	),
 	endpoints: () => ({})
 })

@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 import { useState } from "react"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { SelectScoresheet } from "../competition/ScoresheetSelector"
 import { AddScoresheet } from "./AddScoresheet"
 import { ScoresheetMoves } from "./ScoresheetBuilder"
 

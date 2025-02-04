@@ -7,12 +7,12 @@ import RouterLink from "next/link"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
 
-import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
-import { SelectorDisplay } from "../../components/competition/MainSelector"
 import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery
 } from "../../redux/services/aemsApi"
+import { HeatSummaryTable } from "../competition/HeatSummaryTable"
+import { SelectorDisplay } from "../competition/MainSelector"
 
 const Judging = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
@@ -43,6 +43,7 @@ const Judging = () => {
 				spacing={1}
 				alignItems="flex-start"
 				sx={{ paddingTop: "0.5em" }}
+				data-testid="judging-page-content"
 			>
 				<Grid item xs={12}>
 					<Paper sx={{ padding: "1em" }}>
@@ -56,7 +57,10 @@ const Judging = () => {
 
 							<Grid item xs={6}>
 								{!heatHasPaddlers && (
-									<Alert severity="warning">
+									<Alert
+										severity="warning"
+										data-testid="no-paddlers-warning"
+									>
 										Cannot Judge a heat with no paddlers.
 									</Alert>
 								)}
@@ -104,7 +108,12 @@ const ScribeButton = ({
 	disabled?: boolean
 }) => (
 	<Link component={RouterLink} href={`scribe/${n}`} color="inherit">
-		<Button variant="contained" fullWidth disabled={disabled}>
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid={`scribe-button-${n}`}
+		>
 			Scribe {n}
 		</Button>
 	</Link>
@@ -112,7 +121,12 @@ const ScribeButton = ({
 
 const HeadJudgeButton = ({ disabled = false }: { disabled?: boolean }) => (
 	<Link component={RouterLink} href={"HeadJudge"} color="inherit">
-		<Button variant="contained" fullWidth disabled={disabled}>
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid="head-judge-button"
+		>
 			Head Judge
 		</Button>
 	</Link>

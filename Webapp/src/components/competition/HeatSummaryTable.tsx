@@ -99,9 +99,12 @@ export const HeatSummaryTable = ({
 	showAddAthletes?: boolean
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery({
-		id: selectedHeat
-	})
+	const { data, isLoading } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{
+			id: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
 
 	if (data && selectedHeat && !isLoading) {
 		return (
@@ -167,7 +170,7 @@ export const HeatSummaryTable = ({
 			</Paper>
 		)
 	} else if (isLoading) {
-		return <Skeleton variant="rectangular" />
+		return <Skeleton variant="rectangular" data-testid="skeleton" />
 	}
 
 	return <h4>Something went wrong</h4>
@@ -211,7 +214,14 @@ export const HeatAthleteTable = ({
 							setOpen(true)
 						}
 
-						return <Button onClick={onClick}>Edit</Button>
+						return (
+							<Button
+								onClick={onClick}
+								data-testid="edit-athlete-button"
+							>
+								Edit
+							</Button>
+						)
 					}
 				}
 		  ]
@@ -267,7 +277,7 @@ export const HeatAthleteTable = ({
 	)
 }
 
-const EditAthletDialog = ({
+export const EditAthletDialog = ({
 	open,
 	handleClose,
 	athlete_id,
@@ -309,7 +319,7 @@ const EditAthletDialog = ({
 )
 
 // eslint-disable-next-line complexity
-const AddAthletesToHeat = (props: {
+export const AddAthletesToHeat = (props: {
 	athlete_id?: string
 	first_name?: string
 	last_name?: string
@@ -458,7 +468,13 @@ const AddAthletesToHeat = (props: {
 		}
 	}
 	if (!isSuccess || !heatIsSuccess) {
-		return <h4>Failed to get data from server</h4>
+		return (
+			<h4 data-testid="server-error">
+				Failed to get data from server
+				{!isSuccess && " (events)"}
+				{!heatIsSuccess && " (heats)"}
+			</h4>
+		)
 	}
 	const colWidth = props.athlete_id && props.athlete_heat_id ? 12 : 2
 	const phases = data
@@ -524,13 +540,18 @@ const AddAthletesToHeat = (props: {
 			{props.showHeat && (
 				<Grid item xs={colWidth}>
 					<FormControl fullWidth={true}>
-						<InputLabel>Select Heat</InputLabel>
+						<InputLabel id="heat-select-label">
+							Select Heat
+						</InputLabel>
 						<Select
+							labelId="heat-select-label"
+							id="heat-select"
 							value={newHeat}
 							onChange={onSelectHeat}
 							variant="outlined"
 							fullWidth
 							autoWidth
+							data-testid="heat-select"
 						>
 							{heatData
 								? heatData.map((heat) => (
