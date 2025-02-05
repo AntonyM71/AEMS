@@ -1,13 +1,18 @@
+const websocketURL = () => {
+	const isProd = process.env.NEXT_PUBLIC_ENV === "prod"
+
+	const url = new URL(isProd ? "/api/" : "/", location.href)
+	url.protocol = url.protocol.replace("http", "ws")
+
+	if (!isProd) {
+		url.port = process.env.NEXT_PUBLIC_SERVER_PORT ?? "8000"
+	}
+
+	return url
+}
+
 export const connectWebRunStatusSocket = (): WebSocket =>
-	new WebSocket(
-		`ws://localhost:${
-			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
-		}/api/runstatus`
-	)
+	new WebSocket(`${websocketURL().toString()}run_status`)
 
 export const connectCurrentScoreStatusSocket = (): WebSocket =>
-	new WebSocket(
-		`ws://localhost:${
-			process.env.NEXT_PUBLIC_SERVER_PORT ?? 8000
-		}/api/current_scores`
-	)
+	new WebSocket(`${websocketURL().toString()}current_scores`)
