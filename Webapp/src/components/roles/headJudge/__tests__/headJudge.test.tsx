@@ -117,10 +117,8 @@ describe("HeadJudge", () => {
 					])
 				)
 			),
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) => {
-				console.log("getHeatInfo called with:", req.params.heatId)
-
-				return res(
+			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
+				res(
 					ctx.json([
 						{
 							athlete_id: "athlete-1",
@@ -132,14 +130,9 @@ describe("HeadJudge", () => {
 						}
 					])
 				)
-			}),
-			rest.get("/api/getManyRunStatus", (req, res, ctx) => {
-				console.log(
-					"getManyRunStatus called with:",
-					req.url.searchParams.toString()
-				)
-
-				return res(
+			),
+			rest.get("/api/getManyRunStatus", (req, res, ctx) =>
+				res(
 					ctx.json([
 						{
 							id: "status-1",
@@ -152,7 +145,7 @@ describe("HeadJudge", () => {
 						}
 					])
 				)
-			}),
+			),
 			rest.get("/api/getManyAvailablebonuses", (_req, res, ctx) =>
 				res(ctx.json([]))
 			),

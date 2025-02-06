@@ -68,6 +68,7 @@ dependencies = [
     "mypy",
     "pytest",
     "pytest-cov",
+    "pytest-asyncio",
     "fastapi-quickcrud",
     "sqlalchemy_utils",
     "sqlalchemy[mypy]",    # remove when we upgrade to 2.0
