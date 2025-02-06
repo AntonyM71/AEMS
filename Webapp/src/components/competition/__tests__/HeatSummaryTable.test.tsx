@@ -121,7 +121,7 @@ describe("HeatSummaryTable", () => {
 
 		// Get the grid props
 		const gridProps = JSON.parse(
-			grid.getAttribute("data-grid-props") || "{}"
+			grid.getAttribute("data-grid-props") ?? "{}"
 		) as {
 			columns: { field: string; headerName: string }[]
 			rows: {
@@ -284,7 +284,7 @@ describe("HeatAthleteTable", () => {
 
 		// Get the grid props
 		const gridProps = JSON.parse(
-			grid.getAttribute("data-grid-props") || "{}"
+			grid.getAttribute("data-grid-props") ?? "{}"
 		) as {
 			columns: { field: string; headerName: string }[]
 		}
@@ -361,12 +361,6 @@ describe("HeatAthleteTable", () => {
 	})
 
 	it.skip("shows warning and deletes moves when moving athlete to different heat", async () => {
-		// Mock toast.success
-		jest.spyOn(toast, "success").mockImplementation(() => "mocked-toast-id")
-
-		// Mock RTK query hooks
-		jest.spyOn(console, "error").mockImplementation(() => {})
-
 		// Mock endpoints
 		server.use(
 			rest.get("/api/heat", (req, res, ctx) =>
@@ -427,7 +421,7 @@ describe("HeatAthleteTable", () => {
 			<Provider store={store}>
 				<EditAthletDialog
 					open={true}
-					handleClose={() => {}}
+					handleClose={jest.fn()}
 					athlete_id="1"
 					first_name="John"
 					last_name="Doe"
@@ -609,12 +603,6 @@ describe("AddAthletesToHeat", () => {
 	})
 
 	it("creates a new athlete successfully", async () => {
-		// Mock toast.success
-		jest.spyOn(toast, "success").mockImplementation(() => "mocked-toast-id")
-
-		// Mock RTK query hooks
-		jest.spyOn(console, "error").mockImplementation(() => {})
-
 		// Mock mutation endpoints
 		server.use(
 			rest.post("/api/athlete", (req, res, ctx) =>
