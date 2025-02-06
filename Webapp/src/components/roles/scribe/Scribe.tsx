@@ -253,7 +253,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			<Grid container spacing={1}>
 				<Grid item xs={7}>
 					{runStatus?.locked && (
-						<Alert severity="info">
+						<Alert severity="info" sx={{ marginBottom: "0.5em" }}>
 							Run has been locked by head judge
 						</Alert>
 					)}
