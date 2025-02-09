@@ -417,9 +417,9 @@ def calculate_tied_rank(
     )
 
     # Sort by dropped rides
-    for i in range(1, number_of_runs):
+    for i in range(1, number_of_runs + 1):
         sorted_athlete_score.sort(
-            key=get_nth_highest_score(index=number_of_runs - i - 1),
+            key=get_nth_highest_score(index=number_of_runs - i),
             reverse=True,
         )
     if (
