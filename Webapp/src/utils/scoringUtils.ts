@@ -23,8 +23,6 @@ export function calculateSingleJudgeRunScore(
 
 		const scores: MoveScoreInfo[] = flatten(
 			moveData[0].direction.split("").map((d) => {
-				console.log("VVVVVVVV")
-				console.log(d)
 				if (!moveData) {
 					return []
 				}
@@ -101,7 +99,6 @@ export const calculateMoveScore = (
 	const scoredBonusValues = scoredBonuses.map((b) =>
 		getBonusScore(b, availableBonuses)
 	)
-	console.log([moveBaseScore, ...scoredBonusValues])
 
 	return {
 		baseMove: baseMove?.id ?? "",
