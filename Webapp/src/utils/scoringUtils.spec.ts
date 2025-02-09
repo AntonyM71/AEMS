@@ -16,7 +16,7 @@ import {
 
 describe("calculateSingleJudgeRunScore", () => {
 	const mockScoredMoves = [
-		{ id: "1", moveId: "move1", direction: "L" },
+		{ id: "1", moveId: "move1", direction: "F" },
 		{ id: "2", moveId: "move2", direction: "R" }
 	]
 
@@ -63,6 +63,54 @@ describe("calculateSingleJudgeRunScore", () => {
 		})
 	})
 
+	// eslint-disable-next-line max-len
+	it("should calculate the correct run score and highest move when runs both side are scored with a single bonus", () => {
+		const bothSideScoredMoves = [
+			{ id: "1", moveId: "move1", direction: "F" },
+			{ id: "2", moveId: "move1", direction: "B" }
+		]
+
+		const bothSiddeScoredBonuses = [
+			{ id: "bonus1", moveId: "1", bonusId: "bonus1" }
+		]
+
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			bothSideScoredMoves,
+			bothSiddeScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+
+		expect(result).toEqual({
+			score: 20,
+			highestMove: 15
+		})
+	})
+
+	// eslint-disable-next-line max-len
+	it("should calculate the correct run score and highest move when runs both side are scored with a both side bonus", () => {
+		const bothSideScoredMoves = [
+			{ id: "1", moveId: "move1", direction: "F" },
+			{ id: "2", moveId: "move1", direction: "B" }
+		]
+
+		const bothSiddeScoredBonuses = [
+			{ id: "bonus1", moveId: "1", bonusId: "bonus1" },
+			{ id: "bonus2", moveId: "2", bonusId: "bonus1" }
+		]
+
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			bothSideScoredMoves,
+			bothSiddeScoredBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+
+		expect(result).toEqual({
+			score: 25,
+			highestMove: 15
+		})
+	})
 	it("should return zero score and highest move when inputs are empty", () => {
 		const result: RunScoreInfo = calculateSingleJudgeRunScore(
 			[],
@@ -137,8 +185,8 @@ describe("calculateMoveScore", () => {
 })
 describe("calculateSingleJudgeRunScore", () => {
 	const mockScoredMoves: scoredMovesType[] = [
-		{ id: "1", moveId: "move1", direction: "LF" },
-		{ id: "2", moveId: "move1", direction: "RB" }
+		{ id: "1", moveId: "move1", direction: "F" },
+		{ id: "2", moveId: "move1", direction: "B" }
 	]
 	const mockScoredBonuses: scoredBonusType[] = [
 		{ id: "bonus1", moveId: "1", bonusId: "bonus1" }
@@ -157,13 +205,20 @@ describe("calculateSingleJudgeRunScore", () => {
 			direction: "LR",
 			fl_score: 15,
 			rb_score: 20
+		},
+		{
+			id: "move3",
+			name: "Move 3",
+			direction: "S",
+			fl_score: 15,
+			rb_score: 20
 		}
 	]
 	const mockAvailableBonuses: AvailableBonusType[] = [
 		{
 			id: "bonus1",
 			name: "Bonus 1",
-			shortName: "B1",
+			sheet_id: "a",
 			move_id: "move1",
 			score: 5
 		}
@@ -175,11 +230,11 @@ describe("calculateSingleJudgeRunScore", () => {
 			mockAvailableMoves,
 			mockAvailableBonuses
 		)
-		expect(result).toEqual({ score: 25, highestMove: 15 })
+		expect(result).toEqual({ score: 20, highestMove: 15 })
 	})
 	it("should calculate correct score when no directional scored moves are found", () => {
 		const mockScoredMovesNoDirection: scoredMovesType[] = [
-			{ id: "3", moveId: "move2", direction: "S" }
+			{ id: "3", moveId: "move3", direction: "S" }
 		]
 		const result: RunScoreInfo = calculateSingleJudgeRunScore(
 			mockScoredMovesNoDirection,
@@ -191,7 +246,7 @@ describe("calculateSingleJudgeRunScore", () => {
 	})
 	it("should handle cases where leftRightPartition is empty", () => {
 		const mockScoredMovesEmptyPartition: scoredMovesType[] = [
-			{ id: "4", moveId: "move2", direction: "RB" }
+			{ id: "4", moveId: "move2", direction: "R" }
 		]
 		const result: RunScoreInfo = calculateSingleJudgeRunScore(
 			mockScoredMovesEmptyPartition,
@@ -218,7 +273,7 @@ describe("getMoveBaseScore", () => {
 		{
 			id: "move1",
 			name: "Move 1",
-			direction: "LF",
+			direction: "FB",
 			fl_score: 10,
 			rb_score: 5
 		}
@@ -228,7 +283,7 @@ describe("getMoveBaseScore", () => {
 		const mockScoredMove: scoredMovesType = {
 			id: "1",
 			moveId: "move1",
-			direction: "LF"
+			direction: "F"
 		}
 		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
 		expect(result).toBe(10)
