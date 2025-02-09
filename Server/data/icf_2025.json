@@ -189,7 +189,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Direction": "FB"
+    "Direction": "LR"
   },
   {
     "Move": "Roundhouse",
