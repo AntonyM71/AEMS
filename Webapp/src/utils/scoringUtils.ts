@@ -22,7 +22,7 @@ export function calculateSingleJudgeRunScore(
 		const moveData = availableMoves.filter((m) => m.id === id)
 
 		const scores: MoveScoreInfo[] = flatten(
-			moveData[0].direction.split("").map((d) => {
+			moveData[0]?.direction.split("").map((d) => {
 				if (!moveData) {
 					return []
 				}
@@ -47,7 +47,7 @@ export function calculateSingleJudgeRunScore(
 					moveData,
 					moveAvailableBonuses
 				)
-			})
+			}) || []
 		)
 
 		return scores
@@ -58,7 +58,7 @@ export function calculateSingleJudgeRunScore(
 			? scoredMoveScores
 					.flat()
 					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue)
+					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
 			: 0
 
 	let runScore = 0
