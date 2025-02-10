@@ -1117,7 +1117,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0 / 3,
+                        mean_run_score=8.33,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -1132,12 +1132,12 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0 / 3,
+                        mean_run_score=6.67,
                         highest_scoring_move=20.0,
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=25 / 3,
+                total_score=8.33,
             )
         ]
         got = calculate_heat_scores(
@@ -1229,7 +1229,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0 / 3,
+                        mean_run_score=8.33,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -1244,12 +1244,12 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0 / 3,
+                        mean_run_score=6.67,
                         highest_scoring_move=20.0,
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=25 / 3,
+                total_score=8.33,
             )
         ]
         got = calculate_heat_scores(
@@ -1351,7 +1351,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0 / 3,
+                        mean_run_score=8.33,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -1371,7 +1371,7 @@ class TestAthleteScoreCalculation:
                     ),
                 ],
                 highest_scoring_move=25.0,
-                total_score=25 / 3,
+                total_score=8.33,
             )
         ]
         got = calculate_heat_scores(
@@ -1745,7 +1745,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=25.0 / 3,
+                        mean_run_score=8.33,
                         highest_scoring_move=25.0,
                     ),
                     RunScores(
@@ -1760,7 +1760,7 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=20.0 / 3,
+                        mean_run_score=6.67,
                         highest_scoring_move=20.0,
                     ),
                 ],
@@ -2107,7 +2107,7 @@ class TestAthleteRankCalculation:
     def test_it_breaks_a_tie_with_highest_scoring_run(
         self,
     ) -> None:
-        scores = [
+        [
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
