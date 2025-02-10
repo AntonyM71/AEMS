@@ -3,6 +3,7 @@ from itertools import groupby
 from typing import Literal, Optional
 from uuid import UUID
 
+import numpy as np
 from pydantic import BaseModel
 
 
@@ -120,7 +121,7 @@ def calculate_run_score(
 
     return AthleteScoreInfo(
         score=sum(filtered_move_scores.values()),
-        highest_scoring_move=max([*filtered_move_scores.values(), 0]),
+        highest_scoring_move=np.max([*filtered_move_scores.values(), 0]),
     )
 
 
@@ -341,8 +342,11 @@ def calculate_heat_scores(
                     run_number=run.run,
                     mean_run_score=0
                     if run_status and run_status.did_not_start
-                    else sum([j.score_info.score for j in judges])
-                    / max([athlete.number_of_judges, len(judges)]),
+                    else round(
+                        sum([j.score_info.score for j in judges])
+                        / max([athlete.number_of_judges, len(judges)]),
+                        2,
+                    ),
                     highest_scoring_move=0
                     if run_status and run_status.did_not_start
                     else max(
