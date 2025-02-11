@@ -2,7 +2,7 @@
 
 import FormControlLabel from "@mui/material/FormControlLabel"
 import FormGroup from "@mui/material/FormGroup"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Skeleton from "@mui/material/Skeleton"
 import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
@@ -53,10 +53,10 @@ export const HeatScoreTable = ({
 				alignItems="center"
 				justifyContent="space-between"
 			>
-				<Grid item xs={6}>
+				<Grid size={6}>
 					<h3>{`Heat: ${data.name || ""}`}</h3>
 				</Grid>
-				<Grid item xs={6} alignContent="right">
+				<Grid alignContent="right" size={6}>
 					<FormGroup sx={{ alignContent: "end" }}>
 						<FormControlLabel
 							control={
@@ -71,7 +71,7 @@ export const HeatScoreTable = ({
 						/>
 					</FormGroup>
 				</Grid>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<HeatAthleteScoreTable
 						athletes={scoreData}
 						showIndividualJudgeScores={showJudgeScores}
@@ -185,7 +185,7 @@ export const DetailScoreView =
 			>
 				{showIndividualJudgeScores ? (
 					params.value?.judgeScores?.map((s, j) => (
-						<Grid item xs={12} key={j}>
+						<Grid key={j} size={12}>
 							<Typography
 								variant={"body2"}
 								sx={{
@@ -205,7 +205,7 @@ export const DetailScoreView =
 				) : (
 					<></>
 				)}
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Typography
 						variant="body1"
 						sx={{

@@ -1,6 +1,6 @@
 import Brightness4Icon from "@mui/icons-material/Brightness4"
 import AppBar from "@mui/material/AppBar"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Link from "@mui/material/Link"
 import List from "@mui/material/List"
@@ -33,14 +33,14 @@ const Header = () => {
 							width="30"
 						/>
 					</RouterLink>
-					<Grid item>
+					<Grid>
 						<LinkList />
 					</Grid>{" "}
-					<Grid item>
+					<Grid>
 						<Typography variant="h5">{userRole}</Typography>
 						{/* <UserCard /> */}
 					</Grid>
-					<Grid item>
+					<Grid>
 						<DarkModeButton />
 					</Grid>
 				</Grid>

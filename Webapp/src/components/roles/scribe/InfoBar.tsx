@@ -1,6 +1,6 @@
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
@@ -72,14 +72,14 @@ export const InfoBar = ({
 				</Paper>
 			</Modal>
 			<Grid container spacing={1}>
-				<Grid item xs={10}>
+				<Grid size={10}>
 					<SelectorDisplay
 						showDetailed={false}
 						showEvent={false}
 						showPhase={false}
 					/>
 				</Grid>
-				<Grid item xs={2}>
+				<Grid size={2}>
 					<Button
 						onClick={handleOpen}
 						variant="contained"
@@ -89,23 +89,23 @@ export const InfoBar = ({
 						Heat Scores
 					</Button>
 				</Grid>
-				<Grid item xs={3}>
+				<Grid size={3}>
 					<CurrentScore currentScore={currentScore} />
 				</Grid>
-				<Grid item xs={6}>
+				<Grid size={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
 				</Grid>
-				<Grid item xs={3}>
+				<Grid size={3}>
 					<RunSelector />
 				</Grid>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Divider />
 				</Grid>
 
 				{isFetchingScoredMoves ? (
 					<Skeleton sx={{ width: "100%", height: "100%" }} />
 				) : (
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<ScoredMoveList
 							scoredMoves={scoredMoves}
 							isRunLocked={isRunLocked}
@@ -154,13 +154,13 @@ export const ScoredMoveList = ({
 				overflowY: "scroll"
 			}}
 		>
-			<Grid item xs={4}>
+			<Grid size={4}>
 				<Typography>Move Listing</Typography>
 			</Grid>
 			{[...scoredMoves] // put these into a new array so that reverse works
 				.reverse()
 				.map((scoredMove: scoredMovesType) => (
-					<Grid item xs={12} key={scoredMove.id}>
+					<Grid key={scoredMove.id} size={12}>
 						<ScoredMove
 							key={scoredMove.id}
 							scoredMove={scoredMove}

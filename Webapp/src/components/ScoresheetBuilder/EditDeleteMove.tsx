@@ -1,5 +1,5 @@
 import DeleteIcon from "@mui/icons-material/Delete"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import { EditMove, MoveData } from "./EditMove"
 export const EditDeleteMove = ({
@@ -22,7 +22,7 @@ export const EditDeleteMove = ({
 	return (
 		<Grid container spacing="2" alignItems="center">
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
-			<Grid item xs={1}>
+			<Grid size={1}>
 				<IconButton
 					onClick={handleDelete}
 					color="error"

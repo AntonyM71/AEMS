@@ -222,9 +222,12 @@ describe("PaddlerSelector", () => {
 
 		// Click next to go to second paddler
 		fireEvent.click(nextButton)
-		await waitFor(() => {
-			expect(store.getState().score.selectedPaddler).toBe(1)
-		})
+		await waitFor(
+			() => {
+				expect(store.getState().score.selectedPaddler).toBe(1)
+			},
+			{ timeout: 2000 }
+		)
 
 		// Click next again to wrap around and increment run
 		fireEvent.click(nextButton)

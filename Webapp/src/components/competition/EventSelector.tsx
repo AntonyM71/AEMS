@@ -2,7 +2,7 @@ import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -84,13 +84,13 @@ const EventSelector = ({
 			<Paper sx={{ padding: "1em" }}>
 				<Grid container spacing="2">
 					{showDetailed ? (
-						<Grid item xs={12}>
+						<Grid size={12}>
 							<h4>Select an Event</h4>
 						</Grid>
 					) : (
 						<></>
 					)}
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<FormControl fullWidth={true}>
 							<InputLabel>Select Event</InputLabel>
 							<Select
@@ -110,7 +110,7 @@ const EventSelector = ({
 						</FormControl>
 					</Grid>
 					{showDetailed ? (
-						<Grid item>
+						<Grid>
 							<AddEvent refetch={refetch} />
 						</Grid>
 					) : (
@@ -154,13 +154,13 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 
 	return (
 		<Grid container spacing="2">
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<h4>Add New Event</h4>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					error={!!eventName}
 					label="New event"
@@ -172,7 +172,7 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 					value={eventName}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				{options ? (
 					<Autocomplete
 						// error={!!competitionId}
@@ -195,7 +195,7 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 					<> </>
 				)}
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Button
 					variant="contained"
 					fullWidth

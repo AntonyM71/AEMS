@@ -1,6 +1,6 @@
 import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
 import RouterLink from "next/link"
@@ -45,16 +45,16 @@ const Judging = () => {
 				sx={{ paddingTop: "0.5em" }}
 				data-testid="judging-page-content"
 			>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
-							<Grid item xs={6}>
+							<Grid size={6}>
 								<SelectorDisplay
 									showPhase={false}
 									showEvent={false}
 								/>
 							</Grid>
-							<Grid item xs={6}>
+							<Grid size={6}>
 								{!heatHasPaddlers && (
 									<Alert
 										severity="warning"
@@ -65,17 +65,17 @@ const Judging = () => {
 								)}
 							</Grid>
 							{judgeNumberArray.map((j: number) => (
-								<Grid item xs key={j}>
+								<Grid key={j} size="grow">
 									<ScribeButton
 										n={j}
 										disabled={!heatHasPaddlers}
 									/>
 								</Grid>
 							))}
-							<Grid item xs>
+							<Grid size="grow">
 								<HeadJudgeButton disabled={!heatHasPaddlers} />
 							</Grid>{" "}
-							<Grid item xs>
+							<Grid size="grow">
 								<CommentatorButton
 									disabled={!heatHasPaddlers}
 								/>
@@ -83,7 +83,7 @@ const Judging = () => {
 						</Grid>
 					</Paper>
 				</Grid>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<HeatSummaryTable />
 				</Grid>
 			</Grid>
@@ -92,7 +92,7 @@ const Judging = () => {
 
 	return (
 		<Grid container alignItems="stretch" sx={{ paddingTop: "0.5em" }}>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<SelectorDisplay
 					showDetailed={false}
 					showEvent={false}

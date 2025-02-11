@@ -5,7 +5,7 @@ import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -110,18 +110,18 @@ export const HeatSummaryTable = ({
 		return (
 			<Paper sx={{ padding: "1em" }}>
 				<Grid container spacing={1} alignItems="stretch">
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<Grid
 							container
 							justifyContent="space-between"
 							alignItems="center"
 						>
-							<Grid item>
+							<Grid>
 								<Typography variant="h6">{`Heat: ${
 									data.name || ""
 								}`}</Typography>
 							</Grid>
-							<Grid item sx={{ padding: "0.5em" }}>
+							<Grid sx={{ padding: "0.5em" }}>
 								<Stack spacing={2} direction="row">
 									<Button
 										variant="contained"
@@ -148,20 +148,20 @@ export const HeatSummaryTable = ({
 									</Button>
 								</Stack>
 							</Grid>
-							<Grid item xs={12}>
+							<Grid size={12}>
 								<HeatAthleteTable showAdmin={showAddAthletes} />
 							</Grid>
 						</Grid>
 					</Grid>
 					{showAddAthletes && (
 						<>
-							<Grid item xs={12}>
+							<Grid size={12}>
 								<Typography variant="h6">
 									Add Athlete to Current Heat
 								</Typography>
 							</Grid>
 
-							<Grid item xs={12}>
+							<Grid size={12}>
 								<AddAthletesToHeat />
 							</Grid>
 						</>
@@ -492,7 +492,7 @@ export const AddAthletesToHeat = (props: {
 	return (
 		<Grid container spacing={1} alignItems="stretch">
 			{props.athlete_id && props.athlete_heat_id && (
-				<Grid item xs={colWidth}>
+				<Grid size={colWidth}>
 					{" "}
 					<Alert severity="info">
 						Warning: Moving an athlete between heats or phases will
@@ -501,8 +501,7 @@ export const AddAthletesToHeat = (props: {
 					</Alert>
 				</Grid>
 			)}
-
-			<Grid item xs={colWidth}>
+			<Grid size={colWidth}>
 				<TextField
 					label="First Name"
 					fullWidth
@@ -510,7 +509,7 @@ export const AddAthletesToHeat = (props: {
 					onChange={(e) => setAthleteFirstName(e.target.value)}
 				/>
 			</Grid>
-			<Grid item xs={colWidth}>
+			<Grid size={colWidth}>
 				<TextField
 					label="Last Name"
 					fullWidth
@@ -518,7 +517,7 @@ export const AddAthletesToHeat = (props: {
 					onChange={(e) => setAthleteLastName(e.target.value)}
 				/>
 			</Grid>
-			<Grid item xs={colWidth}>
+			<Grid size={colWidth}>
 				<FormControl fullWidth={true}>
 					<InputLabel>Select Phase</InputLabel>
 					<Select
@@ -538,7 +537,7 @@ export const AddAthletesToHeat = (props: {
 				</FormControl>
 			</Grid>
 			{props.showHeat && (
-				<Grid item xs={colWidth}>
+				<Grid size={colWidth}>
 					<FormControl fullWidth={true}>
 						<InputLabel id="heat-select-label">
 							Select Heat
@@ -564,7 +563,7 @@ export const AddAthletesToHeat = (props: {
 					</FormControl>
 				</Grid>
 			)}
-			<Grid item xs={colWidth}>
+			<Grid size={colWidth}>
 				<TextField
 					label="Bib Number"
 					variant="outlined"
@@ -579,7 +578,7 @@ export const AddAthletesToHeat = (props: {
 				/>
 			</Grid>
 			{allowSetLastPhaseRank && (
-				<Grid item xs={colWidth}>
+				<Grid size={colWidth}>
 					<TextField
 						label="Last Phase Rank"
 						variant="outlined"
@@ -598,7 +597,7 @@ export const AddAthletesToHeat = (props: {
 					/>
 				</Grid>
 			)}
-			<Grid item xs={colWidth}>
+			<Grid size={colWidth}>
 				<Button
 					onClick={() => void handleNewPaddlerSubmit()}
 					variant="contained"
