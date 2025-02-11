@@ -21,11 +21,12 @@ export const FinalScore = ({
 			height: "100%"
 		}}
 	>
-		<Typography variant="h6">Final Score:</Typography>
+		<Typography variant="h6">Score:</Typography>
 		<div style={{ textAlign: "center" }}>
 			<Typography
 				variant="h5"
 				data-testid="final-score-value"
+				color={locked ? "success" : "textPrimary"}
 				sx={makeLockedScoreStyle(locked)}
 			>
 				{did_not_start

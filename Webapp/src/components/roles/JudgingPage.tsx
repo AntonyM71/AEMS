@@ -54,7 +54,6 @@ const Judging = () => {
 									showEvent={false}
 								/>
 							</Grid>
-
 							<Grid item xs={6}>
 								{!heatHasPaddlers && (
 									<Alert
@@ -65,7 +64,6 @@ const Judging = () => {
 									</Alert>
 								)}
 							</Grid>
-
 							{judgeNumberArray.map((j: number) => (
 								<Grid item xs key={j}>
 									<ScribeButton
@@ -76,6 +74,11 @@ const Judging = () => {
 							))}
 							<Grid item xs>
 								<HeadJudgeButton disabled={!heatHasPaddlers} />
+							</Grid>{" "}
+							<Grid item xs>
+								<CommentatorButton
+									disabled={!heatHasPaddlers}
+								/>
 							</Grid>
 						</Grid>
 					</Paper>
@@ -128,6 +131,19 @@ const HeadJudgeButton = ({ disabled = false }: { disabled?: boolean }) => (
 			data-testid="head-judge-button"
 		>
 			Head Judge
+		</Button>
+	</Link>
+)
+
+const CommentatorButton = ({ disabled = false }: { disabled?: boolean }) => (
+	<Link component={RouterLink} href={"Commentator"} color="inherit">
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid="commentator-button"
+		>
+			Commentator
 		</Button>
 	</Link>
 )

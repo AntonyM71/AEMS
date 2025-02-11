@@ -489,4 +489,57 @@ describe("HeadJudge", () => {
 			)
 		}
 	})
+	it("should show does not show lock and dns controls when changeRunStatus is false", async () => {
+		// Set up store with a selected heat
+		store = configureStore({
+			reducer: {
+				[aemsApi.reducerPath]: aemsApi.reducer,
+				competitions: competitionsReducer,
+				score: scoringReducer
+			},
+			middleware: (getDefaultMiddleware) => [
+				...getDefaultMiddleware({
+					serializableCheck: false
+				}),
+				aemsApi.middleware
+			],
+			preloadedState: {
+				competitions: {
+					selectedPhase: "phase-1",
+					selectedHeat: "heat-1",
+					numberOfRuns: 2,
+					selectedEvent: "event-1",
+					selectedCompetition: "comp-1"
+				},
+				score: {
+					selectedPaddler: 0,
+					selectedRun: 1,
+					scoredMoves: [],
+					scoredBonuses: [],
+					currentMove: "",
+					userRole: ""
+				}
+			}
+		})
+
+		render(
+			<Provider store={store}>
+				<HeadJudge changeRunStatus={false} />
+			</Provider>
+		)
+
+		// Wait for loading to finish
+		await screen.findByTestId("head-judge-page")
+
+		// Check for main controls
+		expect(screen.getByTestId("final-score")).toBeInTheDocument()
+		expect(screen.queryByTestId("dns-button")).not.toBeInTheDocument()
+		if (process.env.NEXT_PUBLIC_SHOW_LOCK_RUN) {
+			expect(
+				screen.queryByTestId("lock-run-button")
+			).not.toBeInTheDocument()
+		}
+		expect(screen.getByTestId("heat-list-button")).toBeInTheDocument()
+		expect(screen.getByTestId("heat-scores-button")).toBeInTheDocument()
+	})
 })
