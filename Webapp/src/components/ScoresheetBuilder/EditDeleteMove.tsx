@@ -20,7 +20,7 @@ export const EditDeleteMove = ({
 	}
 
 	return (
-		<Grid container spacing="2" alignItems="center">
+		<Grid container spacing={2} alignItems="center">
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
 			<Grid size={1}>
 				<IconButton

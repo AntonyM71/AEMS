@@ -101,7 +101,7 @@ const PhasesSelector = ({
 					handleClose={handleClose}
 					selectedPhase={selectedPhase}
 				/>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
 						<Grid size={12}>
 							<h4>Select a Phase</h4>

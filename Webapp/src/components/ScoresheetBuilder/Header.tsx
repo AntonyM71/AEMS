@@ -32,7 +32,7 @@ export const ScoresheetBuilderHeader = ({
 	}
 
 	return (
-		<Grid container spacing="2" alignItems="center">
+		<Grid container spacing={2} alignItems="center">
 			<Grid size={2}>
 				<Typography>Name</Typography>
 			</Grid>

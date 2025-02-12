@@ -72,7 +72,7 @@ export const CompetitionSelector = ({
 	} else {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
 						<Grid size={12}>
 							<h4>Select a Competition</h4>

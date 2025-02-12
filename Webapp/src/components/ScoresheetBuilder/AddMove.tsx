@@ -52,7 +52,7 @@ export const AddNewMove = ({
 	}
 
 	return (
-		<Grid container spacing="2">
+		<Grid container spacing={2}>
 			{" "}
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
 			<Grid size={1}>

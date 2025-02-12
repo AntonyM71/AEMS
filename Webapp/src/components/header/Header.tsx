@@ -1,11 +1,11 @@
 import Brightness4Icon from "@mui/icons-material/Brightness4"
 import AppBar from "@mui/material/AppBar"
-import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Link from "@mui/material/Link"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
+import Stack from "@mui/material/Stack"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
 import Image from "next/image"
@@ -19,11 +19,14 @@ const Header = () => {
 	return (
 		<AppBar position="sticky" color={"default"} elevation={0}>
 			<Toolbar variant="dense">
-				<Grid
-					container
+				<Stack
 					direction="row"
-					justifyContent="space-between"
-					alignItems="center"
+					spacing={2}
+					sx={{
+						justifyContent: "space-between",
+						alignItems: "center"
+					}}
+					width="100%"
 				>
 					<RouterLink href="/">
 						<Image
@@ -33,17 +36,13 @@ const Header = () => {
 							width="30"
 						/>
 					</RouterLink>
-					<Grid>
-						<LinkList />
-					</Grid>{" "}
-					<Grid>
-						<Typography variant="h5">{userRole}</Typography>
-						{/* <UserCard /> */}
-					</Grid>
-					<Grid>
-						<DarkModeButton />
-					</Grid>
-				</Grid>
+
+					<LinkList />
+
+					<Typography variant="h5">{userRole}</Typography>
+
+					<DarkModeButton />
+				</Stack>
 			</Toolbar>
 		</AppBar>
 	)

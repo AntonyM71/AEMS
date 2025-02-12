@@ -82,7 +82,7 @@ const EventSelector = ({
 	} else if (data) {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
 						<Grid size={12}>
 							<h4>Select an Event</h4>
@@ -153,7 +153,7 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	}
 
 	return (
-		<Grid container spacing="2">
+		<Grid container spacing={2}>
 			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
