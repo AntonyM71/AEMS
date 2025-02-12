@@ -64,15 +64,16 @@ describe("Header Component", () => {
 		]
 
 		links.forEach(({ text, href }) => {
-			const link = screen.getByText(text)
+			const link = screen.getByRole("link", { name: text })
+
 			expect(link).toBeInTheDocument()
-			expect(link.closest("a")).toHaveAttribute("href", href)
+			expect(link).toHaveAttribute("href", href)
 		})
 	})
 })
 
 describe("DarkModeButton Component", () => {
-	let store: any
+	let store = mockStore({})
 
 	beforeEach(() => {
 		store = mockStore({

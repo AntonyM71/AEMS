@@ -138,7 +138,9 @@ const PhasesSelector = ({
 									<MenuItem
 										key={Phase.id}
 										value={Phase.id}
-										data-testid={`phase-option-${Phase.id}`}
+										data-testid={`phase-option-${
+											Phase.id ?? ""
+										}`}
 									>
 										{Phase.name}
 									</MenuItem>

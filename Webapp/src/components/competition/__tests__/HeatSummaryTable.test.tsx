@@ -342,7 +342,7 @@ describe("HeatAthleteTable", () => {
 			<Provider store={store}>
 				<EditAthletDialog
 					open={true}
-					handleClose={() => {}}
+					handleClose={jest.fn()}
 					athlete_id="1"
 					first_name="John"
 					last_name="Doe"
