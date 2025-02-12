@@ -25,7 +25,9 @@ os.environ["CONNECTION_STRING"] = "postgresql://test:test@localhost:5432/test_db
 @pytest.fixture(autouse=True)
 def mock_db_session():
     """Mock database session for all tests"""
-    with patch("app.competition_management.pdfEndpoints.get_transaction_session") as mock_session:
+    with patch(
+        "app.competition_management.pdfEndpoints.get_transaction_session"
+    ) as mock_session:
         db = MagicMock(spec=Session)
         mock_session.return_value.__enter__.return_value = db
         mock_session.return_value.__exit__.return_value = None
@@ -75,24 +77,23 @@ def mock_phase():
 @pytest.fixture
 def mock_heat():
     return MagicMock(
-        spec=Heat,
-        id=uuid.uuid4(),
-        name="Test Heat",
-        competition_id=uuid.uuid4()
+        spec=Heat, id=uuid.uuid4(), name="Test Heat", competition_id=uuid.uuid4()
     )
 
 
 @pytest.mark.asyncio
-async def test_phase_pdf_success(mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase):
+async def test_phase_pdf_success(
+    mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase
+) -> None:
     # Mock database queries
-    mock_db_session.query.return_value.filter.return_value.one = MagicMock(side_effect=[
-        mock_phase,
-        mock_event,
-        mock_competition
-    ])
+    mock_db_session.query.return_value.filter.return_value.one = MagicMock(
+        side_effect=[mock_phase, mock_event, mock_competition]
+    )
 
     # Mock phase scores calculation
-    with patch("app.competition_management.pdfEndpoints.calculate_phase_scores") as mock_calc:
+    with patch(
+        "app.competition_management.pdfEndpoints.calculate_phase_scores"
+    ) as mock_calc:
         mock_calc.return_value.scores = []
         mock_calc.return_value.phase_id = sample_phase_id
 
@@ -100,14 +101,17 @@ async def test_phase_pdf_success(mock_db_session, sample_phase_id, mock_competit
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
-        assert response.headers[
-            "Content-Disposition"] == f"attachment; filename={sample_phase_id}.pdf"
+        assert (
+            response.headers["Content-Disposition"]
+            == f"attachment; filename={sample_phase_id}.pdf"
+        )
 
 
 @pytest.mark.asyncio
-async def test_phase_pdf_db_error(mock_db_session, sample_phase_id):
+async def test_phase_pdf_db_error(mock_db_session, sample_phase_id) -> None:
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
-        "Database error")
+        "Database error"
+    )
 
     with pytest.raises(HTTPException) as exc_info:
         await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
@@ -116,23 +120,25 @@ async def test_phase_pdf_db_error(mock_db_session, sample_phase_id):
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_success(mock_db_session, mock_competition):
+async def test_heat_pdf_success(mock_db_session, mock_competition) -> None:
     # Create a heat ID and mock heat with matching ID
     heat_id = str(uuid.uuid4())
     mock_heat = MagicMock(
-        spec=Heat,
-        id=heat_id,
-        name="Test Heat",
-        competition_id=mock_competition.id
+        spec=Heat, id=heat_id, name="Test Heat", competition_id=mock_competition.id
     )
 
     # Mock database queries
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = [
-        mock_heat]
-    mock_db_session.query.return_value.filter.return_value.one.return_value = mock_competition
+        mock_heat
+    ]
+    mock_db_session.query.return_value.filter.return_value.one.return_value = (
+        mock_competition
+    )
 
     # Mock heat info logic
-    with patch("app.competition_management.pdfEndpoints.get_heat_info_logic") as mock_heat_info:
+    with patch(
+        "app.competition_management.pdfEndpoints.get_heat_info_logic"
+    ) as mock_heat_info:
         mock_heat_info.return_value = [
             HeatInfoResponse(
                 athlete_heat_id=uuid.uuid4(),
@@ -146,7 +152,7 @@ async def test_heat_pdf_success(mock_db_session, mock_competition):
                 last_name="Doe",
                 event_name="Test Event",
                 bib="123",
-                last_phase_rank=1
+                last_phase_rank=1,
             )
         ]
 
@@ -158,14 +164,14 @@ async def test_heat_pdf_success(mock_db_session, mock_competition):
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_no_ids():
+async def test_heat_pdf_no_ids() -> None:
     response = await heat_pdf(heat_ids=[], db=MagicMock())
     assert response.status_code == 404
     assert b"Please provide a list of Heat IDs" == response.body
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_not_found(mock_db_session, sample_heat_ids):
+async def test_heat_pdf_not_found(mock_db_session, sample_heat_ids) -> None:
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = []
 
     response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
@@ -174,17 +180,19 @@ async def test_heat_pdf_not_found(mock_db_session, sample_heat_ids):
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_success(mock_db_session, mock_competition, mock_heat):
+async def test_heat_results_pdf_success(mock_db_session, mock_competition, mock_heat) -> None:
     heat_id = str(uuid.uuid4())
 
     # Mock database queries
     mock_db_session.query.return_value.filter.return_value.one.side_effect = [
         mock_heat,
-        mock_competition
+        mock_competition,
     ]
 
     # Mock heat scores
-    with patch("app.competition_management.pdfEndpoints.get_heat_scores") as mock_scores:
+    with patch(
+        "app.competition_management.pdfEndpoints.get_heat_scores"
+    ) as mock_scores:
         mock_scores.return_value.scores = [
             AthleteScoresWithAthleteInfo(
                 athlete_id=uuid.uuid4(),
@@ -198,14 +206,14 @@ async def test_heat_results_pdf_success(mock_db_session, mock_competition, mock_
                         mean_run_score=85.5,
                         highest_scoring_move=85.5,
                         locked=True,
-                        did_not_start=False
+                        did_not_start=False,
                     )
                 ],
                 highest_scoring_move=85.5,
                 total_score=85.5,
                 ranking=1,
                 reason=None,
-                last_phase_rank=None
+                last_phase_rank=None,
             )
         ]
 
@@ -217,17 +225,18 @@ async def test_heat_results_pdf_success(mock_db_session, mock_competition, mock_
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_no_id():
+async def test_heat_results_pdf_no_id() -> None:
     response = await heat_results_pdf(heat_id="", db=MagicMock())
     assert response.status_code == 404
     assert b"Please provide a list of Heat IDs" == response.body
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_error(mock_db_session):
+async def test_heat_results_pdf_error(mock_db_session) -> None:
     heat_id = str(uuid.uuid4())
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
-        "Database error")
+        "Database error"
+    )
 
     with pytest.raises(HTTPException) as exc_info:
         await heat_results_pdf(heat_id=heat_id, db=mock_db_session)
@@ -236,10 +245,14 @@ async def test_heat_results_pdf_error(mock_db_session):
 
 
 @pytest.mark.asyncio
-async def test_pdf_content_structure(mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase):
+async def test_pdf_content_structure(
+    mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase
+) -> None:
     """Test the structure of generated PDFs"""
     # This test ensures the PDF contains expected sections and formatting
-    with patch("app.competition_management.pdfEndpoints.calculate_phase_scores") as mock_calc:
+    with patch(
+        "app.competition_management.pdfEndpoints.calculate_phase_scores"
+    ) as mock_calc:
         mock_calc.return_value.scores = [
             AthleteScoresWithAthleteInfo(
                 athlete_id=uuid.uuid4(),
@@ -253,14 +266,14 @@ async def test_pdf_content_structure(mock_db_session, sample_phase_id, mock_comp
                         mean_run_score=85.5,
                         highest_scoring_move=85.5,
                         locked=True,
-                        did_not_start=False
+                        did_not_start=False,
                     )
                 ],
                 highest_scoring_move=85.5,
                 total_score=85.5,
                 ranking=1,
                 reason=None,
-                last_phase_rank=None
+                last_phase_rank=None,
             )
         ]
         mock_calc.return_value.phase_id = sample_phase_id
@@ -271,7 +284,7 @@ async def test_pdf_content_structure(mock_db_session, sample_phase_id, mock_comp
         mock_db_session.query.return_value.filter.return_value.one.side_effect = [
             mock_phase,
             mock_event,
-            mock_competition
+            mock_competition,
         ]
         # Ensure mock objects have proper string representation
         mock_competition.__str__ = MagicMock(return_value="Test Competition")
