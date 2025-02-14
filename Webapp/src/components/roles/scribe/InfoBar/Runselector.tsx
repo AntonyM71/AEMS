@@ -69,7 +69,7 @@ export const RunSelector = () => {
 							selectedAthlete?.number_of_runs &&
 							selectedRun + 1 > selectedAthlete?.number_of_runs
 								? "red"
-								: "black"
+								: "default"
 						}
 					>
 						{selectedRun + 1}

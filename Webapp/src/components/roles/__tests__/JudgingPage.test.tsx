@@ -140,5 +140,75 @@ describe("JudgingPage", () => {
 		expect(screen.getByTestId("scribe-button-2")).toBeDisabled()
 		expect(screen.getByTestId("scribe-button-3")).toBeDisabled()
 		expect(screen.getByTestId("head-judge-button")).toBeDisabled()
+		expect(screen.getByTestId("commentator-button")).toBeDisabled()
+	})
+
+	it("should show active buttons when there are paddlers", async () => {
+		// Set up store with a selected heat
+		store = configureStore({
+			reducer: {
+				[aemsApi.reducerPath]: aemsApi.reducer,
+				competitions: competitionsReducer
+			},
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
+					serializableCheck: false
+				}).concat(aemsApi.middleware),
+			preloadedState: {
+				competitions: {
+					selectedPhase: "phase-1",
+					selectedHeat: "heat-1",
+					numberOfRuns: 0,
+					selectedEvent: "event-1",
+					selectedCompetition: "comp-1"
+				}
+			}
+		})
+
+		// Mock API to return empty athlete list
+		server.use(
+			rest.get("/api/getHeatInfo/:heatId", (_req, res, ctx) =>
+				res(
+					ctx.json([
+						{
+							id: "athlete-1",
+							name: "Athlete 1"
+						}
+					])
+				)
+			),
+			rest.get("/api/getHeatInfo/:heatId/phase", (_req, res, ctx) =>
+				res(
+					ctx.json([
+						{
+							id: "phase-1",
+							name: "Phase 1",
+							number_of_judges: 3
+						}
+					])
+				)
+			)
+		)
+
+		render(
+			<Provider store={store}>
+				<JudgingPage />
+			</Provider>
+		)
+
+		// Wait for loading state to finish
+		await screen.findByTestId("judging-page-content")
+
+		// Warning should be shown
+		expect(
+			screen.queryByTestId("no-paddlers-warning")
+		).not.toBeInTheDocument()
+
+		// Buttons should be disabled
+		expect(screen.getByTestId("scribe-button-1")).toBeEnabled()
+		expect(screen.getByTestId("scribe-button-2")).toBeEnabled()
+		expect(screen.getByTestId("scribe-button-3")).toBeEnabled()
+		expect(screen.getByTestId("head-judge-button")).toBeEnabled()
+		expect(screen.getByTestId("commentator-button")).toBeEnabled()
 	})
 })

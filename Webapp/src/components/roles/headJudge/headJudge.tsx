@@ -31,7 +31,7 @@ import { RunStatus } from "./RunStatus"
 import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
 // eslint-disable-next-line complexity
-export default () => {
+export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 	const [scoresOpen, setScoresOpen] = useState(false)
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 	const handleScoresOpen = () => setScoresOpen(true)
@@ -260,54 +260,65 @@ export default () => {
 							allJudgeScores={allJudgeScores}
 						/>
 					</Grid>
-					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN && (
+					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN &&
+						changeRunStatus && (
+							<Grid item xs={1}>
+								<Button
+									data-testid="lock-run-button"
+									variant="contained"
+									fullWidth
+									sx={{ height: "100%" }}
+									color={
+										runStatus?.locked
+											? "success"
+											: "primary"
+									}
+									onClick={() =>
+										void updateRunStatus(
+											!runStatus?.locked,
+											runStatus?.did_not_start ?? false
+										)
+									}
+								>
+									{runStatus?.locked
+										? "Unlock Run"
+										: "Lock Run"}
+								</Button>
+							</Grid>
+						)}
+					{changeRunStatus && (
 						<Grid item xs={1}>
 							<Button
-								data-testid="lock-run-button"
+								data-testid="dns-button"
 								variant="contained"
 								fullWidth
-								sx={{ height: "100%" }}
+								sx={{
+									height: "100%"
+								}}
 								color={
-									runStatus?.locked ? "success" : "primary"
+									runStatus?.did_not_start
+										? "error"
+										: "primary"
 								}
-								onClick={() =>
-									void updateRunStatus(
-										!runStatus?.locked,
-										runStatus?.did_not_start ?? false
-									)
-								}
+								onClick={() => {
+									if (runStatus?.locked) {
+										toast.error(
+											"Please unlock run before setting DNS"
+										)
+									} else {
+										void updateRunStatus(
+											runStatus?.locked ?? false,
+											!runStatus?.did_not_start
+										)
+									}
+								}}
 							>
-								{runStatus?.locked ? "Unlock Run" : "Lock Run"}
+								{runStatus?.did_not_start
+									? "Unset DNS"
+									: "SET DNS"}
 							</Button>
 						</Grid>
 					)}
-					<Grid item xs={1}>
-						<Button
-							data-testid="dns-button"
-							variant="contained"
-							fullWidth
-							sx={{
-								height: "100%"
-							}}
-							color={
-								runStatus?.did_not_start ? "error" : "primary"
-							}
-							onClick={() => {
-								if (runStatus?.locked) {
-									toast.error(
-										"Please unlock run before setting DNS"
-									)
-								} else {
-									void updateRunStatus(
-										runStatus?.locked ?? false,
-										!runStatus?.did_not_start
-									)
-								}
-							}}
-						>
-							{runStatus?.did_not_start ? "Unset DNS" : "SET DNS"}
-						</Button>
-					</Grid>
 					<Grid item xs={1}>
 						<Stack
 							spacing={2}
