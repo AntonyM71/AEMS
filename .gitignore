@@ -326,3 +326,4 @@ Server/db/__pycache__/__init__.cpython-310.pyc
 Server/db/__pycache__/models.cpython-310.pyc
 Server/.coverage
 Webapp/tsconfig.tsbuildinfo
+Server/.coverage
