@@ -73,7 +73,7 @@ describe("HeatScoreTable", () => {
 		)
 	})
 
-	it("shows loading skeleton when data is being fetched", async () => {
+	it("shows loading skeleton when data is being fetched", () => {
 		const store = setupStore({
 			competitions: {
 				selectedHeat: "1",

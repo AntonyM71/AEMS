@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
@@ -69,7 +69,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 					justifyContent="space-between"
 					alignContent="space-between"
 				>
-					<Grid item>
+					<Grid>
 						<IconButton
 							onClick={() => changePaddler(-1)}
 							data-testid={"button-prev-paddler"}
@@ -77,7 +77,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 							<ChevronLeft />
 						</IconButton>
 					</Grid>
-					<Grid item data-testid={"display-paddler-name"}>
+					<Grid data-testid={"display-paddler-name"}>
 						<div style={{ textAlign: "center" }}>
 							{paddlerInfo.first_name}
 						</div>
@@ -85,7 +85,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 							{paddlerInfo.last_name.toUpperCase()}
 						</div>
 					</Grid>
-					<Grid item>
+					<Grid>
 						<IconButton
 							onClick={() => changePaddler(1)}
 							data-testid={"button-next-paddler"}

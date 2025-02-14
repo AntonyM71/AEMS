@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
@@ -131,7 +131,7 @@ export const JudgeCard = ({
 	if (!isUninitialized) {
 		return (
 			<Grid container spacing={1} alignItems={"stretch"}>
-				<Grid item xs={6}>
+				<Grid size={6}>
 					<Paper
 						sx={{
 							padding: "1em",
@@ -141,14 +141,13 @@ export const JudgeCard = ({
 						<Typography>{`Judge: ${judge}`}</Typography>
 					</Paper>
 				</Grid>
-				<Grid item xs={6}>
+				<Grid size={6}>
 					<CurrentScore currentScore={currentScore} />
 				</Grid>
-
 				{[...scoredMoves] // put these into a new array so that reverse works
 					.reverse()
 					.map((scoredMove) => (
-						<Grid item xs={12} key={scoredMove.id}>
+						<Grid key={scoredMove.id} size={12}>
 							<ScoredMove
 								key={scoredMove.id}
 								scoredMove={scoredMove}

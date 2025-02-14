@@ -1,6 +1,6 @@
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
@@ -240,20 +240,20 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 					alignItems={"stretch"}
 					sx={{ marginTop: "0.5em" }}
 				>
-					<Grid item xs={5}>
+					<Grid size={5}>
 						<SelectorDisplay
 							showDetailed={false}
 							showEvent={false}
 							showPhase={false}
 						/>
 					</Grid>
-					<Grid item xs={2}>
+					<Grid size={2}>
 						<PaddlerSelector paddlerInfo={selectedAthlete} />
 					</Grid>
-					<Grid item xs={1}>
+					<Grid size={1}>
 						<RunSelector />
 					</Grid>{" "}
-					<Grid item xs={1}>
+					<Grid size={1}>
 						<FinalScore
 							locked={runStatus?.locked ?? false}
 							did_not_start={runStatus?.did_not_start ?? false}
@@ -262,7 +262,7 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 					</Grid>
 					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN &&
 						changeRunStatus && (
-							<Grid item xs={1}>
+							<Grid size={1}>
 								<Button
 									data-testid="lock-run-button"
 									variant="contained"
@@ -287,7 +287,7 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 							</Grid>
 						)}
 					{changeRunStatus && (
-						<Grid item xs={1}>
+						<Grid size={1}>
 							<Button
 								data-testid="dns-button"
 								variant="contained"
@@ -319,7 +319,7 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 							</Button>
 						</Grid>
 					)}
-					<Grid item xs={1}>
+					<Grid size={1}>
 						<Stack
 							spacing={2}
 							sx={{
@@ -349,11 +349,11 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 							</Button>
 						</Stack>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<Divider />
 					</Grid>
 					{judgeNumberArray.map((jn) => (
-						<Grid item key={jn} xs={Math.floor(12 / maxJudges)}>
+						<Grid key={jn} size={Math.floor(12 / maxJudges)}>
 							<JudgeCard
 								judge={jn}
 								selectedAthlete={selectedAthlete}
