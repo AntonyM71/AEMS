@@ -15,7 +15,7 @@ WORKDIR /code
 #
 COPY ./ /code/
 #
-RUN uv sync
+RUN uv sync --frozen
 
 #
 
