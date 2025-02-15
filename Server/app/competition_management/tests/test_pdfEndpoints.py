@@ -1,5 +1,6 @@
 import os
 import uuid
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -23,7 +24,7 @@ os.environ["CONNECTION_STRING"] = "postgresql://test:test@localhost:5432/test_db
 
 
 @pytest.fixture(autouse=True)
-def mock_db_session():
+def mock_db_session() -> Generator[Session, None, None]:
     """Mock database session for all tests"""
     with patch(
         "app.competition_management.pdfEndpoints.get_transaction_session"
@@ -35,17 +36,17 @@ def mock_db_session():
 
 
 @pytest.fixture
-def sample_phase_id():
+def sample_phase_id() -> str:
     return str(uuid.uuid4())
 
 
 @pytest.fixture
-def sample_heat_ids():
+def sample_heat_ids() -> list[str]:
     return [str(uuid.uuid4())]  # Start with just one ID to simplify testing
 
 
 @pytest.fixture
-def mock_competition():
+def mock_competition() -> MagicMock:
     mock = MagicMock(spec=Competition)
     mock.id = uuid.uuid4()
     mock.name = "Test Competition"
@@ -53,7 +54,7 @@ def mock_competition():
 
 
 @pytest.fixture
-def mock_event():
+def mock_event() -> MagicMock:
     mock = MagicMock(spec=Event)
     mock.id = uuid.uuid4()
     mock.name = "Test Event"
@@ -62,7 +63,7 @@ def mock_event():
 
 
 @pytest.fixture
-def mock_phase():
+def mock_phase() -> MagicMock:
     mock = MagicMock(spec=Phase)
     mock.id = uuid.uuid4()
     mock.name = "Test Phase"
@@ -75,7 +76,7 @@ def mock_phase():
 
 
 @pytest.fixture
-def mock_heat():
+def mock_heat() -> MagicMock:
     return MagicMock(
         spec=Heat, id=uuid.uuid4(), name="Test Heat", competition_id=uuid.uuid4()
     )
@@ -83,7 +84,11 @@ def mock_heat():
 
 @pytest.mark.asyncio
 async def test_phase_pdf_success(
-    mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase
+    mock_db_session: Session,
+    sample_phase_id: str,
+    mock_competition: MagicMock,
+    mock_event: MagicMock,
+    mock_phase: MagicMock
 ) -> None:
     # Mock database queries
     mock_db_session.query.return_value.filter.return_value.one = MagicMock(
@@ -108,7 +113,7 @@ async def test_phase_pdf_success(
 
 
 @pytest.mark.asyncio
-async def test_phase_pdf_db_error(mock_db_session, sample_phase_id) -> None:
+async def test_phase_pdf_db_error(mock_db_session: Session, sample_phase_id: str) -> None:
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
@@ -120,7 +125,7 @@ async def test_phase_pdf_db_error(mock_db_session, sample_phase_id) -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_success(mock_db_session, mock_competition) -> None:
+async def test_heat_pdf_success(mock_db_session: Session, mock_competition: MagicMock) -> None:
     # Create a heat ID and mock heat with matching ID
     heat_id = str(uuid.uuid4())
     mock_heat = MagicMock(
@@ -171,7 +176,7 @@ async def test_heat_pdf_no_ids() -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_not_found(mock_db_session, sample_heat_ids) -> None:
+async def test_heat_pdf_not_found(mock_db_session: Session, sample_heat_ids: list[str]) -> None:
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = []
 
     response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
@@ -180,7 +185,11 @@ async def test_heat_pdf_not_found(mock_db_session, sample_heat_ids) -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_success(mock_db_session, mock_competition, mock_heat) -> None:
+async def test_heat_results_pdf_success(
+    mock_db_session: Session,
+    mock_competition: MagicMock,
+    mock_heat: MagicMock
+) -> None:
     heat_id = str(uuid.uuid4())
 
     # Mock database queries
@@ -232,7 +241,7 @@ async def test_heat_results_pdf_no_id() -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_error(mock_db_session) -> None:
+async def test_heat_results_pdf_error(mock_db_session: Session) -> None:
     heat_id = str(uuid.uuid4())
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
@@ -246,7 +255,11 @@ async def test_heat_results_pdf_error(mock_db_session) -> None:
 
 @pytest.mark.asyncio
 async def test_pdf_content_structure(
-    mock_db_session, sample_phase_id, mock_competition, mock_event, mock_phase
+    mock_db_session: Session,
+    sample_phase_id: str,
+    mock_competition: MagicMock,
+    mock_event: MagicMock,
+    mock_phase: MagicMock
 ) -> None:
     """Test the structure of generated PDFs"""
     # This test ensures the PDF contains expected sections and formatting
@@ -279,8 +292,6 @@ async def test_pdf_content_structure(
         mock_calc.return_value.phase_id = sample_phase_id
 
         # Mock database queries
-        # Set up mock chain properly
-        # Set up mock chain
         mock_db_session.query.return_value.filter.return_value.one.side_effect = [
             mock_phase,
             mock_event,

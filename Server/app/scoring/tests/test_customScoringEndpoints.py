@@ -1,6 +1,8 @@
+from typing import Any
 from uuid import UUID
 
 import pytest
+from pytest import MonkeyPatch
 from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
@@ -28,7 +30,7 @@ ResponseType = ScoredMovesAndBonusesResponse
 
 
 @pytest.fixture
-def mock_athlete():
+def mock_athlete() -> Athlete:
     return Athlete(
         id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
         first_name="Test",
@@ -38,12 +40,12 @@ def mock_athlete():
 
 
 @pytest.fixture
-def mock_event():
+def mock_event() -> Event:
     return Event(id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"), name="Test Event")
 
 
 @pytest.fixture
-def mock_phase(mock_event):
+def mock_phase(mock_event: Event) -> Phase:
     return Phase(
         id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
         event_id=mock_event.id,
@@ -57,7 +59,7 @@ def mock_phase(mock_event):
 
 
 @pytest.fixture
-def mock_athlete_heat(mock_athlete, mock_phase):
+def mock_athlete_heat(mock_athlete: Athlete, mock_phase: Phase) -> AthleteHeat:
     return AthleteHeat(
         id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
         heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
@@ -70,17 +72,20 @@ def mock_athlete_heat(mock_athlete, mock_phase):
 
 
 def test_get_heat_info_logic(
-    monkeypatch, mock_athlete_heat, mock_athlete, mock_event
+    monkeypatch: MonkeyPatch,
+    mock_athlete_heat: AthleteHeat,
+    mock_athlete: Athlete,
+    mock_event: Event,
 ) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
-    def mock_query(*args):
+    def mock_query(*args: Any) -> Any:
         class QueryResult:
-            def where(self, *args):
+            def where(self, *args: Any) -> "QueryResult":
                 return self
 
-            def all(self):
+            def all(self) -> list[AthleteHeat]:
                 return [mock_athlete_heat]
 
         return QueryResult()
@@ -103,16 +108,16 @@ def test_get_heat_info_logic(
     assert result[0].event_name == mock_event.name
 
 
-def test_check_run_is_locked_returns_true_when_locked(monkeypatch) -> None:
+def test_check_run_is_locked_returns_true_when_locked(monkeypatch: MonkeyPatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
-    def mock_query(*args):
+    def mock_query(*args: Any) -> Any:
         class QueryResult:
-            def filter(self, *args):
+            def filter(self, *args: Any) -> "QueryResult":
                 return self
 
-            def first(self):
+            def first(self) -> RunStatus:
                 return RunStatus(
                     id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
                     heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
@@ -140,16 +145,16 @@ def test_check_run_is_locked_returns_true_when_locked(monkeypatch) -> None:
     assert result is True
 
 
-def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch) -> None:
+def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch: MonkeyPatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
-    def mock_query(*args):
+    def mock_query(*args: Any) -> Any:
         class QueryResult:
-            def filter(self, *args):
+            def filter(self, *args: Any) -> "QueryResult":
                 return self
 
-            def first(self):
+            def first(self) -> RunStatus:
                 return RunStatus(
                     id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
                     heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
@@ -178,7 +183,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
+async def test_get_athlete_moves_and_bonnuses(monkeypatch: MonkeyPatch) -> None:
     # Create mock data
     mock_moves = [
         PydanticScoredMovesResponse(
@@ -205,12 +210,12 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
-    def mock_query(*args):
+    def mock_query(*args: Any) -> Any:
         class QueryResult:
-            def filter(self, *args):
+            def filter(self, *args: Any) -> "QueryResult":
                 return self
 
-            def all(self):
+            def all(self) -> list[Any]:
                 # Return moves for ScoredMoves query
                 if len(args) > 0 and args[0] == ScoredMoves:
                     return mock_moves
@@ -242,13 +247,13 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
     assert result.bonuses[0].bonus_id == mock_bonuses[0].bonus_id
 
 
-def test_check_run_is_locked_returns_false_when_no_status(monkeypatch) -> None:
+def test_check_run_is_locked_returns_false_when_no_status(monkeypatch: MonkeyPatch) -> None:
     # Create a mock session with the minimum required functionality
     mock_session = Session()
 
-    def mock_query(*args):
+    def mock_query(*args: Any) -> Any:
         class QueryResult:
-            def filter(self, *args):
+            def filter(self, *args: Any) -> "QueryResult":
                 return self
 
             def first(self) -> None:
