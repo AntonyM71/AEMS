@@ -1,6 +1,6 @@
 import DeleteIcon from "@mui/icons-material/Delete"
 
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
@@ -32,32 +32,31 @@ export const ScoresheetBuilderHeader = ({
 	}
 
 	return (
-		<Grid container spacing="2" alignItems="center">
-			<Grid item xs={2}>
+		<Grid container spacing={2} alignItems="center">
+			<Grid size={2}>
 				<Typography>Name</Typography>
 			</Grid>
-			<Grid item xs={1}>
+			<Grid size={1}>
 				<Typography>Direction</Typography>
 			</Grid>
-			<Grid item xs={1}>
+			<Grid size={1}>
 				<Typography>F/R Score</Typography>
 			</Grid>
-			<Grid item xs={1}>
+			<Grid size={1}>
 				<Typography>L/B Score</Typography>
 			</Grid>
-
 			{bonuses.map((b) => (
-				<Grid item key={b} xs={1}>
+				<Grid key={b} size={1}>
 					<Grid
 						container
 						justifyContent="space-between"
 						alignItems="center"
 						wrap="nowrap"
 					>
-						<Grid item xs={6}>
+						<Grid size={6}>
 							<Typography>{b}</Typography>
 						</Grid>
-						<Grid item xs={6}>
+						<Grid size={6}>
 							<IconButton
 								onClick={() => deleteBonus(b)}
 								color="error"
@@ -69,7 +68,7 @@ export const ScoresheetBuilderHeader = ({
 					</Grid>
 				</Grid>
 			))}
-			<Grid item xs={2}>
+			<Grid size={2}>
 				<TextField
 					label="Add New Bonus"
 					error={bonusAlreadyExists}

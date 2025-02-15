@@ -3,7 +3,7 @@ import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Checkbox from "@mui/material/Checkbox"
 import Divider from "@mui/material/Divider"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
@@ -21,17 +21,15 @@ import toast from "react-hot-toast"
 import { SelectScoresheet } from "./ScoresheetSelector"
 export default () => (
 	<Grid container spacing={3}>
-		<Grid item xs={12}>
-			Required File Format:{" "}
-		</Grid>
-		<Grid item xs={12}>
+		<Grid size={12}>Required File Format: </Grid>
+		<Grid size={12}>
 			<CSVFormatTable />
 		</Grid>
-		<Grid item xs={12}>
+		<Grid size={12}>
 			{" "}
 			<Divider />{" "}
 		</Grid>
-		<Grid item xs={12}>
+		<Grid size={12}>
 			<UploadForm />
 		</Grid>
 	</Grid>
@@ -168,7 +166,7 @@ const UploadForm = () => {
 	return (
 		<Grid container spacing={2} sx={{ width: "50%" }}>
 			{" "}
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Stack direction="row" spacing={2}>
 					<TextField
 						label="Upload CSV or XLSX file"
@@ -197,7 +195,7 @@ const UploadForm = () => {
 					</Alert>
 				</Stack>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Competition Name"
 					variant="outlined"
@@ -206,14 +204,14 @@ const UploadForm = () => {
 					onChange={(e) => setCompetitionName(e.target.value)}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<SelectScoresheet
 					setSelectedScoresheet={setScoresheetName}
 					selectedScoresheet={scoresheetName}
 					useName={true}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Runs"
 					variant="outlined"
@@ -228,7 +226,7 @@ const UploadForm = () => {
 					value={numberOfRuns}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Scoring Runs"
 					variant="outlined"
@@ -245,7 +243,7 @@ const UploadForm = () => {
 					value={numberOfScoringRuns}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Judges"
 					variant="outlined"
@@ -262,7 +260,7 @@ const UploadForm = () => {
 					value={numberOfJudges}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Stack direction="row" alignItems="center" spacing={2}>
 					<Typography>Randomise Heat Allocation:</Typography>
 					<Checkbox
@@ -287,7 +285,7 @@ const UploadForm = () => {
 					/>
 				</Stack>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Button
 					variant="contained"
 					disabled={

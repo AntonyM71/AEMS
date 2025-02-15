@@ -5,7 +5,7 @@ import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
@@ -101,15 +101,15 @@ const PhasesSelector = ({
 					handleClose={handleClose}
 					selectedPhase={selectedPhase}
 				/>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
-						<Grid item xs={12}>
+						<Grid size={12}>
 							<h4>Select a Phase</h4>
 						</Grid>
 					) : (
 						<></>
 					)}
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<FormControl fullWidth={true}>
 							<InputLabel>Select Phase</InputLabel>
 
@@ -138,7 +138,9 @@ const PhasesSelector = ({
 									<MenuItem
 										key={Phase.id}
 										value={Phase.id}
-										data-testid={`phase-option-${Phase.id}`}
+										data-testid={`phase-option-${
+											Phase.id ?? ""
+										}`}
 									>
 										{Phase.name}
 									</MenuItem>
@@ -147,7 +149,7 @@ const PhasesSelector = ({
 						</FormControl>
 					</Grid>
 					{showDetailed ? (
-						<Grid item>
+						<Grid>
 							<AddPhase refetch={refetch} />
 						</Grid>
 					) : (
@@ -301,15 +303,15 @@ const AddPhase = ({
 
 	return (
 		<Grid container spacing={2}>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
 			{!existingPhaseData && (
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<h4>{"Add New Phase"}</h4>
 				</Grid>
 			)}
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					error={!phaseName}
 					label="New Phase"
@@ -322,7 +324,7 @@ const AddPhase = ({
 					value={phaseName}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				{options ? (
 					<Autocomplete
 						options={options}
@@ -345,13 +347,13 @@ const AddPhase = ({
 					<> </>
 				)}
 			</Grid>
-			<Grid item xs>
+			<Grid size="grow">
 				<SelectScoresheet
 					selectedScoresheet={selectedScoresheet}
 					setSelectedScoresheet={setSelectedScoresheet}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Runs"
 					variant="outlined"
@@ -366,7 +368,7 @@ const AddPhase = ({
 					value={numberOfRuns}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Scoring Runs"
 					variant="outlined"
@@ -388,7 +390,7 @@ const AddPhase = ({
 					value={numberOfScoringRuns}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="Number of Judges"
 					variant="outlined"
@@ -405,7 +407,7 @@ const AddPhase = ({
 					value={numberOfJudges}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Button
 					variant="contained"
 					fullWidth

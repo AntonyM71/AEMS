@@ -1,6 +1,6 @@
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -72,15 +72,15 @@ export const CompetitionSelector = ({
 	} else {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
-						<Grid item xs={12}>
+						<Grid size={12}>
 							<h4>Select a Competition</h4>
 						</Grid>
 					) : (
 						<></>
 					)}
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<FormControl fullWidth={true}>
 							<InputLabel>Select Competition</InputLabel>
 							<Select
@@ -109,7 +109,7 @@ export const CompetitionSelector = ({
 						</FormControl>
 					</Grid>
 					{showDetailed ? (
-						<Grid item xs={12}>
+						<Grid size={12}>
 							<AddCompetition />
 						</Grid>
 					) : (
@@ -150,13 +150,13 @@ const AddCompetition = () => {
 
 	return (
 		<Grid container spacing={1}>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<h4>Add New Competition</h4>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					label="New Competition"
 					variant="outlined"

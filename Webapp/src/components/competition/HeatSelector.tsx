@@ -2,7 +2,7 @@ import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -91,15 +91,15 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 	} else {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
-						<Grid item xs={12}>
+						<Grid size={12}>
 							<h4>Select a Heat</h4>
 						</Grid>
 					) : (
 						<></>
 					)}
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<FormControl fullWidth={true}>
 							<InputLabel id="heat-select-label">
 								Select Heat
@@ -137,7 +137,7 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 					</Grid>
 					{showDetailed ? (
 						<>
-							<Grid item>
+							<Grid>
 								<AddHeat refetch={refetch} />
 							</Grid>
 						</>
@@ -192,14 +192,14 @@ const AddHeat = ({
 	}
 
 	return (
-		<Grid container spacing="2">
-			<Grid item xs={12}>
+		<Grid container spacing={2}>
+			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<h4>Add New Heat</h4>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
 					error={!heatName}
 					label="New Heat"
@@ -212,7 +212,7 @@ const AddHeat = ({
 					value={heatName}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				{options ? (
 					<Autocomplete
 						options={options}
@@ -242,7 +242,7 @@ const AddHeat = ({
 					<></>
 				)}
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Button
 					variant="contained"
 					fullWidth

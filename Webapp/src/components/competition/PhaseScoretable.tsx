@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
@@ -70,7 +70,7 @@ export const PhaseScoreTable = () => {
 			sx={{ paddingTop: "0.5em" }}
 			data-testid="phase-score-table"
 		>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<SelectorDisplay showHeat={false} />
 			</Grid>
 			{data &&
@@ -78,14 +78,14 @@ export const PhaseScoreTable = () => {
 			selectedPhase &&
 			scoreData &&
 			!isScoreLoading ? (
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Paper>
 						<Grid
 							container
 							justifyContent="space-between"
 							alignItems="center"
 						>
-							<Grid item>
+							<Grid>
 								<Typography
 									variant="h5"
 									sx={{ padding: "0.5em" }}
@@ -93,7 +93,7 @@ export const PhaseScoreTable = () => {
 								>{`Phase: ${data.name || ""}`}</Typography>
 							</Grid>
 
-							<Grid item sx={{ padding: "0.5em" }}>
+							<Grid sx={{ padding: "0.5em" }}>
 								<Button
 									variant="contained"
 									color="info"
@@ -104,7 +104,7 @@ export const PhaseScoreTable = () => {
 									Create PDF
 								</Button>
 							</Grid>
-							<Grid item xs={12}>
+							<Grid size={12}>
 								<PhaseAthleteScoreTable
 									athletes={scoreData}
 									numberOfRuns={data.number_of_runs ?? 3}

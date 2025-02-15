@@ -3,7 +3,7 @@ import DeleteIcon from "@mui/icons-material/Delete"
 
 import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import InputAdornment from "@mui/material/InputAdornment"
 import Paper from "@mui/material/Paper"
@@ -87,19 +87,19 @@ export const PromotePhase = () => {
 			alignSelf="center"
 			sx={{ padding: "1em", height: "100%" }}
 		>
-			<Grid item xs={10}>
+			<Grid size={10}>
 				<Alert severity="info">
 					If the cuttoff rank is tied between multiple athletes, all
 					athletes involved in the tie will progress to the next
 					round, unless their score is zero.
 				</Alert>
 			</Grid>
-			<Grid item xs={5}>
+			<Grid size={5}>
 				<SelectorDisplay showHeat={false} vertical />
 			</Grid>
-			<Grid item xs={5}>
+			<Grid size={5}>
 				<Grid container spacing="1em">
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<TextField
 							error={!phaseName}
 							helperText={!phaseName && "Please name the Phase."}
@@ -112,7 +112,7 @@ export const PromotePhase = () => {
 							value={phaseName}
 						/>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<TextField
 							label="Number of Athletes to Promote"
 							variant="outlined"
@@ -133,7 +133,7 @@ export const PromotePhase = () => {
 							value={numberOfAthletes}
 						/>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<TextField
 							label="Number of Runs"
 							variant="outlined"
@@ -149,7 +149,7 @@ export const PromotePhase = () => {
 							value={numberOfRuns}
 						/>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<TextField
 							label="Number of Scoring Runs"
 							variant="outlined"
@@ -165,7 +165,7 @@ export const PromotePhase = () => {
 							value={numberOfScoringRuns}
 						/>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<TextField
 							label="Number of Judges"
 							variant="outlined"
@@ -181,11 +181,11 @@ export const PromotePhase = () => {
 							value={numberOfJudges}
 						/>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<Paper sx={{ padding: "0.5em" }}>
 							<Grid container spacing={2}>
 								{newHeatNames.map((h: string, i) => (
-									<Grid item key={i} xs={12}>
+									<Grid key={i} size={12}>
 										<TextField
 											label={`New Heat: ${i + 1}`}
 											variant="outlined"
@@ -245,7 +245,7 @@ export const PromotePhase = () => {
 										/>
 									</Grid>
 								))}
-								<Grid item xs={12}>
+								<Grid size={12}>
 									{" "}
 									<TextField
 										label="New Heat Name"
@@ -286,7 +286,7 @@ export const PromotePhase = () => {
 							</Grid>
 						</Paper>
 					</Grid>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<Button
 							variant="contained"
 							fullWidth
