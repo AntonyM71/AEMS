@@ -1,4 +1,3 @@
-from typing import Any
 from uuid import UUID
 
 import pytest
@@ -9,10 +8,6 @@ from app.scoring.customScoringEndpoints import (
     check_run_is_locked,
     get_athlete_moves_and_bonnuses,
     get_heat_info_logic,
-)
-from app.scoring.scoring_logic import (
-    PydanticScoredBonusesResponse,
-    PydanticScoredMovesResponse,
 )
 from db.models import (
     Athlete,
@@ -71,17 +66,17 @@ def mock_athlete_heat(mock_athlete: Athlete, mock_phase: Phase) -> AthleteHeat:
 
 
 def test_get_heat_info_logic(
-    mock_db_setup: Session,
+    mock_db_session: Session,
     mock_athlete_heat: AthleteHeat,
     mock_athlete: Athlete,
     mock_event: Event,
 ) -> None:
     # Configure mock database response
-    mock_db_setup.query.return_value.where.return_value.all.return_value = [mock_athlete_heat]
+    mock_db_session.query.return_value.where.return_value.all.return_value = [mock_athlete_heat]
 
     # Call the function
     result = get_heat_info_logic(
-        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d", db=mock_db_setup
+        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d", db=mock_db_session
     )
 
     # Verify the result
@@ -95,9 +90,9 @@ def test_get_heat_info_logic(
     assert result[0].event_name == mock_event.name
 
 
-def test_check_run_is_locked_returns_true_when_locked(mock_db_setup: Session) -> None:
+def test_check_run_is_locked_returns_true_when_locked(mock_db_session: Session) -> None:
     # Configure mock database response
-    mock_db_setup.query.return_value.filter.return_value.first.return_value = RunStatus(
+    mock_db_session.query.return_value.filter.return_value.first.return_value = RunStatus(
         id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
         heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
         athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
@@ -109,7 +104,7 @@ def test_check_run_is_locked_returns_true_when_locked(mock_db_setup: Session) ->
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_db_setup,
+        db=mock_db_session,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -120,9 +115,9 @@ def test_check_run_is_locked_returns_true_when_locked(mock_db_setup: Session) ->
     assert result is True
 
 
-def test_check_run_is_locked_returns_false_when_not_locked(mock_db_setup: Session) -> None:
+def test_check_run_is_locked_returns_false_when_not_locked(mock_db_session: Session) -> None:
     # Configure mock database response
-    mock_db_setup.query.return_value.filter.return_value.first.return_value = RunStatus(
+    mock_db_session.query.return_value.filter.return_value.first.return_value = RunStatus(
         id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
         heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
         athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
@@ -134,7 +129,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(mock_db_setup: Sessio
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_db_setup,
+        db=mock_db_session,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -146,7 +141,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(mock_db_setup: Sessio
 
 
 @pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonnuses(mock_db_setup: Session) -> None:
+async def test_get_athlete_moves_and_bonnuses(mock_db_session: Session) -> None:
     # Create mock data for database models
     mock_db_moves = [
         ScoredMoves(
@@ -171,15 +166,15 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_setup: Session) -> None:
     ]
 
     # Configure mock database responses for moves
-    moves_query = mock_db_setup.query.return_value
+    moves_query = mock_db_session.query.return_value
     moves_query.filter.return_value.filter.return_value.filter.return_value.filter.return_value.all.return_value = mock_db_moves
 
     # Configure mock database responses for bonuses
-    bonuses_query = mock_db_setup.query.return_value
+    bonuses_query = mock_db_session.query.return_value
     bonuses_query.filter.return_value.all.return_value = mock_db_bonuses
 
     # Reset query for moves since both queries use the same mock
-    mock_db_setup.query.reset_mock()
+    mock_db_session.query.reset_mock()
 
     # Call the function
     result = await get_athlete_moves_and_bonnuses(
@@ -187,7 +182,7 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_setup: Session) -> None:
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
         judge_id="meg",
-        db=mock_db_setup,
+        db=mock_db_session,
     )
 
     # Verify the result matches the expected response type
@@ -200,13 +195,13 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_setup: Session) -> None:
     assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
 
 
-def test_check_run_is_locked_returns_false_when_no_status(mock_db_setup: Session) -> None:
+def test_check_run_is_locked_returns_false_when_no_status(mock_db_session: Session) -> None:
     # Configure mock database response
-    mock_db_setup.query.return_value.filter.return_value.first.return_value = None
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_db_setup,
+        db=mock_db_session,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
