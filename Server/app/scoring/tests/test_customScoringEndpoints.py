@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -28,7 +29,7 @@ ResponseType = ScoredMovesAndBonusesResponse
 
 
 @pytest.fixture
-def mock_athlete():
+def mock_athlete() -> Athlete:
     return Athlete(
         id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
         first_name="Test",
@@ -38,12 +39,12 @@ def mock_athlete():
 
 
 @pytest.fixture
-def mock_event():
+def mock_event() -> Event:
     return Event(id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"), name="Test Event")
 
 
 @pytest.fixture
-def mock_phase(mock_event):
+def mock_phase(mock_event: Event) -> Phase:
     return Phase(
         id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
         event_id=mock_event.id,
@@ -57,7 +58,7 @@ def mock_phase(mock_event):
 
 
 @pytest.fixture
-def mock_athlete_heat(mock_athlete, mock_phase):
+def mock_athlete_heat(mock_athlete: Athlete, mock_phase: Phase) -> AthleteHeat:
     return AthleteHeat(
         id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
         heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
@@ -70,26 +71,17 @@ def mock_athlete_heat(mock_athlete, mock_phase):
 
 
 def test_get_heat_info_logic(
-    monkeypatch, mock_athlete_heat, mock_athlete, mock_event
+    mock_db_setup: Session,
+    mock_athlete_heat: AthleteHeat,
+    mock_athlete: Athlete,
+    mock_event: Event,
 ) -> None:
-    # Create a mock session with the minimum required functionality
-    mock_session = Session()
-
-    def mock_query(*args):
-        class QueryResult:
-            def where(self, *args):
-                return self
-
-            def all(self):
-                return [mock_athlete_heat]
-
-        return QueryResult()
-
-    monkeypatch.setattr(mock_session, "query", mock_query)
+    # Configure mock database response
+    mock_db_setup.query.return_value.where.return_value.all.return_value = [mock_athlete_heat]
 
     # Call the function
     result = get_heat_info_logic(
-        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d", db=mock_session
+        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d", db=mock_db_setup
     )
 
     # Verify the result
@@ -103,33 +95,21 @@ def test_get_heat_info_logic(
     assert result[0].event_name == mock_event.name
 
 
-def test_check_run_is_locked_returns_true_when_locked(monkeypatch) -> None:
-    # Create a mock session with the minimum required functionality
-    mock_session = Session()
-
-    def mock_query(*args):
-        class QueryResult:
-            def filter(self, *args):
-                return self
-
-            def first(self):
-                return RunStatus(
-                    id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
-                    heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
-                    athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
-                    run_number=1,
-                    phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
-                    locked=True,
-                    did_not_start=False,
-                )
-
-        return QueryResult()
-
-    monkeypatch.setattr(mock_session, "query", mock_query)
+def test_check_run_is_locked_returns_true_when_locked(mock_db_setup: Session) -> None:
+    # Configure mock database response
+    mock_db_setup.query.return_value.filter.return_value.first.return_value = RunStatus(
+        id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+        heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+        athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+        run_number=1,
+        phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+        locked=True,
+        did_not_start=False,
+    )
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_session,
+        db=mock_db_setup,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -140,33 +120,21 @@ def test_check_run_is_locked_returns_true_when_locked(monkeypatch) -> None:
     assert result is True
 
 
-def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch) -> None:
-    # Create a mock session with the minimum required functionality
-    mock_session = Session()
-
-    def mock_query(*args):
-        class QueryResult:
-            def filter(self, *args):
-                return self
-
-            def first(self):
-                return RunStatus(
-                    id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
-                    heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
-                    athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
-                    run_number=1,
-                    phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
-                    locked=False,
-                    did_not_start=False,
-                )
-
-        return QueryResult()
-
-    monkeypatch.setattr(mock_session, "query", mock_query)
+def test_check_run_is_locked_returns_false_when_not_locked(mock_db_setup: Session) -> None:
+    # Configure mock database response
+    mock_db_setup.query.return_value.filter.return_value.first.return_value = RunStatus(
+        id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+        heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+        athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+        run_number=1,
+        phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+        locked=False,
+        did_not_start=False,
+    )
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_session,
+        db=mock_db_setup,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -178,10 +146,10 @@ def test_check_run_is_locked_returns_false_when_not_locked(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
-    # Create mock data
-    mock_moves = [
-        PydanticScoredMovesResponse(
+async def test_get_athlete_moves_and_bonnuses(mock_db_setup: Session) -> None:
+    # Create mock data for database models
+    mock_db_moves = [
+        ScoredMoves(
             id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
             move_id=UUID("17e3baf1-ce39-4a1f-971b-efea37d84aae"),
             heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
@@ -193,8 +161,8 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
         )
     ]
 
-    mock_bonuses = [
-        PydanticScoredBonusesResponse(
+    mock_db_bonuses = [
+        ScoredBonuses(
             id=UUID("6a6ec3f8-a251-44c6-b7df-93543a7a5dbe"),
             move_id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
             bonus_id=UUID("3883d4f2-7592-45a2-b7d4-22ca20d546b3"),
@@ -202,26 +170,16 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
         )
     ]
 
-    # Create a mock session with the minimum required functionality
-    mock_session = Session()
+    # Configure mock database responses for moves
+    moves_query = mock_db_setup.query.return_value
+    moves_query.filter.return_value.filter.return_value.filter.return_value.filter.return_value.all.return_value = mock_db_moves
 
-    def mock_query(*args):
-        class QueryResult:
-            def filter(self, *args):
-                return self
+    # Configure mock database responses for bonuses
+    bonuses_query = mock_db_setup.query.return_value
+    bonuses_query.filter.return_value.all.return_value = mock_db_bonuses
 
-            def all(self):
-                # Return moves for ScoredMoves query
-                if len(args) > 0 and args[0] == ScoredMoves:
-                    return mock_moves
-                # Return bonuses for the bonus query
-                if len(args) > 0 and args[0] == ScoredBonuses:
-                    return mock_bonuses
-                return []
-
-        return QueryResult()
-
-    monkeypatch.setattr(mock_session, "query", mock_query)
+    # Reset query for moves since both queries use the same mock
+    mock_db_setup.query.reset_mock()
 
     # Call the function
     result = await get_athlete_moves_and_bonnuses(
@@ -229,38 +187,26 @@ async def test_get_athlete_moves_and_bonnuses(monkeypatch) -> None:
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
         judge_id="meg",
-        db=mock_session,
+        db=mock_db_setup,
     )
 
     # Verify the result matches the expected response type
     assert isinstance(result, ResponseType)
     assert len(result.moves) == 1
     assert len(result.bonuses) == 1
-    assert result.moves[0].id == mock_moves[0].id
-    assert result.moves[0].move_id == mock_moves[0].move_id
-    assert result.bonuses[0].id == mock_bonuses[0].id
-    assert result.bonuses[0].bonus_id == mock_bonuses[0].bonus_id
+    assert result.moves[0].id == mock_db_moves[0].id
+    assert result.moves[0].move_id == mock_db_moves[0].move_id
+    assert result.bonuses[0].id == mock_db_bonuses[0].id
+    assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
 
 
-def test_check_run_is_locked_returns_false_when_no_status(monkeypatch) -> None:
-    # Create a mock session with the minimum required functionality
-    mock_session = Session()
-
-    def mock_query(*args):
-        class QueryResult:
-            def filter(self, *args):
-                return self
-
-            def first(self) -> None:
-                return None
-
-        return QueryResult()
-
-    monkeypatch.setattr(mock_session, "query", mock_query)
+def test_check_run_is_locked_returns_false_when_no_status(mock_db_setup: Session) -> None:
+    # Configure mock database response
+    mock_db_setup.query.return_value.filter.return_value.first.return_value = None
 
     # Call the function
     result = check_run_is_locked(
-        db=mock_session,
+        db=mock_db_setup,
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",

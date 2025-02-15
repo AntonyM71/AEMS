@@ -13,6 +13,21 @@ interface Competition {
 	name: string
 }
 
+const isCompetitionArray = (data: unknown): data is Competition[] => {
+	if (!Array.isArray(data)) {
+		return false
+	}
+
+	return data.every((item): item is Competition => {
+		if (typeof item !== "object" || item === null) {
+			return false
+		}
+		const comp = item as { id?: unknown; name?: unknown }
+
+		return typeof comp.id === "string" && typeof comp.name === "string"
+	})
+}
+
 interface RootState {
 	competitions: {
 		selectedCompetition: string
@@ -235,11 +250,14 @@ describe("CompetitionSelector", () => {
 				}),
 				rest.post("/api/competition", async (req, res, ctx) => {
 					postCalled = true
-					const postedCompetition = await req.json()
-					expect(postedCompetition[0].name).toBe("Test Competition")
-					expect(postedCompetition[0].id).toBeTruthy()
+					const data = await req.json()
+					if (!isCompetitionArray(data)) {
+						throw new Error("Invalid competition data")
+					}
+					expect(data[0].name).toBe("Test Competition")
+					expect(data[0].id).toBeTruthy()
 
-					return res(ctx.json(postedCompetition))
+					return res(ctx.json(data))
 				})
 			)
 
