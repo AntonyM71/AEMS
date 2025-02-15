@@ -5,6 +5,28 @@ import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import { HeatScoreTable } from "../HeatScoreTable"
 
+interface GridProps {
+	columns: { field: string; headerName: string }[]
+	rows: {
+		id: number
+		bib: string
+		first_name: string
+		last_name: string
+		run_1?: {
+			meanScore: number
+			locked: boolean
+			didNotStart: boolean
+			judgeScores?: { score: number }[]
+		}
+		run_2?: {
+			meanScore: number
+			locked: boolean
+			didNotStart: boolean
+			judgeScores?: { score: number }[]
+		}
+	}[]
+}
+
 describe("HeatScoreTable", () => {
 	beforeEach(() => {
 		// Add handlers for the APIs used by HeatScoreTable
@@ -115,18 +137,9 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		expect(grid).toBeInTheDocument()
 
-		// Get the grid props
 		const gridProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		) as {
-			columns: { field: string; headerName: string }[]
-			rows: {
-				id: number
-				bib: string
-				first_name: string
-				last_name: string
-			}[]
-		}
+		) as GridProps
 
 		// Verify columns
 		expect(gridProps.columns).toEqual(
@@ -182,8 +195,9 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		const initialProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		)
-		expect(initialProps.rows[0].run_1.judgeScores).toBeDefined()
+		) as GridProps
+		const initialRow = initialProps.rows[0]
+		expect(initialRow?.run_1?.judgeScores).toBeDefined()
 
 		// Click the switch
 		const switchElement = screen.getByRole("checkbox", {
@@ -195,8 +209,9 @@ describe("HeatScoreTable", () => {
 		const updatedGrid = await screen.findByTestId("mock-data-grid")
 		const updatedProps = JSON.parse(
 			updatedGrid.getAttribute("data-grid-props") || "{}"
-		)
-		expect(updatedProps.rows[0].run_1.judgeScores).toBeDefined()
+		) as GridProps
+		const updatedRow = updatedProps.rows[0]
+		expect(updatedRow?.run_1?.judgeScores).toBeDefined()
 	})
 
 	it("shows error message when no heat is selected", async () => {
@@ -245,8 +260,9 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		const gridProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		)
-		expect(gridProps.rows[0].run_2.didNotStart).toBe(true)
+		) as GridProps
+		const row = gridProps.rows[0]
+		expect(row?.run_2?.didNotStart).toBe(true)
 	})
 
 	it("applies correct styling for locked and unlocked scores", async () => {
@@ -320,11 +336,12 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		const gridProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		)
-		expect(gridProps.rows[0].run_1.locked).toBe(true)
-		expect(gridProps.rows[0].run_1.meanScore).toBe(85.5)
-		expect(gridProps.rows[0].run_2.locked).toBe(false)
-		expect(gridProps.rows[0].run_2.meanScore).toBe(90.0)
+		) as GridProps
+		const row = gridProps.rows[0]
+		expect(row?.run_1?.locked).toBe(true)
+		expect(row?.run_1?.meanScore).toBe(85.5)
+		expect(row?.run_2?.locked).toBe(false)
+		expect(row?.run_2?.meanScore).toBe(90.0)
 	})
 
 	it("shows no athletes message when heat has no scores", async () => {
@@ -359,7 +376,7 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		const gridProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		)
+		) as GridProps
 		expect(gridProps.rows).toHaveLength(0)
 	})
 
@@ -387,10 +404,13 @@ describe("HeatScoreTable", () => {
 		const grid = await screen.findByTestId("mock-data-grid")
 		const gridProps = JSON.parse(
 			grid.getAttribute("data-grid-props") || "{}"
-		)
-		expect(gridProps.rows[0].run_1.judgeScores).toBeDefined()
-		expect(gridProps.rows[0].run_1.judgeScores[0].score).toBe(85)
-		expect(gridProps.rows[0].run_1.judgeScores[1].score).toBe(86)
+		) as GridProps
+		const row = gridProps.rows[0]
+		expect(row?.run_1?.judgeScores).toBeDefined()
+		if (row?.run_1?.judgeScores) {
+			expect(row.run_1.judgeScores[0].score).toBe(85)
+			expect(row.run_1.judgeScores[1].score).toBe(86)
+		}
 
 		// Verify switch is checked
 		const switchElement = screen.getByRole("checkbox", {

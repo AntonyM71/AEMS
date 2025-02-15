@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 py-modules = []
 
 [tool.ruff]
-lint.ignore = ["E501", "N999", "UP007"]
+lint.ignore = ["E501", "N999", "UP007", "ANN401"]
 lint.select = [
     "E",
     "F",
@@ -36,6 +36,7 @@ extend-immutable-calls = [
 ]
 [tool.pytest.ini_options]
 addopts = ["--cov=.", "--cov-report=term-missing"]
+pythonpath = ["."]
 [tool.coverage.run]
 omit = ["*/tests/*"]
 
