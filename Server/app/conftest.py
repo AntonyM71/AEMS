@@ -1,16 +1,18 @@
-import pytest
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
+
+import pytest
 from sqlalchemy.orm import Session
 
-@pytest.fixture(autouse=True)
-def mock_db_setup():
-    """Mock database setup for all tests"""
-    # Mock the database client module
-    with patch('db.client.load_dotenv'), \
-         patch('db.client.create_engine'), \
-         patch('db.client.sessionmaker'), \
-         patch('db.client.get_transaction_session') as mock_get_session:
+# Mock database functions at module level
+patch('db.client.get_database_address', return_value='mock://db').start()
+patch('db.client.create_engine').start()
+patch('db.client.sessionmaker').start()
 
+@pytest.fixture(autouse=True)
+def mock_db_session() -> Generator[Session, None, None]:
+    """Mock database session for all tests"""
+    with patch('db.client.get_transaction_session') as mock_get_session:
         # Create a mock session
         mock_session = MagicMock(spec=Session)
 

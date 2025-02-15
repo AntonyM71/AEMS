@@ -67,14 +67,14 @@ def mock_heat() -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_phase_pdf_success(
-    mock_db_setup: Session,
+    mock_db_session: Session,
     sample_phase_id: str,
     mock_competition: MagicMock,
     mock_event: MagicMock,
     mock_phase: MagicMock
 ) -> None:
     # Mock database queries
-    mock_db_setup.query.return_value.filter.return_value.one = MagicMock(
+    mock_db_session.query.return_value.filter.return_value.one = MagicMock(
         side_effect=[mock_phase, mock_event, mock_competition]
     )
 
@@ -85,7 +85,7 @@ async def test_phase_pdf_success(
         mock_calc.return_value.scores = []
         mock_calc.return_value.phase_id = sample_phase_id
 
-        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_setup)
+        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
@@ -96,19 +96,19 @@ async def test_phase_pdf_success(
 
 
 @pytest.mark.asyncio
-async def test_phase_pdf_db_error(mock_db_setup: Session, sample_phase_id: str) -> None:
-    mock_db_setup.query.return_value.filter.return_value.one.side_effect = Exception(
+async def test_phase_pdf_db_error(mock_db_session: Session, sample_phase_id: str) -> None:
+    mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await phase_pdf(phase_id=sample_phase_id, db=mock_db_setup)
+        await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
     assert exc_info.value.status_code == 500
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_success(mock_db_setup: Session, mock_competition: MagicMock) -> None:
+async def test_heat_pdf_success(mock_db_session: Session, mock_competition: MagicMock) -> None:
     # Create a heat ID and mock heat with matching ID
     heat_id = str(uuid.uuid4())
     mock_heat = MagicMock(
@@ -116,10 +116,10 @@ async def test_heat_pdf_success(mock_db_setup: Session, mock_competition: MagicM
     )
 
     # Mock database queries
-    mock_db_setup.query.return_value.where.return_value.order_by.return_value.all.return_value = [
+    mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = [
         mock_heat
     ]
-    mock_db_setup.query.return_value.filter.return_value.one.return_value = (
+    mock_db_session.query.return_value.filter.return_value.one.return_value = (
         mock_competition
     )
 
@@ -144,7 +144,7 @@ async def test_heat_pdf_success(mock_db_setup: Session, mock_competition: MagicM
             )
         ]
 
-        response = await heat_pdf(heat_ids=[heat_id], db=mock_db_setup)
+        response = await heat_pdf(heat_ids=[heat_id], db=mock_db_session)
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
@@ -159,24 +159,24 @@ async def test_heat_pdf_no_ids() -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_not_found(mock_db_setup: Session, sample_heat_ids: list[str]) -> None:
-    mock_db_setup.query.return_value.where.return_value.order_by.return_value.all.return_value = []
+async def test_heat_pdf_not_found(mock_db_session: Session, sample_heat_ids: list[str]) -> None:
+    mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = []
 
-    response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_setup)
+    response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
     assert response.status_code == 404
     assert b"Could not find any heat Info" in response.body
 
 
 @pytest.mark.asyncio
 async def test_heat_results_pdf_success(
-    mock_db_setup: Session,
+    mock_db_session: Session,
     mock_competition: MagicMock,
     mock_heat: MagicMock
 ) -> None:
     heat_id = str(uuid.uuid4())
 
     # Mock database queries
-    mock_db_setup.query.return_value.filter.return_value.one.side_effect = [
+    mock_db_session.query.return_value.filter.return_value.one.side_effect = [
         mock_heat,
         mock_competition,
     ]
@@ -209,7 +209,7 @@ async def test_heat_results_pdf_success(
             )
         ]
 
-        response = await heat_results_pdf(heat_id=heat_id, db=mock_db_setup)
+        response = await heat_results_pdf(heat_id=heat_id, db=mock_db_session)
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
@@ -224,21 +224,21 @@ async def test_heat_results_pdf_no_id() -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_results_pdf_error(mock_db_setup: Session) -> None:
+async def test_heat_results_pdf_error(mock_db_session: Session) -> None:
     heat_id = str(uuid.uuid4())
-    mock_db_setup.query.return_value.filter.return_value.one.side_effect = Exception(
+    mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await heat_results_pdf(heat_id=heat_id, db=mock_db_setup)
+        await heat_results_pdf(heat_id=heat_id, db=mock_db_session)
 
     assert exc_info.value.status_code == 500
 
 
 @pytest.mark.asyncio
 async def test_pdf_content_structure(
-    mock_db_setup: Session,
+    mock_db_session: Session,
     sample_phase_id: str,
     mock_competition: MagicMock,
     mock_event: MagicMock,
@@ -275,7 +275,7 @@ async def test_pdf_content_structure(
         mock_calc.return_value.phase_id = sample_phase_id
 
         # Mock database queries
-        mock_db_setup.query.return_value.filter.return_value.one.side_effect = [
+        mock_db_session.query.return_value.filter.return_value.one.side_effect = [
             mock_phase,
             mock_event,
             mock_competition,
@@ -285,13 +285,13 @@ async def test_pdf_content_structure(
         mock_event.__str__ = MagicMock(return_value="Test Event")
         mock_phase.__str__ = MagicMock(return_value="Test Phase")
 
-        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_setup)
+        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
         pdf_content = response.body
 
         # Verify that the mock objects were used correctly
-        mock_db_setup.query.assert_called()
-        mock_db_setup.query.return_value.filter.assert_called()
-        mock_db_setup.query.return_value.filter.return_value.one.assert_called()
+        mock_db_session.query.assert_called()
+        mock_db_session.query.return_value.filter.assert_called()
+        mock_db_session.query.return_value.filter.return_value.one.assert_called()
 
         # Verify that the response is a valid PDF
         assert response.status_code == 200
