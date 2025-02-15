@@ -1,7 +1,7 @@
 from uuid import UUID
 
 import pytest
-from scoring_logic import (
+from app.scoring.scoring_logic import (
     AthleteMoves,
     AthleteMovesWithJudgeInfo,
     AthleteScoreInfo,
