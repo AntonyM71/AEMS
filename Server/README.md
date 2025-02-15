@@ -21,10 +21,15 @@ The AEMS Server is a Python FastAPI application that provides the backend servic
 
 ### Development Setup
 
-1. Install dependencies from pyproject.toml:
+We recommend using the devcontainer, but to work locally, we support [uv](https://docs.astral.sh/uv/) for python package management (though pip should work), and Node/NPM for javascript
+
+1. If you are not using the DevContainer - Install dependencies from pyproject.toml:
 
    ```bash
-   pip install -e .
+   // Run from from /Server
+   uv venv                                // create virtual environment
+   source .venv/bin/activate              // activate venv
+   uv sync                                // install packages in virtual environment
    ```
 
 2. Set up the database:
