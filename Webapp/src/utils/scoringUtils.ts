@@ -1,4 +1,4 @@
-import { groupBy, partition, sum } from "lodash"
+import { flatten, groupBy, partition, sum } from "lodash"
 import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
 	directionType,
@@ -16,27 +16,49 @@ export function calculateSingleJudgeRunScore(
 	const groupedMoves = groupBy(scoredMoves, (m) => m.moveId)
 	const uniqueScoredMoves = Object.keys(groupedMoves)
 	const scoredMoveScores = uniqueScoredMoves.map((id) => {
-		const same_move_ids = groupedMoves[id].map((gm) => gm.id)
 		const moveAvailableBonuses = availableBonuses.filter(
 			(b) => b.move_id === id
 		)
 		const moveData = availableMoves.filter((m) => m.id === id)
 
-		return groupedMoves[id].map((m) =>
-			calculateMoveScore(
-				m,
-				scoredBonuses.filter((b) => same_move_ids.includes(b.moveId)),
-				moveData,
-				moveAvailableBonuses
-			)
+		const scores: MoveScoreInfo[] = flatten(
+			moveData[0]?.direction.split("").map((d) => {
+				if (!moveData) {
+					return []
+				}
+
+				const same_move__and_direction = groupedMoves[id].filter(
+					(gm) => gm.direction === d
+				)
+				if (same_move__and_direction.length === 0) {
+					return []
+				}
+				const same_move_ids = same_move__and_direction.map(
+					(gm) => gm.id
+				)
+
+				const same_move_and_direction_bonuses = scoredBonuses.filter(
+					(b) => same_move_ids.includes(b.moveId)
+				)
+
+				return calculateMoveScore(
+					same_move__and_direction[0],
+					same_move_and_direction_bonuses,
+					moveData,
+					moveAvailableBonuses
+				)
+			}) || []
 		)
+
+		return scores
 	})
+
 	const highestScoredMove =
 		scoredMoveScores && scoredMoves.length
 			? scoredMoveScores
 					.flat()
 					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue)
+					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
 			: 0
 
 	let runScore = 0

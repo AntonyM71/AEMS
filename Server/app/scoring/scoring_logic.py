@@ -341,8 +341,11 @@ def calculate_heat_scores(
                     run_number=run.run,
                     mean_run_score=0
                     if run_status and run_status.did_not_start
-                    else sum([j.score_info.score for j in judges])
-                    / max([athlete.number_of_judges, len(judges)]),
+                    else round(
+                        sum([j.score_info.score for j in judges])
+                        / max([athlete.number_of_judges, len(judges)]),
+                        2,
+                    ),
                     highest_scoring_move=0
                     if run_status and run_status.did_not_start
                     else max(
@@ -417,9 +420,9 @@ def calculate_tied_rank(
     )
 
     # Sort by dropped rides
-    for i in range(1, number_of_runs):
+    for i in range(1, number_of_runs + 1):
         sorted_athlete_score.sort(
-            key=get_nth_highest_score(index=number_of_runs - i - 1),
+            key=get_nth_highest_score(index=number_of_runs - i),
             reverse=True,
         )
     if (

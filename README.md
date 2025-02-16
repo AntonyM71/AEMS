@@ -1,51 +1,115 @@
-# AEMS
+# AEMS (Athlete and Event Management System)
 
-## Introduction
+## Overview
 
-The Athlete and Event Management System (AEMS) is designed for running freeestyle kayaking competitions, it can either be ran locally, on a touchscreen laptop for small events, or configured with a laptop, router and 11" tablets to provide a full multi-judge, ICF style system.
+AEMS is a comprehensive system designed for managing freestyle kayaking competitions. It supports both small local events and full-scale ICF-style competitions with multiple judges.
 
-If you have a relatvely technical/softwarey person, they should have a good chance of getting the system running; and we aim to make these instructions better as time goes on. Alternatively, if you're willing to cover the cost of my time and reasonable expenses, I'm happy to come to you and help set it up on your hardware, act as technical support for your event or even write a custom ingest script for your CSV file format; please contact me at kayak.freestyle.app@gmail.com.
+### Key Features
 
-For simple events, you can run with just a Touchscreen Laptop, check out [deploying to local production](#deploying-to-local-production) to get started.
+- Multi-judge scoring system
+- Real-time score tracking and updates
+- PDF generation for results
+- CSV import for competition setup
+- Support for both local and networked deployments
+- Touchscreen-optimized interface
 
-For running an ICF style competition, we recommend the following setup:
+## System Requirements
 
-- Laptop (idally touchscreen and with an SSD) to run as a server
-- 3/4 11" Tablets or touchscreen laptops, to act as machines for each scribe
-- Wireless router to connect the tablets to the server
-- Chargers, power banks, etc, depending on your electricity situation.
+### Minimal Setup (Local Events)
 
-In addition to deployin the app on the server machine [deploying to local production](#deploying-to-local-production), for multiple devices you'll need to do some network configuration, we're aiming to provide some documentation for this in the near future.
+- Touchscreen laptop with Docker runtime
+- Modern web browser
+- SSD recommended for better performance
 
-I also have a simple scoring app, available on [Google Play](https://play.google.com/store/apps/details?id=com.kayakfreestyle.kayakfreestyleapp&pcampaignid=web_share) and the [Apple Store](https://apps.apple.com/sk/app/kayak-freestyle-app/id1627445855), these are great for small informal competitions, or athletes to use when designing their rides.
+### Full ICF-Style Setup
 
-## Contributing
+- Server machine (touchscreen laptop recommended)
+- 3-4 11" tablets or touchscreen laptops for scribes
+- Wireless router for network connectivity
+- Power supplies/banks for all devices
+- Docker runtime on server machine
 
-### Building dev environment
+## Quick Start
 
-This application uses a dev container, to make it straightfoward to get started.
+### Local Development
 
-1. Download [git](https://git-scm.com/download)
-2. Set git username and email from a terminal
+1. Install prerequisites:
 
-```terminal
-git config --global user.name "Your Name"
-git config --global user.email "your.email@address"
+   - Git
+   - Docker
+   - VSCode with Dev Containers extension
+
+2. Clone and setup:
+
+   ```bash
+   git clone [repository-url]
+   cd AEMS
+   # Open in VSCode and accept dev container prompt
+   ```
+
+3. Start services:
+
+   ```bash
+   # Start backend
+   cd Server
+   alembic upgrade head
+   uvicorn main:app
+
+   # Start frontend (in new terminal)
+   cd Webapp
+   npm start
+   ```
+
+### Production Deployment
+
+1. Start the application:
+
+   ```bash
+   docker compose -f docker-compose.yaml up
+   ```
+
+2. Access the interface at `http://localhost:80`
+
+For rebuilding with latest code:
+
+```bash
+docker compose -f docker-compose.yaml up --build
 ```
 
-3. Install a container runtime (See [Installing Docker](#installing-docker))
-4. Install an editor, such as [VSCode](https://code.visualstudio.com/download) and click `Clone git repository...` and enter the repository details from github.
-5. Once the repo is cloned, open it, and it should prompt you to install the devcontainers extension, and to build and run the repository in a dev container.
-6. To give yourself permissions to manipulate the repo directly from your Linux distribution, run:
+## System Architecture
+
+AEMS follows a modern containerized architecture:
+
+- Frontend: React/Next.js application
+- Backend: Python FastAPI service
+- Database: PostgreSQL
+- Reverse Proxy: Nginx
+
+Key components are containerized using Docker for consistent deployment across environments.
+
+## User Roles
+
+- **Competition Admin**: Manages events, uploads participant data
+- **Head Judge**: Reviews and oversees scoring
+- **Judge**: Inputs scores for athletes
+- **Athlete**: Views results and PDF outputs
+
+## Development Guide
+
+### Project Structure
 
 ```
-cd ../
-sudo chown -R your_unix_username AEMS
+AEMS/
+├── Server/           # Python FastAPI backend
+├── Webapp/          # React frontend
+├── Common/          # Shared API definitions
+├── docs/            # Documentation and diagrams
+└── docker-compose.yaml
 ```
 
-6. Congratulations, your environment is set up.
+### Key Development Commands
 
-### Installing Docker
+#### Installing Docker
 
 These instructions are based on the official guide on [the Docker Website](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 
@@ -101,53 +165,36 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 ```
 
-### Running the services
+#### Backend (Server/)
 
-#### Webapp
-
-```
-cd Webapp \\ navigate to the webapp folder
-npm start  \\ run the webapp in development mode
-```
-
-More instructions for running linting and tests can be found in [the Webapp README](./Webapp/README.md)
-
-#### Server
-
-```
-cd Server \\ Navigate to the server directory
-alembic upgrade head \\ Upgrade the database to the latest version
-uvicorn main:app \\ run the backend service
+```bash
+alembic upgrade head     # Update database schema
+python -m scripts.seed_scoresheets  # Seed initial data
+python -m scripts.buildOpenApiJson  # Update API specs
 ```
 
-More instructions for running linting and tests can be found in [the Server README](./Server/README.md)
+#### Frontend (Webapp/)
 
-## Deploying to Local Production
-
-### Requirements
-
-A machine running a docker runtime
-
-### Run Docker Compose
-
-```
-docker compose -f docker-compose.yaml  up
+```bash
+npm start    # Development server
+npm test     # Run tests
+npm run build # Production build
 ```
 
-### Rebuild Docker compose based on latest code
+## Support and Contact
 
-This may take a few minutes
+For technical support or custom implementations:
 
-```
-docker compose -f docker-compose.yaml  up --build
-```
+- Email: kayak.freestyle.app@gmail.com
+- Available for on-site setup and event support
 
-The user interface should now be available on `http://localhost:80` on the machine running the container.
+## Mobile Apps
 
-### Set the docker compose to run automatically on startup
+Companion scoring apps available for informal competitions:
 
-This will run the docker in deamon mode, which will continue running indefinetely, without depending on a specific terminal being open. The service should start whenever docker is running.
+- [Google Play](https://play.google.com/store/apps/details?id=com.kayakfreestyle.kayakfreestyleapp)
+- [Apple Store](https://apps.apple.com/sk/app/kayak-freestyle-app/id1627445855)
 
-```
-TBC: maybe look at this? https://stackoverflow.com/questions/43671482/how-to-run-docker-compose-up-d-at-system-start-up
-```
+## Contributing
+
+See [Server/README.md](Server/README.md) and [Webapp/README.md](Webapp/README.md) for detailed development setup instructions.

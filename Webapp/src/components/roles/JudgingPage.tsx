@@ -1,18 +1,18 @@
 import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Link from "@mui/material/Link"
 import Paper from "@mui/material/Paper"
 import RouterLink from "next/link"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
 
-import { HeatSummaryTable } from "../../components/competition/HeatSummaryTable"
-import { SelectorDisplay } from "../../components/competition/MainSelector"
 import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery
 } from "../../redux/services/aemsApi"
+import { HeatSummaryTable } from "../competition/HeatSummaryTable"
+import { SelectorDisplay } from "../competition/MainSelector"
 
 const Judging = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
@@ -43,40 +43,47 @@ const Judging = () => {
 				spacing={1}
 				alignItems="flex-start"
 				sx={{ paddingTop: "0.5em" }}
+				data-testid="judging-page-content"
 			>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Paper sx={{ padding: "1em" }}>
 						<Grid container spacing={1} alignItems={"stretch"}>
-							<Grid item xs={6}>
+							<Grid size={6}>
 								<SelectorDisplay
 									showPhase={false}
 									showEvent={false}
 								/>
 							</Grid>
-
-							<Grid item xs={6}>
+							<Grid size={6}>
 								{!heatHasPaddlers && (
-									<Alert severity="warning">
+									<Alert
+										severity="warning"
+										data-testid="no-paddlers-warning"
+									>
 										Cannot Judge a heat with no paddlers.
 									</Alert>
 								)}
 							</Grid>
-
 							{judgeNumberArray.map((j: number) => (
-								<Grid item xs key={j}>
+								<Grid key={j} size="grow">
 									<ScribeButton
 										n={j}
 										disabled={!heatHasPaddlers}
 									/>
 								</Grid>
 							))}
-							<Grid item xs>
+							<Grid size="grow">
 								<HeadJudgeButton disabled={!heatHasPaddlers} />
+							</Grid>{" "}
+							<Grid size="grow">
+								<CommentatorButton
+									disabled={!heatHasPaddlers}
+								/>
 							</Grid>
 						</Grid>
 					</Paper>
 				</Grid>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<HeatSummaryTable />
 				</Grid>
 			</Grid>
@@ -85,7 +92,7 @@ const Judging = () => {
 
 	return (
 		<Grid container alignItems="stretch" sx={{ paddingTop: "0.5em" }}>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<SelectorDisplay
 					showDetailed={false}
 					showEvent={false}
@@ -104,7 +111,12 @@ const ScribeButton = ({
 	disabled?: boolean
 }) => (
 	<Link component={RouterLink} href={`scribe/${n}`} color="inherit">
-		<Button variant="contained" fullWidth disabled={disabled}>
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid={`scribe-button-${n}`}
+		>
 			Scribe {n}
 		</Button>
 	</Link>
@@ -112,8 +124,26 @@ const ScribeButton = ({
 
 const HeadJudgeButton = ({ disabled = false }: { disabled?: boolean }) => (
 	<Link component={RouterLink} href={"HeadJudge"} color="inherit">
-		<Button variant="contained" fullWidth disabled={disabled}>
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid="head-judge-button"
+		>
 			Head Judge
+		</Button>
+	</Link>
+)
+
+const CommentatorButton = ({ disabled = false }: { disabled?: boolean }) => (
+	<Link component={RouterLink} href={"Commentator"} color="inherit">
+		<Button
+			variant="contained"
+			fullWidth
+			disabled={disabled}
+			data-testid="commentator-button"
+		>
+			Commentator
 		</Button>
 	</Link>
 )
