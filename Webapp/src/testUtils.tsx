@@ -4,6 +4,7 @@ import { render, RenderOptions } from "@testing-library/react"
 
 import React, { JSX, PropsWithChildren } from "react"
 import { Provider } from "react-redux"
+import { aemsApi } from "./redux/services/aemsApi"
 import { AppStore, rootReducer, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
@@ -19,12 +20,13 @@ export const renderWithProviders = (
 		// Automatically create a store instance if no store was passed in
 		store = configureStore({
 			reducer: rootReducer,
-
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware().concat(aemsApi.middleware),
 			preloadedState
 		}),
 		...renderOptions
 	}: ExtendedRenderOptions = {}
-): { store: EnhancedStore } => {
+): { store: EnhancedStore<RootState> } => {
 	const Wrapper = ({ children }: PropsWithChildren<unknown>): JSX.Element => (
 		<Provider store={store}>{children}</Provider>
 	)

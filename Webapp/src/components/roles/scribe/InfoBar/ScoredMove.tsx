@@ -1,8 +1,11 @@
-import Chip from "@mui/material/Chip"
+import DeleteIcon from "@mui/icons-material/Delete"
+
 import Grid from "@mui/material/Grid2"
+import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
+import toast from "react-hot-toast"
 import { useDispatch } from "react-redux"
 import {
 	updateScoredBonuses,
@@ -93,16 +96,19 @@ const ScoredMove = React.memo(
 					>
 						{!chipActionsDisabled ? (
 							<Grid>
-								<Chip
-									onClick={() =>
+								<IconButton
+									onContextMenu={() => {
 										removeScoredMove(scoredMove.id)
-									}
-									color="default"
-									label="X"
+									}}
+									onClick={() => {
+										toast.error("Press and hold to delete")
+									}}
 									data-testid={
 										"scored-remove-" + scoredMove.id
 									}
-								/>
+								>
+									<DeleteIcon fontSize="small" />
+								</IconButton>
 							</Grid>
 						) : (
 							<></>
