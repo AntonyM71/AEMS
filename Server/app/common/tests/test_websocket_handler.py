@@ -1,4 +1,3 @@
-
 import pytest
 from fastapi import WebSocket
 
@@ -30,21 +29,27 @@ def websocket() -> MockWebSocket:
 
 
 @pytest.mark.asyncio
-async def test_connect(connection_manager: ConnectionManager, websocket: MockWebSocket) -> None:
+async def test_connect(
+    connection_manager: ConnectionManager, websocket: MockWebSocket
+) -> None:
     await connection_manager.connect(websocket)
     assert websocket.accepted
     assert websocket in connection_manager.active_connections
 
 
 @pytest.mark.asyncio
-async def test_disconnect(connection_manager: ConnectionManager, websocket: MockWebSocket) -> None:
+async def test_disconnect(
+    connection_manager: ConnectionManager, websocket: MockWebSocket
+) -> None:
     await connection_manager.connect(websocket)
     connection_manager.disconnect(websocket)
     assert websocket not in connection_manager.active_connections
 
 
 @pytest.mark.asyncio
-async def test_broadcast(connection_manager: ConnectionManager, websocket: MockWebSocket) -> None:
+async def test_broadcast(
+    connection_manager: ConnectionManager, websocket: MockWebSocket
+) -> None:
     await connection_manager.connect(websocket)
     message = "Hello, World!"
     await connection_manager.broadcast(message)

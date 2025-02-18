@@ -1,7 +1,7 @@
 import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Checkbox from "@mui/material/Checkbox"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -14,7 +14,7 @@ import { SelectorDisplay } from "./MainSelector"
 
 export const MakeHeatPDFs = () => (
 	<Grid container spacing={1}>
-		<Grid item xs={4}>
+		<Grid size={4}>
 			<SelectorDisplay
 				showEvent={false}
 				showHeat={false}
@@ -22,7 +22,7 @@ export const MakeHeatPDFs = () => (
 				showDetailed={false}
 			/>
 		</Grid>
-		<Grid item xs={8}>
+		<Grid size={8}>
 			<HeatCheckBoxes />
 		</Grid>
 	</Grid>
@@ -49,7 +49,7 @@ const HeatCheckBoxes = () => {
 				{data?.map((h) => {
 					if (h?.id && h?.name) {
 						return (
-							<Grid item key={h.id}>
+							<Grid key={h.id}>
 								<Stack
 									alignItems="center"
 									justifyContent="center"
@@ -78,7 +78,7 @@ const HeatCheckBoxes = () => {
 					}
 				})}
 
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Stack
 						spacing={1}
 						direction="row"

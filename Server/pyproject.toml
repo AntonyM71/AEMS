@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 py-modules = []
 
 [tool.ruff]
-lint.ignore = ["E501", "N999", "UP007"]
+lint.ignore = ["E501", "N999", "UP007", "ANN401"]
 lint.select = [
     "E",
     "F",
@@ -35,7 +35,8 @@ extend-immutable-calls = [
     "fastapi.params.Query",
 ]
 [tool.pytest.ini_options]
-addopts = ["--cov", "--cov-report=term-missing"]
+addopts = ["--cov=.", "--cov-report=term-missing"]
+pythonpath = ["."]
 [tool.coverage.run]
 omit = ["*/tests/*"]
 
@@ -68,6 +69,7 @@ dependencies = [
     "mypy",
     "pytest",
     "pytest-cov",
+    "pytest-asyncio",
     "fastapi-quickcrud",
     "sqlalchemy_utils",
     "sqlalchemy[mypy]",    # remove when we upgrade to 2.0

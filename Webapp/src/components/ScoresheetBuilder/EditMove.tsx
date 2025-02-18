@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import MenuItem from "@mui/material/MenuItem"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import TextField from "@mui/material/TextField"
@@ -12,12 +12,13 @@ export const EditMove = ({
 	setMoveData: (m: MoveData) => void
 }) => (
 	<>
-		<Grid item xs={2}>
+		<Grid size={2}>
 			<TextField
 				error={!moveData.name}
 				label="Name"
 				variant="outlined"
 				fullWidth
+				data-testid="name-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
 						...moveData,
@@ -27,7 +28,7 @@ export const EditMove = ({
 				value={moveData.name}
 			/>
 		</Grid>
-		<Grid item xs={1}>
+		<Grid size={1}>
 			<Select
 				label="Direction"
 				variant="outlined"
@@ -49,12 +50,13 @@ export const EditMove = ({
 				<MenuItem value="S">Single</MenuItem>
 			</Select>
 		</Grid>
-		<Grid item xs={1}>
+		<Grid size={1}>
 			<TextField
 				error={!moveData.flScore.toString()}
 				label="F/L"
 				variant="outlined"
 				fullWidth
+				data-testid="fl-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
 						...moveData,
@@ -64,7 +66,7 @@ export const EditMove = ({
 				value={moveData.flScore}
 			/>
 		</Grid>
-		<Grid item xs={1}>
+		<Grid size={1}>
 			<TextField
 				error={!moveData.rbScore.toString()}
 				label="B/R"
@@ -81,12 +83,13 @@ export const EditMove = ({
 			/>
 		</Grid>
 		{moveData.bonuses.map((b, i) => (
-			<Grid item xs={1} key={b.id}>
+			<Grid key={b.id} size={1}>
 				<TextField
 					error={!moveData.bonuses[i].score.toString()}
 					label={`${b.name}`}
 					variant="outlined"
 					fullWidth
+					data-testid={`${b.name.toLowerCase()}-field`}
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => {

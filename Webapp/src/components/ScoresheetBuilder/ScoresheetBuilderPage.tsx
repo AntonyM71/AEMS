@@ -1,7 +1,7 @@
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import { useState } from "react"
-import { SelectScoresheet } from "../judging/ScoresheetSelector"
+import { SelectScoresheet } from "../competition/ScoresheetSelector"
 import { AddScoresheet } from "./AddScoresheet"
 import { ScoresheetMoves } from "./ScoresheetBuilder"
 
@@ -10,7 +10,7 @@ export const ScoresheetBuilder = () => {
 
 	return (
 		<Grid container spacing={1} sx={{ paddingTop: "0.5em" }}>
-			<Grid item xs={2}>
+			<Grid size={2}>
 				<Paper sx={{ padding: "1em" }}>
 					<SelectScoresheet
 						setSelectedScoresheet={setSelectedScoresheet}
@@ -21,9 +21,9 @@ export const ScoresheetBuilder = () => {
 					/>
 				</Paper>
 			</Grid>
-			<Grid item xs={10}>
+			<Grid size={10}>
 				<Grid container spacing={1}>
-					<Grid item xs={12}>
+					<Grid size={12}>
 						{selectedScoresheet ? (
 							<ScoresheetMoves
 								selectedScoresheet={selectedScoresheet}
@@ -35,7 +35,7 @@ export const ScoresheetBuilder = () => {
 							</h4>
 						)}
 					</Grid>
-					<Grid item xs={12}></Grid>
+					<Grid size={12}></Grid>
 				</Grid>
 			</Grid>
 		</Grid>

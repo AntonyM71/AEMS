@@ -3,7 +3,7 @@ import Accordion from "@mui/material/Accordion"
 import AccordionDetails from "@mui/material/AccordionDetails"
 import AccordionSummary from "@mui/material/AccordionSummary"
 import Alert from "@mui/material/Alert"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Typography from "@mui/material/Typography"
 import { useSelector } from "react-redux"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
@@ -37,7 +37,6 @@ export default function Admin() {
 					<SelectorDisplay showDetailed={true} />
 				</AccordionDetails>{" "}
 			</Accordion>
-
 			<Accordion>
 				<AccordionSummary
 					expandIcon={<ExpandMoreIcon />}
@@ -48,7 +47,7 @@ export default function Admin() {
 				</AccordionSummary>
 				<AccordionDetails>
 					<Grid container spacing={1}>
-						<Grid item xs={3}>
+						<Grid size={3}>
 							<SelectorDisplay
 								showCompetition={true}
 								showPhase={false}
@@ -56,7 +55,7 @@ export default function Admin() {
 								vertical={true}
 							/>
 						</Grid>
-						<Grid item xs={9}>
+						<Grid size={9}>
 							{selectedHeat ? (
 								<HeatSummaryTable showAddAthletes={true} />
 							) : (

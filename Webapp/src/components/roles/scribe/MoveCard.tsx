@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React, { useEffect } from "react"
@@ -69,7 +69,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container alignItems="stretch">
-						<Grid item xs={6} sx={{ padding: "4px" }}>
+						<Grid sx={{ padding: "4px" }} size={6}>
 							<Button
 								variant="contained"
 								aria-label={"button1"}
@@ -84,7 +84,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								L
 							</Button>
 						</Grid>
-						<Grid item xs={6} sx={{ padding: "4px" }}>
+						<Grid sx={{ padding: "4px" }} size={6}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -109,7 +109,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container>
-						<Grid item xs={6} sx={{ padding: "4px" }}>
+						<Grid sx={{ padding: "4px" }} size={6}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -124,7 +124,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 								F
 							</Button>
 						</Grid>
-						<Grid item xs={6} sx={{ padding: "4px" }}>
+						<Grid sx={{ padding: "4px" }} size={6}>
 							<Button
 								variant="contained"
 								fullWidth
@@ -149,7 +149,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				<Typography align="center">{props.move.name}</Typography>
 				<div className="moveButton">
 					<Grid container justifyContent="center">
-						<Grid item xs={6} sx={{ padding: "4px" }}>
+						<Grid sx={{ padding: "4px" }} size={6}>
 							<Button
 								variant="contained"
 								fullWidth

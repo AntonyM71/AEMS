@@ -2,7 +2,7 @@ import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -10,7 +10,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
-import { Fragment, useState } from "react"
+import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -27,40 +27,52 @@ import {
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { RefreshButton } from "./RefreshIconButton"
 
-const HeatsSelector = ({
-	showDetailed = false
-}: {
-	showDetailed?: boolean
-}) => {
+const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedHeat = (newHeat: string) =>
 		dispatch(updateSelectedHeat(newHeat))
 	const selectedHeat = useSelector(getSelectedHeat)
 
-	const { data, isLoading, isSuccess, refetch } = useGetManyHeatGetQuery(
+	const { data, isLoading, isError, refetch } = useGetManyHeatGetQuery(
 		{
 			competitionIdList: [selectedCompetition],
 			competitionIdListComparisonOperator: "Equal"
 		},
-		{ skip: !selectedCompetition }
+		{
+			skip: !selectedCompetition,
+			refetchOnMountOrArgChange: true
+		}
 	)
+
 	const setCurrentPaddler = (newPaddler: number) =>
 		dispatch(updatePaddler(newPaddler))
-	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
+	const setSelectedRun = (newRun: number) => dispatch(updateRun(newRun))
+
 	const onSelect = (event: SelectChangeEvent<string>) => {
-		setSelectedHeat(event.target.value)
+		const newHeat = event.target.value
+		setSelectedHeat(newHeat)
 		setCurrentPaddler(0)
-		setselectedRun(0)
+		setSelectedRun(0)
 	}
+
 	if (!selectedCompetition) {
 		return <></>
 	}
+
 	if (isLoading) {
-		return <Skeleton variant="rectangular" />
-	} else if (!isSuccess) {
-		return <h4>Failed to get data from the server</h4>
-	} else if (!data) {
+		return <Skeleton variant="rectangular" data-testid="skeleton" />
+	}
+
+	if (isError) {
+		return (
+			<Paper sx={{ padding: "1em" }}>
+				<h4>Failed to get data from the server</h4>
+			</Paper>
+		)
+	}
+
+	if (!data) {
 		return (
 			<Paper sx={{ padding: "1em", height: "100%" }}>
 				<Stack
@@ -76,39 +88,56 @@ const HeatsSelector = ({
 				<AddHeat refetch={refetch} />
 			</Paper>
 		)
-	} else if (data) {
+	} else {
 		return (
 			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing="2">
+				<Grid container spacing={2}>
 					{showDetailed ? (
-						<Grid item xs={12}>
-							<h4>Select an Heat</h4>
+						<Grid size={12}>
+							<h4>Select a Heat</h4>
 						</Grid>
 					) : (
 						<></>
 					)}
-					<Grid item xs={12}>
+					<Grid size={12}>
 						<FormControl fullWidth={true}>
-							<InputLabel>Select Heat</InputLabel>
+							<InputLabel id="heat-select-label">
+								Select Heat
+							</InputLabel>
 							<Select
 								value={selectedHeat}
 								onChange={onSelect}
 								variant="outlined"
+								labelId="heat-select-label"
+								id="heat-select"
+								label="Select Heat"
+								data-testid="heat-select"
+								inputProps={{
+									"aria-label": "Select Heat"
+								}}
 								startAdornment={
 									<RefreshButton refetch={refetch} />
 								}
 							>
-								{data.map((Heat) => (
-									<MenuItem key={Heat.id} value={Heat.id}>
-										{Heat.name}
-									</MenuItem>
-								))}
+								{data.map((heat) =>
+									heat.name ? (
+										<MenuItem
+											key={heat.id}
+											value={heat.id}
+											data-testid={`heat-option-${heat.name
+												.toLowerCase()
+												.replace(/\s+/g, "-")}`}
+										>
+											{heat.name}
+										</MenuItem>
+									) : null
+								)}
 							</Select>
 						</FormControl>
 					</Grid>
 					{showDetailed ? (
 						<>
-							<Grid item>
+							<Grid>
 								<AddHeat refetch={refetch} />
 							</Grid>
 						</>
@@ -118,12 +147,14 @@ const HeatsSelector = ({
 				</Grid>
 			</Paper>
 		)
-	} else {
-		return <Fragment>No Heats Available</Fragment>
 	}
 }
 
-const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
+const AddHeat = ({
+	refetch
+}: {
+	refetch: ReturnType<typeof useGetManyHeatGetQuery>["refetch"]
+}) => {
 	const [heatName, setHeatName] = useState<string>("")
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const [competitionId, setCompetitionId] =
@@ -137,10 +168,9 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 		.map((d) => ({ value: d.id!, label: d.name! }))
 
 	const submitNewHeat = async () => {
-		HandlePostResponse(
-			await postNewHeat({
+		try {
+			const response = await postNewHeat({
 				body: [
-					// eslint-disable-next-line camelcase
 					{
 						name: heatName,
 						id: uuid4(),
@@ -148,32 +178,41 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 					}
 				]
 			})
-		)
-		await refetch()
-		setHeatName("")
+
+			if ("error" in response) {
+				throw new Error("Failed to add heat")
+			}
+
+			HandlePostResponse(response)
+			setHeatName("")
+			await refetch()
+		} catch (error) {
+			console.error("Error adding heat:", error)
+		}
 	}
 
 	return (
-		<Grid container spacing="2">
-			<Grid item xs={12}>
+		<Grid container spacing={2}>
+			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<h4>Add New Heat</h4>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<TextField
-					error={!!heatName}
+					error={!heatName}
 					label="New Heat"
 					variant="outlined"
 					fullWidth
+					data-testid="new-heat-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void => setHeatName(event.target.value)}
 					value={heatName}
 				/>
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				{options ? (
 					<Autocomplete
 						options={options}
@@ -187,7 +226,11 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 						}
 						fullWidth
 						renderInput={(params) => (
-							<TextField {...params} label="Competition" />
+							<TextField
+								{...params}
+								label="Competition"
+								data-testid="competition-input"
+							/>
 						)}
 						onChange={(event, newValue) => {
 							if (newValue) {
@@ -196,15 +239,16 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 						}}
 					/>
 				) : (
-					<> </>
+					<></>
 				)}
 			</Grid>
-			<Grid item xs={12}>
+			<Grid size={12}>
 				<Button
 					variant="contained"
 					fullWidth
 					onClick={() => void submitNewHeat()}
 					disabled={!heatName}
+					data-testid="add-heat-button"
 				>
 					Add Heat
 				</Button>
@@ -213,8 +257,9 @@ const AddHeat = ({ refetch }: { refetch: () => Promise<any> }) => {
 	)
 }
 
+export default HeatSelector
+
 interface CompetitionOptions {
 	value: string
 	label: string
 }
-export default HeatsSelector

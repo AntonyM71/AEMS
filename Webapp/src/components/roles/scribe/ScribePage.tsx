@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import { useDispatch, useSelector } from "react-redux"
 
 import { useEffect } from "react"
@@ -23,8 +23,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				spacing={1}
 				alignContent="stretch"
 				sx={{ paddingTop: "0.5em" }}
+				data-testid="scribe-grid"
 			>
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Float scribeNumber={scribeNumber} />
 				</Grid>
 			</Grid>

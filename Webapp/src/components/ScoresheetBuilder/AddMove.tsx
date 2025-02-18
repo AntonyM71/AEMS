@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import { includes } from "lodash"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
@@ -52,10 +52,10 @@ export const AddNewMove = ({
 	}
 
 	return (
-		<Grid container spacing="2">
+		<Grid container spacing={2}>
 			{" "}
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
-			<Grid item xs={1}>
+			<Grid size={1}>
 				<Button
 					onClick={submitNewMove}
 					color="primary"

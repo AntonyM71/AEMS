@@ -1,4 +1,4 @@
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import CompetitionSelector from "./CompetitionSelector"
 import EventSelector from "./EventSelector"
 import HeatsSelector from "./HeatSelector"
@@ -26,22 +26,22 @@ export const SelectorDisplay = ({
 		direction={vertical ? "column" : "row"}
 	>
 		{showCompetition && (
-			<Grid item xs>
+			<Grid size="grow">
 				<CompetitionSelector showDetailed={showDetailed} />
 			</Grid>
 		)}
 		{showEvent && (
-			<Grid item xs>
+			<Grid size="grow">
 				<EventSelector showDetailed={showDetailed} />
 			</Grid>
 		)}
 		{showPhase && (
-			<Grid item xs>
+			<Grid size="grow">
 				<PhaseSelector showDetailed={showDetailed} />
 			</Grid>
 		)}
 		{showHeat && (
-			<Grid item xs>
+			<Grid size="grow">
 				<HeatsSelector showDetailed={showDetailed} />
 			</Grid>
 		)}

@@ -5,13 +5,17 @@ ENV LOG_JSON_FORMAT true
 ENV DD_TRACE_ENABLED true
 ENV UVICORN_PORT 8000
 ENV PORT 3000
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_PROJECT_ENVIRONMENT=/usr/local
 #
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /code
 
 #
 COPY ./ /code/
 #
-RUN pip install --no-cache-dir --upgrade .
+RUN uv sync --frozen
 
 #
 

@@ -1,18 +1,14 @@
-import { configureStore, EnhancedStore, PreloadedState } from "@reduxjs/toolkit"
+import { configureStore, EnhancedStore } from "@reduxjs/toolkit"
 
 import { render, RenderOptions } from "@testing-library/react"
 
-import React, { PropsWithChildren } from "react"
+import React, { JSX, PropsWithChildren } from "react"
 import { Provider } from "react-redux"
-import { competitionsReducer } from "./redux/atoms/competitions"
-import { scoringReducer } from "./redux/atoms/scoring"
-import { utilitiesReducer } from "./redux/atoms/utilities"
-import { emptySplitApi } from "./redux/services/emptyApi"
-import { AppStore, RootState } from "./redux/store"
+import { AppStore, rootReducer, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
-	preloadedState?: Partial<PreloadedState<RootState>>
+	preloadedState?: Partial<RootState>
 	store?: AppStore
 }
 
@@ -22,12 +18,8 @@ export const renderWithProviders = (
 		preloadedState = {},
 		// Automatically create a store instance if no store was passed in
 		store = configureStore({
-			reducer: {
-				score: scoringReducer,
-				competitions: competitionsReducer,
-				utilities: utilitiesReducer,
-				[emptySplitApi.reducerPath]: emptySplitApi.reducer
-			},
+			reducer: rootReducer,
+
 			preloadedState
 		}),
 		...renderOptions

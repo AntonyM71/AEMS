@@ -1,5 +1,5 @@
 import Chip from "@mui/material/Chip"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import { v4 as uuidv4 } from "uuid"
 import { AvailableBonusType } from "./InfoBar/ScoredMove"
 import { scoredBonusType, scoredMovesType } from "./Interfaces"
@@ -43,7 +43,7 @@ export const BonusChip = ({
 	}
 
 	return (
-		<Grid item key={availableBonus.id}>
+		<Grid key={availableBonus.id}>
 			<Chip
 				color={isScored ? "primary" : "default"}
 				key={availableBonus.id}

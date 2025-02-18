@@ -1,7 +1,5 @@
 import {
-	DeepPartial,
 	EnhancedStore,
-	PreloadedState,
 	combineReducers,
 	configureStore
 } from "@reduxjs/toolkit"
@@ -19,7 +17,7 @@ export const rootReducer = combineReducers({
 	[emptySplitApi.reducerPath]: emptySplitApi.reducer
 })
 export const setupStore = (
-	preloadedState: DeepPartial<PreloadedState<RootState>> = {}
+	preloadedState: Partial<RootState> = {}
 ): EnhancedStore<RootState> =>
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	configureStore({

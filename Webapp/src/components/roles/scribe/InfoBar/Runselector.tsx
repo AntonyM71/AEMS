@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
@@ -48,11 +48,11 @@ export const RunSelector = () => {
 			}}
 		>
 			<Grid container alignItems="center" justifyContent="space-between">
-				<Grid item xs={12}>
+				<Grid size={12}>
 					<Typography variant="h5">Run:</Typography>
 				</Grid>
 
-				<Grid item xs={4} alignItems="right">
+				<Grid alignItems="right" size={4}>
 					<IconButton
 						edge="start"
 						onClick={() => changeRun(-1)}
@@ -61,7 +61,7 @@ export const RunSelector = () => {
 						<ChevronLeft />
 					</IconButton>
 				</Grid>
-				<Grid item alignContent="center" textAlign="center" xs={4}>
+				<Grid alignContent="center" textAlign="center" size={4}>
 					<Typography
 						fontWeight={"fontWeightBold"}
 						variant="h5"
@@ -69,13 +69,13 @@ export const RunSelector = () => {
 							selectedAthlete?.number_of_runs &&
 							selectedRun + 1 > selectedAthlete?.number_of_runs
 								? "red"
-								: "black"
+								: "default"
 						}
 					>
 						{selectedRun + 1}
 					</Typography>
 				</Grid>
-				<Grid item xs={4}>
+				<Grid size={4}>
 					<IconButton
 						onClick={() => changeRun(1)}
 						data-testid={"button-next-run"}

@@ -10,7 +10,7 @@
 		"editor.bracketPairColorization.enabled": true,
 		"eslint.format.enable": true,
 		"eslint.lintTask.enable": true,
-		"editor.formatOnSave": true,
+		"editor.formatOnSave": false,
 		"typescript.preferences.quoteStyle": "double",
 		"eslint.alwaysShowStatus": true,
 		"files.trimTrailingWhitespace": true,
@@ -18,8 +18,8 @@
 		"editor.formatOnPaste": true,
 		"files.eol": "\n",
 		"editor.codeActionsOnSave": {
-			"source.fixAll": true,
-			"source.organizeImports": true
+			"source.fixAll": "false",
+			"source.organizeImports": "false"
 		},
 		"emmet.excludeLanguages": ["markdown"],
 		"eslint.workingDirectories": ["./Webapp"],

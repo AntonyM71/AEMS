@@ -1,5 +1,5 @@
 import Alert from "@mui/material/Alert"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import { useEffect, useRef, useState } from "react"
 import { batch, useDispatch, useSelector } from "react-redux"
 import {
@@ -22,7 +22,8 @@ import {
 	useGetManyRunStatusGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { connectWebRunStatusSocket, RunStatus } from "../headJudge/headJudge"
+import { RunStatus } from "../headJudge/RunStatus"
+import { connectWebRunStatusSocket } from "../headJudge/WebSocketConnections"
 import { AthleteInfo, InfoBar } from "./InfoBar"
 import {
 	directionType,
@@ -250,15 +251,15 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	) {
 		return (
 			<Grid container spacing={1}>
-				<Grid item xs={7}>
+				<Grid size={7}>
 					{runStatus?.locked && (
-						<Alert severity="info">
+						<Alert severity="info" sx={{ marginBottom: "0.5em" }}>
 							Run has been locked by head judge
 						</Alert>
 					)}
 					<Grid container spacing={1}>
 						{availableMoves.data?.map((move) => (
-							<Grid item xs={3} key={move.id}>
+							<Grid key={move.id} size={3}>
 								<MoveCard
 									key={move.id}
 									move={move as movesType}
@@ -268,7 +269,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 						))}
 					</Grid>
 				</Grid>
-				<Grid item xs={5}>
+				<Grid size={5}>
 					<InfoBar
 						paddlerInfo={selectedAthlete}
 						data-testid={"infobar"}

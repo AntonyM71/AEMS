@@ -35,7 +35,7 @@
     "Clean": 0,
     "SuperClean": 0,
     "Air": 10,
-    "Huge": 10,
+    "Huge": 20,
     "Link": 10,
     "Direction": "LR"
   },
@@ -56,7 +56,7 @@
     "SuperClean": 0,
     "Air": 0,
     "Huge": 0,
-    "Link": 30,
+    "Link": 20,
     "Direction": "LR"
   },
   {
@@ -189,7 +189,7 @@
     "Air": 40,
     "Huge": 50,
     "Link": 30,
-    "Direction": "FB"
+    "Direction": "LR"
   },
   {
     "Move": "Roundhouse",
@@ -248,7 +248,7 @@
     "SuperClean": 10,
     "Air": 0,
     "Huge": 50,
-    "Link": 20,
+    "Link": 30,
     "Direction": "LR"
   },
   {
@@ -257,8 +257,8 @@
     "Clean": 30,
     "SuperClean": 10,
     "Air": 0,
-    "Huge": 50,
-    "Link": 30,
+    "Huge": 40,
+    "Link": 20,
     "Direction": "LR"
   },
   {

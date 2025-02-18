@@ -197,7 +197,7 @@ module.exports = {
 			{
 				name: "@mui/material",
 				message:
-					"Importing from @mui/material is slow, please import from the corresponding module i.e. `@mui/material/grid` instead"
+					"Importing from @mui/material is slow, please import from the corresponding module i.e. `@mui/material/Grid2` instead"
 			},
 			{
 				name: "underscore",

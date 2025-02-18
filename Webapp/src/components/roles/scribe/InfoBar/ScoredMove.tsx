@@ -1,5 +1,5 @@
 import Chip from "@mui/material/Chip"
-import Grid from "@mui/material/Grid"
+import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import React from "react"
@@ -92,7 +92,7 @@ const ScoredMove = React.memo(
 						alignItems="center"
 					>
 						{!chipActionsDisabled ? (
-							<Grid item>
+							<Grid>
 								<Chip
 									onClick={() =>
 										removeScoredMove(scoredMove.id)
@@ -107,7 +107,7 @@ const ScoredMove = React.memo(
 						) : (
 							<></>
 						)}
-						<Grid item>
+						<Grid>
 							<Typography
 								fontWeight={"fontWeightBold"}
 								align="center"
@@ -115,7 +115,7 @@ const ScoredMove = React.memo(
 								{scoredMove.direction}
 							</Typography>
 						</Grid>
-						<Grid item xs={4}>
+						<Grid size={4}>
 							<Typography align="center" display="inline">
 								{moveData.name}
 							</Typography>
