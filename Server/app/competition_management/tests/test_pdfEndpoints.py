@@ -71,7 +71,7 @@ async def test_phase_pdf_success(
     sample_phase_id: str,
     mock_competition: MagicMock,
     mock_event: MagicMock,
-    mock_phase: MagicMock
+    mock_phase: MagicMock,
 ) -> None:
     # Mock database queries
     mock_db_session.query.return_value.filter.return_value.one = MagicMock(
@@ -96,7 +96,9 @@ async def test_phase_pdf_success(
 
 
 @pytest.mark.asyncio
-async def test_phase_pdf_db_error(mock_db_session: Session, sample_phase_id: str) -> None:
+async def test_phase_pdf_db_error(
+    mock_db_session: Session, sample_phase_id: str
+) -> None:
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
@@ -108,7 +110,9 @@ async def test_phase_pdf_db_error(mock_db_session: Session, sample_phase_id: str
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_success(mock_db_session: Session, mock_competition: MagicMock) -> None:
+async def test_heat_pdf_success(
+    mock_db_session: Session, mock_competition: MagicMock
+) -> None:
     # Create a heat ID and mock heat with matching ID
     heat_id = str(uuid.uuid4())
     mock_heat = MagicMock(
@@ -159,7 +163,9 @@ async def test_heat_pdf_no_ids() -> None:
 
 
 @pytest.mark.asyncio
-async def test_heat_pdf_not_found(mock_db_session: Session, sample_heat_ids: list[str]) -> None:
+async def test_heat_pdf_not_found(
+    mock_db_session: Session, sample_heat_ids: list[str]
+) -> None:
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = []
 
     response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
@@ -169,9 +175,7 @@ async def test_heat_pdf_not_found(mock_db_session: Session, sample_heat_ids: lis
 
 @pytest.mark.asyncio
 async def test_heat_results_pdf_success(
-    mock_db_session: Session,
-    mock_competition: MagicMock,
-    mock_heat: MagicMock
+    mock_db_session: Session, mock_competition: MagicMock, mock_heat: MagicMock
 ) -> None:
     heat_id = str(uuid.uuid4())
 
@@ -242,7 +246,7 @@ async def test_pdf_content_structure(
     sample_phase_id: str,
     mock_competition: MagicMock,
     mock_event: MagicMock,
-    mock_phase: MagicMock
+    mock_phase: MagicMock,
 ) -> None:
     """Test the structure of generated PDFs"""
     # This test ensures the PDF contains expected sections and formatting

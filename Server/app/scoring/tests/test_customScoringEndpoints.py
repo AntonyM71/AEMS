@@ -72,7 +72,9 @@ def test_get_heat_info_logic(
     mock_event: Event,
 ) -> None:
     # Configure mock database response
-    mock_db_session.query.return_value.where.return_value.all.return_value = [mock_athlete_heat]
+    mock_db_session.query.return_value.where.return_value.all.return_value = [
+        mock_athlete_heat
+    ]
 
     # Call the function
     result = get_heat_info_logic(
@@ -92,14 +94,16 @@ def test_get_heat_info_logic(
 
 def test_check_run_is_locked_returns_true_when_locked(mock_db_session: Session) -> None:
     # Configure mock database response
-    mock_db_session.query.return_value.filter.return_value.first.return_value = RunStatus(
-        id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
-        heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
-        athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
-        run_number=1,
-        phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
-        locked=True,
-        did_not_start=False,
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        RunStatus(
+            id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+            heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+            athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+            run_number=1,
+            phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+            locked=True,
+            did_not_start=False,
+        )
     )
 
     # Call the function
@@ -115,16 +119,20 @@ def test_check_run_is_locked_returns_true_when_locked(mock_db_session: Session) 
     assert result is True
 
 
-def test_check_run_is_locked_returns_false_when_not_locked(mock_db_session: Session) -> None:
+def test_check_run_is_locked_returns_false_when_not_locked(
+    mock_db_session: Session,
+) -> None:
     # Configure mock database response
-    mock_db_session.query.return_value.filter.return_value.first.return_value = RunStatus(
-        id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
-        heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
-        athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
-        run_number=1,
-        phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
-        locked=False,
-        did_not_start=False,
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        RunStatus(
+            id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+            heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+            athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+            run_number=1,
+            phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+            locked=False,
+            did_not_start=False,
+        )
     )
 
     # Call the function
@@ -195,7 +203,9 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_session: Session) -> None:
     assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
 
 
-def test_check_run_is_locked_returns_false_when_no_status(mock_db_session: Session) -> None:
+def test_check_run_is_locked_returns_false_when_no_status(
+    mock_db_session: Session,
+) -> None:
     # Configure mock database response
     mock_db_session.query.return_value.filter.return_value.first.return_value = None
 
