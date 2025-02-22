@@ -2,8 +2,12 @@ import { configureStore, EnhancedStore } from "@reduxjs/toolkit"
 
 import { render, RenderOptions } from "@testing-library/react"
 
+import _ from "lodash"
 import React, { JSX, PropsWithChildren } from "react"
 import { Provider } from "react-redux"
+import { competitionInitialState } from "./redux/atoms/competitions"
+import { scoringInitialState } from "./redux/atoms/scoring"
+import { utilitiesInitialState } from "./redux/atoms/utilities"
 import { aemsApi } from "./redux/services/aemsApi"
 import { AppStore, rootReducer, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
@@ -16,6 +20,11 @@ interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
 	preloadedState?: DeepPartial<RootState>
 	store?: AppStore
 }
+const baseState: Partial<RootState> = {
+	competitions: competitionInitialState,
+	score: scoringInitialState,
+	utilities: utilitiesInitialState
+}
 
 export const renderWithProviders = (
 	ui: React.ReactElement,
@@ -26,7 +35,12 @@ export const renderWithProviders = (
 			reducer: rootReducer,
 			middleware: (getDefaultMiddleware) =>
 				getDefaultMiddleware().concat(aemsApi.middleware),
-			preloadedState
+			preloadedState: _.mergeWith(
+				{},
+				baseState,
+				preloadedState,
+				(a: object, b: object) => (b ? { ...a, ...b } : a)
+			)
 		}),
 		...renderOptions
 	}: ExtendedRenderOptions = {}

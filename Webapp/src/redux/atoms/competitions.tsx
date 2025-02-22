@@ -10,7 +10,7 @@ interface competitionsStateType {
 	selectedCompetition: string
 }
 
-const initialState: competitionsStateType = {
+export const competitionInitialState: competitionsStateType = {
 	selectedPhase: "",
 	selectedHeat: "",
 	numberOfRuns: 3,
@@ -24,23 +24,26 @@ export const updateNumberOfRuns = createAction<number>("updateNumberOfRuns")
 export const updateSelectedCompetition = createAction<string>(
 	"updateSelectedCompetition"
 )
-export const competitionsReducer = createReducer(initialState, (builder) => {
-	builder.addCase(updateSelectedHeat, (state, action) => {
-		state.selectedHeat = action.payload
-	})
-	builder.addCase(updateSelectedEvent, (state, action) => {
-		state.selectedEvent = action.payload
-	})
-	builder.addCase(updateSelectedPhase, (state, action) => {
-		state.selectedPhase = action.payload
-	})
-	builder.addCase(updateSelectedCompetition, (state, action) => {
-		state.selectedCompetition = action.payload
-	})
-	builder.addCase(updateNumberOfRuns, (state, action) => {
-		state.numberOfRuns = action.payload
-	})
-})
+export const competitionsReducer = createReducer(
+	competitionInitialState,
+	(builder) => {
+		builder.addCase(updateSelectedHeat, (state, action) => {
+			state.selectedHeat = action.payload
+		})
+		builder.addCase(updateSelectedEvent, (state, action) => {
+			state.selectedEvent = action.payload
+		})
+		builder.addCase(updateSelectedPhase, (state, action) => {
+			state.selectedPhase = action.payload
+		})
+		builder.addCase(updateSelectedCompetition, (state, action) => {
+			state.selectedCompetition = action.payload
+		})
+		builder.addCase(updateNumberOfRuns, (state, action) => {
+			state.numberOfRuns = action.payload
+		})
+	}
+)
 
 export const getSelectedHeat = (state: RootState) =>
 	state.competitions.selectedHeat
