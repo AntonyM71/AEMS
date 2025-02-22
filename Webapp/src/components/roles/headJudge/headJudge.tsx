@@ -75,14 +75,11 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 			runNumberList: [selectedRun]
 		},
 		{
-			skip: !selectedHeat || !selectedAthlete?.id
+			skip: !selectedHeat || !selectedAthlete?.id,
+			refetchOnMountOrArgChange: true
 		}
 	)
-	useEffect(() => {
-		if (!httpRunStatus?.isUninitialized) {
-			void httpRunStatus.refetch()
-		}
-	}, [selectedHeat, selectedRun, currentPaddlerIndex])
+
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectWebRunStatusSocket()
