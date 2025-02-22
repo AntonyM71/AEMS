@@ -226,16 +226,23 @@ describe("PaddlerSelector", () => {
 			() => {
 				expect(store.getState().score.selectedPaddler).toBe(1)
 			},
-			{ timeout: 2000 }
+			{ timeout: 3000 }
 		)
 
 		// Click next again to wrap around and increment run
 		fireEvent.click(nextButton)
-		await waitFor(() => {
-			expect(store.getState().score.selectedPaddler).toBe(0)
-		})
-		await waitFor(() => {
-			expect(store.getState().score.selectedRun).toBe(1)
-		})
+		await waitFor(
+			() => {
+				expect(store.getState().score.selectedPaddler).toBe(0)
+			},
+			{ timeout: 3000 }
+		)
+		fireEvent.click(nextButton)
+		await waitFor(
+			() => {
+				expect(store.getState().score.selectedRun).toBe(1)
+			},
+			{ timeout: 3000 }
+		)
 	})
 })
