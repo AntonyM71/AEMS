@@ -156,6 +156,7 @@ export const ScoresheetMoves = ({
 			toast.success("Scoresheet updated successfully")
 			await bonusInfo.refetch()
 			await moves.refetch()
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (error) {
 			toast.error("Failed to update scoresheet")
 		}
