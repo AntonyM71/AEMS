@@ -33,7 +33,7 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          npm test --  --reporters="jest-junit" --outputFile=test-results.xml
+          npm test --  --reporters="jest-junit"
 
         displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
