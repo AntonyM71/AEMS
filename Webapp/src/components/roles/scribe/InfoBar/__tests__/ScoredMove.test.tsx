@@ -1,25 +1,14 @@
-import { configureStore } from "@reduxjs/toolkit"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { rest } from "msw"
-import { Provider } from "react-redux"
+import toast from "react-hot-toast"
 import { server } from "../../../../../mocks/server"
-import { scoringReducer } from "../../../../../redux/atoms/scoring"
-import { aemsApi } from "../../../../../redux/services/aemsApi"
+import { renderWithProviders } from "../../../../../testUtils"
 import {
 	directionType,
 	scoredBonusType,
 	scoredMovesType
 } from "../../Interfaces"
 import ScoredMove from "../ScoredMove"
-
-const mockStore = configureStore({
-	reducer: {
-		[aemsApi.reducerPath]: aemsApi.reducer,
-		scoring: scoringReducer
-	},
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware().concat(aemsApi.middleware)
-})
 
 const mockScoredMove: scoredMovesType = {
 	id: "scored-move-1",
@@ -59,14 +48,12 @@ describe("ScoredMove", () => {
 	})
 
 	it("renders move details correctly", async () => {
-		render(
-			<Provider store={mockStore}>
-				<ScoredMove
-					scoredMove={mockScoredMove}
-					scoredMovesList={mockScoredMovesList}
-					scoredBonuses={mockScoredBonuses}
-				/>
-			</Provider>
+		renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={mockScoredBonuses}
+			/>
 		)
 
 		expect(await screen.findByText("Test Move")).toBeInTheDocument()
@@ -76,56 +63,75 @@ describe("ScoredMove", () => {
 		).toBeInTheDocument()
 	})
 
-	it("handles remove move click", async () => {
-		render(
-			<Provider store={mockStore}>
-				<ScoredMove
-					scoredMove={mockScoredMove}
-					scoredMovesList={mockScoredMovesList}
-					scoredBonuses={mockScoredBonuses}
-				/>
-			</Provider>
+	it("shows toast when remove move is clicked", async () => {
+		renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={mockScoredBonuses}
+			/>
 		)
 
 		const removeButton = await screen.findByTestId(
 			"scored-remove-scored-move-1"
 		)
 		fireEvent.click(removeButton)
+		// error message appears
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith("Double Click to delete")
+		})
+		// item not removed
+		expect(await screen.findByText("Test Move")).toBeInTheDocument()
+		expect(screen.getByText("L")).toBeInTheDocument()
+		expect(
+			screen.getByTestId("scored-remove-scored-move-1")
+		).toBeInTheDocument()
 	})
+	it("removes scored move when delete icon is double clicked", async () => {
+		const { store } = renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={mockScoredBonuses}
+			/>,
+			{
+				preloadedState: {
+					score: {
+						scoredMoves: [mockScoredMove],
+						scoredBonuses: mockScoredBonuses,
+						userRole: "Judge 1",
+						selectedPaddler: 1,
+						selectedRun: 1,
+						currentMove: mockScoredMove.id
+					}
+				}
+			}
+		)
 
+		const removeButton = await screen.findByTestId(
+			"scored-remove-scored-move-1"
+		)
+		fireEvent.doubleClick(removeButton)
+		// error message appears
+		expect(toast.error).not.toHaveBeenCalled()
+		// item not removed
+
+		expect(store.getState().score.scoredMoves).toHaveLength(0)
+		expect(store.getState().score.scoredBonuses).toHaveLength(0)
+	})
 	it("does not show remove button when actions are disabled", async () => {
-		render(
-			<Provider store={mockStore}>
-				<ScoredMove
-					scoredMove={mockScoredMove}
-					scoredMovesList={mockScoredMovesList}
-					scoredBonuses={mockScoredBonuses}
-					chipActionsDisabled={true}
-				/>
-			</Provider>
+		renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={mockScoredBonuses}
+				chipActionsDisabled={true}
+			/>
 		)
 
 		await screen.findByText("Test Move")
 		expect(
 			screen.queryByTestId("scored-remove-scored-move-1")
 		).not.toBeInTheDocument()
-	})
-
-	it("handles click events correctly", async () => {
-		render(
-			<Provider store={mockStore}>
-				<ScoredMove
-					scoredMove={mockScoredMove}
-					scoredMovesList={mockScoredMovesList}
-					scoredBonuses={mockScoredBonuses}
-				/>
-			</Provider>
-		)
-
-		const removeButton = await screen.findByTestId(
-			"scored-remove-scored-move-1"
-		)
-		expect(removeButton).toBeInTheDocument()
-		fireEvent.click(removeButton)
 	})
 })
