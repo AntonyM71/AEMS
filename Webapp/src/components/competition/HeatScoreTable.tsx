@@ -210,22 +210,28 @@ const IndividualJudgeScores = ({
 	showIndividualJudgeScores: boolean
 }) => {
 	if (showIndividualJudgeScores) {
-		return params.value?.judgeScores?.map((s, j) => (
-			<Grid key={j} size={12}>
-				<Typography
-					variant={"body2"}
-					sx={{
-						fontStyle: params.value?.locked ? "bold" : "italic"
-					}}
-				>
-					{`J${s.judgeId}: ${
-						params.value?.didNotStart
-							? "DNS"
-							: s.score?.toFixed(2) ?? 0
-					}`}
-				</Typography>
-			</Grid>
-		))
+		return (
+			<>
+				{params.value?.judgeScores?.map((s, j) => (
+					<Grid key={j} size={12}>
+						<Typography
+							variant={"body2"}
+							sx={{
+								fontStyle: params.value?.locked
+									? "bold"
+									: "italic"
+							}}
+						>
+							{`J${s.judgeId}: ${
+								params.value?.didNotStart
+									? "DNS"
+									: s.score?.toFixed(2) ?? 0
+							}`}
+						</Typography>
+					</Grid>
+				))}
+			</>
+		)
 	} else {
 		return <></>
 	}

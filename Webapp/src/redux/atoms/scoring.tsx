@@ -17,7 +17,7 @@ export interface ScoringStateType {
 	userRole: string
 }
 
-const initialState: ScoringStateType = {
+export const scoringInitialState: ScoringStateType = {
 	selectedPaddler: 0,
 	selectedRun: 0,
 
@@ -43,7 +43,7 @@ export const updateAvailableMoves = createAction<movesType[]>(
 )
 export const updatePaddler = createAction<number>("updatePaddler")
 export const updateRun = createAction<number>("updateRun")
-export const scoringReducer = createReducer(initialState, (builder) => {
+export const scoringReducer = createReducer(scoringInitialState, (builder) => {
 	builder
 		.addCase(updatePaddler, (state, action) => {
 			// "mutate" the array by calling push()
