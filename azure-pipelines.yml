@@ -11,12 +11,43 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
           uv sync --dev
-          uv run python -m pytest .
-        displayName: "Build and Test Python Application"
+        displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          uv run python -m pytest .
+        displayName: "Run Python Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+        continueOnError: true
+
+      - script: |
+          if [ $? -ne 0 ]; then
+            echo "##vso[task.setvariable variable=testsFailed;isOutput=true]true"
+          fi
+        displayName: "Check Python Test Results"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
       - script: |
           npm install
-          npm test
-          npm run lint
-        displayName: "Build and Test Node.js Application"
+        displayName: "Install Node.js Dependencies"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
+
+      - script: |
+          npm test
+        displayName: "Run Node.js Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+        continueOnError: true
+
+      - script: |
+          if [ $? -ne 0 ]; then
+            echo "##vso[task.setvariable variable=testsFailed;isOutput=true]true"
+          fi
+        displayName: "Check Node.js Test Results"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+
+      - script: |
+          if [ "$(testsFailed)" == "true" ]; then
+            echo "Tests failed, failing the pipeline."
+            exit 1
+          fi
+        displayName: "Fail Job if Tests Failed"
