@@ -15,17 +15,17 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Server
 
       - script: |
-          uv run python -m pytest .
+          uv run python -m pytest --junitxml=pytest-results.xml
         displayName: "Run Python Tests"
         workingDirectory: $(Build.SourcesDirectory)/Server
         continueOnError: true
 
-      - script: |
-          if [ $? -ne 0 ]; then
-            echo "##vso[task.setvariable variable=testsFailed;isOutput=true]true"
-          fi
-        displayName: "Check Python Test Results"
-        workingDirectory: $(Build.SourcesDirectory)/Server
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "$(Build.SourcesDirectory)/Server/pytest-results.xml"
+          failTaskOnFailedTests: true
+        displayName: "Publish Python Test Results"
 
       - script: |
           npm install
@@ -33,17 +33,17 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          npm test
+          npm test -- --reporter=junit --reporter-options mochaFile=test-results.xml
         displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
 
-      - script: |
-          if [ $? -ne 0 ]; then
-            echo "##vso[task.setvariable variable=testsFailed;isOutput=true]true"
-          fi
-        displayName: "Check Node.js Test Results"
-        workingDirectory: $(Build.SourcesDirectory)/Webapp
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "$(Build.SourcesDirectory)/Webapp/test-results.xml"
+          failTaskOnFailedTests: true
+        displayName: "Publish Node.js Test Results"
 
       - script: |
           if [ "$(testsFailed)" == "true" ]; then
