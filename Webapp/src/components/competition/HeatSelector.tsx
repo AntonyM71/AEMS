@@ -164,7 +164,7 @@ const AddHeat = ({
 
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 		.map((d) => ({ value: d.id!, label: d.name! }))
 
 	const submitNewHeat = async () => {

@@ -133,13 +133,13 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const { data } = useGetManyCompetitionGetQuery({})
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 		.map((d) => ({ value: d.id!, label: d.name! }))
 	const submitNewEvent = async () => {
 		HandlePostResponse(
 			await postNewEvent({
 				body: [
-					// eslint-disable-next-line camelcase
+
 					{
 						name: eventName,
 						id: uuid4(),

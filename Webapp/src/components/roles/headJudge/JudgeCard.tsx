@@ -25,6 +25,7 @@ interface JudgeCardProps {
 	updateHeadJudgeScore: (newScore: number, judgeNumber: number) => void
 }
 
+// eslint-disable-next-line complexity
 export const JudgeCard = ({
 	judge,
 	selectedAthlete,

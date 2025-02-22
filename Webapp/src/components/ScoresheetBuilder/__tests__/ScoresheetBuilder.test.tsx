@@ -212,7 +212,7 @@ describe("ScoresheetMoves", () => {
 			),
 			rest.post("/api/addUpdateScoresheet/:id", async (req, res, ctx) => {
 				updateCalled = true
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 				const body = await req.json()
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				expect(body.addUpdateScoresheetRequest.moves).toEqual(mockMoves)

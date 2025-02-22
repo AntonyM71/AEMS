@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import FormControlLabel from "@mui/material/FormControlLabel"
 import FormGroup from "@mui/material/FormGroup"
 import Grid from "@mui/material/Grid2"
@@ -183,35 +181,16 @@ export const DetailScoreView =
 				alignItems="center"
 				sx={{ height: "80%" }}
 			>
-				{showIndividualJudgeScores ? (
-					params.value?.judgeScores?.map((s, j) => (
-						<Grid key={j} size={12}>
-							<Typography
-								variant={"body2"}
-								sx={{
-									fontStyle: params.value?.locked
-										? "bold"
-										: "italic"
-								}}
-							>
-								{`J${s.judgeId}: ${
-									params.value?.didNotStart
-										? "DNS"
-										: s.score?.toFixed(2) || "0"
-								}`}
-							</Typography>
-						</Grid>
-					))
-				) : (
-					<></>
-				)}
+				<IndividualJudgeScores
+					showIndividualJudgeScores={showIndividualJudgeScores}
+					params={params}
+				/>
 				<Grid size={12}>
 					<Typography
 						variant="body1"
 						sx={{
-							textDecoration: showIndividualJudgeScores
-								? "underline"
-								: "",
+							textDecoration: "underline",
+
 							...makeLockedScoreStyle(params.value?.locked)
 						}}
 					>
@@ -222,6 +201,35 @@ export const DetailScoreView =
 				</Grid>
 			</Grid>
 		)
+
+const IndividualJudgeScores = ({
+	params,
+	showIndividualJudgeScores
+}: {
+	params: GridRenderCellParams<any, DetailScores>
+	showIndividualJudgeScores: boolean
+}) => {
+	if (showIndividualJudgeScores) {
+		return params.value?.judgeScores?.map((s, j) => (
+			<Grid key={j} size={12}>
+				<Typography
+					variant={"body2"}
+					sx={{
+						fontStyle: params.value?.locked ? "bold" : "italic"
+					}}
+				>
+					{`J${s.judgeId}: ${
+						params.value?.didNotStart
+							? "DNS"
+							: s.score?.toFixed(2) ?? 0
+					}`}
+				</Typography>
+			</Grid>
+		))
+	} else {
+		return <></>
+	}
+}
 
 export const makeLockedScoreStyle = (locked = false) => ({
 	fontStyle: locked ? "bold" : "italic",

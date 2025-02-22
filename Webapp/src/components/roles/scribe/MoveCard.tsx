@@ -39,6 +39,7 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 				moveIdListComparisonOperator: "Equal",
 				moveIdList: [props.move.id]
 			})
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (err) {
 			// It doesn't matter if this fails, as the data will be when the scoredmovecard mounts
 		}

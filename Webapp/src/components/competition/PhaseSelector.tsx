@@ -37,6 +37,7 @@ import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { RefreshButton } from "./RefreshIconButton"
 import { SelectScoresheet } from "./ScoresheetSelector"
 
+// eslint-disable-next-line complexity
 const PhasesSelector = ({
 	showDetailed = false
 }: {
@@ -225,19 +226,19 @@ const AddPhase = ({
 	existingPhaseData?: ExistingPhaseData
 }) => {
 	const [phaseName, setPhaseName] = useState<string>(
-		existingPhaseData?.name || ""
+		existingPhaseData?.name ?? ""
 	)
 	const [numberOfRuns, setNumberOfRuns] = useState<number>(
-		existingPhaseData?.number_of_runs || 3
+		existingPhaseData?.number_of_runs ?? 3
 	)
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(
-		existingPhaseData?.number_of_judges || 3
+		existingPhaseData?.number_of_judges ?? 3
 	)
 	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(
-		existingPhaseData?.number_of_runs_for_score || 2
+		existingPhaseData?.number_of_runs_for_score ?? 2
 	)
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>(
-		existingPhaseData?.scoresheet || ""
+		existingPhaseData?.scoresheet ?? ""
 	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
@@ -252,14 +253,13 @@ const AddPhase = ({
 		})
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
-		.map((d) => ({ value: d.id || "", label: d.name || "" }))
+		.map((d) => ({ value: d.id ?? "", label: d.name ?? "" }))
 
 	const submitNewPhase = async () => {
 		if (!existingPhaseData) {
 			HandlePostResponse(
 				await postNewPhase({
 					body: [
-						// eslint-disable-next-line camelcase
 						{
 							name: phaseName,
 							id: uuid4(),
@@ -276,17 +276,15 @@ const AddPhase = ({
 		} else {
 			HandlePostResponse(
 				await updateExistingPhase({
-					id: existingPhaseData.id || "",
-					bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch:
-						// eslint-disable-next-line camelcase
-						{
-							name: phaseName,
-							event_id: eventId,
-							number_of_runs: numberOfRuns,
-							number_of_runs_for_score: numberOfScoringRuns,
-							scoresheet: selectedScoresheet,
-							number_of_judges: numberOfJudges
-						}
+					id: existingPhaseData.id ?? "",
+					bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch: {
+						name: phaseName,
+						event_id: eventId,
+						number_of_runs: numberOfRuns,
+						number_of_runs_for_score: numberOfScoringRuns,
+						scoresheet: selectedScoresheet,
+						number_of_judges: numberOfJudges
+					}
 				})
 			)
 		}
@@ -330,7 +328,7 @@ const AddPhase = ({
 						options={options}
 						value={options.find((s) => s.value === eventId)}
 						inputValue={
-							options.find((s) => s.value === eventId)?.label ||
+							options.find((s) => s.value === eventId)?.label ??
 							""
 						}
 						fullWidth

@@ -4,6 +4,7 @@ import EventSelector from "./EventSelector"
 import HeatsSelector from "./HeatSelector"
 import PhaseSelector from "./PhaseSelector"
 
+// eslint-disable-next-line complexity
 export const SelectorDisplay = ({
 	showDetailed = false,
 	showCompetition = true,

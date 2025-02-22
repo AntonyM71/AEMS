@@ -16,36 +16,15 @@ export const SelectScoresheet = ({
 	const options: ScoresheetOptions[] =
 		data
 			?.filter((d) => !!d.id && !!d.name)
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			.map((d) => ({ value: d.id!, label: d.name! })) || []
 	if (options) {
 		return (
-			<Autocomplete
-				// error={!!competitionId}
-				value={
-					options.find(
-						(s) =>
-							(useName ? s.label : s.value) === selectedScoresheet
-					) || null
-				}
-				inputValue={
-					options.find(
-						(s) =>
-							(useName ? s.label : s.value) === selectedScoresheet
-					)?.label ?? ""
-				}
+			<ScoresheetAutoComplete
 				options={options}
-				fullWidth
-				renderInput={(params) => (
-					<TextField {...params} label="Scoresheet" />
-				)}
-				onChange={(event, newValue) => {
-					if (newValue) {
-						setSelectedScoresheet(
-							useName ? newValue.label : newValue.value
-						)
-					}
-				}}
+				selectedScoresheet={selectedScoresheet}
+				setSelectedScoresheet={setSelectedScoresheet}
+				useName={useName}
 			/>
 		)
 	} else if (isLoading) {
@@ -56,6 +35,40 @@ export const SelectScoresheet = ({
 
 	return <></>
 }
+
+const ScoresheetAutoComplete = ({
+	options,
+	selectedScoresheet,
+	setSelectedScoresheet,
+	useName = false
+}: {
+	options: ScoresheetOptions[]
+	selectedScoresheet: string
+	setSelectedScoresheet: React.Dispatch<React.SetStateAction<string>>
+	useName?: boolean
+}) => (
+	<Autocomplete
+		// error={!!competitionId}
+		value={
+			options.find(
+				(s) => (useName ? s.label : s.value) === selectedScoresheet
+			) || null
+		}
+		inputValue={
+			options.find(
+				(s) => (useName ? s.label : s.value) === selectedScoresheet
+			)?.label ?? ""
+		}
+		options={options}
+		fullWidth
+		renderInput={(params) => <TextField {...params} label="Scoresheet" />}
+		onChange={(event, newValue) => {
+			if (newValue) {
+				setSelectedScoresheet(useName ? newValue.label : newValue.value)
+			}
+		}}
+	/>
+)
 
 interface ScoresheetOptions {
 	label: string
