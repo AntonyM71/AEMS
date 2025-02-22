@@ -33,7 +33,8 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          npm test -- --reporter=junit --reporter-options mochaFile=test-results.xml
+          npm test --  --reporters="jest-junit" --outputFile=test-results.xml
+
         displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
@@ -41,13 +42,6 @@ jobs:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: "JUnit"
-          testResultsFiles: "$(Build.SourcesDirectory)/Webapp/test-results.xml"
+          testResultsFiles: "$(Build.SourcesDirectory)/Webapp/junit.xml"
           failTaskOnFailedTests: true
         displayName: "Publish Node.js Test Results"
-
-      - script: |
-          if [ "$(testsFailed)" == "true" ]; then
-            echo "Tests failed, failing the pipeline."
-            exit 1
-          fi
-        displayName: "Fail Job if Tests Failed"
