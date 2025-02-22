@@ -1,4 +1,5 @@
 import functools
+import math
 import operator
 import random
 from io import BytesIO
@@ -119,6 +120,7 @@ async def promote_phase(
                 AthleteIDandRank(athlete_id=a.athlete_id, ranking=a.ranking)
                 for a in top_paddlers
             ],
+            random_allocation=False,
         )
 
         new_phase_id = uuid4()
@@ -194,12 +196,25 @@ def get_top_n_paddlers_for_phase(
 
 
 def assign_paddlers_to_heat(
-    paddlers: list[AthleteIDandRank], heat_ids: list[str]
+    paddlers: list[AthleteIDandRank],
+    heat_ids: list[str],
+    *,
+    random_allocation: bool = True,
 ) -> dict[str, list[AthleteIDandRank]]:
     number_of_heats = len(heat_ids)
-    random.shuffle(paddlers)
+
     paddler_heats = {h: [] for h in heat_ids}
-    for i, p in enumerate(paddlers):
-        heat_index = i % number_of_heats
-        paddler_heats[heat_ids[heat_index]].append(p)
+    if random_allocation:
+        random.shuffle(paddlers)
+        for i, p in enumerate(paddlers):
+            heat_index = i % number_of_heats
+            paddler_heats[heat_ids[heat_index]].append(p)
+    else:
+        paddlers_sorted_by_reverse_rank = sorted(
+            paddlers, key=lambda p: p.ranking, reverse=True
+        )
+        paddlers_per_heat = math.ceil(len(paddlers) / len(heat_ids))
+        for i, p in enumerate(paddlers_sorted_by_reverse_rank):
+            heat_index = math.floor(i / paddlers_per_heat)
+            paddler_heats[heat_ids[heat_index]].append(p)
     return paddler_heats
