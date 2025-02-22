@@ -26,6 +26,7 @@
     "eslint-plugin-prefer-arrow": "^1.2.2",
     "eslint-plugin-testing-library": "^5.10.3",
     "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0",
     "lodash": "^4.17.21",
     "next": "^15.1.6",
     "openapi-types": "^12.1.0",

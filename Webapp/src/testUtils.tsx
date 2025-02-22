@@ -8,8 +8,12 @@ import { aemsApi } from "./redux/services/aemsApi"
 import { AppStore, rootReducer, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
+type DeepPartial<T> = {
+	[P in keyof T]?: DeepPartial<T[P]>
+}
+
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
-	preloadedState?: Partial<RootState>
+	preloadedState?: DeepPartial<RootState>
 	store?: AppStore
 }
 

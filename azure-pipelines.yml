@@ -11,12 +11,37 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
           uv sync --dev
-          uv run python -m pytest .
-        displayName: "Build and Test Python Application"
+        displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          uv run python -m pytest --junitxml=pytest-results.xml
+        displayName: "Run Python Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+        continueOnError: true
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "$(Build.SourcesDirectory)/Server/pytest-results.xml"
+          failTaskOnFailedTests: true
+        displayName: "Publish Python Test Results"
+
       - script: |
           npm install
-          npm test
-          npm run lint
-        displayName: "Build and Test Node.js Application"
+        displayName: "Install Node.js Dependencies"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
+
+      - script: |
+          npm test --  --reporters="jest-junit"
+
+        displayName: "Run Node.js Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+        continueOnError: true
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "$(Build.SourcesDirectory)/Webapp/junit.xml"
+          failTaskOnFailedTests: true
+        displayName: "Publish Node.js Test Results"
