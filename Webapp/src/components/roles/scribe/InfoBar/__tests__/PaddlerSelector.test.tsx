@@ -163,7 +163,7 @@ describe("PaddlerSelector", () => {
 		})
 	})
 
-	it("updates run when navigating through all paddlers", async () => {
+	it("increments the run when rolling round to the first paddler", async () => {
 		const mockPaddlers = [
 			{
 				id: "123",
@@ -181,6 +181,7 @@ describe("PaddlerSelector", () => {
 			}
 		]
 
+		// Mock the API response with multiple paddlers
 		server.use(
 			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
 				res(ctx.json(mockPaddlers))
@@ -218,31 +219,31 @@ describe("PaddlerSelector", () => {
 		// Verify API data length
 		expect(queryData).toHaveLength(2)
 
+		// Verify initial state
+		expect(screen.getByText("456")).toBeInTheDocument()
+		expect(screen.getByText("John")).toBeInTheDocument()
+		expect(screen.getByText("DOE")).toBeInTheDocument()
+
+		// Test next button
 		const nextButton = screen.getByTestId("button-next-paddler")
+		expect(store.getState().score.selectedPaddler).toBe(0)
 
-		// Click next to go to second paddler
+		// Click next and wait for update
 		fireEvent.click(nextButton)
-		await waitFor(
-			() => {
-				expect(store.getState().score.selectedPaddler).toBe(1)
-			},
-			{ timeout: 3000 }
-		)
+		await waitFor(() => {
+			expect(store.getState().score.selectedPaddler).toBe(1)
+		})
 
-		// Click next again to wrap around and increment run
+		// rolls back to first paddler
+
 		fireEvent.click(nextButton)
-		await waitFor(
-			() => {
-				expect(store.getState().score.selectedPaddler).toBe(0)
-			},
-			{ timeout: 3000 }
-		)
-		fireEvent.click(nextButton)
-		await waitFor(
-			() => {
-				expect(store.getState().score.selectedRun).toBe(1)
-			},
-			{ timeout: 3000 }
-		)
+		await waitFor(() => {
+			expect(store.getState().score.selectedPaddler).toBe(0)
+		})
+
+		// It increments the run when we roll around
+		await waitFor(() => {
+			expect(store.getState().score.selectedRun).toBe(1)
+		})
 	})
 })
