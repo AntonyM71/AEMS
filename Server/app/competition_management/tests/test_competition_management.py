@@ -65,54 +65,52 @@ class TestAssignPaddlersToHeat:
 
         assert got == want
 
-    def test_it_adds_paddlers_to_heats_ordered_by_rank_if_random_allocation_is_false(self) -> None:
+    def test_it_adds_paddlers_to_heats_ordered_by_rank_if_random_allocation_is_false(
+        self,
+    ) -> None:
         random.seed(10)
         want = {
-                        "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e": [
+            "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e": [
                 AthleteIDandRank(
-                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"),
-                    ranking=4
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"), ranking=4
                 ),
-                                AthleteIDandRank(
+                AthleteIDandRank(
                     athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c7"), ranking=3
                 ),
             ],
             "07c3f51c-79e1-41a5-9bca-634b13d194c0": [
                 AthleteIDandRank(
-                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"),
-                    ranking=2
-                ),                AthleteIDandRank(
-                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
-                    ranking=1
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"), ranking=2
+                ),
+                AthleteIDandRank(
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"), ranking=1
                 ),
             ],
-
         }
         got = assign_paddlers_to_heat(
             paddlers=[
                 AthleteIDandRank(
-                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"),
-                    ranking=1
+                    athlete_id=UUID("186082d8-50bd-4f21-b6ae-4b6ab6d2d5ac"), ranking=1
                 ),
                 AthleteIDandRank(
-                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"),
-                    ranking=4
+                    athlete_id=UUID("835a97a3-7645-434b-8482-d442eeaf58de"), ranking=4
                 ),
                 AthleteIDandRank(
-                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"),
-                    ranking=2
+                    athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c8"), ranking=2
                 ),
-                                AthleteIDandRank(
+                AthleteIDandRank(
                     athlete_id=UUID("6f7d4493-af2a-4f3c-b832-609d966738c7"), ranking=3
                 ),
             ],
             heat_ids=[
                 "fdfe05d8-bdd6-4c19-90cd-1ac462a3ec1e",
                 "07c3f51c-79e1-41a5-9bca-634b13d194c0",
-            ], random_allocation=False
+            ],
+            random_allocation=False,
         )
 
         assert got == want
+
     def test_it_adds_paddlers_to_heats_randomly_with_different_seed(self) -> None:
         random.seed(5)
         want = {
