@@ -1,7 +1,7 @@
 import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
 import { useEffect, useRef, useState } from "react"
-import { batch, useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
 	updateNumberOfRuns
@@ -73,7 +73,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			runNumberList: [selectedRun]
 		},
 		{
-			skip: !selectedHeat || !selectedAthlete?.id
+			skip: !selectedHeat || !selectedAthlete?.id,
+			refetchOnMountOrArgChange: true
 		}
 	)
 
@@ -118,14 +119,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		movesList: scoredMovesType[],
 		bonusList: scoredBonusType[]
 	): void => {
-		batch(() => {
-			dispatch(
-				updateScoredMovesAndBonuses({
-					moves: movesList,
-					bonuses: bonusList
-				})
-			)
-		})
+		dispatch(
+			updateScoredMovesAndBonuses({
+				moves: movesList,
+				bonuses: bonusList
+			})
+		)
 	}
 
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
@@ -182,7 +181,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	const {
 		data: moveAndBonusdata,
-		refetch: refetchMoveAndBonusData,
+
 		isFetching: isMoveAndBonusFetching,
 		isUninitialized
 	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
@@ -192,14 +191,9 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			judgeId: scribeNumber,
 			heatId: selectedHeat
 		},
-		{ skip: !selectedAthlete?.id }
+		{ skip: !selectedAthlete?.id, refetchOnMountOrArgChange: true }
 	)
 
-	const getserverScores = async () => {
-		if (!isUninitialized) {
-			await refetchMoveAndBonusData()
-		}
-	}
 	useEffect(() => {
 		if (!isMoveAndBonusFetching) {
 			setScoredMovesAndBonuses(
@@ -222,18 +216,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			)
 		}
 	}, [moveAndBonusdata])
-	useEffect(() => {
-		void getserverScores()
-		if (!httpRunStatus?.isUninitialized) {
-			void httpRunStatus.refetch()
-		}
-	}, [
-		scribeNumber,
-		selectedHeat,
-		selectedRun,
-		selectedAthlete,
-		selectedAthlete?.id
-	])
 
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
