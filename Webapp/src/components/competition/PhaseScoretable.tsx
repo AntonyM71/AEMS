@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+
 
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"

@@ -10,7 +10,7 @@ export const registerRejectedPromise = () => {
 export const handleErrors = (e: any) => {
 	// eslint-disable-next-line no-constant-condition
 	if (process.env.NODE_ENV === "development" || "test") {
-		// eslint-disable-next-line no-console
+
 		const message =
 			typeof e == "string"
 				? e

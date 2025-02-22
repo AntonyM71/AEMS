@@ -19,7 +19,6 @@ export const rootReducer = combineReducers({
 export const setupStore = (
 	preloadedState: Partial<RootState> = {}
 ): EnhancedStore<RootState> =>
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	configureStore({
 		reducer: rootReducer,
 		preloadedState: cloneDeep(preloadedState),

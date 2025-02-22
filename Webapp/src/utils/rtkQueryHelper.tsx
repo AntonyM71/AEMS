@@ -33,6 +33,5 @@ export const rtkQueryErrorLogger: Middleware =
 			handleErrors(action)
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return next(action)
 	}

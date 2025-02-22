@@ -9,9 +9,7 @@ if (typeof window.matchMedia !== "function") {
 	window.matchMedia = (query) => ({
 		media: query,
 		matches:
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 			query.includes(`${DEFAULT_DESKTOP_MIN_WIDTH}`) ||
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 			query.includes(`${DEFAULT_DESKTOP_LARGE_MIN_WIDTH}`),
 		onchange: () => {},
 		addListener: () => {},

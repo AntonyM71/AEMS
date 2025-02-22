@@ -85,7 +85,7 @@ const CSVFormatTable = () => {
 	)
 }
 
-// eslint-disable-next-line complexity
+
 const UploadForm = () => {
 	const [fileName, setFileName] = useState<string>("")
 	const [competitionName, setCompetitionName] = useState<string>("")

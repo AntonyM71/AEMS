@@ -16,7 +16,7 @@ export const SelectScoresheet = ({
 	const options: ScoresheetOptions[] =
 		data
 			?.filter((d) => !!d.id && !!d.name)
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			.map((d) => ({ value: d.id!, label: d.name! })) || []
 	if (options) {
 		return (

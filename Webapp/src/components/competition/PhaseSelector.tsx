@@ -259,7 +259,7 @@ const AddPhase = ({
 			HandlePostResponse(
 				await postNewPhase({
 					body: [
-						// eslint-disable-next-line camelcase
+
 						{
 							name: phaseName,
 							id: uuid4(),
@@ -278,7 +278,7 @@ const AddPhase = ({
 				await updateExistingPhase({
 					id: existingPhaseData.id || "",
 					bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch:
-						// eslint-disable-next-line camelcase
+
 						{
 							name: phaseName,
 							event_id: eventId,

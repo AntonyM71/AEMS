@@ -7,7 +7,6 @@ import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import { updateUserRole } from "../../../redux/atoms/scoring"
 import Float from "./Scribe"
 
-// eslint-disable-next-line complexity
 const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const dispatch = useDispatch()
 

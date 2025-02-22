@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+
 
 import FormControlLabel from "@mui/material/FormControlLabel"
 import FormGroup from "@mui/material/FormGroup"
