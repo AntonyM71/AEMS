@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
-import React from "react"
+import React, { useState } from "react"
 import toast from "react-hot-toast"
 import { useDispatch } from "react-redux"
 import {
@@ -37,7 +37,9 @@ const ScoredMove = React.memo(
 		chipActionsDisabled = false
 	}: ScoredMovePropsType) => {
 		const dispatch = useDispatch()
-
+		const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(
+			null
+		)
 		const scoredMoveBonuses = scoredBonuses.filter(
 			(b) => b.moveId === scoredMove.id
 		)
@@ -77,6 +79,26 @@ const ScoredMove = React.memo(
 			(bonusList.data?.filter(
 				(bonus) => bonus.move_id === scoredMove.moveId
 			) as AvailableBonusType[]) || []
+		const handleClick = () => {
+			if (clickTimeout) {
+				clearTimeout(clickTimeout)
+				setClickTimeout(null)
+			} else {
+				const timeout = setTimeout(() => {
+					toast.error("Double Click to delete")
+					setClickTimeout(null)
+				}, 200) // Adjust the delay as needed
+				setClickTimeout(timeout)
+			}
+		}
+
+		const handleDoubleClick = () => {
+			if (clickTimeout) {
+				clearTimeout(clickTimeout)
+			}
+			setClickTimeout(null)
+			removeScoredMove(scoredMove.id)
+		}
 		if (filteredMoves.length === 1) {
 			const moveData = filteredMoves[0]
 
@@ -97,12 +119,8 @@ const ScoredMove = React.memo(
 						{!chipActionsDisabled ? (
 							<Grid>
 								<IconButton
-									onContextMenu={() => {
-										removeScoredMove(scoredMove.id)
-									}}
-									onClick={() => {
-										toast.error("Press and hold to delete")
-									}}
+									onDoubleClick={handleDoubleClick}
+									onClick={handleClick}
 									data-testid={
 										"scored-remove-" + scoredMove.id
 									}

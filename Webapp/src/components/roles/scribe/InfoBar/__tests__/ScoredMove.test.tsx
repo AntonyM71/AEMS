@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { rest } from "msw"
 import toast from "react-hot-toast"
 import { server } from "../../../../../mocks/server"
@@ -77,7 +77,9 @@ describe("ScoredMove", () => {
 		)
 		fireEvent.click(removeButton)
 		// error message appears
-		expect(toast.error).toHaveBeenCalledWith("Press and hold to delete")
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith("Double Click to delete")
+		})
 		// item not removed
 		expect(await screen.findByText("Test Move")).toBeInTheDocument()
 		expect(screen.getByText("L")).toBeInTheDocument()
@@ -109,7 +111,7 @@ describe("ScoredMove", () => {
 		const removeButton = await screen.findByTestId(
 			"scored-remove-scored-move-1"
 		)
-		fireEvent.contextMenu(removeButton)
+		fireEvent.doubleClick(removeButton)
 		// error message appears
 		expect(toast.error).not.toHaveBeenCalled()
 		// item not removed
