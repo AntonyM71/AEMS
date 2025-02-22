@@ -16,9 +16,11 @@ def get_database_address() -> str:
         raise ValueError(msg)
     return database_address
 
+
 # Initialize these as None so they can be set up lazily
 engine = None
 session = None
+
 
 def setup_database() -> None:
     """Set up database connection"""
@@ -26,6 +28,7 @@ def setup_database() -> None:
     if engine is None:
         engine = create_engine(get_database_address())
         session = sessionmaker(engine)
+
 
 def get_transaction_session() -> Generator[Session, Any, None]:
     """Get a database session for use in a transaction"""
