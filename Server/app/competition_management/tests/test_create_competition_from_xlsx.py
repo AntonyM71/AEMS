@@ -330,8 +330,6 @@ class TestScoring:
         mock_get_scoresheets.return_value = [
             {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
         ]
-        print(TEST_UUIDS_COUNT)
-        print("VVVVVVV")
         process_competitors_df(
             test_df, "test_comp", random_heats=True, number_of_random_heats=3
         )
@@ -575,7 +573,6 @@ class TestValidateColumnsAndDataTypes:
     def test_it_passes_no_heats_are_provided_if_random_heats_is_true(
         self, test_df: pd.DataFrame
     ) -> None:
-        print(test_df.columns)
         modified_test_df = test_df.drop(["Heat"], axis=1)
 
         validate_columns_and_data_types(

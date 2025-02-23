@@ -279,7 +279,6 @@ async def heat_results_pdf(
                 header.cell(f"Run: {i + 1}")
 
             for athlete in heat_scores.scores:
-                print(athlete)
                 row = table.row()
 
                 row.cell(athlete.first_name)

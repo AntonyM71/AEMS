@@ -1,3 +1,4 @@
+import json
 import logging
 from math import inf
 from typing import Optional
@@ -211,27 +212,7 @@ async def update_athlete_score(
             )
 
             db.commit()
-            websocket_message = ScoredMovesAndBonusesResponseWithMetaData(
-                movesAndBonuses=ScoredMovesAndBonusesResponse(
-                    moves=[
-                        PydanticScoredMovesResponse(
-                            **move.dict(),
-                            judge_id=judge_id,
-                            heat_id=heat_id,
-                            phase_id=phase_id,
-                            athlete_id=athlete_id,
-                            run_number=run_number,
-                        )
-                        for move in scored_moves_list.moves
-                    ],
-                    bonuses=[
-                        PydanticScoredBonusesResponse(
-                            **bonus.dict(),
-                            judge_id=judge_id,
-                        )
-                        for bonus in scored_moves_list.bonuses
-                    ],
-                ),
+            websocket_message = UpdatedRideMetaData(
                 heat_id=heat_id,
                 athlete_id=athlete_id,
                 run_number=run_number,
@@ -254,13 +235,36 @@ class ScoredMovesAndBonusesResponse(BaseModel):
         orm_mode = True
 
 
-class ScoredMovesAndBonusesResponseWithMetaData(BaseModel):
-    movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
+class UpdatedRideMetaData(BaseModel):
     heat_id: str
     athlete_id: str
     run_number: int
     judge_id: int
     phase_id: str
+
+
+class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
+    movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
+
+
+async def get_moves_from_server(message: str) -> str:
+    metadata = UpdatedRideMetaData(**json.loads(message))
+    scored_moves_and_bonuses = await get_athlete_moves_and_bonnuses(
+        heat_id=metadata.heat_id,
+        athlete_id=metadata.athlete_id,
+        run_number=str(metadata.run_number),
+        judge_id=str(metadata.judge_id),
+        db=next(get_transaction_session()),
+    )
+
+    return ScoredMovesAndBonusesResponseWithMetaData(
+        movesAndBonuses=scored_moves_and_bonuses,
+        heat_id=metadata.heat_id,
+        athlete_id=metadata.athlete_id,
+        run_number=metadata.run_number,
+        phase_id=metadata.phase_id,
+        judge_id=metadata.judge_id,
+    ).json()
 
 
 @scoring_router.get(
@@ -351,7 +355,7 @@ async def get_heat_scores(
         )
         for a in athlete_moves_list
     ]
-    # print(run_statuses.__dict__)
+
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
@@ -518,7 +522,11 @@ async def current_score_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
 
     try:
-        await ws_sender(websocket=websocket, channel="current_scores")
+        await ws_sender(
+            websocket=websocket,
+            channel="current_scores",
+            fetch_data_with_message=get_moves_from_server,
+        )
 
     except WebSocketDisconnect as e:
         if e.code != 1001:  # 1001 is a "happy" disconnect

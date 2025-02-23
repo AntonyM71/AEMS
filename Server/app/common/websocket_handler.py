@@ -1,5 +1,5 @@
 import os
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Optional
 
 from broadcaster import Broadcast
@@ -41,7 +41,16 @@ async def publisher(
         side_effect(message)
 
 
-async def ws_sender(websocket: WebSocket, channel: str) -> None:
+async def ws_sender(
+    websocket: WebSocket,
+    channel: str,
+    fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
+) -> None:
     async with broadcast.subscribe(channel=channel) as subscriber:
         async for event in subscriber:
-            await websocket.send_text(event.message)
+            if fetch_data_with_message:
+                data = await fetch_data_with_message(event.message)
+
+                await websocket.send_text(str(data))
+            else:
+                await websocket.send_text(event.message)
