@@ -26,13 +26,16 @@ class ConnectionManager:
 broadcast = Broadcast(os.environ.get("CONNECTION_STRING"))
 
 
-async def ws_receiver(websocket: WebSocket,  channel: str, side_effect:  Optional[Callable[[str], None]]) -> None:
+async def ws_receiver(
+    websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
+) -> None:
     async for message in websocket.iter_text():
-
         await publisher(message=message, channel=channel, side_effect=side_effect)
 
 
-async def publisher(message: str, channel: str, side_effect:  Optional[Callable[[str], None]] = None):
+async def publisher(
+    message: str, channel: str, side_effect: Optional[Callable[[str], None]] = None
+) -> None:
     await broadcast.publish(channel=channel, message=message)
     if side_effect:
         side_effect(message)
