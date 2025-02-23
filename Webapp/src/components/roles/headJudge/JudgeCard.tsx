@@ -48,30 +48,24 @@ export const JudgeCard = ({
 	const [moveAndBonusData, setMoveAndBonusData] = useState<
 		ScoredMovesAndBonusesResponse | undefined
 	>(undefined)
-	const {
-		data: moveAndBonusHttpData,
-		isUninitialized,
-		refetch
-	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
-		{
-			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete?.id ?? "",
-			judgeId: judge.toString(),
-			heatId: selectedHeat
-		},
-		{
-			skip: !selectedAthlete?.id
-		}
-	)
+	const { data: moveAndBonusHttpData, isUninitialized } =
+		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
+			{
+				runNumber: selectedRun.toString(),
+				athleteId: selectedAthlete?.id ?? "",
+				judgeId: judge.toString(),
+				heatId: selectedHeat
+			},
+			{
+				skip: !selectedAthlete?.id,
+				refetchOnMountOrArgChange: true
+			}
+		)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectCurrentScoreStatusSocket()
 	}
-	useEffect(() => {
-		if (!isUninitialized) {
-			void refetch()
-		}
-	}, [judge, selectedRun, selectedHeat, selectedAthlete.id])
+
 	useEffect(() => {
 		connectWebSocket()
 	}, [])
