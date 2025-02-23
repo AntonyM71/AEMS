@@ -109,11 +109,14 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 		}
 	}
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
-		const newAllScores = [...allJudgeScores]
-		newAllScores[judgeNumber] = newScore
+		setAllJudgeScores((prevAllScores) => {
+			const newAllScores = [...prevAllScores]
+			newAllScores[judgeNumber] = newScore
 
-		setAllJudgeScores(newAllScores)
+			return newAllScores
+		})
 	}
+
 	useEffect(() => {
 		if (httpRunStatus.data) {
 			setRunStatus(httpRunStatus.data[0] as RunStatus)
