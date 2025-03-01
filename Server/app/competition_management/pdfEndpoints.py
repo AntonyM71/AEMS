@@ -1,5 +1,8 @@
 import logging
+import os
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fpdf import FPDF
@@ -34,9 +37,9 @@ async def phase_pdf(
         )
 
         # Create a sample PDF file
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         pdf.add_page()
-        pdf.set_font("Helvetica", size=24)
+        pdf.set_font(size=24)
         pdf.cell(
             0,
             10,
@@ -45,7 +48,7 @@ async def phase_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        pdf.set_font("Helvetica", size=12)
+        pdf.set_font(size=12)
         pdf.cell(
             0,
             10,
@@ -150,7 +153,7 @@ async def heat_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         if not heat_ids:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -173,7 +176,7 @@ async def heat_pdf(
             )
 
             pdf.add_page()
-            pdf.set_font("Helvetica", size=24)
+            pdf.set_font(size=24)
             pdf.cell(
                 0,
                 10,
@@ -182,7 +185,7 @@ async def heat_pdf(
                 new_x="LMARGIN",
                 new_y="NEXT",
             )
-            pdf.set_font("Helvetica", size=20)
+            pdf.set_font(size=20)
             pdf.cell(
                 0,
                 10,
@@ -191,7 +194,7 @@ async def heat_pdf(
                 new_x="LMARGIN",
                 new_y="NEXT",
             )
-            pdf.set_font("Helvetica", size=12)
+            pdf.set_font(size=12)
 
             with pdf.table() as table:
                 header = table.row()
@@ -233,7 +236,7 @@ async def heat_results_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         if not heat_id:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -249,9 +252,9 @@ async def heat_results_pdf(
             .one()
         )
         pdf.add_page()
-        pdf.set_font("Helvetica", size=24)
+        pdf.set_font(size=24)
         pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font("Helvetica", size=20)
+        pdf.set_font(size=20)
         pdf.cell(
             0,
             10,
@@ -268,7 +271,7 @@ async def heat_results_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        pdf.set_font("Helvetica", size=12)
+        pdf.set_font(size=12)
 
         with pdf.table() as table:
             header = table.row()
@@ -310,3 +313,38 @@ async def heat_results_pdf(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from e
+
+
+font_directory = Path("./fonts/")
+
+
+class HelveticaNeuePDF(FPDF):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.add_fonts()
+
+    def add_fonts(self) -> None:
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            self.add_font(
+                "helvetica-neue",
+                style="",
+                fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="B",
+                fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="I",
+                fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="BI",
+                fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix(),
+            )
+            self.set_font(family="helvetica-neue", style="", size=12)
+        else:
+            self.set_font(family="Helvetica", style="", size=12)
