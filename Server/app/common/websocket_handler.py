@@ -23,7 +23,10 @@ class ConnectionManager:
             await connection.send_text(message)
 
 
-broadcast = Broadcast(os.environ.get("CONNECTION_STRING"))
+broadcast_cache_location = os.environ.get(
+    "CONNECTION_STRING", default="memory://"
+)  # fall back to memeory if postgress conection is not available.
+broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
 
 
 async def ws_receiver(
