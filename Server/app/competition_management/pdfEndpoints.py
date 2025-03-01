@@ -1,5 +1,7 @@
 import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fpdf import FPDF
@@ -34,9 +36,9 @@ async def phase_pdf(
         )
 
         # Create a sample PDF file
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         pdf.add_page()
-        pdf.set_font("Helvetica", size=24)
+        pdf.set_font(size=24)
         pdf.cell(
             0,
             10,
@@ -45,7 +47,7 @@ async def phase_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        pdf.set_font("Helvetica", size=12)
+        pdf.set_font(size=12)
         pdf.cell(
             0,
             10,
@@ -124,7 +126,8 @@ async def phase_pdf(
                     )
                 pdf.set_font(style="B" if all(runs_confirmed) else "I")
 
-                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(
+                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 pdf.set_font("")
                 row.cell(athlete.reason if athlete.reason else "")
 
@@ -150,13 +153,14 @@ async def heat_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         if not heat_ids:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
         heat_info_list = (
-            db.query(Heat).where(Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
+            db.query(Heat).where(Heat.id.in_(heat_ids)
+                                 ).order_by(Heat.name.asc()).all()
         )
         if not heat_info_list or len(heat_info_list) != len(heat_ids):
             return Response(
@@ -164,7 +168,8 @@ async def heat_pdf(
                 content="Could not find any heat Info corresponding to provided IDs",
             )
         for heat_info in heat_info_list:
-            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
+            heat_athlete_info = get_heat_info_logic(
+                heat_id=heat_info.id, db=db)
 
             competition_metadata = (
                 db.query(Competition)
@@ -173,7 +178,7 @@ async def heat_pdf(
             )
 
             pdf.add_page()
-            pdf.set_font("Helvetica", size=24)
+            pdf.set_font(size=24)
             pdf.cell(
                 0,
                 10,
@@ -182,7 +187,7 @@ async def heat_pdf(
                 new_x="LMARGIN",
                 new_y="NEXT",
             )
-            pdf.set_font("Helvetica", size=20)
+            pdf.set_font(size=20)
             pdf.cell(
                 0,
                 10,
@@ -191,7 +196,7 @@ async def heat_pdf(
                 new_x="LMARGIN",
                 new_y="NEXT",
             )
-            pdf.set_font("Helvetica", size=12)
+            pdf.set_font(size=12)
 
             with pdf.table() as table:
                 header = table.row()
@@ -233,7 +238,7 @@ async def heat_results_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = FPDF(orientation="L", format="A4")
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
         if not heat_id:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -249,9 +254,10 @@ async def heat_results_pdf(
             .one()
         )
         pdf.add_page()
-        pdf.set_font("Helvetica", size=24)
-        pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font("Helvetica", size=20)
+        pdf.set_font(size=24)
+        pdf.cell(0, 10, text="Heat Results", align="C",
+                 new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font(size=20)
         pdf.cell(
             0,
             10,
@@ -268,7 +274,7 @@ async def heat_results_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        pdf.set_font("Helvetica", size=12)
+        pdf.set_font(size=12)
 
         with pdf.table() as table:
             header = table.row()
@@ -279,7 +285,6 @@ async def heat_results_pdf(
                 header.cell(f"Run: {i + 1}")
 
             for athlete in heat_scores.scores:
-                print(athlete)
                 row = table.row()
 
                 row.cell(athlete.first_name)
@@ -288,7 +293,8 @@ async def heat_results_pdf(
                 row.cell(str(athlete.bib_number))
                 for i in range(max_runs):
                     if i < len(athlete.run_scores):
-                        pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
+                        pdf.set_font(
+                            style="B" if athlete.run_scores[i].locked else "I")
                     row.cell(
                         ""
                         if i >= len(athlete.run_scores)
@@ -311,3 +317,22 @@ async def heat_results_pdf(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from e
+
+font_directory = Path('./fonts/')
+
+
+class HelveticaNeuePDF(FPDF):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.add_fonts()
+
+    def add_fonts(self) -> None:
+        self.add_font("helvetica-neue", style="",
+                      fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix())
+        self.add_font("helvetica-neue", style="B",
+                      fname=Path(font_directory, "HelveticaNeueBold.otf").as_posix())
+        self.add_font("helvetica-neue", style="I",
+                      fname=Path(font_directory, "HelveticaNeueItalic.ttf").as_posix())
+        self.add_font("helvetica-neue", style="BI",
+                      fname=Path(font_directory, "HelveticaNeueBoldItalic.otf"))
+        self.set_font(family="helvetica-neue", style="", size=12)
