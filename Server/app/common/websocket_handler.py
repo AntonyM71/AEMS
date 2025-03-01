@@ -1,3 +1,8 @@
+import os
+from collections.abc import Awaitable, Callable
+from typing import Optional
+
+from broadcaster import Broadcast
 from fastapi import WebSocket
 
 
@@ -16,3 +21,39 @@ class ConnectionManager:
     async def broadcast(self, message: str) -> None:
         for connection in self.active_connections:
             await connection.send_text(message)
+
+
+broadcast_cache_location = os.environ.get(
+    "CONNECTION_STRING", default="memory://"
+)  # fall back to memeory if postgress conection is not available.
+broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
+
+
+async def ws_receiver(
+    websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
+) -> None:
+    async for message in websocket.iter_text():
+        await publisher(message=message, channel=channel, side_effect=side_effect)
+
+
+async def publisher(
+    message: str, channel: str, side_effect: Optional[Callable[[str], None]] = None
+) -> None:
+    await broadcast.publish(channel=channel, message=message)
+    if side_effect:
+        side_effect(message)
+
+
+async def ws_sender(
+    websocket: WebSocket,
+    channel: str,
+    fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
+) -> None:
+    async with broadcast.subscribe(channel=channel) as subscriber:
+        async for event in subscriber:
+            if fetch_data_with_message:
+                data = await fetch_data_with_message(event.message)
+
+                await websocket.send_text(str(data))
+            else:
+                await websocket.send_text(event.message)

@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Extra
 
-from db.client import get_transaction_session, session
+from db.client import get_transaction_session
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
 
 scoresheet_files = os.listdir(path=Path("data"))

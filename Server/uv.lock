@@ -13,8 +13,10 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "anyio" },
     { name = "asgi-correlation-id" },
     { name = "asyncpg" },
+    { name = "broadcaster", extra = ["postgres"] },
     { name = "fastapi" },
     { name = "fastapi-quickcrud" },
     { name = "fpdf2" },
@@ -42,8 +44,10 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "alembic" },
+    { name = "anyio" },
     { name = "asgi-correlation-id" },
     { name = "asyncpg" },
+    { name = "broadcaster", extras = ["postgres"] },
     { name = "fastapi" },
     { name = "fastapi-quickcrud" },
     { name = "fpdf2" },
@@ -170,6 +174,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/5f/0bf65511d4eeac3a1f41c54034a492515a707c6edbc642174ae79034d3ba/asyncpg-0.30.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:04ff0785ae7eed6cc138e73fc67b8e51d54ee7a3ce9b63666ce55a0bf095f7ba", size = 3662720 },
     { url = "https://files.pythonhosted.org/packages/e7/31/1513d5a6412b98052c3ed9158d783b1e09d0910f51fbe0e05f56cc370bc4/asyncpg-0.30.0-cp313-cp313-win32.whl", hash = "sha256:ae374585f51c2b444510cdf3595b97ece4f233fde739aa14b50e0d64e8a7a590", size = 560404 },
     { url = "https://files.pythonhosted.org/packages/c8/a4/cec76b3389c4c5ff66301cd100fe88c318563ec8a520e0b2e792b5b84972/asyncpg-0.30.0-cp313-cp313-win_amd64.whl", hash = "sha256:f59b430b8e27557c3fb9869222559f7417ced18688375825f8f12302c34e915e", size = 621623 },
+]
+
+[[package]]
+name = "broadcaster"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/9a/937530b4b1339f96423ef314b832aa585250c99de465a6ec1a12da03bbda/broadcaster-0.3.1.tar.gz", hash = "sha256:35d1e174a98346d184cc6558979548340e877ae841c65c7e354153a84fe675d6", size = 6945 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/db/6789b924f1349739ea3a4eff0ad6877d1c4a2f844e8a15db49fd6335a532/broadcaster-0.3.1-py3-none-any.whl", hash = "sha256:433023ab6b6b4a8da9cbba95910eff52b1e767141419659be287cfd49f2a3ecb", size = 9545 },
+]
+
+[package.optional-dependencies]
+postgres = [
+    { name = "asyncpg" },
 ]
 
 [[package]]

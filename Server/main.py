@@ -26,6 +26,7 @@ from app.autogenEndpoints import (
     crud_route_scoredmoves,
     crud_route_scoresheet,
 )
+from app.common.websocket_handler import broadcast
 from app.competition_management.competition_management import (
     competition_management_router,
 )
@@ -46,7 +47,7 @@ setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 access_logger = structlog.stdlib.get_logger("api.access")
 
 
-app = FastAPI()
+app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect])
 [
     app.include_router(i)
     for i in [

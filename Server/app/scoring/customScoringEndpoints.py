@@ -1,3 +1,4 @@
+import json
 import logging
 from math import inf
 from typing import Optional
@@ -11,11 +12,17 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from fastapi.concurrency import run_until_first_complete
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
 
-from app.common.websocket_handler import ConnectionManager
+from app.common.websocket_handler import (
+    ConnectionManager,
+    publisher,
+    ws_receiver,
+    ws_sender,
+)
 from app.scoresheetEndpoints import (
     PydanticAvailableBonuses,
     PydanticAvailableMoves,
@@ -205,34 +212,14 @@ async def update_athlete_score(
             )
 
             db.commit()
-            websocket_message = ScoredMovesAndBonusesResponseWithMetaData(
-                movesAndBonuses=ScoredMovesAndBonusesResponse(
-                    moves=[
-                        PydanticScoredMovesResponse(
-                            **move.dict(),
-                            judge_id=judge_id,
-                            heat_id=heat_id,
-                            phase_id=phase_id,
-                            athlete_id=athlete_id,
-                            run_number=run_number,
-                        )
-                        for move in scored_moves_list.moves
-                    ],
-                    bonuses=[
-                        PydanticScoredBonusesResponse(
-                            **bonus.dict(),
-                            judge_id=judge_id,
-                        )
-                        for bonus in scored_moves_list.bonuses
-                    ],
-                ),
+            websocket_message = UpdatedRideMetaData(
                 heat_id=heat_id,
                 athlete_id=athlete_id,
                 run_number=run_number,
                 judge_id=judge_id,
                 phase_id=phase_id,
             )
-            await current_score_manager.broadcast(websocket_message.json())
+            await publisher(message=websocket_message.json(), channel="current_scores")
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -248,13 +235,36 @@ class ScoredMovesAndBonusesResponse(BaseModel):
         orm_mode = True
 
 
-class ScoredMovesAndBonusesResponseWithMetaData(BaseModel):
-    movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
+class UpdatedRideMetaData(BaseModel):
     heat_id: str
     athlete_id: str
     run_number: int
     judge_id: int
     phase_id: str
+
+
+class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
+    movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
+
+
+async def get_moves_from_server(message: str) -> str:
+    metadata = UpdatedRideMetaData(**json.loads(message))
+    scored_moves_and_bonuses = await get_athlete_moves_and_bonnuses(
+        heat_id=metadata.heat_id,
+        athlete_id=metadata.athlete_id,
+        run_number=str(metadata.run_number),
+        judge_id=str(metadata.judge_id),
+        db=next(get_transaction_session()),
+    )
+
+    return ScoredMovesAndBonusesResponseWithMetaData(
+        movesAndBonuses=scored_moves_and_bonuses,
+        heat_id=metadata.heat_id,
+        athlete_id=metadata.athlete_id,
+        run_number=metadata.run_number,
+        phase_id=metadata.phase_id,
+        judge_id=metadata.judge_id,
+    ).json()
 
 
 @scoring_router.get(
@@ -269,7 +279,6 @@ async def get_athlete_moves_and_bonnuses(
     judge_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> ScoredMovesAndBonusesResponse:
-    # scored_moves = select(ScoredMoves)
     moves = (
         db.query(ScoredMoves)
         .filter(ScoredMoves.heat_id == heat_id)
@@ -346,7 +355,7 @@ async def get_heat_scores(
         )
         for a in athlete_moves_list
     ]
-    # print(run_statuses.__dict__)
+
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=parse_obj_as(
@@ -505,70 +514,83 @@ class RunStatusSchema(BaseModel):
         orm_mode = True
 
 
-runstatus_active_manager = ConnectionManager()
-
-
 current_score_manager = ConnectionManager()
 
 
 @scoring_router.websocket("/current_scores")
 async def current_score_websocket(websocket: WebSocket) -> None:
-    await current_score_manager.connect(websocket)
+    await websocket.accept()
+
     try:
-        while True:
-            await websocket.receive_text()
+        await ws_sender(
+            websocket=websocket,
+            channel="current_scores",
+            fetch_data_with_message=get_moves_from_server,
+        )
 
     except WebSocketDisconnect as e:
         if e.code != 1001:  # 1001 is a "happy" disconnect
             logging.exception("Error with Current Score Websocket")
 
-        current_score_manager.disconnect(websocket)
+        websocket.disconnect()
 
 
 @scoring_router.websocket("/run_status")
 async def runstatus_websocket(websocket: WebSocket) -> None:
-    await runstatus_active_manager.connect(websocket)
+    await websocket.accept()
     try:
-        while True:
-            data = await websocket.receive_text()
-            run_status = RunStatusSchema.parse_raw(data)
-            with next(get_transaction_session()) as db:
-                existing_run_status = (
-                    db.query(RunStatus)
-                    .filter(
-                        RunStatus.heat_id == run_status.heat_id,
-                        RunStatus.run_number == run_status.run_number,
-                        RunStatus.phase_id == run_status.phase_id,
-                        RunStatus.athlete_id == run_status.athlete_id,
-                    )
-                    .first()
-                )
-
-                if existing_run_status:
-                    existing_run_status.locked = run_status.locked
-                    existing_run_status.did_not_start = run_status.did_not_start
-                    db.add(existing_run_status)
-                    db.commit()
-                    db.refresh(existing_run_status)
-
-                else:
-                    new_run_status = RunStatus(
-                        id=run_status.id,
-                        heat_id=run_status.heat_id,
-                        run_number=run_status.run_number,
-                        phase_id=run_status.phase_id,
-                        athlete_id=run_status.athlete_id,
-                        locked=run_status.locked,
-                        did_not_start=run_status.did_not_start,
-                    )
-                    db.add(new_run_status)
-                    db.commit()
-                    db.refresh(new_run_status)
-            await runstatus_active_manager.broadcast(run_status.json())
+        await run_until_first_complete(
+            (
+                ws_receiver,
+                {
+                    "websocket": websocket,
+                    "side_effect": copy_message_to_db,
+                    "channel": "run_status",
+                },
+            ),
+            (ws_sender, {"websocket": websocket, "channel": "run_status"}),
+        )
     except WebSocketDisconnect as e:
         if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Run Status Websocket")
-        runstatus_active_manager.disconnect(websocket)
+            logging.exception("Error with Current Score Websocket")
+
+        websocket.disconnect()
+
+
+def copy_message_to_db(data: str) -> None:
+    run_status = RunStatusSchema.parse_raw(data)
+    with next(get_transaction_session()) as db:
+        existing_run_status = (
+            db.query(RunStatus)
+            .filter(
+                RunStatus.heat_id == run_status.heat_id,
+                RunStatus.run_number == run_status.run_number,
+                RunStatus.phase_id == run_status.phase_id,
+                RunStatus.athlete_id == run_status.athlete_id,
+            )
+            .first()
+        )
+
+        if existing_run_status:
+            existing_run_status.locked = run_status.locked
+            existing_run_status.did_not_start = run_status.did_not_start
+            db.add(existing_run_status)
+            db.commit()
+            db.refresh(existing_run_status)
+
+        else:
+            new_run_status = RunStatus(
+                id=run_status.id,
+                heat_id=run_status.heat_id,
+                run_number=run_status.run_number,
+                phase_id=run_status.phase_id,
+                athlete_id=run_status.athlete_id,
+                locked=run_status.locked,
+                did_not_start=run_status.did_not_start,
+            )
+            db.add(new_run_status)
+            db.commit()
+            db.refresh(new_run_status)
 
 
 def check_run_is_locked(
