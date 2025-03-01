@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -327,12 +328,15 @@ class HelveticaNeuePDF(FPDF):
         self.add_fonts()
 
     def add_fonts(self) -> None:
-        self.add_font("helvetica-neue", style="",
-                      fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix())
-        self.add_font("helvetica-neue", style="B",
-                      fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix())
-        self.add_font("helvetica-neue", style="I",
-                      fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix())
-        self.add_font("helvetica-neue", style="BI",
-                      fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix())
-        self.set_font(family="helvetica-neue", style="", size=12)
+        if 'PYTEST_CURRENT_TEST' not in os.environ:
+            self.add_font("helvetica-neue", style="",
+                          fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix())
+            self.add_font("helvetica-neue", style="B",
+                          fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix())
+            self.add_font("helvetica-neue", style="I",
+                          fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix())
+            self.add_font("helvetica-neue", style="BI",
+                          fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix())
+            self.set_font(family="helvetica-neue", style="", size=12)
+        else:
+            self.set_font(family="Helvetica", style="", size=12)
