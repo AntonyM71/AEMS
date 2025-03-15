@@ -129,6 +129,7 @@ class Athlete(Base):
 
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
+    affiliation = Column(String, nullable=True)
     bib = Column(String, nullable=False)
     schema = "public"
 

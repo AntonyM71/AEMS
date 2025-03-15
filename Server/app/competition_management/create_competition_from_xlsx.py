@@ -214,6 +214,7 @@ def process_competitors_df(
                     "id": athlete_id,
                     "first_name": row["first_name"],
                     "last_name": row["last_name"],
+                    "affiliation": row.get("affiliation", default=None),
                     "bib": str(row["bib"]),
                 }
             ]

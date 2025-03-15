@@ -1,5 +1,3 @@
-
-
 import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
@@ -191,6 +189,7 @@ export const HeatAthleteTable = ({
 		first_name?: string
 		last_name?: string
 		bib?: number
+		affiliation?: string
 		phase_id?: string
 		athlete_id?: string
 		event_name?: string
@@ -231,6 +230,8 @@ export const HeatAthleteTable = ({
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
+		{ field: "affiliation", headerName: "Affiliation" },
+
 		{ field: "event_name", headerName: "Event Name", width: 200 },
 		...editCol
 	]
@@ -250,12 +251,13 @@ export const HeatAthleteTable = ({
 	} else if (rows) {
 		return (
 			<>
-				<EditAthletDialog
+				<EditAthleteDialog
 					open={open}
 					handleClose={handleClose}
 					athlete_id={rowData.athlete_id ?? ""}
 					first_name={rowData.first_name ?? ""}
 					last_name={rowData.last_name ?? ""}
+					affiliation={rowData.affiliation ?? ""}
 					bib={rowData.bib ?? 1}
 					phase_id={rowData.phase_id ?? ""}
 					athlete_heat_id={rowData.athlete_heat_id ?? ""}
@@ -277,7 +279,7 @@ export const HeatAthleteTable = ({
 	)
 }
 
-export const EditAthletDialog = ({
+export const EditAthleteDialog = ({
 	open,
 	handleClose,
 	athlete_id,
@@ -285,6 +287,7 @@ export const EditAthletDialog = ({
 	last_name,
 	bib,
 	phase_id,
+	affiliation,
 	athlete_heat_id
 }: {
 	open: boolean
@@ -292,6 +295,7 @@ export const EditAthletDialog = ({
 	athlete_id?: string
 	first_name?: string
 	last_name?: string
+	affiliation?: string
 	bib?: number
 	phase_id?: string
 	athlete_heat_id?: string
@@ -310,6 +314,7 @@ export const EditAthletDialog = ({
 				first_name={first_name}
 				athlete_heat_id={athlete_heat_id}
 				athlete_id={athlete_id}
+				affiliation={affiliation}
 				bib={bib}
 				phase_id={phase_id}
 				handleClose={handleClose}
@@ -323,6 +328,7 @@ export const AddAthletesToHeat = (props: {
 	athlete_id?: string
 	first_name?: string
 	last_name?: string
+	affiliation?: string
 	bib?: number
 	phase_id?: string
 	athlete_heat_id?: string
@@ -351,6 +357,9 @@ export const AddAthletesToHeat = (props: {
 	)
 	const [athleteLastName, setAthleteLastName] = useState<string>(
 		props.last_name ?? ""
+	)
+	const [athleteAffiliation, setAthleteAffiliation] = useState<string>(
+		props.affiliation ?? ""
 	)
 	const [bibNumber, setBibNumber] = useState<number>(Number(props.bib ?? 1))
 
@@ -394,7 +403,8 @@ export const AddAthletesToHeat = (props: {
 						bodyPartialUpdateOneByPrimaryKeyAthleteIdPatch: {
 							first_name: athleteFirstName,
 							last_name: athleteLastName,
-							bib: bibNumber.toString()
+							bib: bibNumber.toString(),
+							affiliation: athleteAffiliation
 						}
 					}),
 					"Updated Athlete"
@@ -428,11 +438,12 @@ export const AddAthletesToHeat = (props: {
 			} else {
 				HandlePostResponse(
 					await makeAthlete({
-						body: [
+						insert: [
 							{
 								id: athleteId,
 								first_name: athleteFirstName,
 								last_name: athleteLastName,
+								affiliation: athleteAffiliation,
 								bib: bibNumber.toString()
 							}
 						]
@@ -441,7 +452,7 @@ export const AddAthletesToHeat = (props: {
 				)
 				HandlePostResponse(
 					await makeAthleteHeat({
-						body: [
+						insert: [
 							{
 								id: props.athlete_heat_id ?? v4(),
 								heat_id: newHeat,
@@ -462,6 +473,7 @@ export const AddAthletesToHeat = (props: {
 			}
 			setAthleteFirstName("")
 			setAthleteLastName("")
+			setAthleteAffiliation("")
 			setBibNumber(Number(bibNumber ?? 0) + 1)
 		} else {
 			toast.error("Please fill in all the fields")
@@ -515,6 +527,14 @@ export const AddAthletesToHeat = (props: {
 					fullWidth
 					value={athleteLastName}
 					onChange={(e) => setAthleteLastName(e.target.value)}
+				/>
+			</Grid>
+			<Grid size={colWidth}>
+				<TextField
+					label="Affiliation"
+					fullWidth
+					value={athleteAffiliation}
+					onChange={(e) => setAthleteAffiliation(e.target.value)}
 				/>
 			</Grid>
 			<Grid size={colWidth}>
