@@ -248,6 +248,7 @@ class AthleteScores(BaseModel):
 class AthleteScoresWithAthleteInfo(AthleteScores):
     first_name: str
     last_name: str
+    affiliation: Optional[str]
     bib_number: int
 
 

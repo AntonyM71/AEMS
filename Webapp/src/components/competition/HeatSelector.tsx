@@ -136,11 +136,9 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 						</FormControl>
 					</Grid>
 					{showDetailed ? (
-						<>
-							<Grid>
-								<AddHeat refetch={refetch} />
-							</Grid>
-						</>
+						<Grid>
+							<AddHeat refetch={refetch} />
+						</Grid>
 					) : (
 						<></>
 					)}
@@ -170,7 +168,7 @@ const AddHeat = ({
 	const submitNewHeat = async () => {
 		try {
 			const response = await postNewHeat({
-				body: [
+				insert: [
 					{
 						name: heatName,
 						id: uuid4(),
