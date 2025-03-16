@@ -13,21 +13,21 @@ export const handleErrors = (e: any) => {
 		const message =
 			typeof e == "string"
 				? e
-				: e.statusText
+				: e?.statusText
 				? e.statusText
-				: e.message
+				: e?.message
 				? e.message
-				: e.reason && e.reason.message
+				: e?.reason?.message
 				? e.reason.message
-				: e.reason
+				: e?.reason
 				? e.reason
-				: e.data?.detail
+				: e?.data?.detail
 				? e.data.detail
-				: e.payload?.error
+				: e?.payload?.error
 				? e.payload.error
-				: e.payload?.data?.detail
+				: e?.payload?.data?.detail
 				? e.payload.data.detail
-				: e.error?.message
+				: e?.error?.message
 				? e.error.message
 				: "Undefined Error"
 		toast.error(JSON.stringify(message))
