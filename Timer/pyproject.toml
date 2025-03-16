@@ -1,0 +1,58 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]      # PEP 508 specifications.
+build-backend = "setuptools.build_meta"
+
+# Ignore flat-layout.
+[tool.setuptools]
+py-modules = []
+
+[tool.ruff]
+lint.ignore = ["E501", "N999", "UP007", "ANN401"]
+lint.select = [
+    "E",
+    "F",
+    "B",
+    "I",
+    "N",
+    "UP",
+    "YTT",
+    "ANN",
+    "FBT",
+    "EM",
+    "RUF",
+    "PD",
+    "TRY",
+    "G",
+]
+lint.fixable = ["ALL"]
+line-length = 88
+[tool.ruff.lint.flake8-bugbear]
+[tool.pytest.ini_options]
+addopts = ["--cov=.", "--cov-report=term-missing"]
+pythonpath = ["."]
+[tool.coverage.run]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+[project]
+dependencies = [
+    "RPi.GPIO",
+    # Dev
+    "ruff",
+
+    "pytest",
+    "pytest-mock",
+    "pytest-cov",
+
+
+]
+name = "aems_timer"
+description = "backend functions and database conntroller for the AEMS system"
+version = "0.1.0"
+requires-python = ">3.10.0"
