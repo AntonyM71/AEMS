@@ -44,7 +44,8 @@ const CSVFormatTable = () => {
 		createData("bib", "integer"),
 		createData("Heat", "integer"),
 		createData("Event", "string"),
-		createData("Affiliation", "Optional[string]")
+		createData("affiliation", "Optional[string]"),
+		createData("last_phase_rank", "Optional[integer]")
 	]
 
 	return (

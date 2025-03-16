@@ -243,7 +243,7 @@ def process_competitors_df(
                     "heat_id": heat_id,
                     "athlete_id": athlete_id,
                     "phase_id": phase_id,
-                    "last_phase_rank": None,
+                    "last_phase_rank": row.get("last_phase_rank", default=None),
                 }
             ]
 
