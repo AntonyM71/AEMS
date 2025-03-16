@@ -118,6 +118,8 @@ docker-compose.yaml
 
 ## Technical Decisions
 
+> Architectural decisions are stored in /decisions, starting with [ADR001: Record Architectural Decisions](../decisions/ADR001-record-architectural-decisions.md)
+
 ### Frontend Architecture
 
 - React for component-based UI
