@@ -2,8 +2,6 @@ import threading
 import time
 import os
 from pathlib import Path
-from PIL import Image,ImageDraw,ImageFont
-from drivers import epd13in3k
 import RPi.GPIO as GPIO
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -13,7 +11,7 @@ PIN_INPUT_START = 4
 PIN_INPUT_CANCEL = 5
 PIN_BUZZER = 27
 PIN_RUNNING_LIGHT = 14
-PIN_READY_LIGHT = 17
+PIN_READY_LIGHT =6
 
 GPIO.setup(PIN_INPUT_START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_CANCEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -62,30 +60,14 @@ def start_timer() -> None:
     if timer_running:  # Don't start a new timer if one is already running
         return
     timer_running = True
-    font24 = ImageFont.truetype(str(Path("..","Server","fonts", "HelveticaNeueLight.otf")), 24, encoding='utf-8')
-    epd = epd13in3k.EPD()
 
-    Limage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    draw = ImageDraw.Draw(Limage)
-    draw.text((2, 0), 'hello world', font = font18, fill = 0)
-    draw.text((2, 20), '13.3inch e-Paper (K)', font = font18, fill = 0)
-    draw.text((20, 50), u'微雪电子', font = font18, fill = 0)
-    draw.line((10, 90, 60, 140), fill = 0)
-    draw.line((60, 90, 10, 140), fill = 0)
-    draw.rectangle((10, 90, 60, 140), outline = 0)
-    draw.line((95, 90, 95, 140), fill = 0)
-    draw.line((70, 115, 120, 115), fill = 0)
-    draw.arc((70, 90, 120, 140), 0, 360, fill = 0)
-    draw.rectangle((10, 150, 60, 200), fill = 0)
-    draw.chord((70, 150, 120, 200), 0, 360, fill = 0)
-    epd.display(epd.getbuffer(Limage))
 
     def timer_task() -> None:
         global timer_running
         set_running_light_on()
         elapsed_time = 0
-        total_duration_1 = 4  # First phase duration
-        total_duration_2 = 5  # Second phase duration
+        total_duration_1 = 34  # First phase duration
+        total_duration_2 = 10 # Second phase duration
 
         while timer_running and elapsed_time < total_duration_1:
             time.sleep(0.1)  # Short sleep interval
