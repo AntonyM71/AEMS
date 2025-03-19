@@ -5,8 +5,8 @@
 # Variables
 SERVICE_NAME="myscript.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
-PYTHON_SCRIPT_PATH="/path/to/your_script.py"
-WORKING_DIR="/path/to"
+PYTHON_SCRIPT_PATH="/src/timer.py"
+WORKING_DIR="/src"
 
 # Check if the service file already exists
 if [ -f "$SERVICE_PATH" ]; then
