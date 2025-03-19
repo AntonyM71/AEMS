@@ -8,12 +8,6 @@ SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
 PYTHON_SCRIPT_PATH="/src/timer.py"
 WORKING_DIR="/src"
 
-# Check if the service file already exists
-if [ -f "$SERVICE_PATH" ]; then
-    echo "$SERVICE_NAME already exists. Exiting."
-    exit 1
-fi
-
 
 
 # Create the service file
