@@ -1,6 +1,4 @@
-# Add job to update apt on a regular basis
-
-# Call the add_cron.sh script explicitly with bash
+# Please run this script from the /AEMS/Timer diectory to ensure the service is registered with the correct file-path.
 bash setup_scripts/apt_update_cron.sh
 
 bash setup_scripts/add_python_deps.sh

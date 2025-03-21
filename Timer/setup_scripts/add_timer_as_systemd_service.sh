@@ -3,10 +3,11 @@
 # Set timer to run automatically
 
 # Variables
-SERVICE_NAME="myscript.service"
+CURRENT_DIRECTORY=$(pwd)
+SERVICE_NAME="timer.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
-PYTHON_SCRIPT_PATH="/src/timer.py"
-WORKING_DIR="/src"
+PYTHON_SCRIPT_PATH="$CURRENT_DIRECTORY/src/timer.py"
+WORKING_DIR="$CURRENT_DIRECTORY/src"
 
 
 
