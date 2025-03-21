@@ -20,23 +20,31 @@ For this stage of the project, we souced all the materials from [The Pi Hut](htt
 ```mermaid
 graph LR
     subgraph RaspberryPi[Raspberry Pi]
-        GPIO3[GPIO Pin 3 - Start Timer Switch Input]
-        GPIO4[GPIO Pin 4 - Cancel Timer Switch Input]
-        GPIO17[GPIO Pin 17 - Buzzer Output]
+        GPIO3[GPIO Pin 4 - Start Timer Switch Input]
+        GPIO4[GPIO Pin 5 - Cancel Timer Switch Input]
+        GPIO27[GPIO Pin 27 - Buzzer Output]
+        GPIO6[GPIO Pin 6 - Ready Light]
+        GPIO14[GPIO Pin 14 - Running Light]
         PowerRail5V[5V Power Rail]
         Ground[0V Power Rail]
     end
 
     PowerRail5V[5V Power Rail] -->  Switch1[Start Timer Switch]
     PowerRail5V --> Switch2[Cancel Timer Switch]
-    PowerRail5V --> GPIO17
+    PowerRail5V --> GPIO27
+    PowerRail5V --> GPIO6
+    PowerRail5V --> GPIO14
 
     Switch1[Start Timer Switch] -->  GPIO3
     Switch2[Cancel Timer Switch] --> GPIO4
-    GPIO17 --> Buzzer[Buzzer]
+    GPIO27 --> Buzzer[Buzzer]
+    GPIO6 --> ReadyLED[Ready LED]
+    GPIO14 --> RunningLED[Running LED]
     GPIO3 --> Ground
     GPIO4 --> Ground
     Buzzer --> Ground
+    ReadyLED --> Ground
+    RunningLED --> Ground
 
 
 ```
