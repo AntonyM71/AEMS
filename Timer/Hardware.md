@@ -2,7 +2,7 @@
 
 This document contains the bill of materials for a small timer for freestyle competitons.
 
-> This system uses electronics and mains power, damage to components or electrocution are possible if te system is assembled incorrectly, so the work should only be undertaken by suitably qualified and experienced people.
+> This system uses electronics and mains power, damage to components or electrocution are possible if the system is assembled incorrectly, so the work should only be undertaken by suitably qualified and experienced people.
 
 ## Bill of Materials
 
@@ -38,13 +38,15 @@ graph LR
     Switch1[Start Timer Switch] -->  GPIO3
     Switch2[Cancel Timer Switch] --> GPIO4
     GPIO27 --> Buzzer[Buzzer]
-    GPIO6 --> ReadyLED[Ready LED]
+    GPIO6 --> ReadyLED[Ready LED + 330]
     GPIO14 --> RunningLED[Running LED]
     GPIO3 --> Ground
     GPIO4 --> Ground
     Buzzer --> Ground
-    ReadyLED --> Ground
-    RunningLED --> Ground
+    ReadyLED --> R1[330 Ohm Resistor]
+    RunningLED --> R2[330 Ohm Resistor]
+    R1 --> Ground
+    R2 --> Ground
 
 
 ```
