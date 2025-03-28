@@ -1,5 +1,3 @@
-
-
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
@@ -146,6 +144,7 @@ export const PhaseAthleteScoreTable = ({
 		{ field: "first_name", headerName: "First Name", width: 200 },
 		{ field: "last_name", headerName: "Last Name", width: 200 },
 		{ field: "bib", headerName: "Bib Number" },
+		{ field: "affiliation", headerName: "Affiliation" },
 		...runCols,
 		{
 			field: "total_score",
@@ -178,6 +177,7 @@ export const PhaseAthleteScoreTable = ({
 					bib: a.bib_number,
 					first_name: a.first_name,
 					last_name: a.last_name,
+					affiliation: a.affiliation ?? "",
 					reason: a.reason ?? "",
 					total_score: a.total_score?.toFixed(2) ?? 0,
 					...runScores

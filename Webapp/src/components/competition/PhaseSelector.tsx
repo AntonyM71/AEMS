@@ -259,7 +259,7 @@ const AddPhase = ({
 		if (!existingPhaseData) {
 			HandlePostResponse(
 				await postNewPhase({
-					body: [
+					insert: [
 						{
 							name: phaseName,
 							id: uuid4(),

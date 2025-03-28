@@ -88,12 +88,16 @@ async def phase_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        with pdf.table() as table:
+        with pdf.table(
+            col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
+        ) as table:
             header = table.row()
             header.cell("Rank")
             header.cell("First Name")
             header.cell("Last Name")
             header.cell("Bib")
+            header.cell("Affiliation")
+
             for i in range(phase_metadata.number_of_runs):
                 header.cell(f"Run {i + 1}")
             header.cell("Total Score")
@@ -106,6 +110,7 @@ async def phase_pdf(
                 row.cell(athlete.first_name)
                 row.cell(athlete.last_name)
                 row.cell(str(athlete.bib_number))
+                row.cell(athlete.affiliation or "")
                 runs_confirmed = []
                 for i in range(phase_metadata.number_of_runs):
                     runs_confirmed.append(
@@ -196,12 +201,14 @@ async def heat_pdf(
             )
             pdf.set_font(size=12)
 
-            with pdf.table() as table:
+            with pdf.table(col_widths=(3, 3, 3, 1, 3, 3)) as table:
                 header = table.row()
                 header.cell("First Name")
                 header.cell("Last Name")
                 header.cell("Event Name")
                 header.cell("Bib")
+                header.cell("Affiliation")
+
                 header.cell("Previous Round Rank")
 
                 for athlete in heat_athlete_info:
@@ -211,6 +218,7 @@ async def heat_pdf(
                     row.cell(athlete.last_name)
                     row.cell(athlete.event_name)
                     row.cell(str(athlete.bib))
+                    row.cell(athlete.affiliation or "")
                     row.cell(
                         str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
                     )
@@ -273,11 +281,13 @@ async def heat_results_pdf(
         )
         pdf.set_font(size=12)
 
-        with pdf.table() as table:
+        with pdf.table(col_widths=(3, 3, 1, 3, *([2] * max_runs))) as table:
             header = table.row()
             header.cell("First Name")
             header.cell("Last Name")
             header.cell("Bib")
+            header.cell("Affiliation")
+
             for i in range(max_runs):
                 header.cell(f"Run: {i + 1}")
 
@@ -286,8 +296,9 @@ async def heat_results_pdf(
 
                 row.cell(athlete.first_name)
                 row.cell(athlete.last_name)
-
                 row.cell(str(athlete.bib_number))
+                row.cell(athlete.affiliation or "")
+
                 for i in range(max_runs):
                     if i < len(athlete.run_scores):
                         pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")

@@ -106,6 +106,8 @@ export const HeatAthleteScoreTable = ({
 		{ field: "first_name", headerName: "First Name" },
 		{ field: "last_name", headerName: "Last Name" },
 		{ field: "bib", headerName: "Bib Number" },
+		{ field: "affiliation", headerName: "Affiliation" },
+
 		...runCols
 	]
 
@@ -132,6 +134,8 @@ export const HeatAthleteScoreTable = ({
 				bib: a.bib_number,
 				first_name: a.first_name,
 				last_name: a.last_name,
+
+				affiliation: a.affiliation ?? "",
 				...runScores
 			}
 		})

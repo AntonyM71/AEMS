@@ -6,7 +6,7 @@ import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import {
 	AddAthletesToHeat,
-	EditAthletDialog,
+	EditAthleteDialog,
 	HeatAthleteTable,
 	HeatSummaryTable
 } from "../HeatSummaryTable"
@@ -340,7 +340,7 @@ describe("HeatAthleteTable", () => {
 
 		render(
 			<Provider store={store}>
-				<EditAthletDialog
+				<EditAthleteDialog
 					open={true}
 					handleClose={jest.fn()}
 					athlete_id="1"
@@ -419,7 +419,7 @@ describe("HeatAthleteTable", () => {
 
 		render(
 			<Provider store={store}>
-				<EditAthletDialog
+				<EditAthleteDialog
 					open={true}
 					handleClose={jest.fn()}
 					athlete_id="1"

@@ -43,7 +43,9 @@ const CSVFormatTable = () => {
 		createData("last_name", "string"),
 		createData("bib", "integer"),
 		createData("Heat", "integer"),
-		createData("Event", "string")
+		createData("Event", "string"),
+		createData("affiliation", "Optional[string]"),
+		createData("last_phase_rank", "Optional[integer]")
 	]
 
 	return (
@@ -84,7 +86,6 @@ const CSVFormatTable = () => {
 		</TableContainer>
 	)
 }
-
 
 const UploadForm = () => {
 	const [fileName, setFileName] = useState<string>("")

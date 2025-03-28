@@ -27,7 +27,7 @@ export const AddScoresheet = ({
 				const newScoresheetId = v4()
 				HandlePostResponse(
 					await postNewScoresheet({
-						body: [{ name: scoresheetName, id: newScoresheetId }]
+						insert: [{ name: scoresheetName, id: newScoresheetId }]
 					})
 				)
 				await refetch()

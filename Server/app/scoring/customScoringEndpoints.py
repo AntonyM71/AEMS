@@ -65,6 +65,7 @@ class HeatInfoResponse(BaseModel):
     scoresheet: UUID
     first_name: str
     last_name: str
+    affiliation: Optional[str]
     bib: str
     last_phase_rank: Optional[int]
     event_name: str
@@ -99,6 +100,7 @@ def get_heat_info_logic(heat_id: str, db: Session) -> list[HeatInfoResponse]:
             scoresheet=h.phases.scoresheet,
             first_name=h.athletes.first_name,
             last_name=h.athletes.last_name,
+            affiliation=h.athletes.affiliation,
             bib=h.athletes.bib,
             last_phase_rank=h.last_phase_rank,
             event_name=h.phases.event.name,
@@ -381,6 +383,7 @@ async def get_heat_scores(
                     ).dict()
                 ),
                 first_name=a_info.first_name,
+                affiliation=a_info.affiliation,
                 last_name=a_info.last_name,
                 bib_number=a_info.bib,
             )
