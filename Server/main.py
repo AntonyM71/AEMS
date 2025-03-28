@@ -19,10 +19,10 @@ from app.autogenEndpoints import (
     crud_route_availablemoves,
     crud_route_competition,
     crud_route_event,
+    crud_route_event_by_phase,
     crud_route_heat,
     crud_route_phase,
     crud_route_run_status,
-    crud_route_scoredbonuses,
     crud_route_scoredmoves,
     crud_route_scoresheet,
 )
@@ -57,6 +57,7 @@ app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
         pdf_router,
         crud_route_competition,
         crud_route_event,
+        crud_route_event_by_phase,
         crud_route_phase,
         crud_route_heat,
         crud_route_athlete,
@@ -64,7 +65,6 @@ app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
         crud_route_availablemoves,
         crud_route_availablebonuses,
         crud_route_scoredmoves,
-        crud_route_scoredbonuses,
         crud_route_athleteheat,
         crud_route_run_status,
     ]
