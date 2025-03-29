@@ -138,8 +138,7 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const submitNewEvent = async () => {
 		HandlePostResponse(
 			await postNewEvent({
-				body: [
-
+				insert: [
 					{
 						name: eventName,
 						id: uuid4(),
