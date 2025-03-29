@@ -79,8 +79,7 @@ dependencies = [
     "rich",
     "asgi-correlation-id",
     "openpyxl",
-
-
+    "requests",
 ]
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"
