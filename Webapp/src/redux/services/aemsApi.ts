@@ -127,27 +127,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateManyByQueryCompetitionPut: build.mutation<
-			EntireUpdateManyByQueryCompetitionPutApiResponse,
-			EntireUpdateManyByQueryCompetitionPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition`,
-				method: "PUT",
-				body: queryArg.name,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
 		insertManyCompetitionPost: build.mutation<
 			InsertManyCompetitionPostApiResponse,
 			InsertManyCompetitionPostApiArg
@@ -158,54 +137,16 @@ const injectedRtkApi = api.injectEndpoints({
 				body: queryArg.insert
 			})
 		}),
-		deleteManyByQueryCompetitionDelete: build.mutation<
-			DeleteManyByQueryCompetitionDeleteApiResponse,
-			DeleteManyByQueryCompetitionDeleteApiArg
+		getManyByPkFromEventCompetitionCompetitionPkIdEventGet: build.query<
+			GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiResponse,
+			GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg
 		>({
 			query: (queryArg) => ({
-				url: `/competition`,
-				method: "DELETE",
+				url: `/competition/${queryArg.competitionPkId}/event`,
 				params: {
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateManyByQueryCompetitionPatch: build.mutation<
-			PartialUpdateManyByQueryCompetitionPatchApiResponse,
-			PartialUpdateManyByQueryCompetitionPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition`,
-				method: "PATCH",
-				body: queryArg.name,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getOneByPrimaryKeyCompetitionIdGet: build.query<
-			GetOneByPrimaryKeyCompetitionIdGetApiResponse,
-			GetOneByPrimaryKeyCompetitionIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition/${queryArg.id}`,
-				params: {
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
@@ -213,41 +154,6 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList,
 					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyCompetitionIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyCompetitionIdPutApiResponse,
-			EntireUpdateByPrimaryKeyCompetitionIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.name,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyCompetitionIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyCompetitionIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyCompetitionIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
 				}
 			})
 		}),
@@ -266,44 +172,6 @@ const injectedRtkApi = api.injectEndpoints({
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGet:
-			build.query<
-				GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiResponse,
-				GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiArg
-			>({
-				query: (queryArg) => ({
-					url: `/competition/${queryArg.competitionPkId}/event/${queryArg.eventPkId}`,
-					params: {
-						name____str_____matching_pattern:
-							queryArg.nameStrMatchingPattern,
-						name____str: queryArg.nameStr,
-						name____list_____comparison_operator:
-							queryArg.nameListComparisonOperator,
-						name____list: queryArg.nameList,
-						join_foreign_table: queryArg.joinForeignTable
-					}
-				})
-			}),
-		getManyByPkFromEventCompetitionCompetitionPkIdEventGet: build.query<
-			GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiResponse,
-			GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition/${queryArg.competitionPkId}/event`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
 		}),
@@ -333,30 +201,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateManyByQueryEventPut: build.mutation<
-			EntireUpdateManyByQueryEventPutApiResponse,
-			EntireUpdateManyByQueryEventPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryEventPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
 		insertManyEventPost: build.mutation<
 			InsertManyEventPostApiResponse,
 			InsertManyEventPostApiArg
@@ -367,181 +211,22 @@ const injectedRtkApi = api.injectEndpoints({
 				body: queryArg.insert
 			})
 		}),
-		deleteManyByQueryEventDelete: build.mutation<
-			DeleteManyByQueryEventDeleteApiResponse,
-			DeleteManyByQueryEventDeleteApiArg
+		getManyByPkFromCompetitionEventEventPkIdCompetitionGet: build.query<
+			GetManyByPkFromCompetitionEventEventPkIdCompetitionGetApiResponse,
+			GetManyByPkFromCompetitionEventEventPkIdCompetitionGetApiArg
 		>({
 			query: (queryArg) => ({
-				url: `/event`,
-				method: "DELETE",
+				url: `/event/${queryArg.eventPkId}/competition`,
 				params: {
 					id____list_____comparison_operator:
 						queryArg.idListComparisonOperator,
 					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateManyByQueryEventPatch: build.mutation<
-			PartialUpdateManyByQueryEventPatchApiResponse,
-			PartialUpdateManyByQueryEventPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryEventPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getOneByPrimaryKeyEventIdGet: build.query<
-			GetOneByPrimaryKeyEventIdGetApiResponse,
-			GetOneByPrimaryKeyEventIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/${queryArg.id}`,
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
 					name____str_____matching_pattern:
 						queryArg.nameStrMatchingPattern,
 					name____str: queryArg.nameStr,
 					name____list_____comparison_operator:
 						queryArg.nameListComparisonOperator,
 					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyEventIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyEventIdPutApiResponse,
-			EntireUpdateByPrimaryKeyEventIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyEventIdPut,
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyEventIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyEventIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyEventIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyEventIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyEventIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyEventIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyEventIdPatch,
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGet: build.query<
-			GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiResponse,
-			GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/${queryArg.eventPkId}/phase/${queryArg.phasePkId}`,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
 			})
@@ -599,245 +284,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		getManyPhaseGet: build.query<
-			GetManyPhaseGetApiResponse,
-			GetManyPhaseGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryPhasePut: build.mutation<
-			EntireUpdateManyByQueryPhasePutApiResponse,
-			EntireUpdateManyByQueryPhasePutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryPhasePut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
-				}
-			})
-		}),
-		insertManyPhasePost: build.mutation<
-			InsertManyPhasePostApiResponse,
-			InsertManyPhasePostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase`,
-				method: "POST",
-				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryPhaseDelete: build.mutation<
-			DeleteManyByQueryPhaseDeleteApiResponse,
-			DeleteManyByQueryPhaseDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
-				}
-			})
-		}),
-		partialUpdateManyByQueryPhasePatch: build.mutation<
-			PartialUpdateManyByQueryPhasePatchApiResponse,
-			PartialUpdateManyByQueryPhasePatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryPhasePatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
-				}
-			})
-		}),
 		getOneByPrimaryKeyPhaseIdGet: build.query<
 			GetOneByPrimaryKeyPhaseIdGetApiResponse,
 			GetOneByPrimaryKeyPhaseIdGetApiArg
@@ -888,113 +334,6 @@ const injectedRtkApi = api.injectEndpoints({
 						queryArg.scoresheetListComparisonOperator,
 					scoresheet____list: queryArg.scoresheetList,
 					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyPhaseIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyPhaseIdPutApiResponse,
-			EntireUpdateByPrimaryKeyPhaseIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyPhaseIdPut,
-				params: {
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyPhaseIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyPhaseIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyPhaseIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/phase/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					event_id____list_____comparison_operator:
-						queryArg.eventIdListComparisonOperator,
-					event_id____list: queryArg.eventIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					number_of_runs____from_____comparison_operator:
-						queryArg.numberOfRunsFromComparisonOperator,
-					number_of_runs____to_____comparison_operator:
-						queryArg.numberOfRunsToComparisonOperator,
-					number_of_runs____from: queryArg.numberOfRunsFrom,
-					number_of_runs____to: queryArg.numberOfRunsTo,
-					number_of_runs____list_____comparison_operator:
-						queryArg.numberOfRunsListComparisonOperator,
-					number_of_runs____list: queryArg.numberOfRunsList,
-					number_of_runs_for_score____from_____comparison_operator:
-						queryArg.numberOfRunsForScoreFromComparisonOperator,
-					number_of_runs_for_score____to_____comparison_operator:
-						queryArg.numberOfRunsForScoreToComparisonOperator,
-					number_of_runs_for_score____from:
-						queryArg.numberOfRunsForScoreFrom,
-					number_of_runs_for_score____to:
-						queryArg.numberOfRunsForScoreTo,
-					number_of_runs_for_score____list_____comparison_operator:
-						queryArg.numberOfRunsForScoreListComparisonOperator,
-					number_of_runs_for_score____list:
-						queryArg.numberOfRunsForScoreList,
-					number_of_judges____from_____comparison_operator:
-						queryArg.numberOfJudgesFromComparisonOperator,
-					number_of_judges____to_____comparison_operator:
-						queryArg.numberOfJudgesToComparisonOperator,
-					number_of_judges____from: queryArg.numberOfJudgesFrom,
-					number_of_judges____to: queryArg.numberOfJudgesTo,
-					number_of_judges____list_____comparison_operator:
-						queryArg.numberOfJudgesListComparisonOperator,
-					number_of_judges____list: queryArg.numberOfJudgesList,
-					scoresheet____list_____comparison_operator:
-						queryArg.scoresheetListComparisonOperator,
-					scoresheet____list: queryArg.scoresheetList
 				}
 			})
 		}),
@@ -1052,6 +391,16 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
+		insertManyPhasePost: build.mutation<
+			InsertManyPhasePostApiResponse,
+			InsertManyPhasePostApiArg
+		>({
+			query: (queryArg) => ({
+				url: `/phase`,
+				method: "POST",
+				body: queryArg.insert
+			})
+		}),
 		getManyHeatGet: build.query<
 			GetManyHeatGetApiResponse,
 			GetManyHeatGetApiArg
@@ -1078,30 +427,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateManyByQueryHeatPut: build.mutation<
-			EntireUpdateManyByQueryHeatPutApiResponse,
-			EntireUpdateManyByQueryHeatPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryHeatPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
 		insertManyHeatPost: build.mutation<
 			InsertManyHeatPostApiResponse,
 			InsertManyHeatPostApiArg
@@ -1110,53 +435,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/heat`,
 				method: "POST",
 				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryHeatDelete: build.mutation<
-			DeleteManyByQueryHeatDeleteApiResponse,
-			DeleteManyByQueryHeatDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateManyByQueryHeatPatch: build.mutation<
-			PartialUpdateManyByQueryHeatPatchApiResponse,
-			PartialUpdateManyByQueryHeatPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryHeatPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
 			})
 		}),
 		getOneByPrimaryKeyHeatIdGet: build.query<
@@ -1179,148 +457,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateByPrimaryKeyHeatIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyHeatIdPutApiResponse,
-			EntireUpdateByPrimaryKeyHeatIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyHeatIdPut,
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyHeatIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyHeatIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyHeatIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyHeatIdPatch,
-				params: {
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getManyAthleteGet: build.query<
-			GetManyAthleteGetApiResponse,
-			GetManyAthleteGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryAthletePut: build.mutation<
-			EntireUpdateManyByQueryAthletePutApiResponse,
-			EntireUpdateManyByQueryAthletePutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryAthletePut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList
-				}
-			})
-		}),
 		insertManyAthletePost: build.mutation<
 			InsertManyAthletePostApiResponse,
 			InsertManyAthletePostApiArg
@@ -1329,189 +465,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/athlete`,
 				method: "POST",
 				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryAthleteDelete: build.mutation<
-			DeleteManyByQueryAthleteDeleteApiResponse,
-			DeleteManyByQueryAthleteDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList
-				}
-			})
-		}),
-		partialUpdateManyByQueryAthletePatch: build.mutation<
-			PartialUpdateManyByQueryAthletePatchApiResponse,
-			PartialUpdateManyByQueryAthletePatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryAthletePatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList
-				}
-			})
-		}),
-		getOneByPrimaryKeyAthleteIdGet: build.query<
-			GetOneByPrimaryKeyAthleteIdGetApiResponse,
-			GetOneByPrimaryKeyAthleteIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete/${queryArg.id}`,
-				params: {
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyAthleteIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyAthleteIdPutApiResponse,
-			EntireUpdateByPrimaryKeyAthleteIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyAthleteIdPut,
-				params: {
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyAthleteIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyAthleteIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyAthleteIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athlete/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					first_name____str_____matching_pattern:
-						queryArg.firstNameStrMatchingPattern,
-					first_name____str: queryArg.firstNameStr,
-					first_name____list_____comparison_operator:
-						queryArg.firstNameListComparisonOperator,
-					first_name____list: queryArg.firstNameList,
-					last_name____str_____matching_pattern:
-						queryArg.lastNameStrMatchingPattern,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list_____comparison_operator:
-						queryArg.lastNameListComparisonOperator,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str_____matching_pattern:
-						queryArg.affiliationStrMatchingPattern,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list_____comparison_operator:
-						queryArg.affiliationListComparisonOperator,
-					affiliation____list: queryArg.affiliationList,
-					bib____str_____matching_pattern:
-						queryArg.bibStrMatchingPattern,
-					bib____str: queryArg.bibStr,
-					bib____list_____comparison_operator:
-						queryArg.bibListComparisonOperator,
-					bib____list: queryArg.bibList
-				}
 			})
 		}),
 		partialUpdateOneByPrimaryKeyAthleteIdPatch: build.mutation<
@@ -1572,27 +525,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateManyByQueryScoresheetPut: build.mutation<
-			EntireUpdateManyByQueryScoresheetPutApiResponse,
-			EntireUpdateManyByQueryScoresheetPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet`,
-				method: "PUT",
-				body: queryArg.name,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
 		insertManyScoresheetPost: build.mutation<
 			InsertManyScoresheetPostApiResponse,
 			InsertManyScoresheetPostApiArg
@@ -1601,116 +533,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/scoresheet`,
 				method: "POST",
 				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryScoresheetDelete: build.mutation<
-			DeleteManyByQueryScoresheetDeleteApiResponse,
-			DeleteManyByQueryScoresheetDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateManyByQueryScoresheetPatch: build.mutation<
-			PartialUpdateManyByQueryScoresheetPatchApiResponse,
-			PartialUpdateManyByQueryScoresheetPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet`,
-				method: "PATCH",
-				body: queryArg.name,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		getOneByPrimaryKeyScoresheetIdGet: build.query<
-			GetOneByPrimaryKeyScoresheetIdGetApiResponse,
-			GetOneByPrimaryKeyScoresheetIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet/${queryArg.id}`,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyScoresheetIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyScoresheetIdPutApiResponse,
-			EntireUpdateByPrimaryKeyScoresheetIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.name,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyScoresheetIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyScoresheetIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyScoresheetIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyScoresheetIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoresheet/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.name,
-				params: {
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList
-				}
 			})
 		}),
 		getManyAvailablemovesGet: build.query<
@@ -1762,336 +584,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		entireUpdateManyByQueryAvailablemovesPut: build.mutation<
-			EntireUpdateManyByQueryAvailablemovesPutApiResponse,
-			EntireUpdateManyByQueryAvailablemovesPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryAvailablemovesPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		insertManyAvailablemovesPost: build.mutation<
-			InsertManyAvailablemovesPostApiResponse,
-			InsertManyAvailablemovesPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves`,
-				method: "POST",
-				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryAvailablemovesDelete: build.mutation<
-			DeleteManyByQueryAvailablemovesDeleteApiResponse,
-			DeleteManyByQueryAvailablemovesDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		partialUpdateManyByQueryAvailablemovesPatch: build.mutation<
-			PartialUpdateManyByQueryAvailablemovesPatchApiResponse,
-			PartialUpdateManyByQueryAvailablemovesPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryAvailablemovesPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		getOneByPrimaryKeyAvailablemovesIdGet: build.query<
-			GetOneByPrimaryKeyAvailablemovesIdGetApiResponse,
-			GetOneByPrimaryKeyAvailablemovesIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves/${queryArg.id}`,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyAvailablemovesIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyAvailablemovesIdPutApiResponse,
-			EntireUpdateByPrimaryKeyAvailablemovesIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyAvailablemovesIdPut,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyAvailablemovesIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyAvailablemovesIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablemoves/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					fl_score____from_____comparison_operator:
-						queryArg.flScoreFromComparisonOperator,
-					fl_score____to_____comparison_operator:
-						queryArg.flScoreToComparisonOperator,
-					fl_score____from: queryArg.flScoreFrom,
-					fl_score____to: queryArg.flScoreTo,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
-					fl_score____list: queryArg.flScoreList,
-					rb_score____from_____comparison_operator:
-						queryArg.rbScoreFromComparisonOperator,
-					rb_score____to_____comparison_operator:
-						queryArg.rbScoreToComparisonOperator,
-					rb_score____from: queryArg.rbScoreFrom,
-					rb_score____to: queryArg.rbScoreTo,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
-					rb_score____list: queryArg.rbScoreList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
 		getManyAvailablebonusesGet: build.query<
 			GetManyAvailablebonusesGetApiResponse,
 			GetManyAvailablebonusesGetApiArg
@@ -2128,361 +620,6 @@ const injectedRtkApi = api.injectEndpoints({
 					order_by_columns: queryArg.orderByColumns,
 					join_foreign_table: queryArg.joinForeignTable
 				}
-			})
-		}),
-		entireUpdateManyByQueryAvailablebonusesPut: build.mutation<
-			EntireUpdateManyByQueryAvailablebonusesPutApiResponse,
-			EntireUpdateManyByQueryAvailablebonusesPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryAvailablebonusesPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		insertManyAvailablebonusesPost: build.mutation<
-			InsertManyAvailablebonusesPostApiResponse,
-			InsertManyAvailablebonusesPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses`,
-				method: "POST",
-				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryAvailablebonusesDelete: build.mutation<
-			DeleteManyByQueryAvailablebonusesDeleteApiResponse,
-			DeleteManyByQueryAvailablebonusesDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		partialUpdateManyByQueryAvailablebonusesPatch: build.mutation<
-			PartialUpdateManyByQueryAvailablebonusesPatchApiResponse,
-			PartialUpdateManyByQueryAvailablebonusesPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryAvailablebonusesPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		getOneByPrimaryKeyAvailablebonusesIdGet: build.query<
-			GetOneByPrimaryKeyAvailablebonusesIdGetApiResponse,
-			GetOneByPrimaryKeyAvailablebonusesIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses/${queryArg.id}`,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyAvailablebonusesIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiResponse,
-			EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyAvailablebonusesIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyAvailablebonusesIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/availablebonuses/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch,
-				params: {
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
-					sheet_id____list: queryArg.sheetIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					name____str: queryArg.nameStr,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____list: queryArg.nameList,
-					score____from_____comparison_operator:
-						queryArg.scoreFromComparisonOperator,
-					score____to_____comparison_operator:
-						queryArg.scoreToComparisonOperator,
-					score____from: queryArg.scoreFrom,
-					score____to: queryArg.scoreTo,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
-					score____list: queryArg.scoreList
-				}
-			})
-		}),
-		getManyScoredmovesGet: build.query<
-			GetManyScoredmovesGetApiResponse,
-			GetManyScoredmovesGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryScoredmovesPut: build.mutation<
-			EntireUpdateManyByQueryScoredmovesPutApiResponse,
-			EntireUpdateManyByQueryScoredmovesPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryScoredmovesPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		insertManyScoredmovesPost: build.mutation<
-			InsertManyScoredmovesPostApiResponse,
-			InsertManyScoredmovesPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves`,
-				method: "POST",
-				body: queryArg.insert
 			})
 		}),
 		deleteManyByQueryScoredmovesDelete: build.mutation<
@@ -2532,513 +669,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		partialUpdateManyByQueryScoredmovesPatch: build.mutation<
-			PartialUpdateManyByQueryScoredmovesPatchApiResponse,
-			PartialUpdateManyByQueryScoredmovesPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryScoredmovesPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		getOneByPrimaryKeyScoredmovesIdGet: build.query<
-			GetOneByPrimaryKeyScoredmovesIdGetApiResponse,
-			GetOneByPrimaryKeyScoredmovesIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves/${queryArg.id}`,
-				params: {
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyScoredmovesIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyScoredmovesIdPutApiResponse,
-			EntireUpdateByPrimaryKeyScoredmovesIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyScoredmovesIdPut,
-				params: {
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyScoredmovesIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyScoredmovesIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyScoredmovesIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyScoredmovesIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch,
-				params: {
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					direction____str_____matching_pattern:
-						queryArg.directionStrMatchingPattern,
-					direction____str: queryArg.directionStr,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
-					direction____list: queryArg.directionList
-				}
-			})
-		}),
-		getManyScoredbonusesGet: build.query<
-			GetManyScoredbonusesGetApiResponse,
-			GetManyScoredbonusesGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryScoredbonusesPut: build.mutation<
-			EntireUpdateManyByQueryScoredbonusesPutApiResponse,
-			EntireUpdateManyByQueryScoredbonusesPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryScoredbonusesPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		insertManyScoredbonusesPost: build.mutation<
-			InsertManyScoredbonusesPostApiResponse,
-			InsertManyScoredbonusesPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses`,
-				method: "POST",
-				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryScoredbonusesDelete: build.mutation<
-			DeleteManyByQueryScoredbonusesDeleteApiResponse,
-			DeleteManyByQueryScoredbonusesDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		partialUpdateManyByQueryScoredbonusesPatch: build.mutation<
-			PartialUpdateManyByQueryScoredbonusesPatchApiResponse,
-			PartialUpdateManyByQueryScoredbonusesPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryScoredbonusesPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		getOneByPrimaryKeyScoredbonusesIdGet: build.query<
-			GetOneByPrimaryKeyScoredbonusesIdGetApiResponse,
-			GetOneByPrimaryKeyScoredbonusesIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses/${queryArg.id}`,
-				params: {
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyScoredbonusesIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyScoredbonusesIdPutApiResponse,
-			EntireUpdateByPrimaryKeyScoredbonusesIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyScoredbonusesIdPut,
-				params: {
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyScoredbonusesIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyScoredbonusesIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredbonuses/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch,
-				params: {
-					bonus_id____list_____comparison_operator:
-						queryArg.bonusIdListComparisonOperator,
-					bonus_id____list: queryArg.bonusIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
-					move_id____list: queryArg.moveIdList,
-					judge_id____str_____matching_pattern:
-						queryArg.judgeIdStrMatchingPattern,
-					judge_id____str: queryArg.judgeIdStr,
-					judge_id____list_____comparison_operator:
-						queryArg.judgeIdListComparisonOperator,
-					judge_id____list: queryArg.judgeIdList
-				}
-			})
-		}),
-		getManyAthleteheatGet: build.query<
-			GetManyAthleteheatGetApiResponse,
-			GetManyAthleteheatGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat`,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryAthleteheatPut: build.mutation<
-			EntireUpdateManyByQueryAthleteheatPutApiResponse,
-			EntireUpdateManyByQueryAthleteheatPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryAthleteheatPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList
-				}
-			})
-		}),
 		insertManyAthleteheatPost: build.mutation<
 			InsertManyAthleteheatPostApiResponse,
 			InsertManyAthleteheatPostApiArg
@@ -3047,159 +677,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/athleteheat`,
 				method: "POST",
 				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryAthleteheatDelete: build.mutation<
-			DeleteManyByQueryAthleteheatDeleteApiResponse,
-			DeleteManyByQueryAthleteheatDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList
-				}
-			})
-		}),
-		partialUpdateManyByQueryAthleteheatPatch: build.mutation<
-			PartialUpdateManyByQueryAthleteheatPatchApiResponse,
-			PartialUpdateManyByQueryAthleteheatPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryAthleteheatPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList
-				}
-			})
-		}),
-		getOneByPrimaryKeyAthleteheatIdGet: build.query<
-			GetOneByPrimaryKeyAthleteheatIdGetApiResponse,
-			GetOneByPrimaryKeyAthleteheatIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat/${queryArg.id}`,
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyAthleteheatIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyAthleteheatIdPutApiResponse,
-			EntireUpdateByPrimaryKeyAthleteheatIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyAthleteheatIdPut,
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyAthleteheatIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyAthleteheatIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyAthleteheatIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/athleteheat/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					last_phase_rank____from_____comparison_operator:
-						queryArg.lastPhaseRankFromComparisonOperator,
-					last_phase_rank____to_____comparison_operator:
-						queryArg.lastPhaseRankToComparisonOperator,
-					last_phase_rank____from: queryArg.lastPhaseRankFrom,
-					last_phase_rank____to: queryArg.lastPhaseRankTo,
-					last_phase_rank____list_____comparison_operator:
-						queryArg.lastPhaseRankListComparisonOperator,
-					last_phase_rank____list: queryArg.lastPhaseRankList
-				}
 			})
 		}),
 		partialUpdateOneByPrimaryKeyAthleteheatIdPatch: build.mutation<
@@ -3270,274 +747,6 @@ const injectedRtkApi = api.injectEndpoints({
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns,
 					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateManyByQueryRunStatusPut: build.mutation<
-			EntireUpdateManyByQueryRunStatusPutApiResponse,
-			EntireUpdateManyByQueryRunStatusPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateManyByQueryRunStatusPut,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
-				}
-			})
-		}),
-		insertManyRunStatusPost: build.mutation<
-			InsertManyRunStatusPostApiResponse,
-			InsertManyRunStatusPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status`,
-				method: "POST",
-				body: queryArg.insert
-			})
-		}),
-		deleteManyByQueryRunStatusDelete: build.mutation<
-			DeleteManyByQueryRunStatusDeleteApiResponse,
-			DeleteManyByQueryRunStatusDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status`,
-				method: "DELETE",
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
-				}
-			})
-		}),
-		partialUpdateManyByQueryRunStatusPatch: build.mutation<
-			PartialUpdateManyByQueryRunStatusPatchApiResponse,
-			PartialUpdateManyByQueryRunStatusPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateManyByQueryRunStatusPatch,
-				params: {
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					id____list: queryArg.idList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
-				}
-			})
-		}),
-		getOneByPrimaryKeyRunStatusIdGet: build.query<
-			GetOneByPrimaryKeyRunStatusIdGetApiResponse,
-			GetOneByPrimaryKeyRunStatusIdGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status/${queryArg.id}`,
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		entireUpdateByPrimaryKeyRunStatusIdPut: build.mutation<
-			EntireUpdateByPrimaryKeyRunStatusIdPutApiResponse,
-			EntireUpdateByPrimaryKeyRunStatusIdPutApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status/${queryArg.id}`,
-				method: "PUT",
-				body: queryArg.bodyEntireUpdateByPrimaryKeyRunStatusIdPut,
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
-				}
-			})
-		}),
-		deleteOneByPrimaryKeyRunStatusIdDelete: build.mutation<
-			DeleteOneByPrimaryKeyRunStatusIdDeleteApiResponse,
-			DeleteOneByPrimaryKeyRunStatusIdDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status/${queryArg.id}`,
-				method: "DELETE",
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
-				}
-			})
-		}),
-		partialUpdateOneByPrimaryKeyRunStatusIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyRunStatusIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyRunStatusIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/run_status/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.bodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch,
-				params: {
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
-					heat_id____list: queryArg.heatIdList,
-					run_number____from_____comparison_operator:
-						queryArg.runNumberFromComparisonOperator,
-					run_number____to_____comparison_operator:
-						queryArg.runNumberToComparisonOperator,
-					run_number____from: queryArg.runNumberFrom,
-					run_number____to: queryArg.runNumberTo,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
-					run_number____list: queryArg.runNumberList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
-					phase_id____list: queryArg.phaseIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
-					athlete_id____list: queryArg.athleteIdList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
-					locked____list: queryArg.lockedList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
-					did_not_start____list: queryArg.didNotStartList
 				}
 			})
 		}),
@@ -3626,7 +835,7 @@ export type HeatResultsPdfHeatResultsPdfGetApiArg = {
 	heatId?: string
 }
 export type GetManyCompetitionGetApiResponse =
-	/** status 200 Successful Response */ Competition3260Ae41F75A4Cfb80720666611B97FaFindManyResponseListModel
+	/** status 200 Successful Response */ Competitionae56199B87A3465DBc48E09Db807Ba8DFindManyResponseListModel
 export type GetManyCompetitionGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3646,98 +855,15 @@ export type GetManyCompetitionGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName5Dfd4B89A94C4B149Bbf03D043B29C8F[]
-}
-export type EntireUpdateManyByQueryCompetitionPutApiResponse =
-	/** status 200 Successful Response */ Competition7Bd2C7668F284176A9F8D00A2Fbae673UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryCompetitionPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
+	joinForeignTable?: TableNamefb9173D8Aa894Bd9Be2BA8Badade0F48[]
 }
 export type InsertManyCompetitionPostApiResponse =
-	/** status 201 Successful Response */ Competition7Df6589DB9Da4035Ab7AF84De9B80E69UpsertManyResponseListModel
+	/** status 201 Successful Response */ Competition619B88A7Eb1F4621B1C500E9490D357CUpsertManyResponseListModel
 export type InsertManyCompetitionPostApiArg = {
-	insert: Competitioncf6Db7FcA8D443Ce8B5AF9D6341Eaf6ACreateManyInsertItemRequestModel[]
+	insert: Competition196683Cb9502451894736D3893C35Ef3CreateManyInsertItemRequestModel[]
 }
-export type DeleteManyByQueryCompetitionDeleteApiResponse =
-	/** status 200 Successful Response */ Competition236D687E90304A5CBb53Cd3C9Dcf1F13DeleteManyResponseListModel
-export type DeleteManyByQueryCompetitionDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateManyByQueryCompetitionPatchApiResponse =
-	/** status 200 Successful Response */ Competitionb366916800284Fe48632601D5790Af3APatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryCompetitionPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
-export type GetOneByPrimaryKeyCompetitionIdGetApiResponse =
-	/** status 200 Successful Response */ Competition6D0642B3B4A64A03965F6198F2Db6F2BFindOneResponseListModel
-export type GetOneByPrimaryKeyCompetitionIdGetApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	joinForeignTable?: TableNamef467Bba179924026A2Ef8Db0Ae13Ae54[]
-}
-export type EntireUpdateByPrimaryKeyCompetitionIdPutApiResponse =
-	/** status 200 Successful Response */ Competition2E973Aca861A46C68901F61Aa9933F40UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyCompetitionIdPutApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
-export type DeleteOneByPrimaryKeyCompetitionIdDeleteApiResponse =
-	/** status 200 Successful Response */ Competition251Cc2D7Aa5144569A54752051D6431EDeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyCompetitionIdDeleteApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiResponse =
-	/** status 200 Successful Response */ Competition1D86A61CCf434822B4A691Db7C120846PatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
-export type GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiResponse =
-	/** status 200 Successful Response */ CompetitionIdEventIdbf27B4E2Dfb0496B9FeaDe018Fbb4D1BFindOneResponseListModel
-export type GetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetApiArg =
-	{
-		competitionPkId: string
-		eventPkId: string
-		nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-		nameStr?: string[]
-		nameListComparisonOperator?: ItemComparisonOperators
-		nameList?: string[]
-		joinForeignTable?: TableNamec228Cf0EA5174Fd4833EEb067Fbe346A[]
-	}
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiResponse =
-	/** status 200 Successful Response */ CompetitionIdEventId67930A6EB6744F749F88A4D72505E8DaFindManyResponseListModel
+	/** status 200 Successful Response */ CompetitionIdEventId6E6A924CE63E4Db9B527Ac5B6C401C8EFindManyResponseListModel
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	competitionPkId: string
 	idListComparisonOperator?: ItemComparisonOperators
@@ -3746,10 +872,20 @@ export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableNamefbe923B9447742E7928517D3E6Cbc541[]
+	joinForeignTable?: TableName4C02Fe2600704241Ad62A012D45Cdd9C[]
+}
+export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiResponse =
+	/** status 200 Successful Response */ Competition92377DaeF1C7425897A410753E7560BaPatchOneResponseModelWithValidators
+export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiArg = {
+	id: string
+	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
+	nameStr?: string[]
+	nameListComparisonOperator?: ItemComparisonOperators
+	nameList?: string[]
+	name: string
 }
 export type GetManyEventGetApiResponse =
-	/** status 200 Successful Response */ Event9B28409D862743759Aad51209879D110FindManyResponseListModel
+	/** status 200 Successful Response */ Event03Bb11Cd97Bb471EBcd48586Bdf79D4DFindManyResponseListModel
 export type GetManyEventGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -3771,131 +907,27 @@ export type GetManyEventGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableNamedcbf88B0B8F4462E8970Bcba3B63Df79[]
-}
-export type EntireUpdateManyByQueryEventPutApiResponse =
-	/** status 200 Successful Response */ Event606D89Cf348A4334B701155216B481DfUpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryEventPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyEntireUpdateManyByQueryEventPut: BodyEntireUpdateManyByQueryEventPut
+	joinForeignTable?: TableNamef1Aa3BcfBc6A46FdA7E0102C1873Aeab[]
 }
 export type InsertManyEventPostApiResponse =
-	/** status 201 Successful Response */ Event00727A5E75044D44A3AfF6Ada3B87Ec4UpsertManyResponseListModel
+	/** status 201 Successful Response */ Event6Ab47033E7474D69B4Ce2681Eb31Ce68UpsertManyResponseListModel
 export type InsertManyEventPostApiArg = {
-	insert: Eventd994C54DA91A45D6845BD5C1909A6176CreateManyInsertItemRequestModel[]
+	insert: Event1B707B1C77Cd4Fd79De77D59351D90E8CreateManyInsertItemRequestModel[]
 }
-export type DeleteManyByQueryEventDeleteApiResponse =
-	/** status 200 Successful Response */ Event611B930CC9F94Aa9A669Ea0690F19479DeleteManyResponseListModel
-export type DeleteManyByQueryEventDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateManyByQueryEventPatchApiResponse =
-	/** status 200 Successful Response */ Event8D0931Dd8B14471CA434Ae1B41E05305PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryEventPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyPartialUpdateManyByQueryEventPatch: BodyPartialUpdateManyByQueryEventPatch
-}
-export type GetOneByPrimaryKeyEventIdGetApiResponse =
-	/** status 200 Successful Response */ Eventb33083416A584F8DB104Bb1De6B0Ce8DFindOneResponseListModel
-export type GetOneByPrimaryKeyEventIdGetApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	joinForeignTable?: TableName272Fd2Ab50134A2681023363F068084E[]
-}
-export type EntireUpdateByPrimaryKeyEventIdPutApiResponse =
-	/** status 200 Successful Response */ Eventa277Bc6BC6594B1BA333Db2536C63887UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyEventIdPutApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyEntireUpdateByPrimaryKeyEventIdPut: BodyEntireUpdateByPrimaryKeyEventIdPut
-}
-export type DeleteOneByPrimaryKeyEventIdDeleteApiResponse =
-	/** status 200 Successful Response */ Eventa95E0213346345AeB4Bc97E6B7Ce53AeDeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyEventIdDeleteApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyEventIdPatchApiResponse =
-	/** status 200 Successful Response */ Event33327A5EF69541F883345C812900E73APatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyEventIdPatchApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyPartialUpdateOneByPrimaryKeyEventIdPatch: BodyPartialUpdateOneByPrimaryKeyEventIdPatch
-}
-export type GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiResponse =
-	/** status 200 Successful Response */ EventIdPhaseIdb5Da1A549891488CB21A797D10F6Dd85FindOneResponseListModel
-export type GetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetApiArg = {
+export type GetManyByPkFromCompetitionEventEventPkIdCompetitionGetApiResponse =
+	/** status 200 Successful Response */ EventIdCompetitionIdaffd8F83D95145B092Dd263408806394FindManyResponseListModel
+export type GetManyByPkFromCompetitionEventEventPkIdCompetitionGetApiArg = {
 	eventPkId: string
-	phasePkId: string
+	idListComparisonOperator?: ItemComparisonOperators
+	idList?: string[]
 	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	joinForeignTable?: TableNameff85Ce6857574E1B8420253820Ee2A57[]
+	joinForeignTable?: TableName63F4D9872Bb144F5B6Bd6Aa7A6Bbe6F0[]
 }
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiResponse =
-	/** status 200 Successful Response */ EventIdPhaseId33284Bd9900C4043A31187F714Aa27E1FindManyResponseListModel
+	/** status 200 Successful Response */ EventIdPhaseId0Daee080982A4B1CBcdf7Ec73A600045FindManyResponseListModel
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	eventPkId: string
 	idListComparisonOperator?: ItemComparisonOperators
@@ -3924,158 +956,10 @@ export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	numberOfJudgesList?: number[]
 	scoresheetListComparisonOperator?: ItemComparisonOperators
 	scoresheetList?: string[]
-	joinForeignTable?: TableName3334Dd6815954F02B47C66A337546A8F[]
-}
-export type GetManyPhaseGetApiResponse =
-	/** status 200 Successful Response */ Phasea7791138A5A34879Ad15B855F3289A94FindManyResponseListModel
-export type GetManyPhaseGetApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	limit?: number
-	offset?: number
-	/** <br> support column:
-                <br> ['id', 'event_id', 'name', 'number_of_runs', 'number_of_runs_for_score', 'number_of_judges', 'scoresheet'] <hr><br> support ordering:
-                <br> ['DESC', 'ASC']
-                <hr>
-                <br />example:
-                <br />&emsp;&emsp;any name of column:ASC
-                <br />&emsp;&emsp;any name of column: DESC
-                <br />&emsp;&emsp;any name of column    :    DESC
-                <br />&emsp;&emsp;any name of column (default sort by ASC) */
-	orderByColumns?: string[]
-	joinForeignTable?: TableName0E53B66C6A9F49B68C9EB1C6C7B9D754[]
-}
-export type EntireUpdateManyByQueryPhasePutApiResponse =
-	/** status 200 Successful Response */ Phase3Ed752E3Ba6244Bc8Da1C6Dca3082E24UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryPhasePutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	bodyEntireUpdateManyByQueryPhasePut: BodyEntireUpdateManyByQueryPhasePut
-}
-export type InsertManyPhasePostApiResponse =
-	/** status 201 Successful Response */ Phase307Cc812C5D44E5FAbdc4A492B45076BUpsertManyResponseListModel
-export type InsertManyPhasePostApiArg = {
-	insert: Phase06Deb5BeA98E4853824CE909Bc326589CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryPhaseDeleteApiResponse =
-	/** status 200 Successful Response */ Phase577B6E23C0D741798F769E6962A2Cb67DeleteManyResponseListModel
-export type DeleteManyByQueryPhaseDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-}
-export type PartialUpdateManyByQueryPhasePatchApiResponse =
-	/** status 200 Successful Response */ Phase20866682Dc4041CcA46C238627C44E12PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryPhasePatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	bodyPartialUpdateManyByQueryPhasePatch: BodyPartialUpdateManyByQueryPhasePatch
+	joinForeignTable?: TableName5E3D8015938941F2A92B6F5Ec2469Ed8[]
 }
 export type GetOneByPrimaryKeyPhaseIdGetApiResponse =
-	/** status 200 Successful Response */ Phase117D312B6A514D59A71A1C88Bbe6925DFindOneResponseListModel
+	/** status 200 Successful Response */ Phase41F46431598B451C86F7C2Caec679541FindOneResponseListModel
 export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -4104,73 +988,10 @@ export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	numberOfJudgesList?: number[]
 	scoresheetListComparisonOperator?: ItemComparisonOperators
 	scoresheetList?: string[]
-	joinForeignTable?: TableName4De4C1992C3543B1A8977Cdf35Ed4368[]
-}
-export type EntireUpdateByPrimaryKeyPhaseIdPutApiResponse =
-	/** status 200 Successful Response */ Phase42Cd3F0E889F4Af3A851C83B19Cc70AeUpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyPhaseIdPutApiArg = {
-	id: string
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
-	bodyEntireUpdateByPrimaryKeyPhaseIdPut: BodyEntireUpdateByPrimaryKeyPhaseIdPut
-}
-export type DeleteOneByPrimaryKeyPhaseIdDeleteApiResponse =
-	/** status 200 Successful Response */ Phasea1118001F29A4Bd7Bf0DD1F7D1D47BfeDeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyPhaseIdDeleteApiArg = {
-	id: string
-	eventIdListComparisonOperator?: ItemComparisonOperators
-	eventIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	numberOfRunsFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfRunsForScoreToComparisonOperator?: RangeToComparisonOperators
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreListComparisonOperator?: ItemComparisonOperators
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFromComparisonOperator?: RangeFromComparisonOperators
-	numberOfJudgesToComparisonOperator?: RangeToComparisonOperators
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesListComparisonOperator?: ItemComparisonOperators
-	numberOfJudgesList?: number[]
-	scoresheetListComparisonOperator?: ItemComparisonOperators
-	scoresheetList?: string[]
+	joinForeignTable?: TableNamec446Eb5EC10F4Eab99409A3E8Edf4E0F[]
 }
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiResponse =
-	/** status 200 Successful Response */ Phasebaeb3F66Dc684FbfBec0Ca25640F23DdPatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Phase8E5Ed1Ef3B2448D9B4C3B0C1Ecf2F7D2PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiArg = {
 	id: string
 	eventIdListComparisonOperator?: ItemComparisonOperators
@@ -4201,8 +1022,13 @@ export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiArg = {
 	scoresheetList?: string[]
 	bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch: BodyPartialUpdateOneByPrimaryKeyPhaseIdPatch
 }
+export type InsertManyPhasePostApiResponse =
+	/** status 201 Successful Response */ Phase51F890D646Cc4C2E83B0Aadf0C18Da28UpsertManyResponseListModel
+export type InsertManyPhasePostApiArg = {
+	insert: Phasef53C131977144F6FA64F43A9Df2Ce7CbCreateManyInsertItemRequestModel[]
+}
 export type GetManyHeatGetApiResponse =
-	/** status 200 Successful Response */ Heat5Eb4759947024A78B49FF3Feb2F49D96FindManyResponseListModel
+	/** status 200 Successful Response */ Heatfeedf5078Ba843C6Bed6C94Bb6B7D7BfFindManyResponseListModel
 export type GetManyHeatGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4224,53 +1050,15 @@ export type GetManyHeatGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName7Aa6505E6Def4E62Ba3A9577Ac247011[]
-}
-export type EntireUpdateManyByQueryHeatPutApiResponse =
-	/** status 200 Successful Response */ Heat2E744B48A1A1449CA04E98F1128Bd847UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryHeatPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyEntireUpdateManyByQueryHeatPut: BodyEntireUpdateManyByQueryHeatPut
+	joinForeignTable?: TableNamea1Fc8Fe3351E435E9248F54925D83034[]
 }
 export type InsertManyHeatPostApiResponse =
-	/** status 201 Successful Response */ Heate8Db76811F0442F191A7094B5A6C07CaUpsertManyResponseListModel
+	/** status 201 Successful Response */ Heat2B2Ceab42Fc84A80833ACc8C3187082AUpsertManyResponseListModel
 export type InsertManyHeatPostApiArg = {
-	insert: Heat6D0C27BaA6524A869CefEd2C953774BbCreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryHeatDeleteApiResponse =
-	/** status 200 Successful Response */ Heat76543932E43E43E79220Ab6083Ce8E83DeleteManyResponseListModel
-export type DeleteManyByQueryHeatDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateManyByQueryHeatPatchApiResponse =
-	/** status 200 Successful Response */ Heat994653F024164EefA58C942840Aa12A2PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryHeatPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyPartialUpdateManyByQueryHeatPatch: BodyPartialUpdateManyByQueryHeatPatch
+	insert: Heat916B2Bc8613C4C12AfdcB31874Ebd617CreateManyInsertItemRequestModel[]
 }
 export type GetOneByPrimaryKeyHeatIdGetApiResponse =
-	/** status 200 Successful Response */ Heat4F2Ad88042994866B511E9D691C4Aa10FindOneResponseListModel
+	/** status 200 Successful Response */ Heat80C598A6C8564Ce2B92A0A10Ec9B013DFindOneResponseListModel
 export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	id: string
 	competitionIdListComparisonOperator?: ItemComparisonOperators
@@ -4279,218 +1067,15 @@ export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	nameStr?: string[]
 	nameListComparisonOperator?: ItemComparisonOperators
 	nameList?: string[]
-	joinForeignTable?: TableNameb28B3A2385Ee4397A38594C6Dbdb0Fe6[]
-}
-export type EntireUpdateByPrimaryKeyHeatIdPutApiResponse =
-	/** status 200 Successful Response */ Heat157B25C163B342938F31C6A234975908UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyHeatIdPutApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyEntireUpdateByPrimaryKeyHeatIdPut: BodyEntireUpdateByPrimaryKeyHeatIdPut
-}
-export type DeleteOneByPrimaryKeyHeatIdDeleteApiResponse =
-	/** status 200 Successful Response */ Heatcb33B879Cc8A4B37B1Be5D8135Cad1E6DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyHeatIdDeleteApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
-	/** status 200 Successful Response */ Heat07F8847F55164223B08D1Cea3B62F421PatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
-	id: string
-	competitionIdListComparisonOperator?: ItemComparisonOperators
-	competitionIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	bodyPartialUpdateOneByPrimaryKeyHeatIdPatch: BodyPartialUpdateOneByPrimaryKeyHeatIdPatch
-}
-export type GetManyAthleteGetApiResponse =
-	/** status 200 Successful Response */ Athlete8200Cb22098B40B680048051B676B2A8FindManyResponseListModel
-export type GetManyAthleteGetApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-	limit?: number
-	offset?: number
-	/** <br> support column:
-                <br> ['id', 'first_name', 'last_name', 'affiliation', 'bib'] <hr><br> support ordering:
-                <br> ['DESC', 'ASC']
-                <hr>
-                <br />example:
-                <br />&emsp;&emsp;any name of column:ASC
-                <br />&emsp;&emsp;any name of column: DESC
-                <br />&emsp;&emsp;any name of column    :    DESC
-                <br />&emsp;&emsp;any name of column (default sort by ASC) */
-	orderByColumns?: string[]
-	joinForeignTable?: TableNamec0A433Ea41C74D4E9B2D5A87Bfda543A[]
-}
-export type EntireUpdateManyByQueryAthletePutApiResponse =
-	/** status 200 Successful Response */ Athlete73F9Cbd4A72E448B92B656D413650D22UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryAthletePutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-	bodyEntireUpdateManyByQueryAthletePut: BodyEntireUpdateManyByQueryAthletePut
+	joinForeignTable?: TableName733D60644Be94A2397007451Df2D56Bd[]
 }
 export type InsertManyAthletePostApiResponse =
-	/** status 201 Successful Response */ Athlete1F29Ab00542E4D1CB4C040945A45835AUpsertManyResponseListModel
+	/** status 201 Successful Response */ Athletee9E07Fbe938E404197900F74Ce820F36UpsertManyResponseListModel
 export type InsertManyAthletePostApiArg = {
-	insert: Athleteb8389DeaD9A649F1Ab457E4F75Ff7Ae2CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryAthleteDeleteApiResponse =
-	/** status 200 Successful Response */ Athlete9E112E65F4Dd44E696E7518Fdff8C52ADeleteManyResponseListModel
-export type DeleteManyByQueryAthleteDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-}
-export type PartialUpdateManyByQueryAthletePatchApiResponse =
-	/** status 200 Successful Response */ Athlete25A0839FE29544A1B94B5Da5B19FceedPatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryAthletePatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-	bodyPartialUpdateManyByQueryAthletePatch: BodyPartialUpdateManyByQueryAthletePatch
-}
-export type GetOneByPrimaryKeyAthleteIdGetApiResponse =
-	/** status 200 Successful Response */ Athlete04Dafdf1E37846A5A98970Dc03E04D32FindOneResponseListModel
-export type GetOneByPrimaryKeyAthleteIdGetApiArg = {
-	id: string
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-	joinForeignTable?: TableNameb86B2Ee87188402D8F587Bd8Afa90Ea7[]
-}
-export type EntireUpdateByPrimaryKeyAthleteIdPutApiResponse =
-	/** status 200 Successful Response */ Athlete818F8573984D4Cb9Ae304Ae8De8075D8UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyAthleteIdPutApiArg = {
-	id: string
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
-	bodyEntireUpdateByPrimaryKeyAthleteIdPut: BodyEntireUpdateByPrimaryKeyAthleteIdPut
-}
-export type DeleteOneByPrimaryKeyAthleteIdDeleteApiResponse =
-	/** status 200 Successful Response */ Athlete28C5C066603745C29C97Ca5A84673Ba3DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyAthleteIdDeleteApiArg = {
-	id: string
-	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	firstNameStr?: string[]
-	firstNameListComparisonOperator?: ItemComparisonOperators
-	firstNameList?: string[]
-	lastNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	lastNameStr?: string[]
-	lastNameListComparisonOperator?: ItemComparisonOperators
-	lastNameList?: string[]
-	affiliationStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	affiliationStr?: string[]
-	affiliationListComparisonOperator?: ItemComparisonOperators
-	affiliationList?: string[]
-	bibStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	bibStr?: string[]
-	bibListComparisonOperator?: ItemComparisonOperators
-	bibList?: string[]
+	insert: Athlete62Ff4D4335F54Ef1Af37131F81E44FbdCreateManyInsertItemRequestModel[]
 }
 export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiResponse =
-	/** status 200 Successful Response */ Athletef2641094A7Db4Cd2Bcc9E02D66729895PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athletec33F46Fa904948C397C7C9A9E94D7260PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiArg = {
 	id: string
 	firstNameStrMatchingPattern?: PgsqlMatchingPatternInString[]
@@ -4512,7 +1097,7 @@ export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyAthleteIdPatch: BodyPartialUpdateOneByPrimaryKeyAthleteIdPatch
 }
 export type GetManyScoresheetGetApiResponse =
-	/** status 200 Successful Response */ ScoreSheet26B30278Ab0F47F080711F26Efe6Fbb8FindManyResponseListModel
+	/** status 200 Successful Response */ ScoreSheete88B80A1420843489C88C9758873B037FindManyResponseListModel
 export type GetManyScoresheetGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4533,83 +1118,13 @@ export type GetManyScoresheetGetApiArg = {
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
 }
-export type EntireUpdateManyByQueryScoresheetPutApiResponse =
-	/** status 200 Successful Response */ ScoreSheet5B23Fcb2Bee244E08Ff619485068C84AUpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryScoresheetPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
 export type InsertManyScoresheetPostApiResponse =
-	/** status 201 Successful Response */ ScoreSheetace6303CDd6447B1Abbf4399Eb256D15UpsertManyResponseListModel
+	/** status 201 Successful Response */ ScoreSheet4E365D6725034C7A88FaF58Ce40B0B2CUpsertManyResponseListModel
 export type InsertManyScoresheetPostApiArg = {
-	insert: ScoreSheet5C036998680243Cd9E2010A6Ca6474A6CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryScoresheetDeleteApiResponse =
-	/** status 200 Successful Response */ ScoreSheet3204A2086C1C4459Bc59B80Bf39Cd424DeleteManyResponseListModel
-export type DeleteManyByQueryScoresheetDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateManyByQueryScoresheetPatchApiResponse =
-	/** status 200 Successful Response */ ScoreSheetdd08Be111A3D4027Ab1DFec63B5Cc3C5PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryScoresheetPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
-export type GetOneByPrimaryKeyScoresheetIdGetApiResponse =
-	/** status 200 Successful Response */ ScoreSheeta04781De878D4F5FA6A1C8791Eb6Cfc4FindOneResponseListModel
-export type GetOneByPrimaryKeyScoresheetIdGetApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type EntireUpdateByPrimaryKeyScoresheetIdPutApiResponse =
-	/** status 200 Successful Response */ ScoreSheetd8F02C87914D42CcB71450199E45788BUpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyScoresheetIdPutApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
-}
-export type DeleteOneByPrimaryKeyScoresheetIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoreSheet8Bf68B22647145C58Aee202Fab46A1C1DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyScoresheetIdDeleteApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoreSheetc4D28E8354C94CcaA21557Ab98E7B25DPatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyScoresheetIdPatchApiArg = {
-	id: string
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	name: string
+	insert: ScoreSheeta37Bf246441B41Bc9917A8272F269EccCreateManyInsertItemRequestModel[]
 }
 export type GetManyAvailablemovesGetApiResponse =
-	/** status 200 Successful Response */ AvailableMoves23193161B5A74AdaA390C9C3955A977EFindManyResponseListModel
+	/** status 200 Successful Response */ AvailableMovesc23F55883Cc04035B361D53Ccd6E37CfFindManyResponseListModel
 export type GetManyAvailablemovesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4648,209 +1163,8 @@ export type GetManyAvailablemovesGetApiArg = {
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
 }
-export type EntireUpdateManyByQueryAvailablemovesPutApiResponse =
-	/** status 200 Successful Response */ AvailableMovesf7C98D106E024E90A81B2B24524Ed96BUpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryAvailablemovesPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyEntireUpdateManyByQueryAvailablemovesPut: BodyEntireUpdateManyByQueryAvailablemovesPut
-}
-export type InsertManyAvailablemovesPostApiResponse =
-	/** status 201 Successful Response */ AvailableMoves1394997BDda04Cc08Fb0284046744F61UpsertManyResponseListModel
-export type InsertManyAvailablemovesPostApiArg = {
-	insert: AvailableMoves33Ff719A21D1441F9E2898D4Fb083545CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryAvailablemovesDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableMoves75Ad3C482E3B41898422Bb25C4A11717DeleteManyResponseListModel
-export type DeleteManyByQueryAvailablemovesDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-}
-export type PartialUpdateManyByQueryAvailablemovesPatchApiResponse =
-	/** status 200 Successful Response */ AvailableMoves00Cb67D207F2467DB60A7656Bcc9Fb39PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryAvailablemovesPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyPartialUpdateManyByQueryAvailablemovesPatch: BodyPartialUpdateManyByQueryAvailablemovesPatch
-}
-export type GetOneByPrimaryKeyAvailablemovesIdGetApiResponse =
-	/** status 200 Successful Response */ AvailableMovesef3Fe08E61464Dff8E2DBdd29Fd874CeFindOneResponseListModel
-export type GetOneByPrimaryKeyAvailablemovesIdGetApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-}
-export type EntireUpdateByPrimaryKeyAvailablemovesIdPutApiResponse =
-	/** status 200 Successful Response */ AvailableMoves2E0619A703E0489A820A4189Fbadf4D2UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyAvailablemovesIdPutApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyEntireUpdateByPrimaryKeyAvailablemovesIdPut: BodyEntireUpdateByPrimaryKeyAvailablemovesIdPut
-}
-export type DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableMovesd426F387F4E149029Dad3001D7A76E30DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyAvailablemovesIdDeleteApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiResponse =
-	/** status 200 Successful Response */ AvailableMovese919A0E94E6748C7A0796Abda4Bbbd4FPatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyAvailablemovesIdPatchApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	flScoreFromComparisonOperator?: RangeFromComparisonOperators
-	flScoreToComparisonOperator?: RangeToComparisonOperators
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreListComparisonOperator?: ItemComparisonOperators
-	flScoreList?: number[]
-	rbScoreFromComparisonOperator?: RangeFromComparisonOperators
-	rbScoreToComparisonOperator?: RangeToComparisonOperators
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreListComparisonOperator?: ItemComparisonOperators
-	rbScoreList?: number[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch: BodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch
-}
 export type GetManyAvailablebonusesGetApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses2A72110EA04E4A3BB0960608Ae5C9Db1FindManyResponseListModel
+	/** status 200 Successful Response */ AvailableBonuses3F2Dc1EeF4Ea4E1F9Fdb5657Ca0D4Ed1FindManyResponseListModel
 export type GetManyAvailablebonusesGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -4880,231 +1194,10 @@ export type GetManyAvailablebonusesGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableName8A099B60E09B42159FfaCc53Dd3De68B[]
-}
-export type EntireUpdateManyByQueryAvailablebonusesPutApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses61B3C93ED4824Fdc9Cc210B3A7A58E35UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryAvailablebonusesPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-	bodyEntireUpdateManyByQueryAvailablebonusesPut: BodyEntireUpdateManyByQueryAvailablebonusesPut
-}
-export type InsertManyAvailablebonusesPostApiResponse =
-	/** status 201 Successful Response */ AvailableBonuses9D8752D158Dc424FA9100E7774F8C8C1UpsertManyResponseListModel
-export type InsertManyAvailablebonusesPostApiArg = {
-	insert: AvailableBonuses71A2846E4898472D98C0Defb90Bee347CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryAvailablebonusesDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses61A28869F4Ea4Ba182500D8Bf225EbcdDeleteManyResponseListModel
-export type DeleteManyByQueryAvailablebonusesDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-}
-export type PartialUpdateManyByQueryAvailablebonusesPatchApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesa4C39538Bfa44C7E9Ab085D98B4Bfea4PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryAvailablebonusesPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-	bodyPartialUpdateManyByQueryAvailablebonusesPatch: BodyPartialUpdateManyByQueryAvailablebonusesPatch
-}
-export type GetOneByPrimaryKeyAvailablebonusesIdGetApiResponse =
-	/** status 200 Successful Response */ AvailableBonusesa609F94DBfc04C3EB71B0A593F39Ad5DFindOneResponseListModel
-export type GetOneByPrimaryKeyAvailablebonusesIdGetApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-	joinForeignTable?: TableName8C2Ed2F0Ef5347699Acd1Ab444397Ab5[]
-}
-export type EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses18C5Fca29788471EA67BA66485Ccd81FUpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyAvailablebonusesIdPutApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-	bodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut: BodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut
-}
-export type DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses002E2537Ce6D4020BeacBbe57Fc86Fa3DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyAvailablebonusesIdDeleteApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-}
-export type PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiResponse =
-	/** status 200 Successful Response */ AvailableBonuses78C21F2054604E61Bbc87Ba438C016A7PatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchApiArg = {
-	id: string
-	sheetIdListComparisonOperator?: ItemComparisonOperators
-	sheetIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	nameStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	nameStr?: string[]
-	nameListComparisonOperator?: ItemComparisonOperators
-	nameList?: string[]
-	scoreFromComparisonOperator?: RangeFromComparisonOperators
-	scoreToComparisonOperator?: RangeToComparisonOperators
-	scoreFrom?: number
-	scoreTo?: number
-	scoreListComparisonOperator?: ItemComparisonOperators
-	scoreList?: number[]
-	bodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch: BodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch
-}
-export type GetManyScoredmovesGetApiResponse =
-	/** status 200 Successful Response */ ScoredMovesb4480C4BA630430E8Efe5912Fff44494FindManyResponseListModel
-export type GetManyScoredmovesGetApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	limit?: number
-	offset?: number
-	/** <br> support column:
-                <br> ['id', 'move_id', 'heat_id', 'run_number', 'phase_id', 'judge_id', 'athlete_id', 'direction'] <hr><br> support ordering:
-                <br> ['DESC', 'ASC']
-                <hr>
-                <br />example:
-                <br />&emsp;&emsp;any name of column:ASC
-                <br />&emsp;&emsp;any name of column: DESC
-                <br />&emsp;&emsp;any name of column    :    DESC
-                <br />&emsp;&emsp;any name of column (default sort by ASC) */
-	orderByColumns?: string[]
-	joinForeignTable?: TableNamefc8938CeD4894112Add63D7Da1B9De75[]
-}
-export type EntireUpdateManyByQueryScoredmovesPutApiResponse =
-	/** status 200 Successful Response */ ScoredMoves54033C61Fb844625A13C35D6F2Cae9C5UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryScoredmovesPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyEntireUpdateManyByQueryScoredmovesPut: BodyEntireUpdateManyByQueryScoredmovesPut
-}
-export type InsertManyScoredmovesPostApiResponse =
-	/** status 201 Successful Response */ ScoredMoves8F4B50F96A9D488F97138219039D7A98UpsertManyResponseListModel
-export type InsertManyScoredmovesPostApiArg = {
-	insert: ScoredMoves2663Ebba03C24970B02357Dfef868EeeCreateManyInsertItemRequestModel[]
+	joinForeignTable?: TableNamefae5960FDc7B40D2Af2586Aaed4F7C4D[]
 }
 export type DeleteManyByQueryScoredmovesDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredMovesa08A886E07664DddA4A15F2E511C5A26DeleteManyResponseListModel
+	/** status 200 Successful Response */ ScoredMovesfe6A4Bd9Ef0143349921441Ef85Be848DeleteManyResponseListModel
 export type DeleteManyByQueryScoredmovesDeleteApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -5131,424 +1224,13 @@ export type DeleteManyByQueryScoredmovesDeleteApiArg = {
 	directionListComparisonOperator?: ItemComparisonOperators
 	directionList?: string[]
 }
-export type PartialUpdateManyByQueryScoredmovesPatchApiResponse =
-	/** status 200 Successful Response */ ScoredMoves3Fc02Df407364Fe88A24Bb90Fae356FdPatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryScoredmovesPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyPartialUpdateManyByQueryScoredmovesPatch: BodyPartialUpdateManyByQueryScoredmovesPatch
-}
-export type GetOneByPrimaryKeyScoredmovesIdGetApiResponse =
-	/** status 200 Successful Response */ ScoredMoves37863E01871D44A8901EA3B10E4E50C8FindOneResponseListModel
-export type GetOneByPrimaryKeyScoredmovesIdGetApiArg = {
-	id: string
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	joinForeignTable?: TableName20A586810F874F52B31697B5077C7B60[]
-}
-export type EntireUpdateByPrimaryKeyScoredmovesIdPutApiResponse =
-	/** status 200 Successful Response */ ScoredMoves06452452Fb8F4CdbA20F498Cbe3A23A7UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyScoredmovesIdPutApiArg = {
-	id: string
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyEntireUpdateByPrimaryKeyScoredmovesIdPut: BodyEntireUpdateByPrimaryKeyScoredmovesIdPut
-}
-export type DeleteOneByPrimaryKeyScoredmovesIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredMoves6D8Ef15CF89C456585E2C598Bc8Bb06ADeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyScoredmovesIdDeleteApiArg = {
-	id: string
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoredMoves38107B3106344F0498E860F7E52Bc88CPatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyScoredmovesIdPatchApiArg = {
-	id: string
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	directionStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	directionStr?: string[]
-	directionListComparisonOperator?: ItemComparisonOperators
-	directionList?: string[]
-	bodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch: BodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch
-}
-export type GetManyScoredbonusesGetApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses5739A243868744CeBd6615A38642B9E2FindManyResponseListModel
-export type GetManyScoredbonusesGetApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	limit?: number
-	offset?: number
-	/** <br> support column:
-                <br> ['id', 'bonus_id', 'move_id', 'judge_id'] <hr><br> support ordering:
-                <br> ['DESC', 'ASC']
-                <hr>
-                <br />example:
-                <br />&emsp;&emsp;any name of column:ASC
-                <br />&emsp;&emsp;any name of column: DESC
-                <br />&emsp;&emsp;any name of column    :    DESC
-                <br />&emsp;&emsp;any name of column (default sort by ASC) */
-	orderByColumns?: string[]
-	joinForeignTable?: TableName819C4C7EC3A44Bc18C6CCa228A835608[]
-}
-export type EntireUpdateManyByQueryScoredbonusesPutApiResponse =
-	/** status 200 Successful Response */ ScoredBonusesec704Fd63Bad4361A3Ce68Ed31567093UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryScoredbonusesPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	bodyEntireUpdateManyByQueryScoredbonusesPut: BodyEntireUpdateManyByQueryScoredbonusesPut
-}
-export type InsertManyScoredbonusesPostApiResponse =
-	/** status 201 Successful Response */ ScoredBonuses2Eeeba43Dfe6460A9Fc847Eccb0E0E56UpsertManyResponseListModel
-export type InsertManyScoredbonusesPostApiArg = {
-	insert: ScoredBonuses066Dec05Ee52429F8D99Ba6Eb7686F85CreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryScoredbonusesDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses5C0323Ad946542A6A373Ff99D092B8CfDeleteManyResponseListModel
-export type DeleteManyByQueryScoredbonusesDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-}
-export type PartialUpdateManyByQueryScoredbonusesPatchApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses97E573179Afb4C35B2A8D18F8D841B64PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryScoredbonusesPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	bodyPartialUpdateManyByQueryScoredbonusesPatch: BodyPartialUpdateManyByQueryScoredbonusesPatch
-}
-export type GetOneByPrimaryKeyScoredbonusesIdGetApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses7193347C26B14F369Bd23F18755Fd0E2FindOneResponseListModel
-export type GetOneByPrimaryKeyScoredbonusesIdGetApiArg = {
-	id: string
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	joinForeignTable?: TableNamee7B612A029064Ed1B0Fb1813Fa4C48F1[]
-}
-export type EntireUpdateByPrimaryKeyScoredbonusesIdPutApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses444Fc4B1A11C433D96AcD1489Fbda359UpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyScoredbonusesIdPutApiArg = {
-	id: string
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	bodyEntireUpdateByPrimaryKeyScoredbonusesIdPut: BodyEntireUpdateByPrimaryKeyScoredbonusesIdPut
-}
-export type DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiResponse =
-	/** status 200 Successful Response */ ScoredBonusescd20A5247D484817A4F9Bd202F17929CDeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyScoredbonusesIdDeleteApiArg = {
-	id: string
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-}
-export type PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiResponse =
-	/** status 200 Successful Response */ ScoredBonuses9Abd196AF860444D948E3E0D470C14F8PatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyScoredbonusesIdPatchApiArg = {
-	id: string
-	bonusIdListComparisonOperator?: ItemComparisonOperators
-	bonusIdList?: string[]
-	moveIdListComparisonOperator?: ItemComparisonOperators
-	moveIdList?: string[]
-	judgeIdStrMatchingPattern?: PgsqlMatchingPatternInString[]
-	judgeIdStr?: string[]
-	judgeIdListComparisonOperator?: ItemComparisonOperators
-	judgeIdList?: string[]
-	bodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch: BodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch
-}
-export type GetManyAthleteheatGetApiResponse =
-	/** status 200 Successful Response */ Athleteheat12Ed1407F91C446B8B551A776453CcdfFindManyResponseListModel
-export type GetManyAthleteheatGetApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-	limit?: number
-	offset?: number
-	/** <br> support column:
-                <br> ['id', 'heat_id', 'athlete_id', 'phase_id', 'last_phase_rank'] <hr><br> support ordering:
-                <br> ['DESC', 'ASC']
-                <hr>
-                <br />example:
-                <br />&emsp;&emsp;any name of column:ASC
-                <br />&emsp;&emsp;any name of column: DESC
-                <br />&emsp;&emsp;any name of column    :    DESC
-                <br />&emsp;&emsp;any name of column (default sort by ASC) */
-	orderByColumns?: string[]
-	joinForeignTable?: TableNamefb9F6C2FD35C4Cc99289A3F12E924042[]
-}
-export type EntireUpdateManyByQueryAthleteheatPutApiResponse =
-	/** status 200 Successful Response */ Athleteheat7081E68BEec74Efc8Aa0854Aa6F9D46CUpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryAthleteheatPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-	bodyEntireUpdateManyByQueryAthleteheatPut: BodyEntireUpdateManyByQueryAthleteheatPut
-}
 export type InsertManyAthleteheatPostApiResponse =
-	/** status 201 Successful Response */ Athleteheat65Bfc4A92C4B4Ece84F78A06Ff4C565DUpsertManyResponseListModel
+	/** status 201 Successful Response */ Athleteheat12Ad712C7C3D4Bd1B289C5E9990C8090UpsertManyResponseListModel
 export type InsertManyAthleteheatPostApiArg = {
-	insert: Athleteheat62C4F6F78743450B8651F49Ed1A6854CCreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryAthleteheatDeleteApiResponse =
-	/** status 200 Successful Response */ Athleteheat371D47D8C0944C8E9A65337Fcc7Ecbc9DeleteManyResponseListModel
-export type DeleteManyByQueryAthleteheatDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-}
-export type PartialUpdateManyByQueryAthleteheatPatchApiResponse =
-	/** status 200 Successful Response */ Athleteheatad63Fe4F20834C5FB989Da27Ce02Dc3BPatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryAthleteheatPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-	bodyPartialUpdateManyByQueryAthleteheatPatch: BodyPartialUpdateManyByQueryAthleteheatPatch
-}
-export type GetOneByPrimaryKeyAthleteheatIdGetApiResponse =
-	/** status 200 Successful Response */ Athleteheat058E032CF85F4Da4A337413154386033FindOneResponseListModel
-export type GetOneByPrimaryKeyAthleteheatIdGetApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-	joinForeignTable?: TableNamef85D9241E90A4189B2A320F1C5D77739[]
-}
-export type EntireUpdateByPrimaryKeyAthleteheatIdPutApiResponse =
-	/** status 200 Successful Response */ Athleteheat26545Ef9Ee544Db0818C5Ab0753Ec8CdUpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyAthleteheatIdPutApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
-	bodyEntireUpdateByPrimaryKeyAthleteheatIdPut: BodyEntireUpdateByPrimaryKeyAthleteheatIdPut
-}
-export type DeleteOneByPrimaryKeyAthleteheatIdDeleteApiResponse =
-	/** status 200 Successful Response */ Athleteheatb358Fd407Cad41FdB9Fc51398B14B72CDeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyAthleteheatIdDeleteApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	lastPhaseRankFromComparisonOperator?: RangeFromComparisonOperators
-	lastPhaseRankToComparisonOperator?: RangeToComparisonOperators
-	lastPhaseRankFrom?: number
-	lastPhaseRankTo?: number
-	lastPhaseRankListComparisonOperator?: ItemComparisonOperators
-	lastPhaseRankList?: number[]
+	insert: Athleteheate319A150F37D4240A5484C32510C8402CreateManyInsertItemRequestModel[]
 }
 export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiResponse =
-	/** status 200 Successful Response */ Athleteheat693A3B1E0D9D4Bd8A185Ce7169568279PatchOneResponseModelWithValidators
+	/** status 200 Successful Response */ Athleteheat394169A5C7Ec4E1EAb5C19905Aec6B58PatchOneResponseModelWithValidators
 export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiArg = {
 	id: string
 	heatIdListComparisonOperator?: ItemComparisonOperators
@@ -5566,7 +1248,7 @@ export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiArg = {
 	bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: BodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch
 }
 export type GetManyRunStatusGetApiResponse =
-	/** status 200 Successful Response */ RunStatus3F570Fb9A0B544E5Acee43553E483450FindManyResponseListModel
+	/** status 200 Successful Response */ RunStatusa8363B1E1F17445E85F5E679E1Ad7A96FindManyResponseListModel
 export type GetManyRunStatusGetApiArg = {
 	idListComparisonOperator?: ItemComparisonOperators
 	idList?: string[]
@@ -5598,167 +1280,7 @@ export type GetManyRunStatusGetApiArg = {
                 <br />&emsp;&emsp;any name of column    :    DESC
                 <br />&emsp;&emsp;any name of column (default sort by ASC) */
 	orderByColumns?: string[]
-	joinForeignTable?: TableNamebedffe10E0444A3298BcB2Bb96Ba7B5D[]
-}
-export type EntireUpdateManyByQueryRunStatusPutApiResponse =
-	/** status 200 Successful Response */ RunStatus1F427041938A4A90B1Dd63Ef085382E8UpdateManyResponseListModelWithValidators
-export type EntireUpdateManyByQueryRunStatusPutApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-	bodyEntireUpdateManyByQueryRunStatusPut: BodyEntireUpdateManyByQueryRunStatusPut
-}
-export type InsertManyRunStatusPostApiResponse =
-	/** status 201 Successful Response */ RunStatus51531Aa0Ed264466B9Fc9369D62Faa6EUpsertManyResponseListModel
-export type InsertManyRunStatusPostApiArg = {
-	insert: RunStatuse27D112D76E5428E8F4B666B942A085ECreateManyInsertItemRequestModel[]
-}
-export type DeleteManyByQueryRunStatusDeleteApiResponse =
-	/** status 200 Successful Response */ RunStatus60328Aff19194B8EA9663F443A3Bc35EDeleteManyResponseListModel
-export type DeleteManyByQueryRunStatusDeleteApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-}
-export type PartialUpdateManyByQueryRunStatusPatchApiResponse =
-	/** status 200 Successful Response */ RunStatus2Aeefdd0690C48D58Ba0417E71906A16PatchManyResponseListModelWithValidators
-export type PartialUpdateManyByQueryRunStatusPatchApiArg = {
-	idListComparisonOperator?: ItemComparisonOperators
-	idList?: string[]
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-	bodyPartialUpdateManyByQueryRunStatusPatch: BodyPartialUpdateManyByQueryRunStatusPatch
-}
-export type GetOneByPrimaryKeyRunStatusIdGetApiResponse =
-	/** status 200 Successful Response */ RunStatusd2F4Dc9B4E7C4Bb8A8FdC26091097411FindOneResponseListModel
-export type GetOneByPrimaryKeyRunStatusIdGetApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-	joinForeignTable?: TableName8D83A6E82Ec64E50A32797Bcdd5E7D90[]
-}
-export type EntireUpdateByPrimaryKeyRunStatusIdPutApiResponse =
-	/** status 200 Successful Response */ RunStatus8A5D4073A6304C0CA8Db4D152B3D7FfaUpdateOneResponseModelWithValidators
-export type EntireUpdateByPrimaryKeyRunStatusIdPutApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-	bodyEntireUpdateByPrimaryKeyRunStatusIdPut: BodyEntireUpdateByPrimaryKeyRunStatusIdPut
-}
-export type DeleteOneByPrimaryKeyRunStatusIdDeleteApiResponse =
-	/** status 200 Successful Response */ RunStatus43636C17D533468BB886F8Dc50A46991DeleteOneResponseModelWithValidators
-export type DeleteOneByPrimaryKeyRunStatusIdDeleteApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-}
-export type PartialUpdateOneByPrimaryKeyRunStatusIdPatchApiResponse =
-	/** status 200 Successful Response */ RunStatused4A2268Eb2A4Eb791A80B422A56E14CPatchOneResponseModelWithValidators
-export type PartialUpdateOneByPrimaryKeyRunStatusIdPatchApiArg = {
-	id: string
-	heatIdListComparisonOperator?: ItemComparisonOperators
-	heatIdList?: string[]
-	runNumberFromComparisonOperator?: RangeFromComparisonOperators
-	runNumberToComparisonOperator?: RangeToComparisonOperators
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberListComparisonOperator?: ItemComparisonOperators
-	runNumberList?: number[]
-	phaseIdListComparisonOperator?: ItemComparisonOperators
-	phaseIdList?: string[]
-	athleteIdListComparisonOperator?: ItemComparisonOperators
-	athleteIdList?: string[]
-	lockedListComparisonOperator?: ItemComparisonOperators
-	lockedList?: boolean[]
-	didNotStartListComparisonOperator?: ItemComparisonOperators
-	didNotStartList?: boolean[]
-	bodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch: BodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch
+	joinForeignTable?: TableName7D761Cd6C6724BebB9164C0A06F67722[]
 }
 export type RootGetApiResponse = /** status 200 Successful Response */ any
 export type RootGetApiArg = void
@@ -5906,23 +1428,23 @@ export type AddUpdateScoresheetRequest = {
 	moves?: PydanticAvailableMoves[]
 	bonuses?: PydanticAvailableBonuses[]
 }
-export type ForeignEventc4368A0A3064426A8E80404Bee53E163FindManyResponseItemModelWithValidators =
+export type ForeignEvent8D9E4838E57441C3A7E96C8E018Fc5F9FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEvent4C489F90B50843CfB48399Cf590D05E3GetManyResponseForeignModel =
-	ForeignEventc4368A0A3064426A8E80404Bee53E163FindManyResponseItemModelWithValidators[]
-export type Competition473B012D03E549179Bd09Ea3B860Acf9FindManyResponseItemModelWithValidators =
+export type ForeignEvent152080Ba08934A7282655Ae6546Aaa4CGetManyResponseForeignModel =
+	ForeignEvent8D9E4838E57441C3A7E96C8E018Fc5F9FindManyResponseItemModelWithValidators[]
+export type Competition6Fb0F09CBaf04612Ba0E13583B59151DFindManyResponseItemModelWithValidators =
 	{
-		event_foreign?: ForeignEvent4C489F90B50843CfB48399Cf590D05E3GetManyResponseForeignModel
+		event_foreign?: ForeignEvent152080Ba08934A7282655Ae6546Aaa4CGetManyResponseForeignModel
 		id?: string
 		name?: string
 	}
-export type Competition3260Ae41F75A4Cfb80720666611B97FaFindManyResponseListModel =
+export type Competitionae56199B87A3465DBc48E09Db807Ba8DFindManyResponseListModel =
 
-		| Competition473B012D03E549179Bd09Ea3B860Acf9FindManyResponseItemModelWithValidators[]
+		| Competition6Fb0F09CBaf04612Ba0E13583B59151DFindManyResponseItemModelWithValidators[]
 
 export type ItemComparisonOperators = "Equal" | "Not_equal" | "In" | "Not_in"
 export type PgsqlMatchingPatternInString =
@@ -5937,72 +1459,27 @@ export type PgsqlMatchingPatternInString =
 	| "does_not_match_regex_with_case_insensitive"
 	| "similar_to"
 	| "not_similar_to"
-export type TableName5Dfd4B89A94C4B149Bbf03D043B29C8F = "event"
-export type Competition31Bff12997694Be685E8Ab3106Df2C23UpdateManyResponseModelWithValidators =
+export type TableNamefb9173D8Aa894Bd9Be2BA8Badade0F48 = "event"
+export type Competition039F70Fa1Cd34B8E869E01B585C94D40UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		name: string
 	}
-export type Competition7Bd2C7668F284176A9F8D00A2Fbae673UpdateManyResponseListModelWithValidators =
-	Competition31Bff12997694Be685E8Ab3106Df2C23UpdateManyResponseModelWithValidators[]
-export type Competition509Fa34F64D646528C3CAb46Bfe7503DUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Competition619B88A7Eb1F4621B1C500E9490D357CUpsertManyResponseListModel =
+	Competition039F70Fa1Cd34B8E869E01B585C94D40UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Competition196683Cb9502451894736D3893C35Ef3CreateManyInsertItemRequestModel =
 	{
 		id?: string
 		name: string
 	}
-export type Competition7Df6589DB9Da4035Ab7AF84De9B80E69UpsertManyResponseListModel =
-	Competition509Fa34F64D646528C3CAb46Bfe7503DUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Competitioncf6Db7FcA8D443Ce8B5AF9D6341Eaf6ACreateManyInsertItemRequestModel =
-	{
-		id?: string
-		name: string
-	}
-export type Competition9414371DFebc4B53839D7B1B24088429DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type Competition236D687E90304A5CBb53Cd3C9Dcf1F13DeleteManyResponseListModel =
-	Competition9414371DFebc4B53839D7B1B24088429DeleteManyResponseModelWithValidators[]
-export type Competition600A80D310534Ae99D9FC53Ede1747AaPatchManyResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type Competitionb366916800284Fe48632601D5790Af3APatchManyResponseListModelWithValidators =
-	Competition600A80D310534Ae99D9FC53Ede1747AaPatchManyResponseModelWithValidators[]
-export type Competitioncffa908A4379484097B4Bc7Befa75E7AFindOneResponseModelWithValidators =
-	{
-		event_foreign?: ForeignEvent4C489F90B50843CfB48399Cf590D05E3GetManyResponseForeignModel
-		id?: string
-		name: string
-	}
-export type Competition6D0642B3B4A64A03965F6198F2Db6F2BFindOneResponseListModel =
-	Competitioncffa908A4379484097B4Bc7Befa75E7AFindOneResponseModelWithValidators
-export type TableNamef467Bba179924026A2Ef8Db0Ae13Ae54 = "event"
-export type Competition2E973Aca861A46C68901F61Aa9933F40UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type Competition251Cc2D7Aa5144569A54752051D6431EDeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type Competition1D86A61CCf434822B4A691Db7C120846PatchOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ForeignCompetitionecb53A5F3Cda43A58A4DD8257813Fa72FindManyResponseItemModelWithValidators =
+export type ForeignCompetition38Cd23C5E40B48D698F141E846D4D9AfFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ForeignCompetition76Eae7Bb4B4B47Ff81C92Aebe13963B7GetManyResponseForeignModel =
-	ForeignCompetitionecb53A5F3Cda43A58A4DD8257813Fa72FindManyResponseItemModelWithValidators[]
-export type ForeignPhaseb5F6346E058C4C2687264Adf0A298D95FindManyResponseItemModelWithValidators =
+export type ForeignCompetitionbd94B0DeCf88479297157F474B823D95GetManyResponseForeignModel =
+	ForeignCompetition38Cd23C5E40B48D698F141E846D4D9AfFindManyResponseItemModelWithValidators[]
+export type ForeignPhase20Bb801DDa06409088DaF1295F0Ec30BFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
@@ -6012,59 +1489,34 @@ export type ForeignPhaseb5F6346E058C4C2687264Adf0A298D95FindManyResponseItemMode
 		number_of_judges?: number
 		scoresheet?: string
 	}
-export type ForeignPhase16599A0D38894498926AF3C623Ceb313GetManyResponseForeignModel =
-	ForeignPhaseb5F6346E058C4C2687264Adf0A298D95FindManyResponseItemModelWithValidators[]
-export type CompetitionIdEventIde3A0Bd50578346608507A844F6Bc8E41FindOneResponseModelWithValidators =
+export type ForeignPhase2D218619Aab3457080B7Bf3833B3C0BeGetManyResponseForeignModel =
+	ForeignPhase20Bb801DDa06409088DaF1295F0Ec30BFindManyResponseItemModelWithValidators[]
+export type CompetitionIdEventId51A92B51E03348759C51Aa703644Bc1BFindOneResponseModelWithValidators =
 	{
 		id?: string
 		competition_id: string
 		name: string
-		competition_foreign?: ForeignCompetition76Eae7Bb4B4B47Ff81C92Aebe13963B7GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase16599A0D38894498926AF3C623Ceb313GetManyResponseForeignModel
+		competition_foreign?: ForeignCompetitionbd94B0DeCf88479297157F474B823D95GetManyResponseForeignModel
+		phase_foreign?: ForeignPhase2D218619Aab3457080B7Bf3833B3C0BeGetManyResponseForeignModel
 	}
-export type CompetitionIdEventIdbf27B4E2Dfb0496B9FeaDe018Fbb4D1BFindOneResponseListModel =
-	CompetitionIdEventIde3A0Bd50578346608507A844F6Bc8E41FindOneResponseModelWithValidators
-export type TableNamec228Cf0EA5174Fd4833EEb067Fbe346A = "competition" | "phase"
-export type ForeignCompetitiond0B551Cb9Ec7431FBc5CFf76Af51C0A0FindManyResponseItemModelWithValidators =
+export type CompetitionIdEventId6E6A924CE63E4Db9B527Ac5B6C401C8EFindManyResponseListModel =
+
+		| CompetitionIdEventId51A92B51E03348759C51Aa703644Bc1BFindOneResponseModelWithValidators[]
+
+export type TableName4C02Fe2600704241Ad62A012D45Cdd9C = "competition" | "phase"
+export type Competition92377DaeF1C7425897A410753E7560BaPatchOneResponseModelWithValidators =
 	{
 		id?: string
-		name?: string
-	}
-export type ForeignCompetitiondeaa0265822A414EB67C83A01C4D5566GetManyResponseForeignModel =
-	ForeignCompetitiond0B551Cb9Ec7431FBc5CFf76Af51C0A0FindManyResponseItemModelWithValidators[]
-export type ForeignPhase9917B00FAae14239A893C50637D85328FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet?: string
-	}
-export type ForeignPhase810A63Ce8497466FA0Be02D834F1F976GetManyResponseForeignModel =
-	ForeignPhase9917B00FAae14239A893C50637D85328FindManyResponseItemModelWithValidators[]
-export type CompetitionIdEventIda045F0D1C0D54E1DB0D27B9551E4C6D7FindOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
 		name: string
-		competition_foreign?: ForeignCompetitiondeaa0265822A414EB67C83A01C4D5566GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase810A63Ce8497466FA0Be02D834F1F976GetManyResponseForeignModel
 	}
-export type CompetitionIdEventId67930A6EB6744F749F88A4D72505E8DaFindManyResponseListModel =
-
-		| CompetitionIdEventIda045F0D1C0D54E1DB0D27B9551E4C6D7FindOneResponseModelWithValidators[]
-
-export type TableNamefbe923B9447742E7928517D3E6Cbc541 = "competition" | "phase"
-export type ForeignCompetitionfdf83A15Aa7645Bc9755D4976A7Fd335FindManyResponseItemModelWithValidators =
+export type ForeignCompetitioncb6D8Edc35B84B09919166Aeb1Cbca39FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ForeignCompetition58D27Fa2B0D54C139Ce5605Fbc6Eee2FGetManyResponseForeignModel =
-	ForeignCompetitionfdf83A15Aa7645Bc9755D4976A7Fd335FindManyResponseItemModelWithValidators[]
-export type ForeignPhasef64C89E3Cddf402FA919569668F9D7B9FindManyResponseItemModelWithValidators =
+export type ForeignCompetitionb2C51278Adac4F0E848BF4Ff100Bb4E3GetManyResponseForeignModel =
+	ForeignCompetitioncb6D8Edc35B84B09919166Aeb1Cbca39FindManyResponseItemModelWithValidators[]
+export type ForeignPhase49Ae8079509140AcB2225D925Bf4Fe0AFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
@@ -6074,112 +1526,62 @@ export type ForeignPhasef64C89E3Cddf402FA919569668F9D7B9FindManyResponseItemMode
 		number_of_judges?: number
 		scoresheet?: string
 	}
-export type ForeignPhase7C95C4CaB4894F55A149E8209B12F8B7GetManyResponseForeignModel =
-	ForeignPhasef64C89E3Cddf402FA919569668F9D7B9FindManyResponseItemModelWithValidators[]
-export type Eventba82F588D566480B85E1F63C537Cbd18FindManyResponseItemModelWithValidators =
+export type ForeignPhased4095E60Ce33486AA8B1Ee129Cfb8C8EGetManyResponseForeignModel =
+	ForeignPhase49Ae8079509140AcB2225D925Bf4Fe0AFindManyResponseItemModelWithValidators[]
+export type Eventd63Fd8237B254Cde9D38A3571Eebf02FFindManyResponseItemModelWithValidators =
 	{
-		competition_foreign?: ForeignCompetition58D27Fa2B0D54C139Ce5605Fbc6Eee2FGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase7C95C4CaB4894F55A149E8209B12F8B7GetManyResponseForeignModel
+		competition_foreign?: ForeignCompetitionb2C51278Adac4F0E848BF4Ff100Bb4E3GetManyResponseForeignModel
+		phase_foreign?: ForeignPhased4095E60Ce33486AA8B1Ee129Cfb8C8EGetManyResponseForeignModel
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type Event9B28409D862743759Aad51209879D110FindManyResponseListModel =
-	| Eventba82F588D566480B85E1F63C537Cbd18FindManyResponseItemModelWithValidators[]
+export type Event03Bb11Cd97Bb471EBcd48586Bdf79D4DFindManyResponseListModel =
+	| Eventd63Fd8237B254Cde9D38A3571Eebf02FFindManyResponseItemModelWithValidators[]
 
-export type TableNamedcbf88B0B8F4462E8970Bcba3B63Df79 = "competition" | "phase"
-export type Event3E4F2E71791D4631B2FdCb4E60B6Ef48UpdateManyResponseModelWithValidators =
+export type TableNamef1Aa3BcfBc6A46FdA7E0102C1873Aeab = "competition" | "phase"
+export type Eventd3C7C172A5Ab46E883Ad71C2170Bbdc8UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		competition_id: string
 		name: string
 	}
-export type Event606D89Cf348A4334B701155216B481DfUpdateManyResponseListModelWithValidators =
-	Event3E4F2E71791D4631B2FdCb4E60B6Ef48UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryEventPut = {
-	competition_id: string
-	name: string
-}
-export type Event6Edcd5Fb0Efa4C8193C07203327702F4UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Event6Ab47033E7474D69B4Ce2681Eb31Ce68UpsertManyResponseListModel =
+	Eventd3C7C172A5Ab46E883Ad71C2170Bbdc8UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Event1B707B1C77Cd4Fd79De77D59351D90E8CreateManyInsertItemRequestModel =
 	{
 		id?: string
 		competition_id: string
 		name: string
 	}
-export type Event00727A5E75044D44A3AfF6Ada3B87Ec4UpsertManyResponseListModel =
-	Event6Edcd5Fb0Efa4C8193C07203327702F4UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Eventd994C54DA91A45D6845BD5C1909A6176CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Eventa4E0D01E606C48168279Ad68011976D1DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Event611B930CC9F94Aa9A669Ea0690F19479DeleteManyResponseListModel =
-	Eventa4E0D01E606C48168279Ad68011976D1DeleteManyResponseModelWithValidators[]
-export type Event37E014EcC0B64E8DB9D680Fd2C025D7FPatchManyResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Event8D0931Dd8B14471CA434Ae1B41E05305PatchManyResponseListModelWithValidators =
-	Event37E014EcC0B64E8DB9D680Fd2C025D7FPatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryEventPatch = {
-	competition_id?: string
-	name?: string
-}
-export type Eventff6A3632Ef174B1BA127E9515487578FFindOneResponseModelWithValidators =
-	{
-		competition_foreign?: ForeignCompetition58D27Fa2B0D54C139Ce5605Fbc6Eee2FGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase7C95C4CaB4894F55A149E8209B12F8B7GetManyResponseForeignModel
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Eventb33083416A584F8DB104Bb1De6B0Ce8DFindOneResponseListModel =
-	Eventff6A3632Ef174B1BA127E9515487578FFindOneResponseModelWithValidators
-export type TableName272Fd2Ab50134A2681023363F068084E = "competition" | "phase"
-export type Eventa277Bc6BC6594B1BA333Db2536C63887UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type BodyEntireUpdateByPrimaryKeyEventIdPut = {
-	competition_id: string
-	name: string
-}
-export type Eventa95E0213346345AeB4Bc97E6B7Ce53AeDeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Event33327A5EF69541F883345C812900E73APatchOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type BodyPartialUpdateOneByPrimaryKeyEventIdPatch = {
-	competition_id?: string
-	name?: string
-}
-export type ForeignEventd6A172D0F1604Dcd8A53E16E3Bca18A1FindManyResponseItemModelWithValidators =
+export type ForeignEventd312Fa6EC7D5453797E37A61Dab3A1B5FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEventeb51453743284655Bb7EA3Df68F574CaGetManyResponseForeignModel =
-	ForeignEventd6A172D0F1604Dcd8A53E16E3Bca18A1FindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheatc8889A290614447F8788F4B94687Ecc1FindManyResponseItemModelWithValidators =
+export type ForeignEvent59835C97Ad1F4Ebb9F275546C44F74D6GetManyResponseForeignModel =
+	ForeignEventd312Fa6EC7D5453797E37A61Dab3A1B5FindManyResponseItemModelWithValidators[]
+export type EventIdCompetitionId28C868Fd816E484785905623Ed4D2192FindOneResponseModelWithValidators =
+	{
+		id?: string
+		name: string
+		event_foreign?: ForeignEvent59835C97Ad1F4Ebb9F275546C44F74D6GetManyResponseForeignModel
+	}
+export type EventIdCompetitionIdaffd8F83D95145B092Dd263408806394FindManyResponseListModel =
+
+		| EventIdCompetitionId28C868Fd816E484785905623Ed4D2192FindOneResponseModelWithValidators[]
+
+export type TableName63F4D9872Bb144F5B6Bd6Aa7A6Bbe6F0 = "event"
+export type ForeignEventc56Ebba173C24F448Be77B7B367F5037FindManyResponseItemModelWithValidators =
+	{
+		id?: string
+		competition_id?: string
+		name?: string
+	}
+export type ForeignEvent901C0Ec69A0144EeA0B7E2Af1F7Fe350GetManyResponseForeignModel =
+	ForeignEventc56Ebba173C24F448Be77B7B367F5037FindManyResponseItemModelWithValidators[]
+export type ForeignAthleteheat4E1Ae4Aa94Ab47379D96Dac1A8Fb043AFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		heat_id?: string
@@ -6187,9 +1589,9 @@ export type ForeignAthleteheatc8889A290614447F8788F4B94687Ecc1FindManyResponseIt
 		phase_id?: string
 		last_phase_rank?: number
 	}
-export type ForeignAthleteheat85B42F286A874E8EBfc59C0De944B2E5GetManyResponseForeignModel =
-	ForeignAthleteheatc8889A290614447F8788F4B94687Ecc1FindManyResponseItemModelWithValidators[]
-export type EventIdPhaseIdf6A57176F5524EebB6B1719340B58500FindOneResponseModelWithValidators =
+export type ForeignAthleteheat957C813B0Cac460488C6520C7238Ef1BGetManyResponseForeignModel =
+	ForeignAthleteheat4E1Ae4Aa94Ab47379D96Dac1A8Fb043AFindManyResponseItemModelWithValidators[]
+export type EventIdPhaseId8D74Dae3Dc8D4Ce8Abb43B8D47Ff9652FindOneResponseModelWithValidators =
 	{
 		id?: string
 		event_id: string
@@ -6198,25 +1600,27 @@ export type EventIdPhaseIdf6A57176F5524EebB6B1719340B58500FindOneResponseModelWi
 		number_of_runs_for_score?: number
 		number_of_judges?: number
 		scoresheet: string
-		event_foreign?: ForeignEventeb51453743284655Bb7EA3Df68F574CaGetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheat85B42F286A874E8EBfc59C0De944B2E5GetManyResponseForeignModel
+		event_foreign?: ForeignEvent901C0Ec69A0144EeA0B7E2Af1F7Fe350GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheat957C813B0Cac460488C6520C7238Ef1BGetManyResponseForeignModel
 	}
-export type EventIdPhaseIdb5Da1A549891488CB21A797D10F6Dd85FindOneResponseListModel =
-	EventIdPhaseIdf6A57176F5524EebB6B1719340B58500FindOneResponseModelWithValidators
+export type EventIdPhaseId0Daee080982A4B1CBcdf7Ec73A600045FindManyResponseListModel =
+
+		| EventIdPhaseId8D74Dae3Dc8D4Ce8Abb43B8D47Ff9652FindOneResponseModelWithValidators[]
+
 export type RangeFromComparisonOperators =
 	| "Greater_than"
 	| "Greater_than_or_equal_to"
 export type RangeToComparisonOperators = "Less_than" | "Less_than_or_equal_to"
-export type TableNameff85Ce6857574E1B8420253820Ee2A57 = "event" | "athleteheat"
-export type ForeignEventeee228Bb89514582Aa22Ce7B593594B0FindManyResponseItemModelWithValidators =
+export type TableName5E3D8015938941F2A92B6F5Ec2469Ed8 = "event" | "athleteheat"
+export type ForeignEventb3B3702F4760406CBb18619Dcf2D4E0DFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignEvent28D53D47C761486CB3F9F2F3061B0290GetManyResponseForeignModel =
-	ForeignEventeee228Bb89514582Aa22Ce7B593594B0FindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheatcf59E64EE2094E6BB3C711D2885A960BFindManyResponseItemModelWithValidators =
+export type ForeignEventeda44Bd44172434282F33B9A2522497BGetManyResponseForeignModel =
+	ForeignEventb3B3702F4760406CBb18619Dcf2D4E0DFindManyResponseItemModelWithValidators[]
+export type ForeignAthleteheat57D6B42A135445De9315075C4Ec0E1EbFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		heat_id?: string
@@ -6224,61 +1628,12 @@ export type ForeignAthleteheatcf59E64EE2094E6BB3C711D2885A960BFindManyResponseIt
 		phase_id?: string
 		last_phase_rank?: number
 	}
-export type ForeignAthleteheat5Dc7394770D446B1B0B5A82C99Fc4A28GetManyResponseForeignModel =
-	ForeignAthleteheatcf59E64EE2094E6BB3C711D2885A960BFindManyResponseItemModelWithValidators[]
-export type EventIdPhaseIdd50D21C9B7Cb490DAbcd28F947C4A8BaFindOneResponseModelWithValidators =
+export type ForeignAthleteheatad9739Ab3Bd84474Bdc1619D57272Ba0GetManyResponseForeignModel =
+	ForeignAthleteheat57D6B42A135445De9315075C4Ec0E1EbFindManyResponseItemModelWithValidators[]
+export type Phased4Da34F815964650848F7E837Fc8A382FindOneResponseModelWithValidators =
 	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-		event_foreign?: ForeignEvent28D53D47C761486CB3F9F2F3061B0290GetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheat5Dc7394770D446B1B0B5A82C99Fc4A28GetManyResponseForeignModel
-	}
-export type EventIdPhaseId33284Bd9900C4043A31187F714Aa27E1FindManyResponseListModel =
-
-		| EventIdPhaseIdd50D21C9B7Cb490DAbcd28F947C4A8BaFindOneResponseModelWithValidators[]
-
-export type TableName3334Dd6815954F02B47C66A337546A8F = "event" | "athleteheat"
-export type ForeignEventbcf1D8Aa751946019Cea30223783A13EFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		competition_id?: string
-		name?: string
-	}
-export type ForeignEvent76Fa1Db770Eb44BcBdb1C26B0B8075EcGetManyResponseForeignModel =
-	ForeignEventbcf1D8Aa751946019Cea30223783A13EFindManyResponseItemModelWithValidators[]
-export type ForeignAthleteheat1De7B76AAdcc49E2Af5FFa516C1457C1FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		athlete_id?: string
-		phase_id?: string
-		last_phase_rank?: number
-	}
-export type ForeignAthleteheatbcbc40B936604C4C8C32A03Fdcb72254GetManyResponseForeignModel =
-	ForeignAthleteheat1De7B76AAdcc49E2Af5FFa516C1457C1FindManyResponseItemModelWithValidators[]
-export type Phase499C07C08442447AAf47E818Db9Eaa4FFindManyResponseItemModelWithValidators =
-	{
-		event_foreign?: ForeignEvent76Fa1Db770Eb44BcBdb1C26B0B8075EcGetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheatbcbc40B936604C4C8C32A03Fdcb72254GetManyResponseForeignModel
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet?: string
-	}
-export type Phasea7791138A5A34879Ad15B855F3289A94FindManyResponseListModel =
-	| Phase499C07C08442447AAf47E818Db9Eaa4FFindManyResponseItemModelWithValidators[]
-
-export type TableName0E53B66C6A9F49B68C9EB1C6C7B9D754 = "event" | "athleteheat"
-export type Phasef3B08Ea16B414F14940FAa7C6A06F9C3UpdateManyResponseModelWithValidators =
-	{
+		event_foreign?: ForeignEventeda44Bd44172434282F33B9A2522497BGetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheatad9739Ab3Bd84474Bdc1619D57272Ba0GetManyResponseForeignModel
 		id?: string
 		event_id: string
 		name: string
@@ -6287,114 +1642,10 @@ export type Phasef3B08Ea16B414F14940FAa7C6A06F9C3UpdateManyResponseModelWithVali
 		number_of_judges?: number
 		scoresheet: string
 	}
-export type Phase3Ed752E3Ba6244Bc8Da1C6Dca3082E24UpdateManyResponseListModelWithValidators =
-	Phasef3B08Ea16B414F14940FAa7C6A06F9C3UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryPhasePut = {
-	event_id: string
-	name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	scoresheet: string
-}
-export type Phase614E3484F126425E87C73Ff9758Fa266UpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phase307Cc812C5D44E5FAbdc4A492B45076BUpsertManyResponseListModel =
-	Phase614E3484F126425E87C73Ff9758Fa266UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Phase06Deb5BeA98E4853824CE909Bc326589CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phasec245166FD48A4D3084462F50B6Ca4BbdDeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phase577B6E23C0D741798F769E6962A2Cb67DeleteManyResponseListModel =
-	Phasec245166FD48A4D3084462F50B6Ca4BbdDeleteManyResponseModelWithValidators[]
-export type Phase82C0411440254E1783C5D971A244F695PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phase20866682Dc4041CcA46C238627C44E12PatchManyResponseListModelWithValidators =
-	Phase82C0411440254E1783C5D971A244F695PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryPhasePatch = {
-	event_id?: string
-	name?: string
-	number_of_runs?: number
-	number_of_runs_for_score?: number
-	number_of_judges?: number
-	scoresheet?: string
-}
-export type Phase26E4A6B205334Dc6875803846512F5DdFindOneResponseModelWithValidators =
-	{
-		event_foreign?: ForeignEvent76Fa1Db770Eb44BcBdb1C26B0B8075EcGetManyResponseForeignModel
-		athleteheat_foreign?: ForeignAthleteheatbcbc40B936604C4C8C32A03Fdcb72254GetManyResponseForeignModel
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phase117D312B6A514D59A71A1C88Bbe6925DFindOneResponseListModel =
-	Phase26E4A6B205334Dc6875803846512F5DdFindOneResponseModelWithValidators
-export type TableName4De4C1992C3543B1A8977Cdf35Ed4368 = "event" | "athleteheat"
-export type Phase42Cd3F0E889F4Af3A851C83B19Cc70AeUpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type BodyEntireUpdateByPrimaryKeyPhaseIdPut = {
-	event_id: string
-	name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	scoresheet: string
-}
-export type Phasea1118001F29A4Bd7Bf0DD1F7D1D47BfeDeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		event_id: string
-		name: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet: string
-	}
-export type Phasebaeb3F66Dc684FbfBec0Ca25640F23DdPatchOneResponseModelWithValidators =
+export type Phase41F46431598B451C86F7C2Caec679541FindOneResponseListModel =
+	Phased4Da34F815964650848F7E837Fc8A382FindOneResponseModelWithValidators
+export type TableNamec446Eb5EC10F4Eab99409A3E8Edf4E0F = "event" | "athleteheat"
+export type Phase8E5Ed1Ef3B2448D9B4C3B0C1Ecf2F7D2PatchOneResponseModelWithValidators =
 	{
 		id?: string
 		event_id: string
@@ -6412,7 +1663,29 @@ export type BodyPartialUpdateOneByPrimaryKeyPhaseIdPatch = {
 	number_of_judges?: number
 	scoresheet?: string
 }
-export type ForeignAthleteheat24Bcac61Fb66479BAebb592820A04738FindManyResponseItemModelWithValidators =
+export type Phase46853133399F477F96E5Ba6F6B1Ed6DdUpsertManyResponseItemModelRequireButDefaultWithValidators =
+	{
+		id?: string
+		event_id: string
+		name: string
+		number_of_runs?: number
+		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
+	}
+export type Phase51F890D646Cc4C2E83B0Aadf0C18Da28UpsertManyResponseListModel =
+	Phase46853133399F477F96E5Ba6F6B1Ed6DdUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Phasef53C131977144F6FA64F43A9Df2Ce7CbCreateManyInsertItemRequestModel =
+	{
+		id?: string
+		event_id: string
+		name: string
+		number_of_runs?: number
+		number_of_runs_for_score?: number
+		number_of_judges?: number
+		scoresheet: string
+	}
+export type ForeignAthleteheat6121258BCb1745808D45Faf9511D801EFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		heat_id?: string
@@ -6420,125 +1693,44 @@ export type ForeignAthleteheat24Bcac61Fb66479BAebb592820A04738FindManyResponseIt
 		phase_id?: string
 		last_phase_rank?: number
 	}
-export type ForeignAthleteheat1913D23541644A4AB6Fd11E9E32C8B69GetManyResponseForeignModel =
-	ForeignAthleteheat24Bcac61Fb66479BAebb592820A04738FindManyResponseItemModelWithValidators[]
-export type Heat6F45A5A40F50472DA4F0D714F11E81CaFindManyResponseItemModelWithValidators =
+export type ForeignAthleteheat507D7E0F6D954F59A2797B46Aa26Dd07GetManyResponseForeignModel =
+	ForeignAthleteheat6121258BCb1745808D45Faf9511D801EFindManyResponseItemModelWithValidators[]
+export type Heat1527F5A6838D499B91DcC6Cb1051C4FdFindManyResponseItemModelWithValidators =
 	{
-		athleteheat_foreign?: ForeignAthleteheat1913D23541644A4AB6Fd11E9E32C8B69GetManyResponseForeignModel
+		athleteheat_foreign?: ForeignAthleteheat507D7E0F6D954F59A2797B46Aa26Dd07GetManyResponseForeignModel
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type Heat5Eb4759947024A78B49FF3Feb2F49D96FindManyResponseListModel =
-	| Heat6F45A5A40F50472DA4F0D714F11E81CaFindManyResponseItemModelWithValidators[]
+export type Heatfeedf5078Ba843C6Bed6C94Bb6B7D7BfFindManyResponseListModel =
+	| Heat1527F5A6838D499B91DcC6Cb1051C4FdFindManyResponseItemModelWithValidators[]
 
-export type TableName7Aa6505E6Def4E62Ba3A9577Ac247011 = "athleteheat"
-export type Heat2186003E42C34754Aa1D6172A749423BUpdateManyResponseModelWithValidators =
+export type TableNamea1Fc8Fe3351E435E9248F54925D83034 = "athleteheat"
+export type Heatc5De48CbA2E74C75972353D4Dbca8EadUpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		competition_id: string
 		name: string
 	}
-export type Heat2E744B48A1A1449CA04E98F1128Bd847UpdateManyResponseListModelWithValidators =
-	Heat2186003E42C34754Aa1D6172A749423BUpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryHeatPut = {
-	competition_id: string
-	name: string
-}
-export type Heatc134C9319Aed4F5EA3F8B5E02826E411UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Heat2B2Ceab42Fc84A80833ACc8C3187082AUpsertManyResponseListModel =
+	Heatc5De48CbA2E74C75972353D4Dbca8EadUpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Heat916B2Bc8613C4C12AfdcB31874Ebd617CreateManyInsertItemRequestModel =
 	{
 		id?: string
 		competition_id: string
 		name: string
 	}
-export type Heate8Db76811F0442F191A7094B5A6C07CaUpsertManyResponseListModel =
-	Heatc134C9319Aed4F5EA3F8B5E02826E411UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Heat6D0C27BaA6524A869CefEd2C953774BbCreateManyInsertItemRequestModel =
+export type Heat57216Fe2Dad043A68Dfb9284F533B977FindOneResponseModelWithValidators =
 	{
+		athleteheat_foreign?: ForeignAthleteheat507D7E0F6D954F59A2797B46Aa26Dd07GetManyResponseForeignModel
 		id?: string
 		competition_id: string
 		name: string
 	}
-export type Heat603Ea108Bfb041Df8Fa3B15A105Bb892DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Heat76543932E43E43E79220Ab6083Ce8E83DeleteManyResponseListModel =
-	Heat603Ea108Bfb041Df8Fa3B15A105Bb892DeleteManyResponseModelWithValidators[]
-export type Heat3022Cb2644C44B1B96Ca75E1Cc40A439PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Heat994653F024164EefA58C942840Aa12A2PatchManyResponseListModelWithValidators =
-	Heat3022Cb2644C44B1B96Ca75E1Cc40A439PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryHeatPatch = {
-	competition_id?: string
-	name?: string
-}
-export type Heatb2711996Bf4D4137Bd8D5405A5A9F95EFindOneResponseModelWithValidators =
-	{
-		athleteheat_foreign?: ForeignAthleteheat1913D23541644A4AB6Fd11E9E32C8B69GetManyResponseForeignModel
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Heat4F2Ad88042994866B511E9D691C4Aa10FindOneResponseListModel =
-	Heatb2711996Bf4D4137Bd8D5405A5A9F95EFindOneResponseModelWithValidators
-export type TableNameb28B3A2385Ee4397A38594C6Dbdb0Fe6 = "athleteheat"
-export type Heat157B25C163B342938F31C6A234975908UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type BodyEntireUpdateByPrimaryKeyHeatIdPut = {
-	competition_id: string
-	name: string
-}
-export type Heatcb33B879Cc8A4B37B1Be5D8135Cad1E6DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type Heat07F8847F55164223B08D1Cea3B62F421PatchOneResponseModelWithValidators =
-	{
-		id?: string
-		competition_id: string
-		name: string
-	}
-export type BodyPartialUpdateOneByPrimaryKeyHeatIdPatch = {
-	competition_id?: string
-	name?: string
-}
-export type ForeignAthleteheat032789E53C6345D89Fb896B11Ac836B7FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		athlete_id?: string
-		phase_id?: string
-		last_phase_rank?: number
-	}
-export type ForeignAthleteheat4D51AffcEff0473C9D0F1E49A9D4Fe10GetManyResponseForeignModel =
-	ForeignAthleteheat032789E53C6345D89Fb896B11Ac836B7FindManyResponseItemModelWithValidators[]
-export type Athletef2D4E1A042Dc4Dc7A5E0C80D0995C4CcFindManyResponseItemModelWithValidators =
-	{
-		athleteheat_foreign?: ForeignAthleteheat4D51AffcEff0473C9D0F1E49A9D4Fe10GetManyResponseForeignModel
-		id?: string
-		first_name?: string
-		last_name?: string
-		affiliation?: string
-		bib?: string
-	}
-export type Athlete8200Cb22098B40B680048051B676B2A8FindManyResponseListModel =
-	| Athletef2D4E1A042Dc4Dc7A5E0C80D0995C4CcFindManyResponseItemModelWithValidators[]
-
-export type TableNamec0A433Ea41C74D4E9B2D5A87Bfda543A = "athleteheat"
-export type Athleted2F470D5D02546Bc839DC467F015859CUpdateManyResponseModelWithValidators =
+export type Heat80C598A6C8564Ce2B92A0A10Ec9B013DFindOneResponseListModel =
+	Heat57216Fe2Dad043A68Dfb9284F533B977FindOneResponseModelWithValidators
+export type TableName733D60644Be94A2397007451Df2D56Bd = "athleteheat"
+export type Athlete477382E05C65457886C7640B0E1D9Eb5UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		first_name: string
@@ -6546,15 +1738,9 @@ export type Athleted2F470D5D02546Bc839DC467F015859CUpdateManyResponseModelWithVa
 		affiliation?: string
 		bib: string
 	}
-export type Athlete73F9Cbd4A72E448B92B656D413650D22UpdateManyResponseListModelWithValidators =
-	Athleted2F470D5D02546Bc839DC467F015859CUpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryAthletePut = {
-	first_name: string
-	last_name: string
-	affiliation: string
-	bib: string
-}
-export type Athletea3F318Ec5Aad4555991011C36Ccb5789UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Athletee9E07Fbe938E404197900F74Ce820F36UpsertManyResponseListModel =
+	Athlete477382E05C65457886C7640B0E1D9Eb5UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Athlete62Ff4D4335F54Ef1Af37131F81E44FbdCreateManyInsertItemRequestModel =
 	{
 		id?: string
 		first_name: string
@@ -6562,77 +1748,7 @@ export type Athletea3F318Ec5Aad4555991011C36Ccb5789UpsertManyResponseItemModelRe
 		affiliation?: string
 		bib: string
 	}
-export type Athlete1F29Ab00542E4D1CB4C040945A45835AUpsertManyResponseListModel =
-	Athletea3F318Ec5Aad4555991011C36Ccb5789UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Athleteb8389DeaD9A649F1Ab457E4F75Ff7Ae2CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type Athleteff0Bd0Fd658B49Ec85Db2Fd39Eee6Ba4DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type Athlete9E112E65F4Dd44E696E7518Fdff8C52ADeleteManyResponseListModel =
-	Athleteff0Bd0Fd658B49Ec85Db2Fd39Eee6Ba4DeleteManyResponseModelWithValidators[]
-export type Athlete3Fd606042E00471CAc4B3317A135713APatchManyResponseModelWithValidators =
-	{
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type Athlete25A0839FE29544A1B94B5Da5B19FceedPatchManyResponseListModelWithValidators =
-	Athlete3Fd606042E00471CAc4B3317A135713APatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryAthletePatch = {
-	first_name?: string
-	last_name?: string
-	affiliation?: string
-	bib?: string
-}
-export type Athleteb68F57F1F20A4420Ac30E9Ef50C93E13FindOneResponseModelWithValidators =
-	{
-		athleteheat_foreign?: ForeignAthleteheat4D51AffcEff0473C9D0F1E49A9D4Fe10GetManyResponseForeignModel
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type Athlete04Dafdf1E37846A5A98970Dc03E04D32FindOneResponseListModel =
-	Athleteb68F57F1F20A4420Ac30E9Ef50C93E13FindOneResponseModelWithValidators
-export type TableNameb86B2Ee87188402D8F587Bd8Afa90Ea7 = "athleteheat"
-export type Athlete818F8573984D4Cb9Ae304Ae8De8075D8UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type BodyEntireUpdateByPrimaryKeyAthleteIdPut = {
-	first_name: string
-	last_name: string
-	affiliation: string
-	bib: string
-}
-export type Athlete28C5C066603745C29C97Ca5A84673Ba3DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		first_name: string
-		last_name: string
-		affiliation?: string
-		bib: string
-	}
-export type Athletef2641094A7Db4Cd2Bcc9E02D66729895PatchOneResponseModelWithValidators =
+export type Athletec33F46Fa904948C397C7C9A9E94D7260PatchOneResponseModelWithValidators =
 	{
 		id?: string
 		first_name: string
@@ -6646,71 +1762,28 @@ export type BodyPartialUpdateOneByPrimaryKeyAthleteIdPatch = {
 	affiliation?: string
 	bib?: string
 }
-export type ScoreSheet8C84C55CDa04475AA6F5B4568Bbd4648FindManyResponseItemModelWithValidators =
+export type ScoreSheet22C57C482584431DB9E0Ca4148Cb1534FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ScoreSheet26B30278Ab0F47F080711F26Efe6Fbb8FindManyResponseListModel =
+export type ScoreSheete88B80A1420843489C88C9758873B037FindManyResponseListModel =
 
-		| ScoreSheet8C84C55CDa04475AA6F5B4568Bbd4648FindManyResponseItemModelWithValidators[]
+		| ScoreSheet22C57C482584431DB9E0Ca4148Cb1534FindManyResponseItemModelWithValidators[]
 
-export type ScoreSheet9071961BA01542B2B3025690472Eaed1UpdateManyResponseModelWithValidators =
+export type ScoreSheet812811C959434C8C8380Cb068F9535D6UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		name: string
 	}
-export type ScoreSheet5B23Fcb2Bee244E08Ff619485068C84AUpdateManyResponseListModelWithValidators =
-	ScoreSheet9071961BA01542B2B3025690472Eaed1UpdateManyResponseModelWithValidators[]
-export type ScoreSheetfb277A1E0C704F6D8Ebe3Fdc4F133D0EUpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type ScoreSheet4E365D6725034C7A88FaF58Ce40B0B2CUpsertManyResponseListModel =
+	ScoreSheet812811C959434C8C8380Cb068F9535D6UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type ScoreSheeta37Bf246441B41Bc9917A8272F269EccCreateManyInsertItemRequestModel =
 	{
 		id?: string
 		name: string
 	}
-export type ScoreSheetace6303CDd6447B1Abbf4399Eb256D15UpsertManyResponseListModel =
-	ScoreSheetfb277A1E0C704F6D8Ebe3Fdc4F133D0EUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoreSheet5C036998680243Cd9E2010A6Ca6474A6CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheet7B8D687193Eb49C282FeC0D39Ceb43C5DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheet3204A2086C1C4459Bc59B80Bf39Cd424DeleteManyResponseListModel =
-	ScoreSheet7B8D687193Eb49C282FeC0D39Ceb43C5DeleteManyResponseModelWithValidators[]
-export type ScoreSheetb691Fe52Cced43489449185F6A0B8C67PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheetdd08Be111A3D4027Ab1DFec63B5Cc3C5PatchManyResponseListModelWithValidators =
-	ScoreSheetb691Fe52Cced43489449185F6A0B8C67PatchManyResponseModelWithValidators[]
-export type ScoreSheetc590C7236B704047B9862Eaaa2Fa9344FindOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheeta04781De878D4F5FA6A1C8791Eb6Cfc4FindOneResponseListModel =
-	ScoreSheetc590C7236B704047B9862Eaaa2Fa9344FindOneResponseModelWithValidators
-export type ScoreSheetd8F02C87914D42CcB71450199E45788BUpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheet8Bf68B22647145C58Aee202Fab46A1C1DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type ScoreSheetc4D28E8354C94CcaA21557Ab98E7B25DPatchOneResponseModelWithValidators =
-	{
-		id?: string
-		name: string
-	}
-export type AvailableMoves5Ba451E6A91F4F49A8E968C46E06Cd90FindManyResponseItemModelWithValidators =
+export type AvailableMovese900D6A6B7Cf404FA1Dc754E1Cbba0CdFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -6719,137 +1792,18 @@ export type AvailableMoves5Ba451E6A91F4F49A8E968C46E06Cd90FindManyResponseItemMo
 		rb_score?: number
 		direction?: string
 	}
-export type AvailableMoves23193161B5A74AdaA390C9C3955A977EFindManyResponseListModel =
+export type AvailableMovesc23F55883Cc04035B361D53Ccd6E37CfFindManyResponseListModel =
 
-		| AvailableMoves5Ba451E6A91F4F49A8E968C46E06Cd90FindManyResponseItemModelWithValidators[]
+		| AvailableMovese900D6A6B7Cf404FA1Dc754E1Cbba0CdFindManyResponseItemModelWithValidators[]
 
-export type AvailableMoves7622749C2F6449659C767Ad0Ce900120UpdateManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMovesf7C98D106E024E90A81B2B24524Ed96BUpdateManyResponseListModelWithValidators =
-	AvailableMoves7622749C2F6449659C767Ad0Ce900120UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryAvailablemovesPut = {
-	sheet_id: string
-	name: string
-	fl_score: number
-	rb_score: number
-	direction: string
-}
-export type AvailableMovesba886Fe1Becf45479A9B1B9260A485A0UpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMoves1394997BDda04Cc08Fb0284046744F61UpsertManyResponseListModel =
-	AvailableMovesba886Fe1Becf45479A9B1B9260A485A0UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type AvailableMoves33Ff719A21D1441F9E2898D4Fb083545CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMoves2825C4Cd2Ccc49BfAf07Ba5Db362A6D9DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMoves75Ad3C482E3B41898422Bb25C4A11717DeleteManyResponseListModel =
-	AvailableMoves2825C4Cd2Ccc49BfAf07Ba5Db362A6D9DeleteManyResponseModelWithValidators[]
-export type AvailableMoves7Aac69Cb4F0747E7Be67Ed43Cf43E605PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMoves00Cb67D207F2467DB60A7656Bcc9Fb39PatchManyResponseListModelWithValidators =
-	AvailableMoves7Aac69Cb4F0747E7Be67Ed43Cf43E605PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryAvailablemovesPatch = {
-	sheet_id?: string
-	name?: string
-	fl_score?: number
-	rb_score?: number
-	direction?: string
-}
-export type AvailableMovese821B07547B54823Aea5209Eed0Bac9FFindOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMovesef3Fe08E61464Dff8E2DBdd29Fd874CeFindOneResponseListModel =
-	AvailableMovese821B07547B54823Aea5209Eed0Bac9FFindOneResponseModelWithValidators
-export type AvailableMoves2E0619A703E0489A820A4189Fbadf4D2UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type BodyEntireUpdateByPrimaryKeyAvailablemovesIdPut = {
-	sheet_id: string
-	name: string
-	fl_score: number
-	rb_score: number
-	direction: string
-}
-export type AvailableMovesd426F387F4E149029Dad3001D7A76E30DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type AvailableMovese919A0E94E6748C7A0796Abda4Bbbd4FPatchOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		name: string
-		fl_score: number
-		rb_score: number
-		direction: string
-	}
-export type BodyPartialUpdateOneByPrimaryKeyAvailablemovesIdPatch = {
-	sheet_id?: string
-	name?: string
-	fl_score?: number
-	rb_score?: number
-	direction?: string
-}
-export type ForeignScoreSheet0Cedd4D6Babe46FdBc0F7A0Be632Fbc8FindManyResponseItemModelWithValidators =
+export type ForeignScoreSheet8C64D0Bc57B146BfBbf275F08F24992DFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		name?: string
 	}
-export type ForeignScoreSheetf0D18Cb9D9B44823Bba94E8321988263GetManyResponseForeignModel =
-	ForeignScoreSheet0Cedd4D6Babe46FdBc0F7A0Be632Fbc8FindManyResponseItemModelWithValidators[]
-export type ForeignAvailableMoveseb7A7C35972F429290A416Bcf82E6D1FFindManyResponseItemModelWithValidators =
+export type ForeignScoreSheetb4Ca668B16D84C9BB0949A0C17F01473GetManyResponseForeignModel =
+	ForeignScoreSheet8C64D0Bc57B146BfBbf275F08F24992DFindManyResponseItemModelWithValidators[]
+export type ForeignAvailableMoves38012BcaD5E24B4F82219888471F2792FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		sheet_id?: string
@@ -6858,202 +1812,26 @@ export type ForeignAvailableMoveseb7A7C35972F429290A416Bcf82E6D1FFindManyRespons
 		rb_score?: number
 		direction?: string
 	}
-export type ForeignAvailableMoves9Fe6E39EDe45417CB9C94A25A06Dd8FeGetManyResponseForeignModel =
-	ForeignAvailableMoveseb7A7C35972F429290A416Bcf82E6D1FFindManyResponseItemModelWithValidators[]
-export type AvailableBonuses92316D9056194A76827E7Dcb5Eb4A659FindManyResponseItemModelWithValidators =
+export type ForeignAvailableMoves7207679DC78E4F44A474E2F155D6B269GetManyResponseForeignModel =
+	ForeignAvailableMoves38012BcaD5E24B4F82219888471F2792FindManyResponseItemModelWithValidators[]
+export type AvailableBonuses6F79D5C46F0649BfB089D13Aab8B9684FindManyResponseItemModelWithValidators =
 	{
-		scoreSheet_foreign?: ForeignScoreSheetf0D18Cb9D9B44823Bba94E8321988263GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves9Fe6E39EDe45417CB9C94A25A06Dd8FeGetManyResponseForeignModel
+		scoreSheet_foreign?: ForeignScoreSheetb4Ca668B16D84C9BB0949A0C17F01473GetManyResponseForeignModel
+		availableMoves_foreign?: ForeignAvailableMoves7207679DC78E4F44A474E2F155D6B269GetManyResponseForeignModel
 		id?: string
 		sheet_id?: string
 		move_id?: string
 		name?: string
 		score?: number
 	}
-export type AvailableBonuses2A72110EA04E4A3BB0960608Ae5C9Db1FindManyResponseListModel =
+export type AvailableBonuses3F2Dc1EeF4Ea4E1F9Fdb5657Ca0D4Ed1FindManyResponseListModel =
 
-		| AvailableBonuses92316D9056194A76827E7Dcb5Eb4A659FindManyResponseItemModelWithValidators[]
+		| AvailableBonuses6F79D5C46F0649BfB089D13Aab8B9684FindManyResponseItemModelWithValidators[]
 
-export type TableName8A099B60E09B42159FfaCc53Dd3De68B =
+export type TableNamefae5960FDc7B40D2Af2586Aaed4F7C4D =
 	| "scoreSheet"
 	| "availableMoves"
-export type AvailableBonuses123C6B71048B4C5EAe8D5604A46925D3UpdateManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonuses61B3C93ED4824Fdc9Cc210B3A7A58E35UpdateManyResponseListModelWithValidators =
-	AvailableBonuses123C6B71048B4C5EAe8D5604A46925D3UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryAvailablebonusesPut = {
-	sheet_id: string
-	move_id: string
-	name: string
-	score: number
-}
-export type AvailableBonusesf99984914Ef840B68EedBdf7C747472AUpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonuses9D8752D158Dc424FA9100E7774F8C8C1UpsertManyResponseListModel =
-	AvailableBonusesf99984914Ef840B68EedBdf7C747472AUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type AvailableBonuses71A2846E4898472D98C0Defb90Bee347CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonuses6A0520455E82450E9Bb31287284C6F4FDeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonuses61A28869F4Ea4Ba182500D8Bf225EbcdDeleteManyResponseListModel =
-	AvailableBonuses6A0520455E82450E9Bb31287284C6F4FDeleteManyResponseModelWithValidators[]
-export type AvailableBonuses45B2A9B318894F3DAbb189E6Bb07B782PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonusesa4C39538Bfa44C7E9Ab085D98B4Bfea4PatchManyResponseListModelWithValidators =
-	AvailableBonuses45B2A9B318894F3DAbb189E6Bb07B782PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryAvailablebonusesPatch = {
-	sheet_id?: string
-	move_id?: string
-	name?: string
-	score?: number
-}
-export type AvailableBonuses8E4A657EA0D5409492744435617E757AFindOneResponseModelWithValidators =
-	{
-		scoreSheet_foreign?: ForeignScoreSheetf0D18Cb9D9B44823Bba94E8321988263GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves9Fe6E39EDe45417CB9C94A25A06Dd8FeGetManyResponseForeignModel
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonusesa609F94DBfc04C3EB71B0A593F39Ad5DFindOneResponseListModel =
-	AvailableBonuses8E4A657EA0D5409492744435617E757AFindOneResponseModelWithValidators
-export type TableName8C2Ed2F0Ef5347699Acd1Ab444397Ab5 =
-	| "scoreSheet"
-	| "availableMoves"
-export type AvailableBonuses18C5Fca29788471EA67BA66485Ccd81FUpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type BodyEntireUpdateByPrimaryKeyAvailablebonusesIdPut = {
-	sheet_id: string
-	move_id: string
-	name: string
-	score: number
-}
-export type AvailableBonuses002E2537Ce6D4020BeacBbe57Fc86Fa3DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type AvailableBonuses78C21F2054604E61Bbc87Ba438C016A7PatchOneResponseModelWithValidators =
-	{
-		id?: string
-		sheet_id: string
-		move_id: string
-		name: string
-		score: number
-	}
-export type BodyPartialUpdateOneByPrimaryKeyAvailablebonusesIdPatch = {
-	sheet_id?: string
-	move_id?: string
-	name?: string
-	score?: number
-}
-export type ForeignHeat903224115D244BcbA8996Bc08Ab82E58FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		competition_id?: string
-		name?: string
-	}
-export type ForeignHeat4E7D29F062C54Bdd9DaeCe3F445Ed662GetManyResponseForeignModel =
-	ForeignHeat903224115D244BcbA8996Bc08Ab82E58FindManyResponseItemModelWithValidators[]
-export type ForeignPhase2093Aeff1E504B1AA1F1A9A11B7Eaaa5FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet?: string
-	}
-export type ForeignPhase519D1C2E689F4F71888AB2073Ce26E24GetManyResponseForeignModel =
-	ForeignPhase2093Aeff1E504B1AA1F1A9A11B7Eaaa5FindManyResponseItemModelWithValidators[]
-export type ForeignAvailableMoves49988F4A00564D8BA66159Cc6B5Aedc0FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		sheet_id?: string
-		name?: string
-		fl_score?: number
-		rb_score?: number
-		direction?: string
-	}
-export type ForeignAvailableMoves2Db4E0D1Ee0C49E8B47FB0E5E8815A1EGetManyResponseForeignModel =
-	ForeignAvailableMoves49988F4A00564D8BA66159Cc6B5Aedc0FindManyResponseItemModelWithValidators[]
-export type ForeignAthlete9C9Dbc28B4D64857984515C641F7B90AFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		first_name?: string
-		last_name?: string
-		affiliation?: string
-		bib?: string
-	}
-export type ForeignAthlete499D9A2927154A73B88689E2320E3971GetManyResponseForeignModel =
-	ForeignAthlete9C9Dbc28B4D64857984515C641F7B90AFindManyResponseItemModelWithValidators[]
-export type ScoredMovese633Bc0864E84531864839878Cd7A7B2FindManyResponseItemModelWithValidators =
-	{
-		heat_foreign?: ForeignHeat4E7D29F062C54Bdd9DaeCe3F445Ed662GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase519D1C2E689F4F71888AB2073Ce26E24GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves2Db4E0D1Ee0C49E8B47FB0E5E8815A1EGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete499D9A2927154A73B88689E2320E3971GetManyResponseForeignModel
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number?: number
-		phase_id?: string
-		judge_id?: string
-		athlete_id?: string
-		direction?: string
-	}
-export type ScoredMovesb4480C4BA630430E8Efe5912Fff44494FindManyResponseListModel =
-
-		| ScoredMovese633Bc0864E84531864839878Cd7A7B2FindManyResponseItemModelWithValidators[]
-
-export type TableNamefc8938CeD4894112Add63D7Da1B9De75 =
-	| "heat"
-	| "phase"
-	| "availableMoves"
-	| "athlete"
-export type ScoredMoves31764F7CE14B43Cc8C4AB51Dd3E3Ae19UpdateManyResponseModelWithValidators =
+export type ScoredMovese98B1B15Bc78403FBa2D98B0Db46A6D1DeleteManyResponseModelWithValidators =
 	{
 		id?: string
 		move_id?: string
@@ -7064,336 +1842,9 @@ export type ScoredMoves31764F7CE14B43Cc8C4AB51Dd3E3Ae19UpdateManyResponseModelWi
 		athlete_id: string
 		direction: string
 	}
-export type ScoredMoves54033C61Fb844625A13C35D6F2Cae9C5UpdateManyResponseListModelWithValidators =
-	ScoredMoves31764F7CE14B43Cc8C4AB51Dd3E3Ae19UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryScoredmovesPut = {
-	move_id: string
-	heat_id: string
-	run_number: number
-	phase_id: string
-	judge_id: string
-	athlete_id: string
-	direction: string
-}
-export type ScoredMoves0B7983537F56425092E1D1Ff55F1Fcb7UpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMoves8F4B50F96A9D488F97138219039D7A98UpsertManyResponseListModel =
-	ScoredMoves0B7983537F56425092E1D1Ff55F1Fcb7UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoredMoves2663Ebba03C24970B02357Dfef868EeeCreateManyInsertItemRequestModel =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMovesb0Bbce541B03431796240F8Fae6Cb056DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMovesa08A886E07664DddA4A15F2E511C5A26DeleteManyResponseListModel =
-	ScoredMovesb0Bbce541B03431796240F8Fae6Cb056DeleteManyResponseModelWithValidators[]
-export type ScoredMovesd209465F22Ab4A3198E0F42Bc9Cd00AbPatchManyResponseModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMoves3Fc02Df407364Fe88A24Bb90Fae356FdPatchManyResponseListModelWithValidators =
-	ScoredMovesd209465F22Ab4A3198E0F42Bc9Cd00AbPatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryScoredmovesPatch = {
-	move_id?: string
-	heat_id?: string
-	run_number?: number
-	phase_id?: string
-	judge_id?: string
-	athlete_id?: string
-	direction?: string
-}
-export type ScoredMovesff60E10F16994B8596BdF6127Df5Dd04FindOneResponseModelWithValidators =
-	{
-		heat_foreign?: ForeignHeat4E7D29F062C54Bdd9DaeCe3F445Ed662GetManyResponseForeignModel
-		phase_foreign?: ForeignPhase519D1C2E689F4F71888AB2073Ce26E24GetManyResponseForeignModel
-		availableMoves_foreign?: ForeignAvailableMoves2Db4E0D1Ee0C49E8B47FB0E5E8815A1EGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete499D9A2927154A73B88689E2320E3971GetManyResponseForeignModel
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMoves37863E01871D44A8901EA3B10E4E50C8FindOneResponseListModel =
-	ScoredMovesff60E10F16994B8596BdF6127Df5Dd04FindOneResponseModelWithValidators
-export type TableName20A586810F874F52B31697B5077C7B60 =
-	| "heat"
-	| "phase"
-	| "availableMoves"
-	| "athlete"
-export type ScoredMoves06452452Fb8F4CdbA20F498Cbe3A23A7UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type BodyEntireUpdateByPrimaryKeyScoredmovesIdPut = {
-	move_id: string
-	heat_id: string
-	run_number: number
-	phase_id: string
-	judge_id: string
-	athlete_id: string
-	direction: string
-}
-export type ScoredMoves6D8Ef15CF89C456585E2C598Bc8Bb06ADeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type ScoredMoves38107B3106344F0498E860F7E52Bc88CPatchOneResponseModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		judge_id: string
-		athlete_id: string
-		direction: string
-	}
-export type BodyPartialUpdateOneByPrimaryKeyScoredmovesIdPatch = {
-	move_id?: string
-	heat_id?: string
-	run_number?: number
-	phase_id?: string
-	judge_id?: string
-	athlete_id?: string
-	direction?: string
-}
-export type ForeignAvailableBonuses51Cd112603C748FaAbe5Ee403581229DFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		sheet_id?: string
-		move_id?: string
-		name?: string
-		score?: number
-	}
-export type ForeignAvailableBonuses3F6A9Dcc0A8D42B88A4FF0E9A98Bc28AGetManyResponseForeignModel =
-	ForeignAvailableBonuses51Cd112603C748FaAbe5Ee403581229DFindManyResponseItemModelWithValidators[]
-export type ForeignScoredMoves5724Dfe2D9A64Dd6A2De3924E59881FbFindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		move_id?: string
-		heat_id?: string
-		run_number?: number
-		phase_id?: string
-		judge_id?: string
-		athlete_id?: string
-		direction?: string
-	}
-export type ForeignScoredMovesc33189A6688243338Aee8D9488915111GetManyResponseForeignModel =
-	ForeignScoredMoves5724Dfe2D9A64Dd6A2De3924E59881FbFindManyResponseItemModelWithValidators[]
-export type ScoredBonuses3B57677506214E61AbeaE9Fa75B78857FindManyResponseItemModelWithValidators =
-	{
-		availableBonuses_foreign?: ForeignAvailableBonuses3F6A9Dcc0A8D42B88A4FF0E9A98Bc28AGetManyResponseForeignModel
-		scoredMoves_foreign?: ForeignScoredMovesc33189A6688243338Aee8D9488915111GetManyResponseForeignModel
-		id?: string
-		bonus_id?: string
-		move_id?: string
-		judge_id?: string
-	}
-export type ScoredBonuses5739A243868744CeBd6615A38642B9E2FindManyResponseListModel =
-
-		| ScoredBonuses3B57677506214E61AbeaE9Fa75B78857FindManyResponseItemModelWithValidators[]
-
-export type TableName819C4C7EC3A44Bc18C6CCa228A835608 =
-	| "availableBonuses"
-	| "scoredMoves"
-export type ScoredBonusesd8138Eb74A5F4Fd292468414D5Eed691UpdateManyResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonusesec704Fd63Bad4361A3Ce68Ed31567093UpdateManyResponseListModelWithValidators =
-	ScoredBonusesd8138Eb74A5F4Fd292468414D5Eed691UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryScoredbonusesPut = {
-	bonus_id: string
-	move_id: string
-	judge_id: string
-}
-export type ScoredBonuses62Afe29855Dc4Bf997C4Cc3Ee5482F9EUpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses2Eeeba43Dfe6460A9Fc847Eccb0E0E56UpsertManyResponseListModel =
-	ScoredBonuses62Afe29855Dc4Bf997C4Cc3Ee5482F9EUpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type ScoredBonuses066Dec05Ee52429F8D99Ba6Eb7686F85CreateManyInsertItemRequestModel =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses87B5013C7D8A4004B4BdFb8Bd51F5A54DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses5C0323Ad946542A6A373Ff99D092B8CfDeleteManyResponseListModel =
-	ScoredBonuses87B5013C7D8A4004B4BdFb8Bd51F5A54DeleteManyResponseModelWithValidators[]
-export type ScoredBonuses5203A446Bf7D4Ac8827FC4853D55878BPatchManyResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses97E573179Afb4C35B2A8D18F8D841B64PatchManyResponseListModelWithValidators =
-	ScoredBonuses5203A446Bf7D4Ac8827FC4853D55878BPatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryScoredbonusesPatch = {
-	bonus_id?: string
-	move_id?: string
-	judge_id?: string
-}
-export type ScoredBonusesbf00986560Fc47Ab9F38B0772824Ab50FindOneResponseModelWithValidators =
-	{
-		availableBonuses_foreign?: ForeignAvailableBonuses3F6A9Dcc0A8D42B88A4FF0E9A98Bc28AGetManyResponseForeignModel
-		scoredMoves_foreign?: ForeignScoredMovesc33189A6688243338Aee8D9488915111GetManyResponseForeignModel
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses7193347C26B14F369Bd23F18755Fd0E2FindOneResponseListModel =
-	ScoredBonusesbf00986560Fc47Ab9F38B0772824Ab50FindOneResponseModelWithValidators
-export type TableNamee7B612A029064Ed1B0Fb1813Fa4C48F1 =
-	| "availableBonuses"
-	| "scoredMoves"
-export type ScoredBonuses444Fc4B1A11C433D96AcD1489Fbda359UpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type BodyEntireUpdateByPrimaryKeyScoredbonusesIdPut = {
-	bonus_id: string
-	move_id: string
-	judge_id: string
-}
-export type ScoredBonusescd20A5247D484817A4F9Bd202F17929CDeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type ScoredBonuses9Abd196AF860444D948E3E0D470C14F8PatchOneResponseModelWithValidators =
-	{
-		id?: string
-		bonus_id: string
-		move_id: string
-		judge_id: string
-	}
-export type BodyPartialUpdateOneByPrimaryKeyScoredbonusesIdPatch = {
-	bonus_id?: string
-	move_id?: string
-	judge_id?: string
-}
-export type ForeignHeatdb116C199E7F4F749A9214C32Aedf2B5FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		competition_id?: string
-		name?: string
-	}
-export type ForeignHeat39A6Aad64A074De68C418161054089FbGetManyResponseForeignModel =
-	ForeignHeatdb116C199E7F4F749A9214C32Aedf2B5FindManyResponseItemModelWithValidators[]
-export type ForeignAthlete34Db9C7FAebb4AdbB7F1C793A8711723FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		first_name?: string
-		last_name?: string
-		affiliation?: string
-		bib?: string
-	}
-export type ForeignAthlete7E033A9D346D4E94A1F29685436D3B8DGetManyResponseForeignModel =
-	ForeignAthlete34Db9C7FAebb4AdbB7F1C793A8711723FindManyResponseItemModelWithValidators[]
-export type ForeignPhase7D9Ae5D7756C46F5A2CaA1Cc22Fc7E45FindManyResponseItemModelWithValidators =
-	{
-		id?: string
-		event_id?: string
-		name?: string
-		number_of_runs?: number
-		number_of_runs_for_score?: number
-		number_of_judges?: number
-		scoresheet?: string
-	}
-export type ForeignPhase57113E2F56Bd4801B33D9E78E63E3224GetManyResponseForeignModel =
-	ForeignPhase7D9Ae5D7756C46F5A2CaA1Cc22Fc7E45FindManyResponseItemModelWithValidators[]
-export type Athleteheatde153B6B44944899966159B3Ec8E477CFindManyResponseItemModelWithValidators =
-	{
-		heat_foreign?: ForeignHeat39A6Aad64A074De68C418161054089FbGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete7E033A9D346D4E94A1F29685436D3B8DGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase57113E2F56Bd4801B33D9E78E63E3224GetManyResponseForeignModel
-		id?: string
-		heat_id?: string
-		athlete_id?: string
-		phase_id?: string
-		last_phase_rank?: number
-	}
-export type Athleteheat12Ed1407F91C446B8B551A776453CcdfFindManyResponseListModel =
-
-		| Athleteheatde153B6B44944899966159B3Ec8E477CFindManyResponseItemModelWithValidators[]
-
-export type TableNamefb9F6C2FD35C4Cc99289A3F12E924042 =
-	| "heat"
-	| "athlete"
-	| "phase"
-export type Athleteheatd07Ddad342714D019918B68Fccea8709UpdateManyResponseModelWithValidators =
+export type ScoredMovesfe6A4Bd9Ef0143349921441Ef85Be848DeleteManyResponseListModel =
+	ScoredMovese98B1B15Bc78403FBa2D98B0Db46A6D1DeleteManyResponseModelWithValidators[]
+export type Athleteheat68F48D7B0C334715B097B3Dacc08D086UpsertManyResponseItemModelRequireButDefaultWithValidators =
 	{
 		id?: string
 		heat_id: string
@@ -7401,15 +1852,9 @@ export type Athleteheatd07Ddad342714D019918B68Fccea8709UpdateManyResponseModelWi
 		phase_id: string
 		last_phase_rank?: number
 	}
-export type Athleteheat7081E68BEec74Efc8Aa0854Aa6F9D46CUpdateManyResponseListModelWithValidators =
-	Athleteheatd07Ddad342714D019918B68Fccea8709UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryAthleteheatPut = {
-	heat_id: string
-	athlete_id: string
-	phase_id: string
-	last_phase_rank: number
-}
-export type Athleteheat13B87C8D2Db64Ae9A6D6Cc66802De487UpsertManyResponseItemModelRequireButDefaultWithValidators =
+export type Athleteheat12Ad712C7C3D4Bd1B289C5E9990C8090UpsertManyResponseListModel =
+	Athleteheat68F48D7B0C334715B097B3Dacc08D086UpsertManyResponseItemModelRequireButDefaultWithValidators[]
+export type Athleteheate319A150F37D4240A5484C32510C8402CreateManyInsertItemRequestModel =
 	{
 		id?: string
 		heat_id: string
@@ -7417,82 +1862,7 @@ export type Athleteheat13B87C8D2Db64Ae9A6D6Cc66802De487UpsertManyResponseItemMod
 		phase_id: string
 		last_phase_rank?: number
 	}
-export type Athleteheat65Bfc4A92C4B4Ece84F78A06Ff4C565DUpsertManyResponseListModel =
-	Athleteheat13B87C8D2Db64Ae9A6D6Cc66802De487UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type Athleteheat62C4F6F78743450B8651F49Ed1A6854CCreateManyInsertItemRequestModel =
-	{
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type Athleteheat04D8D38D1Aa64908B122Cd6905510769DeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type Athleteheat371D47D8C0944C8E9A65337Fcc7Ecbc9DeleteManyResponseListModel =
-	Athleteheat04D8D38D1Aa64908B122Cd6905510769DeleteManyResponseModelWithValidators[]
-export type Athleteheatb46675A8Cf494133B60ED6Be5B11D095PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type Athleteheatad63Fe4F20834C5FB989Da27Ce02Dc3BPatchManyResponseListModelWithValidators =
-	Athleteheatb46675A8Cf494133B60ED6Be5B11D095PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryAthleteheatPatch = {
-	heat_id?: string
-	athlete_id?: string
-	phase_id?: string
-	last_phase_rank?: number
-}
-export type Athleteheateff88Aea9978405081A26E112E6A7232FindOneResponseModelWithValidators =
-	{
-		heat_foreign?: ForeignHeat39A6Aad64A074De68C418161054089FbGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete7E033A9D346D4E94A1F29685436D3B8DGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase57113E2F56Bd4801B33D9E78E63E3224GetManyResponseForeignModel
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type Athleteheat058E032CF85F4Da4A337413154386033FindOneResponseListModel =
-	Athleteheateff88Aea9978405081A26E112E6A7232FindOneResponseModelWithValidators
-export type TableNamef85D9241E90A4189B2A320F1C5D77739 =
-	| "heat"
-	| "athlete"
-	| "phase"
-export type Athleteheat26545Ef9Ee544Db0818C5Ab0753Ec8CdUpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type BodyEntireUpdateByPrimaryKeyAthleteheatIdPut = {
-	heat_id: string
-	athlete_id: string
-	phase_id: string
-	last_phase_rank: number
-}
-export type Athleteheatb358Fd407Cad41FdB9Fc51398B14B72CDeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		heat_id: string
-		athlete_id: string
-		phase_id: string
-		last_phase_rank?: number
-	}
-export type Athleteheat693A3B1E0D9D4Bd8A185Ce7169568279PatchOneResponseModelWithValidators =
+export type Athleteheat394169A5C7Ec4E1EAb5C19905Aec6B58PatchOneResponseModelWithValidators =
 	{
 		id?: string
 		heat_id: string
@@ -7506,15 +1876,15 @@ export type BodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch = {
 	phase_id?: string
 	last_phase_rank?: number
 }
-export type ForeignHeat157Bcf47972C41Cf8D2F55843Caab673FindManyResponseItemModelWithValidators =
+export type ForeignHeat02F0325A511A45D082555D15Dfe4B726FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		competition_id?: string
 		name?: string
 	}
-export type ForeignHeat9D7B66E0Bcad4E679C8FA6D2C33B937DGetManyResponseForeignModel =
-	ForeignHeat157Bcf47972C41Cf8D2F55843Caab673FindManyResponseItemModelWithValidators[]
-export type ForeignPhase61E0C0Bd916D46F4B3Fd8E1A951E4B0EFindManyResponseItemModelWithValidators =
+export type ForeignHeat6308E34524Fa40469846596F544B2978GetManyResponseForeignModel =
+	ForeignHeat02F0325A511A45D082555D15Dfe4B726FindManyResponseItemModelWithValidators[]
+export type ForeignPhasecf52964F6Afd488D944372Baf02D7DbcFindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		event_id?: string
@@ -7524,9 +1894,9 @@ export type ForeignPhase61E0C0Bd916D46F4B3Fd8E1A951E4B0EFindManyResponseItemMode
 		number_of_judges?: number
 		scoresheet?: string
 	}
-export type ForeignPhase378D34EeB4Ac44368D4D6331Edf85CbaGetManyResponseForeignModel =
-	ForeignPhase61E0C0Bd916D46F4B3Fd8E1A951E4B0EFindManyResponseItemModelWithValidators[]
-export type ForeignAthlete3Cbcae47257D438FB767Ffc46Da33Bd5FindManyResponseItemModelWithValidators =
+export type ForeignPhasea7A1780646444C6D99E655F66E57B1F0GetManyResponseForeignModel =
+	ForeignPhasecf52964F6Afd488D944372Baf02D7DbcFindManyResponseItemModelWithValidators[]
+export type ForeignAthlete4C1Db454Dd364Bc49707Cf316725Cdf0FindManyResponseItemModelWithValidators =
 	{
 		id?: string
 		first_name?: string
@@ -7534,13 +1904,13 @@ export type ForeignAthlete3Cbcae47257D438FB767Ffc46Da33Bd5FindManyResponseItemMo
 		affiliation?: string
 		bib?: string
 	}
-export type ForeignAthlete8C710718E7A74638Bdbd7C92576F0Aa5GetManyResponseForeignModel =
-	ForeignAthlete3Cbcae47257D438FB767Ffc46Da33Bd5FindManyResponseItemModelWithValidators[]
-export type RunStatus047A148E4Cbd459786Aa5Fd9Ad2358BcFindManyResponseItemModelWithValidators =
+export type ForeignAthlete434D3B59E04E4Ffd98F9Bead06Bcfac9GetManyResponseForeignModel =
+	ForeignAthlete4C1Db454Dd364Bc49707Cf316725Cdf0FindManyResponseItemModelWithValidators[]
+export type RunStatuse897F9407Dde4439A42530C5873F18D0FindManyResponseItemModelWithValidators =
 	{
-		heat_foreign?: ForeignHeat9D7B66E0Bcad4E679C8FA6D2C33B937DGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase378D34EeB4Ac44368D4D6331Edf85CbaGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete8C710718E7A74638Bdbd7C92576F0Aa5GetManyResponseForeignModel
+		heat_foreign?: ForeignHeat6308E34524Fa40469846596F544B2978GetManyResponseForeignModel
+		phase_foreign?: ForeignPhasea7A1780646444C6D99E655F66E57B1F0GetManyResponseForeignModel
+		athlete_foreign?: ForeignAthlete434D3B59E04E4Ffd98F9Bead06Bcfac9GetManyResponseForeignModel
 		id?: string
 		heat_id?: string
 		run_number?: number
@@ -7549,153 +1919,14 @@ export type RunStatus047A148E4Cbd459786Aa5Fd9Ad2358BcFindManyResponseItemModelWi
 		locked?: boolean
 		did_not_start?: boolean
 	}
-export type RunStatus3F570Fb9A0B544E5Acee43553E483450FindManyResponseListModel =
+export type RunStatusa8363B1E1F17445E85F5E679E1Ad7A96FindManyResponseListModel =
 
-		| RunStatus047A148E4Cbd459786Aa5Fd9Ad2358BcFindManyResponseItemModelWithValidators[]
+		| RunStatuse897F9407Dde4439A42530C5873F18D0FindManyResponseItemModelWithValidators[]
 
-export type TableNamebedffe10E0444A3298BcB2Bb96Ba7B5D =
+export type TableName7D761Cd6C6724BebB9164C0A06F67722 =
 	| "heat"
 	| "phase"
 	| "athlete"
-export type RunStatus29Fd41C6A09C4F0AA02D500053E5D4E9UpdateManyResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatus1F427041938A4A90B1Dd63Ef085382E8UpdateManyResponseListModelWithValidators =
-	RunStatus29Fd41C6A09C4F0AA02D500053E5D4E9UpdateManyResponseModelWithValidators[]
-export type BodyEntireUpdateManyByQueryRunStatusPut = {
-	heat_id: string
-	run_number: number
-	phase_id: string
-	athlete_id: string
-	locked: boolean
-	did_not_start: boolean
-}
-export type RunStatusef6E1F2E77854Ca3B03F0A6006434478UpsertManyResponseItemModelRequireButDefaultWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatus51531Aa0Ed264466B9Fc9369D62Faa6EUpsertManyResponseListModel =
-	RunStatusef6E1F2E77854Ca3B03F0A6006434478UpsertManyResponseItemModelRequireButDefaultWithValidators[]
-export type RunStatuse27D112D76E5428E8F4B666B942A085ECreateManyInsertItemRequestModel =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatus0Aacc149550D4AaeAe65Eb51D586FbcbDeleteManyResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatus60328Aff19194B8EA9663F443A3Bc35EDeleteManyResponseListModel =
-	RunStatus0Aacc149550D4AaeAe65Eb51D586FbcbDeleteManyResponseModelWithValidators[]
-export type RunStatus91B4E2AcF7724Bbf8D30E2132619A929PatchManyResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatus2Aeefdd0690C48D58Ba0417E71906A16PatchManyResponseListModelWithValidators =
-	RunStatus91B4E2AcF7724Bbf8D30E2132619A929PatchManyResponseModelWithValidators[]
-export type BodyPartialUpdateManyByQueryRunStatusPatch = {
-	heat_id?: string
-	run_number?: number
-	phase_id?: string
-	athlete_id?: string
-	locked?: boolean
-	did_not_start?: boolean
-}
-export type RunStatusf00847F6B96948Ee94E3696E01685939FindOneResponseModelWithValidators =
-	{
-		heat_foreign?: ForeignHeat9D7B66E0Bcad4E679C8FA6D2C33B937DGetManyResponseForeignModel
-		phase_foreign?: ForeignPhase378D34EeB4Ac44368D4D6331Edf85CbaGetManyResponseForeignModel
-		athlete_foreign?: ForeignAthlete8C710718E7A74638Bdbd7C92576F0Aa5GetManyResponseForeignModel
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatusd2F4Dc9B4E7C4Bb8A8FdC26091097411FindOneResponseListModel =
-	RunStatusf00847F6B96948Ee94E3696E01685939FindOneResponseModelWithValidators
-export type TableName8D83A6E82Ec64E50A32797Bcdd5E7D90 =
-	| "heat"
-	| "phase"
-	| "athlete"
-export type RunStatus8A5D4073A6304C0CA8Db4D152B3D7FfaUpdateOneResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type BodyEntireUpdateByPrimaryKeyRunStatusIdPut = {
-	heat_id: string
-	run_number: number
-	phase_id: string
-	athlete_id: string
-	locked: boolean
-	did_not_start: boolean
-}
-export type RunStatus43636C17D533468BB886F8Dc50A46991DeleteOneResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type RunStatused4A2268Eb2A4Eb791A80B422A56E14CPatchOneResponseModelWithValidators =
-	{
-		id?: string
-		heat_id?: string
-		run_number: number
-		phase_id: string
-		athlete_id: string
-		locked: boolean
-		did_not_start: boolean
-	}
-export type BodyPartialUpdateOneByPrimaryKeyRunStatusIdPatch = {
-	heat_id?: string
-	run_number?: number
-	phase_id?: string
-	athlete_id?: string
-	locked?: boolean
-	did_not_start?: boolean
-}
 export const {
 	useUploadCompetitionManagementUploadPostMutation,
 	usePromotePhaseCompetitionManagementPromotePhasePostMutation,
@@ -7710,117 +1941,29 @@ export const {
 	useHeatPdfHeatPdfGetQuery,
 	useHeatResultsPdfHeatResultsPdfGetQuery,
 	useGetManyCompetitionGetQuery,
-	useEntireUpdateManyByQueryCompetitionPutMutation,
 	useInsertManyCompetitionPostMutation,
-	useDeleteManyByQueryCompetitionDeleteMutation,
-	usePartialUpdateManyByQueryCompetitionPatchMutation,
-	useGetOneByPrimaryKeyCompetitionIdGetQuery,
-	useEntireUpdateByPrimaryKeyCompetitionIdPutMutation,
-	useDeleteOneByPrimaryKeyCompetitionIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyCompetitionIdPatchMutation,
-	useGetOneByPkFromEventCompetitionCompetitionPkIdEventEventPkIdGetQuery,
 	useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery,
+	usePartialUpdateOneByPrimaryKeyCompetitionIdPatchMutation,
 	useGetManyEventGetQuery,
-	useEntireUpdateManyByQueryEventPutMutation,
 	useInsertManyEventPostMutation,
-	useDeleteManyByQueryEventDeleteMutation,
-	usePartialUpdateManyByQueryEventPatchMutation,
-	useGetOneByPrimaryKeyEventIdGetQuery,
-	useEntireUpdateByPrimaryKeyEventIdPutMutation,
-	useDeleteOneByPrimaryKeyEventIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyEventIdPatchMutation,
-	useGetOneByPkFromPhaseEventEventPkIdPhasePhasePkIdGetQuery,
+	useGetManyByPkFromCompetitionEventEventPkIdCompetitionGetQuery,
 	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
-	useGetManyPhaseGetQuery,
-	useEntireUpdateManyByQueryPhasePutMutation,
-	useInsertManyPhasePostMutation,
-	useDeleteManyByQueryPhaseDeleteMutation,
-	usePartialUpdateManyByQueryPhasePatchMutation,
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
-	useEntireUpdateByPrimaryKeyPhaseIdPutMutation,
-	useDeleteOneByPrimaryKeyPhaseIdDeleteMutation,
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation,
+	useInsertManyPhasePostMutation,
 	useGetManyHeatGetQuery,
-	useEntireUpdateManyByQueryHeatPutMutation,
 	useInsertManyHeatPostMutation,
-	useDeleteManyByQueryHeatDeleteMutation,
-	usePartialUpdateManyByQueryHeatPatchMutation,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
-	useEntireUpdateByPrimaryKeyHeatIdPutMutation,
-	useDeleteOneByPrimaryKeyHeatIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation,
-	useGetManyAthleteGetQuery,
-	useEntireUpdateManyByQueryAthletePutMutation,
 	useInsertManyAthletePostMutation,
-	useDeleteManyByQueryAthleteDeleteMutation,
-	usePartialUpdateManyByQueryAthletePatchMutation,
-	useGetOneByPrimaryKeyAthleteIdGetQuery,
-	useEntireUpdateByPrimaryKeyAthleteIdPutMutation,
-	useDeleteOneByPrimaryKeyAthleteIdDeleteMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation,
 	useGetManyScoresheetGetQuery,
-	useEntireUpdateManyByQueryScoresheetPutMutation,
 	useInsertManyScoresheetPostMutation,
-	useDeleteManyByQueryScoresheetDeleteMutation,
-	usePartialUpdateManyByQueryScoresheetPatchMutation,
-	useGetOneByPrimaryKeyScoresheetIdGetQuery,
-	useEntireUpdateByPrimaryKeyScoresheetIdPutMutation,
-	useDeleteOneByPrimaryKeyScoresheetIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyScoresheetIdPatchMutation,
 	useGetManyAvailablemovesGetQuery,
-	useEntireUpdateManyByQueryAvailablemovesPutMutation,
-	useInsertManyAvailablemovesPostMutation,
-	useDeleteManyByQueryAvailablemovesDeleteMutation,
-	usePartialUpdateManyByQueryAvailablemovesPatchMutation,
-	useGetOneByPrimaryKeyAvailablemovesIdGetQuery,
-	useEntireUpdateByPrimaryKeyAvailablemovesIdPutMutation,
-	useDeleteOneByPrimaryKeyAvailablemovesIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyAvailablemovesIdPatchMutation,
 	useGetManyAvailablebonusesGetQuery,
-	useEntireUpdateManyByQueryAvailablebonusesPutMutation,
-	useInsertManyAvailablebonusesPostMutation,
-	useDeleteManyByQueryAvailablebonusesDeleteMutation,
-	usePartialUpdateManyByQueryAvailablebonusesPatchMutation,
-	useGetOneByPrimaryKeyAvailablebonusesIdGetQuery,
-	useEntireUpdateByPrimaryKeyAvailablebonusesIdPutMutation,
-	useDeleteOneByPrimaryKeyAvailablebonusesIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyAvailablebonusesIdPatchMutation,
-	useGetManyScoredmovesGetQuery,
-	useEntireUpdateManyByQueryScoredmovesPutMutation,
-	useInsertManyScoredmovesPostMutation,
 	useDeleteManyByQueryScoredmovesDeleteMutation,
-	usePartialUpdateManyByQueryScoredmovesPatchMutation,
-	useGetOneByPrimaryKeyScoredmovesIdGetQuery,
-	useEntireUpdateByPrimaryKeyScoredmovesIdPutMutation,
-	useDeleteOneByPrimaryKeyScoredmovesIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyScoredmovesIdPatchMutation,
-	useGetManyScoredbonusesGetQuery,
-	useEntireUpdateManyByQueryScoredbonusesPutMutation,
-	useInsertManyScoredbonusesPostMutation,
-	useDeleteManyByQueryScoredbonusesDeleteMutation,
-	usePartialUpdateManyByQueryScoredbonusesPatchMutation,
-	useGetOneByPrimaryKeyScoredbonusesIdGetQuery,
-	useEntireUpdateByPrimaryKeyScoredbonusesIdPutMutation,
-	useDeleteOneByPrimaryKeyScoredbonusesIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyScoredbonusesIdPatchMutation,
-	useGetManyAthleteheatGetQuery,
-	useEntireUpdateManyByQueryAthleteheatPutMutation,
 	useInsertManyAthleteheatPostMutation,
-	useDeleteManyByQueryAthleteheatDeleteMutation,
-	usePartialUpdateManyByQueryAthleteheatPatchMutation,
-	useGetOneByPrimaryKeyAthleteheatIdGetQuery,
-	useEntireUpdateByPrimaryKeyAthleteheatIdPutMutation,
-	useDeleteOneByPrimaryKeyAthleteheatIdDeleteMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation,
 	useGetManyRunStatusGetQuery,
-	useEntireUpdateManyByQueryRunStatusPutMutation,
-	useInsertManyRunStatusPostMutation,
-	useDeleteManyByQueryRunStatusDeleteMutation,
-	usePartialUpdateManyByQueryRunStatusPatchMutation,
-	useGetOneByPrimaryKeyRunStatusIdGetQuery,
-	useEntireUpdateByPrimaryKeyRunStatusIdPutMutation,
-	useDeleteOneByPrimaryKeyRunStatusIdDeleteMutation,
-	usePartialUpdateOneByPrimaryKeyRunStatusIdPatchMutation,
 	useRootGetQuery,
 	useHealthCheckHealthGetQuery
 } = injectedRtkApi
