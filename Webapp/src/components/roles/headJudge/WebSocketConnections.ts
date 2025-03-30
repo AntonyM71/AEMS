@@ -14,6 +14,6 @@ const websocketURL = () => {
 export const connectWebRunStatusSocket = (): WebSocket =>
 	new WebSocket(`${websocketURL().toString()}run_status`)
 export const connectTimerSocket = (): WebSocket =>
-	new WebSocket(`${websocketURL().toString()}broadcast/timer`)
+	new WebSocket(`${websocketURL().toString()}timer`)
 export const connectCurrentScoreStatusSocket = (): WebSocket =>
 	new WebSocket(`${websocketURL().toString()}current_scores`)
