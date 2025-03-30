@@ -21,7 +21,7 @@ export const FinalScore = ({
 			height: "100%"
 		}}
 	>
-		<Typography variant="h6">Score:</Typography>
+		<Typography variant="h5">Score:</Typography>
 		<div style={{ textAlign: "center" }}>
 			<Typography
 				variant="h5"

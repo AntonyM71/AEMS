@@ -27,11 +27,18 @@ import { PaddlerSelector } from "../scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../scribe/InfoBar/Runselector"
 import { FinalScore } from "./FinalScore"
 import { JudgeCard } from "./JudgeCard"
+import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
 import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
 // eslint-disable-next-line complexity
-export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
+export default ({
+	changeRunStatus = true,
+	showLiveTimer = false
+}: {
+	changeRunStatus?: boolean
+	showLiveTimer?: boolean
+}) => {
 	const [scoresOpen, setScoresOpen] = useState(false)
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 	const handleScoresOpen = () => setScoresOpen(true)
@@ -317,6 +324,11 @@ export default ({ changeRunStatus = true }: { changeRunStatus?: boolean }) => {
 									? "Unset DNS"
 									: "SET DNS"}
 							</Button>
+						</Grid>
+					)}
+					{showLiveTimer && (
+						<Grid size={1}>
+							<LiveTimer />
 						</Grid>
 					)}
 					<Grid size={1}>

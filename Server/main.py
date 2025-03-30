@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 
 from app.autogenEndpoints import (
     crud_route_athlete,
@@ -26,6 +27,7 @@ from app.autogenEndpoints import (
     crud_route_scoredmoves,
     crud_route_scoresheet,
 )
+from app.broadcastEndpoints import broadcast_router
 from app.common.websocket_handler import broadcast
 from app.competition_management.competition_management import (
     competition_management_router,
@@ -40,14 +42,16 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(
+    bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
 access_logger = structlog.stdlib.get_logger("api.access")
 
 
-app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect])
+app = FastAPI(on_startup=[broadcast.connect],
+              on_shutdown=[broadcast.disconnect])
 [
     app.include_router(i)
     for i in [
@@ -55,6 +59,7 @@ app = FastAPI(on_startup=[broadcast.connect], on_shutdown=[broadcast.disconnect]
         scoring_router,
         scoresheet_router,
         pdf_router,
+        broadcast_router,
         crud_route_competition,
         crud_route_event,
         crud_route_event_by_phase,
@@ -103,8 +108,9 @@ async def logging_middleware(
     try:
         response = await call_next(request)
     except Exception:
-        # TODO: Validate that we don't swallow exceptions (unit test?)
-        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
+
+        structlog.stdlib.get_logger(
+            "api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time
@@ -136,15 +142,17 @@ async def root() -> dict[str, str]:
     return {"message": "Go to /docs to see the swagger documentation"}
 
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 async def health_check(db: Session = Depends(get_transaction_session)) -> dict:
     try:
         # Execute a simple query to check the database connection
-        result = db.execute("SELECT 1")
+        result = db.execute(text("SELECT 1"))
         if result.scalar() == 1:
             return {"status": "healthy"}
     except SQLAlchemyError:
         return {"status": "unhealthy"}
+    # Ensure a default return value in case of unexpected issues
+    return {"status": "unknown"}
 
 
 app.add_middleware(

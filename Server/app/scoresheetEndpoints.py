@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from db.client import get_transaction_session
 from db.models import AvailableBonuses, AvailableMoves
 
-scoresheet_router = APIRouter()
+scoresheet_router = APIRouter(tags=["scoresheet"])
 
 
 class PydanticAvailableMoves(BaseModel):

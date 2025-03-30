@@ -16,7 +16,7 @@ from app.scoring.customScoringEndpoints import (
 from db.client import get_transaction_session
 from db.models import Competition, Event, Heat, Phase
 
-pdf_router = APIRouter()
+pdf_router = APIRouter(tags=["pdf generation"])
 
 
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
@@ -89,7 +89,8 @@ async def phase_pdf(
             new_y="NEXT",
         )
         with pdf.table(
-            col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
+            col_widths=(1, 3, 3, 1, 3, *
+                        ([2] * phase_metadata.number_of_runs), 2, 3)
         ) as table:
             header = table.row()
             header.cell("Rank")
@@ -132,7 +133,8 @@ async def phase_pdf(
                     )
                 pdf.set_font(style="B" if all(runs_confirmed) else "I")
 
-                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+                row.cell(
+                    f"{athlete.total_score:.2f}" if athlete.total_score else "0")
                 pdf.set_font("")
                 row.cell(athlete.reason if athlete.reason else "")
 
@@ -164,7 +166,8 @@ async def heat_pdf(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
         heat_info_list = (
-            db.query(Heat).where(Heat.id.in_(heat_ids)).order_by(Heat.name.asc()).all()
+            db.query(Heat).where(Heat.id.in_(heat_ids)
+                                 ).order_by(Heat.name.asc()).all()
         )
         if not heat_info_list or len(heat_info_list) != len(heat_ids):
             return Response(
@@ -172,7 +175,8 @@ async def heat_pdf(
                 content="Could not find any heat Info corresponding to provided IDs",
             )
         for heat_info in heat_info_list:
-            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
+            heat_athlete_info = get_heat_info_logic(
+                heat_id=heat_info.id, db=db)
 
             competition_metadata = (
                 db.query(Competition)
@@ -261,7 +265,8 @@ async def heat_results_pdf(
         )
         pdf.add_page()
         pdf.set_font(size=24)
-        pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 10, text="Heat Results", align="C",
+                 new_x="LMARGIN", new_y="NEXT")
         pdf.set_font(size=20)
         pdf.cell(
             0,
@@ -301,7 +306,8 @@ async def heat_results_pdf(
 
                 for i in range(max_runs):
                     if i < len(athlete.run_scores):
-                        pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
+                        pdf.set_font(
+                            style="B" if athlete.run_scores[i].locked else "I")
                     row.cell(
                         ""
                         if i >= len(athlete.run_scores)
@@ -339,22 +345,26 @@ class HelveticaNeuePDF(FPDF):
             self.add_font(
                 "helvetica-neue",
                 style="",
-                fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix(),
+                fname=Path(font_directory,
+                           "HelveticaNeueLight.otf").as_posix(),
             )
             self.add_font(
                 "helvetica-neue",
                 style="B",
-                fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix(),
+                fname=Path(font_directory,
+                           "HelveticaNeueMedium.otf").as_posix(),
             )
             self.add_font(
                 "helvetica-neue",
                 style="I",
-                fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix(),
+                fname=Path(font_directory,
+                           "HelveticaNeueLightItalic.otf").as_posix(),
             )
             self.add_font(
                 "helvetica-neue",
                 style="BI",
-                fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix(),
+                fname=Path(font_directory,
+                           "HelveticaNeueMediumItalic.otf").as_posix(),
             )
             self.set_font(family="helvetica-neue", style="", size=12)
         else:
