@@ -28,7 +28,7 @@ def upgrade() -> None:
     # Populate display_order based on bonus_order dictionary
     for bonus, order in bonus_order.items():
         op.execute(
-            f"UPDATE availableBonuses SET display_order = {order} WHERE bonus_name = '{bonus}'"
+            f'UPDATE "availableBonuses" SET display_order = {order} WHERE name = \'{bonus}\''
         )
     # ### end Alembic commands ###
 
