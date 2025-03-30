@@ -11,7 +11,7 @@ from typing import Any, Optional
 
 import RPi.GPIO as GPIO
 import websockets
-logging.basicConfig( level=logging.DEBUG)
+logging.basicConfig( level=logging.WARN)
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 
