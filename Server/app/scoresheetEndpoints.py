@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -29,6 +29,7 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
+    display_order: Optional[int]
 
     class Config:
         orm_mode = True

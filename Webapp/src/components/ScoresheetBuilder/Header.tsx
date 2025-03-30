@@ -1,21 +1,25 @@
+import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import DeleteIcon from "@mui/icons-material/Delete"
 
 import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
+import Paper from "@mui/material/Paper"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import { includes } from "lodash"
-import { useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import toast from "react-hot-toast"
 
 export const ScoresheetBuilderHeader = ({
 	bonuses,
 	setBonuses,
-	deleteBonus
+	deleteBonus,
+	setUniqueBonusNamesList
 }: {
 	bonuses: string[]
 	setBonuses: (b: string) => void
 	deleteBonus: (b: string) => void
+	setUniqueBonusNamesList: Dispatch<SetStateAction<string[]>>
 }) => {
 	const [newBonus, setNewBonus] = useState<string>("")
 
@@ -29,6 +33,24 @@ export const ScoresheetBuilderHeader = ({
 		} else {
 			toast.error("Bonus already exists")
 		}
+	}
+	function handleMoveItem(
+		array: string[],
+		index: number,
+		direction: "left" | "right"
+	) {
+		// Check if the move is valid
+		if (direction === "left" && index > 0) {
+			// Swap the current item with the one on the left
+			;[array[index], array[index - 1]] = [array[index - 1], array[index]]
+		} else if (direction === "right" && index < array.length - 1) {
+			// Swap the current item with the one on the right
+			;[array[index], array[index + 1]] = [array[index + 1], array[index]]
+		} else {
+			toast.error("Invalid move")
+		}
+
+		setUniqueBonusNamesList([...array])
 	}
 
 	return (
@@ -45,27 +67,46 @@ export const ScoresheetBuilderHeader = ({
 			<Grid size={1}>
 				<Typography>L/B Score</Typography>
 			</Grid>
-			{bonuses.map((b) => (
+			{bonuses.map((b, i) => (
 				<Grid key={b} size={1}>
-					<Grid
-						container
-						justifyContent="space-between"
-						alignItems="center"
-						wrap="nowrap"
-					>
-						<Grid size={6}>
-							<Typography>{b}</Typography>
+					<Paper>
+						<Grid
+							container
+							justifyContent="space-between"
+							alignItems="center"
+						>
+							<Grid size={6}>
+								<Typography>{b}</Typography>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() => deleteBonus(b)}
+									color="error"
+									data-testid={`delete-bonus-${b}`}
+								>
+									<DeleteIcon />
+								</IconButton>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() =>
+										handleMoveItem(bonuses, i, "left")
+									}
+								>
+									<ChevronLeft />
+								</IconButton>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() =>
+										handleMoveItem(bonuses, i, "right")
+									}
+								>
+									<ChevronRight />
+								</IconButton>
+							</Grid>
 						</Grid>
-						<Grid size={6}>
-							<IconButton
-								onClick={() => deleteBonus(b)}
-								color="error"
-								data-testid={`delete-bonus-${b}`}
-							>
-								<DeleteIcon />
-							</IconButton>
-						</Grid>
-					</Grid>
+					</Paper>
 				</Grid>
 			))}
 			<Grid size={2}>

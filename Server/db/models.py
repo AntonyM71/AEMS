@@ -182,6 +182,7 @@ class AvailableBonuses(Base):
     move = relationship("AvailableMoves", foreign_keys=[move_id])
     name = Column(String, nullable=False)
     score = Column(Integer, nullable=False)
+    display_order = Column(Integer, nullable=True)
     schema = "public"
 
 

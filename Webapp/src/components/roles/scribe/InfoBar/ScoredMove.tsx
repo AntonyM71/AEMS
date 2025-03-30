@@ -15,6 +15,7 @@ import {
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../../redux/services/aemsApi"
+import { sortBonuses } from "../../../ScoresheetBuilder/ScoresheetBuilder"
 import { BonusChip } from "../BonusChip"
 import {
 	removeScoredMoveType,
@@ -76,9 +77,9 @@ const ScoredMove = React.memo(
 				(move) => move.id === scoredMove.moveId
 			) ?? []
 		const scoredMoveAvailableBonuses: AvailableBonusType[] =
-			(bonusList.data?.filter(
-				(bonus) => bonus.move_id === scoredMove.moveId
-			) as AvailableBonusType[]) || []
+			(bonusList.data
+				?.filter((bonus) => bonus.move_id === scoredMove.moveId)
+				.sort(sortBonuses) as AvailableBonusType[]) || []
 		const handleClick = () => {
 			if (clickTimeout) {
 				clearTimeout(clickTimeout)
