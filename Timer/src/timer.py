@@ -257,9 +257,10 @@ def timer_task() -> None:
     last_whole_second = 0
 
     # Timer phase durations
-    total_duration_1 = 34  # First phase duration
-    total_duration_2 = 10  # Second phase duration
-    total_duration = total_duration_1 + total_duration_2
+    total_duration_1 = 35  # First phase duration
+    total_duration_2 = 9  # Second phase duration
+    sec10_buzz_duration = 1
+    total_duration = total_duration_1 + total_duration_2 + sec10_buzz_duration
 
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
@@ -268,8 +269,9 @@ def timer_task() -> None:
 
     # Signal end of first phase if not cancelled
     if phase1_completed:
-        buzz(duration=1)
-
+        print(elapsed_time)
+        buzz(duration=sec10_buzz_duration)
+        elapsed_time = elapsed_time + sec10_buzz_duration # Update time for buzz duration
         # Run second phase
         elapsed_time, last_whole_second, phase2_completed = run_timer_phase(
             total_duration_2, elapsed_time, last_whole_second, total_duration
@@ -277,9 +279,10 @@ def timer_task() -> None:
 
         # Signal end of second phase if not cancelled
         if phase2_completed:
-            double_buzz()
             # Notify when timer finishes
             send_timer_update("finished", 0)
+            double_buzz()
+
 
     # Clean up timer state
     set_running_light_off()
