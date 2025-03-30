@@ -20,10 +20,13 @@ export const ScoresheetMoves = ({
 }: {
 	selectedScoresheet: string
 }) => {
-	const moves = useGetManyAvailablemovesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedScoresheet]
-	})
+	const moves = useGetManyAvailablemovesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [selectedScoresheet]
+		},
+		{ refetchOnMountOrArgChange: true }
+	)
 
 	useEffect(() => {
 		if (selectedScoresheet) {
@@ -35,16 +38,22 @@ export const ScoresheetMoves = ({
 		setNewMoves((moves.data as AvailableMoves[]) || [])
 	}, [moves.data])
 
-	const bonusInfo = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [selectedScoresheet]
-	})
+	const bonusInfo = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [selectedScoresheet]
+		},
+		{ refetchOnMountOrArgChange: true }
+	)
 	useEffect(() => {
-		setNewBonusInfo((bonusInfo.data as NewBonusInfo[]) || [])
-		const uniqueBonusNames = _.uniqBy(bonusInfo.data || [], "name")
+		const orderedBonuses = Array.isArray(bonusInfo.data)
+			? [...bonusInfo.data].sort(sortBonuses)
+			: []
+		setNewBonusInfo((orderedBonuses as NewBonusInfo[]) || [])
+		const uniqueBonusNames = _.uniqBy(orderedBonuses || [], "name")
 		const originalUniqueBonusNameList: string[] = []
-		uniqueBonusNames.map((b) => {
-			if (b && b.name) {
+		uniqueBonusNames.forEach((b) => {
+			if (b?.name) {
 				originalUniqueBonusNameList.push(b.name)
 			}
 		})
@@ -78,7 +87,11 @@ export const ScoresheetMoves = ({
 				sheet_id: selectedScoresheet,
 				move_id: m.id,
 				name: b.name,
-				score: b.score
+				score: b.score,
+				display_order:
+					uniqueBonusNamesList.indexOf(b.name) !== -1
+						? uniqueBonusNamesList.indexOf(b.name)
+						: undefined
 			}))
 		])
 	}
@@ -142,9 +155,34 @@ export const ScoresheetMoves = ({
 		)
 		setNewBonusInfo(newBonusInfo.filter((b) => b.name !== deletedBonusName))
 	}
+	useEffect(() => {
+		setNewBonusInfo((prevBonusInfo) => {
+			const updatedBonusInfo = prevBonusInfo.map((bonus) => {
+				const displayOrder = uniqueBonusNamesList.indexOf(bonus.name)
+
+				return {
+					...bonus,
+					display_order:
+						displayOrder !== -1 ? displayOrder : undefined
+				}
+			})
+
+			// Only update state if the new array differs from the previous state
+			if (
+				JSON.stringify(updatedBonusInfo) !==
+				JSON.stringify(prevBonusInfo)
+			) {
+				return updatedBonusInfo
+			}
+
+			return prevBonusInfo
+		})
+	}, [uniqueBonusNamesList])
+
 	const [updateScoresheetMoves] =
 		useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation()
 	const submitDataToDB = async () => {
+		console.log(newBonusInfo)
 		try {
 			await updateScoresheetMoves({
 				scoresheetId: selectedScoresheet,
@@ -171,6 +209,7 @@ export const ScoresheetMoves = ({
 					bonuses={uniqueBonusNamesList}
 					setBonuses={addNewBonusType}
 					deleteBonus={deleteBonusType}
+					setUniqueBonusNamesList={setUniqueBonusNamesList}
 				/>
 				{newMoves.map((m, i) => (
 					<EditDeleteMove
@@ -181,9 +220,9 @@ export const ScoresheetMoves = ({
 							rbScore: m.rb_score,
 							flScore: m.fl_score,
 							direction: m.direction,
-							bonuses: newBonusInfo.filter(
-								(b) => b.move_id === m.id
-							)
+							bonuses: newBonusInfo
+								.filter((b) => b.move_id === m.id)
+								.sort(sortBonuses)
 						}}
 						updateMove={editMove}
 						deleteMove={deleteMove}
@@ -212,6 +251,7 @@ export const ScoresheetMoves = ({
 				bonuses={uniqueBonusNamesList}
 				setBonuses={addNewBonusType}
 				deleteBonus={deleteBonusType}
+				setUniqueBonusNamesList={setUniqueBonusNamesList}
 			/>
 			<AddNewMove bonuses={uniqueBonusNamesList} addMove={addNewMove} />
 		</div>
@@ -233,4 +273,16 @@ interface NewBonusInfo {
 	move_id: string
 	name: string
 	score: number
+	display_order?: number
+}
+
+export const sortBonuses = (
+	a: { display_order?: number },
+	b: { display_order?: number }
+) => {
+	// Use a fallback value for missing keys, such as `Infinity` or `-Infinity`
+	const aKey = a.display_order ?? Infinity // Preserve original order for missing keys
+	const bKey = b.display_order ?? Infinity
+
+	return aKey - bKey
 }
