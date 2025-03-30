@@ -11,7 +11,8 @@ from typing import Any, Optional
 
 import RPi.GPIO as GPIO
 import websockets
-logging.basicConfig( level=logging.WARN)
+
+logging.basicConfig(level=logging.WARN)
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 
@@ -37,8 +38,11 @@ GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
 # Environment variable configuration
 # Set to "0", "false", or "no" to disable WebSocket functionality
-ENABLE_WEBSOCKET = os.environ.get(
-    "ENABLE_WEBSOCKET", "true").lower() not in ("0", "false", "no")
+ENABLE_WEBSOCKET = os.environ.get("ENABLE_WEBSOCKET", "true").lower() not in (
+    "0",
+    "false",
+    "no",
+)
 
 # Timer and threading variables
 timer_thread = None
@@ -48,8 +52,7 @@ message_queue = queue.Queue()  # Thread-safe queue for WebSocket messages
 websocket_running = True  # Flag to control the WebSocket thread
 
 # Server configuration - change this to match your server address
-WS_SERVER_URL = os.environ.get(
-    "WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+WS_SERVER_URL = os.environ.get("WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
 
 
 # WebSocket communication functions broken down into smaller parts
@@ -72,9 +75,9 @@ async def connect_to_websocket() -> Any:
     """Establish a new WebSocket connection"""
     try:
         websocket = await websockets.connect(WS_SERVER_URL)
-        logging.info(f"Connected to WebSocket server at {WS_SERVER_URL}")
+        logging.info("Connected to WebSocket server at %s", WS_SERVER_URL)
     except Exception as e:
-        logging.info(f"Error connecting to WebSocket server: {e}")
+        logging.info("Error connecting to WebSocket server: %s", e)
         return None
     else:
         return websocket
@@ -103,7 +106,7 @@ async def cleanup_websocket(websocket: Any) -> None:
             await websocket.close()
             logging.info("WebSocket connection closed")
         except Exception as e:
-            logging.info(f"Error closing WebSocket: {e}")
+            logging.info("Error closing WebSocket: %s", e)
 
 
 async def run_websocket_loop() -> None:
@@ -130,7 +133,7 @@ async def run_websocket_loop() -> None:
             await asyncio.sleep(0.1)
 
         except Exception as e:
-            logging.info(f"Error in WebSocket thread: {e}")
+            logging.info("Error in WebSocket thread: %s", e)
             websocket = None  # Reset so we reconnect
             await asyncio.sleep(1)  # Wait before retrying
 
@@ -150,8 +153,7 @@ def start_websocket_thread() -> None:
 
     if websocket_thread is None or not websocket_thread.is_alive():
         websocket_running = True
-        websocket_thread = threading.Thread(
-            target=websocket_worker, daemon=True)
+        websocket_thread = threading.Thread(target=websocket_worker, daemon=True)
         websocket_thread.start()
 
 
@@ -169,9 +171,7 @@ def send_timer_update(status: str, time_remaining: Optional[float] = None) -> No
         return
 
     try:
-        data = {
-            "status": status
-        }
+        data = {"status": status}
         if time_remaining is not None:
             # Convert to string to ensure proper JSON serialization
             data["time_remaining"] = str(time_remaining)
@@ -179,7 +179,7 @@ def send_timer_update(status: str, time_remaining: Optional[float] = None) -> No
         payload = json.dumps(data)
         message_queue.put(payload)
     except Exception as e:
-        logging.info(f"Error queuing timer update: {e}")
+        logging.info("Error queuing timer update: %s", e)
 
 
 def set_running_light_on() -> None:
@@ -211,10 +211,7 @@ def double_buzz(duration: float = 0.33, gap: float = 0.33) -> None:
 
 # Timer phase management functions
 def run_timer_phase(
-    duration: float,
-    elapsed_time: float,
-    last_whole_second: int,
-    total_duration: float
+    duration: float, elapsed_time: float, last_whole_second: int, total_duration: float
 ) -> tuple[float, int, bool]:
     """
     Run a single phase of the timer
@@ -271,7 +268,9 @@ def timer_task() -> None:
     if phase1_completed:
         print(elapsed_time)
         buzz(duration=sec10_buzz_duration)
-        elapsed_time = elapsed_time + sec10_buzz_duration # Update time for buzz duration
+        elapsed_time = (
+            elapsed_time + sec10_buzz_duration
+        )  # Update time for buzz duration
         # Run second phase
         elapsed_time, last_whole_second, phase2_completed = run_timer_phase(
             total_duration_2, elapsed_time, last_whole_second, total_duration
@@ -282,7 +281,6 @@ def timer_task() -> None:
             # Notify when timer finishes
             send_timer_update("finished", 0)
             double_buzz()
-
 
     # Clean up timer state
     set_running_light_off()
@@ -322,11 +320,13 @@ if __name__ == "__main__":
         # Start the WebSocket communication thread if enabled
         if ENABLE_WEBSOCKET:
             logging.info(
-                f"WebSocket functionality is ENABLED - connecting to {WS_SERVER_URL}")
+                "WebSocket functionality is ENABLED - connecting to %s", WS_SERVER_URL
+            )
             start_websocket_thread()
         else:
             logging.info(
-                "WebSocket functionality is DISABLED - timer will run in standalone mode")
+                "WebSocket functionality is DISABLED - timer will run in standalone mode"
+            )
 
         while True:
             # Check if the start pin is HIGH
