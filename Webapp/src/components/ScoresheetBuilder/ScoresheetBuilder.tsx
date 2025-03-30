@@ -182,7 +182,6 @@ export const ScoresheetMoves = ({
 	const [updateScoresheetMoves] =
 		useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation()
 	const submitDataToDB = async () => {
-		console.log(newBonusInfo)
 		try {
 			await updateScoresheetMoves({
 				scoresheetId: selectedScoresheet,

@@ -40,8 +40,7 @@ for file in scoresheet_files:
         else:
             print("Making Scoresheet")
             scoresheet_id = uuid4()
-            db.bulk_save_objects(
-                [ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
+            db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
             with open(Path("data", file)) as json_file:
                 data = json.loads(json_file.read())
 
