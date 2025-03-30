@@ -77,7 +77,7 @@ for file in scoresheet_files:
                             move_id=move_id,
                             name=bonus_name,
                             score=pydantic_move.dict()[bonus_name],
-                            display_order=bonus_order.get(bonus_name, None),
+                            display_order=bonus_order.get(bonus_name.lower(), None),
                         )
                         for bonus_name in bonus_names
                     ]

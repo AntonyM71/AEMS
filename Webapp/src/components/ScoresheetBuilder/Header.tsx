@@ -3,6 +3,7 @@ import DeleteIcon from "@mui/icons-material/Delete"
 
 import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
+import Paper from "@mui/material/Paper"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import { includes } from "lodash"
@@ -68,39 +69,44 @@ export const ScoresheetBuilderHeader = ({
 			</Grid>
 			{bonuses.map((b, i) => (
 				<Grid key={b} size={1}>
-					<Grid
-						container
-						justifyContent="space-between"
-						alignItems="center"
-						wrap="nowrap"
-					>
-						<Grid size={6}>
-							<Typography>{b}</Typography>
-						</Grid>
-						<Grid size={6}>
-							<IconButton
-								onClick={() => deleteBonus(b)}
-								color="error"
-								data-testid={`delete-bonus-${b}`}
-							>
-								<DeleteIcon />
-							</IconButton>
-						</Grid>
-					</Grid>
-					<Grid>
-						<IconButton
-							onClick={() => handleMoveItem(bonuses, i, "left")}
+					<Paper>
+						<Grid
+							container
+							justifyContent="space-between"
+							alignItems="center"
 						>
-							<ChevronLeft />
-						</IconButton>
-					</Grid>
-					<Grid>
-						<IconButton
-							onClick={() => handleMoveItem(bonuses, i, "right")}
-						>
-							<ChevronRight />
-						</IconButton>
-					</Grid>
+							<Grid size={6}>
+								<Typography>{b}</Typography>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() => deleteBonus(b)}
+									color="error"
+									data-testid={`delete-bonus-${b}`}
+								>
+									<DeleteIcon />
+								</IconButton>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() =>
+										handleMoveItem(bonuses, i, "left")
+									}
+								>
+									<ChevronLeft />
+								</IconButton>
+							</Grid>
+							<Grid>
+								<IconButton
+									onClick={() =>
+										handleMoveItem(bonuses, i, "right")
+									}
+								>
+									<ChevronRight />
+								</IconButton>
+							</Grid>
+						</Grid>
+					</Paper>
 				</Grid>
 			))}
 			<Grid size={2}>
