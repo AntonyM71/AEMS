@@ -6,7 +6,7 @@ from fastapi.concurrency import run_until_first_complete
 
 from app.common.websocket_handler import ws_receiver, ws_sender
 
-broadcast_router = APIRouter(prefix="/broadcast", tags=["broadcast"])
+broadcast_router = APIRouter(tags=["broadcast"])
 
 
 @broadcast_router.websocket("/timer")

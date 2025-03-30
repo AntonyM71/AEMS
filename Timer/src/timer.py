@@ -49,7 +49,7 @@ websocket_running = True  # Flag to control the WebSocket thread
 
 # Server configuration - change this to match your server address
 WS_SERVER_URL = os.environ.get(
-    "WEBSOCKET_URL", "ws://localhost:8000/broadcast/timer")
+    "WEBSOCKET_URL", "ws://localhost:8000/timer")
 
 
 # WebSocket communication functions broken down into smaller parts
