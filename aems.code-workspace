@@ -65,6 +65,7 @@
     "[toml]": {
       "editor.defaultFormatter": "tamasfe.even-better-toml"
     },
-    "python.analysis.autoFormatStrings": true
+    "python.analysis.autoFormatStrings": true,
+    "ruff.lineLength": 88
   }
 }
