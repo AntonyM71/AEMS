@@ -18,7 +18,6 @@ from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
 
 from app.common.websocket_handler import (
-    ConnectionManager,
     publisher,
     ws_receiver,
     ws_sender,
@@ -52,7 +51,7 @@ from db.models import (
     ScoredMoves,
 )
 
-scoring_router = APIRouter()
+scoring_router = APIRouter(tags=["scoring"])
 
 
 class HeatInfoResponse(BaseModel):
@@ -360,12 +359,18 @@ async def get_heat_scores(
 
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
-        available_moves=parse_obj_as(
-            list[PydanticAvailableMoves], scoresheet_available_moves
-        ),
-        available_bonuses=parse_obj_as(
-            list[PydanticAvailableBonuses], scoresheet_available_bonuses
-        ),
+        available_moves=[
+            AvailableMoves(**move.dict())
+            for move in parse_obj_as(
+                list[PydanticAvailableMoves], scoresheet_available_moves
+            )
+        ],
+        available_bonuses=[
+            AvailableBonuses(**bonus.dict())
+            for bonus in parse_obj_as(
+                list[PydanticAvailableBonuses], scoresheet_available_bonuses
+            )
+        ],
         run_statuses=parse_obj_as(
             list[PydanticRunStatus], run_statuses if run_statuses else []
         ),
@@ -446,12 +451,18 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
 
     athlete_scores = calculate_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
-        available_moves=parse_obj_as(
-            list[PydanticAvailableMoves], scoresheet_available_moves
-        ),
-        available_bonuses=parse_obj_as(
-            list[PydanticAvailableBonuses], scoresheet_available_bonuses
-        ),
+        available_moves=[
+            AvailableMoves(**move.dict())
+            for move in parse_obj_as(
+                list[PydanticAvailableMoves], scoresheet_available_moves
+            )
+        ],
+        available_bonuses=[
+            AvailableBonuses(**bonus.dict())
+            for bonus in parse_obj_as(
+                list[PydanticAvailableBonuses], scoresheet_available_bonuses
+            )
+        ],
         run_statuses=parse_obj_as(list[PydanticRunStatus], run_statuses),
         scoring_runs=phase.number_of_runs_for_score,
     )
@@ -517,9 +528,6 @@ class RunStatusSchema(BaseModel):
         orm_mode = True
 
 
-current_score_manager = ConnectionManager()
-
-
 @scoring_router.websocket("/current_scores")
 async def current_score_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
@@ -535,7 +543,7 @@ async def current_score_websocket(websocket: WebSocket) -> None:
         if e.code != 1001:  # 1001 is a "happy" disconnect
             logging.exception("Error with Current Score Websocket")
 
-        websocket.disconnect()
+        await websocket.close()
 
 
 @scoring_router.websocket("/run_status")
@@ -557,7 +565,7 @@ async def runstatus_websocket(websocket: WebSocket) -> None:
         if e.code != 1001:  # 1001 is a "happy" disconnect
             logging.exception("Error with Current Score Websocket")
 
-        websocket.disconnect()
+        await websocket.close()
 
 
 def copy_message_to_db(data: str) -> None:

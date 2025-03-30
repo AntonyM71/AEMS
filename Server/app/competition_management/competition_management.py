@@ -34,7 +34,9 @@ from app.scoring.scoring_logic import AthleteScoresWithAthleteInfo
 from db.client import get_transaction_session
 from db.models import AthleteHeat, Heat, Phase
 
-competition_management_router = APIRouter(prefix="/competition_management")
+competition_management_router = APIRouter(
+    prefix="/competition_management", tags=["competition management"]
+)
 
 
 class InvalidFileTypeError(Exception):

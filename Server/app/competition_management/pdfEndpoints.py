@@ -16,7 +16,7 @@ from app.scoring.customScoringEndpoints import (
 from db.client import get_transaction_session
 from db.models import Competition, Event, Heat, Phase
 
-pdf_router = APIRouter()
+pdf_router = APIRouter(tags=["pdf generation"])
 
 
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)

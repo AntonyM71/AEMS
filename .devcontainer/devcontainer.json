@@ -44,7 +44,8 @@
         "donjayamanne.python-environment-manager",
         "VisualStudioExptTeam.vscodeintellicode",
         "ms-vscode.vscode-typescript-next",
-        "dbaeumer.vscode-eslint"
+        "dbaeumer.vscode-eslint",
+        "bierner.markdown-mermaid"
       ]
     }
   }
