@@ -44,7 +44,7 @@ const LiveTimer: React.FC = () => {
 		>
 			<Typography variant="h5">Timer:</Typography>
 			<div style={{ textAlign: "center" }}>
-				<Typography variant="h5">{time}</Typography>
+				<Typography variant="h5">{Math.round(time)}</Typography>
 			</div>
 		</Paper>
 	)
