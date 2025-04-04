@@ -1,12 +1,14 @@
 import Grid from "@mui/material/Grid2"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect, useRef } from "react"
-import LiveTimer from "../roles/headJudge/LiveTimer"
 import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
+
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
-} from "./controller"
+} from "../Interfaces"
+import { SlidingImageCard } from "./Cards/ICFLogo"
+import { LiveTimerSpace } from "./Cards/LiveTimer"
 import { lightTheme } from "./overlayTheme"
 
 interface OverlayProps extends React.FC {
@@ -55,16 +57,23 @@ const Overlay: OverlayProps = () => {
 					height: "100vh"
 				}}
 			>
-				<header>Header Section</header>
-				<main style={{ padding: "1rem" }}>Main Content</main>
+				<header style={{ padding: "1rem" }}>
+					{" "}
+					<Grid container spacing={2} alignItems="stretch">
+						<SlidingImageCard
+							overlayControlState={overlayControlState}
+						/>
+					</Grid>
+				</header>
+				<main style={{ padding: "1rem" }}>
+					<></>
+				</main>
 				<footer style={{ padding: "1rem" }}>
-					<Grid container spacing={2}>
+					<Grid container spacing={2} alignItems="stretch">
 						<LiveTimerSpace
 							overlayControlState={overlayControlState}
 						/>
 					</Grid>
-					{/* fade in with
-				https://mui.com/material-ui/transitions/ */}
 				</footer>
 			</div>
 		</ThemeProvider>
@@ -72,19 +81,3 @@ const Overlay: OverlayProps = () => {
 }
 Overlay.noLayout = true
 export default Overlay
-
-const LiveTimerSpace = ({
-	overlayControlState
-}: {
-	overlayControlState: OverlayControlState
-}) => {
-	if (!overlayControlState.showTimer) {
-		return <> </>
-	}
-
-	return (
-		<Grid item size={1}>
-			<LiveTimer />
-		</Grid>
-	)
-}
