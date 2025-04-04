@@ -11,7 +11,7 @@ import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 import { setupStore } from "../redux/store"
 import "./_app.css"
 const store = setupStore()
-const App = ({ children }: any) => {
+const App = ({ children, noLayout }: { children: any; noLayout?: boolean }) => {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
 	const dispatch = useDispatch()
 	const setPreferDark = (newPreferDark: boolean) =>
@@ -53,25 +53,34 @@ const App = ({ children }: any) => {
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			<div className="container">
-				<div className="header">
-					<Header />
-				</div>
-				<Toaster position="top-right" />
+				{!noLayout && (
+					<>
+						<div className="header">
+							<Header />
+						</div>
+						<Toaster position="top-right" />
+					</>
+				)}
 				<div className="content">
-					<Container maxWidth={false}>{...children}</Container>
+					<Container maxWidth={false}>{children}</Container>
 				</div>
 			</div>
 		</ThemeProvider>
 	)
 }
 
-const WrappedApp = ({ Component, pageProps }: AppProps) => (
-	<Provider store={store}>
-		<App>
-			{" "}
-			<Component {...pageProps} />{" "}
-		</App>
-	</Provider>
-)
+const WrappedApp = ({ Component, pageProps }: AppProps) => {
+	const ComponentWithLayout = Component as typeof Component & {
+		noLayout?: boolean
+	}
+
+	return (
+		<Provider store={store}>
+			<App noLayout={ComponentWithLayout.noLayout}>
+				<ComponentWithLayout {...pageProps} />
+			</App>
+		</Provider>
+	)
+}
 
 export default WrappedApp

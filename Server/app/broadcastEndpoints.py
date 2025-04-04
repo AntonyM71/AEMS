@@ -29,3 +29,26 @@ async def runstatus_websocket(websocket: WebSocket) -> None:
             logging.exception("Error with Current Score Websocket")
 
         await websocket.close()
+
+
+@broadcast_router.websocket("/broadcast_control")
+async def broadcast_control_websocket(websocket: WebSocket) -> None:
+    channel = "broadcast_control"
+    await websocket.accept()
+    try:
+        await run_until_first_complete(
+            (
+                ws_receiver,
+                {
+                    "websocket": websocket,
+                    "side_effect": None,
+                    "channel": channel,
+                },
+            ),
+            (ws_sender, {"websocket": websocket, "channel": channel}),
+        )
+    except WebSocketDisconnect as e:
+        if e.code != 1001:  # 1001 is a "happy" disconnect
+            logging.exception("Error with Current Score Websocket")
+
+        await websocket.close()
