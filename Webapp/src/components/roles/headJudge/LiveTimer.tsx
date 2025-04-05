@@ -12,11 +12,6 @@ const LiveTimer: React.FC = () => {
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectTimerSocket()
-	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(event.data as string) as TimeInfo
 
@@ -33,6 +28,9 @@ const LiveTimer: React.FC = () => {
 			}
 		}
 	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
 
 	return (
 		<Paper
