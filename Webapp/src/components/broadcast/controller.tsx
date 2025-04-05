@@ -2,6 +2,15 @@ import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
 import Typography from "@mui/material/Typography"
 import React, { useEffect, useRef } from "react"
+import toast from "react-hot-toast"
+import { useSelector } from "react-redux"
+import {
+	getSelectedCompetition,
+	getSelectedEvent,
+	getSelectedHeat,
+	getSelectedPhase
+} from "../../redux/atoms/competitions"
+import { SelectorDisplay } from "../competition/MainSelector"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
@@ -12,6 +21,27 @@ const OverlayController: React.FC = () => {
 	const [overlayControlState, setOverlayControlState] = React.useState(
 		defaultOverlayControllerState
 	)
+
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	useEffect(() => {
+		setOverlayControlState({ ...overlayControlState, selectedCompetition })
+	}, [selectedCompetition])
+
+	const selectedEvent = useSelector(getSelectedEvent)
+	useEffect(() => {
+		setOverlayControlState({ ...overlayControlState, selectedEvent })
+	}, [selectedEvent])
+
+	const selectedPhase = useSelector(getSelectedPhase)
+	useEffect(() => {
+		setOverlayControlState({ ...overlayControlState, selectedPhase })
+	}, [selectedPhase])
+
+	const selectedHeat = useSelector(getSelectedHeat)
+	useEffect(() => {
+		setOverlayControlState({ ...overlayControlState, selectedHeat })
+	}, [selectedHeat])
+
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectBroadcastControlSocket()
@@ -37,8 +67,6 @@ const OverlayController: React.FC = () => {
 			socketRef.current &&
 			socketRef.current.readyState === WebSocket.OPEN
 		) {
-			console.log(socketRef.current)
-			console.log(JSON.stringify(overlayControlState))
 			socketRef.current?.send(JSON.stringify(overlayControlState))
 		}
 	}, [overlayControlState])
@@ -64,6 +92,9 @@ const OverlayController: React.FC = () => {
 				<Typography variant="h4">Overlay Controller</Typography>
 			</Grid>
 			<Grid size={12}>
+				<SelectorDisplay />
+			</Grid>
+			<Grid size={12}>
 				<ConfigurableButton
 					label="Show Timer"
 					active={overlayControlState.showTimer}
@@ -72,6 +103,27 @@ const OverlayController: React.FC = () => {
 							showTimer: !overlayControlState.showTimer
 						})
 					}
+					activeColor="green"
+					inactiveColor="red"
+					textColor="white"
+				/>
+			</Grid>
+			<Grid size={12}>
+				<ConfigurableButton
+					label="Show Heat Summary Modal"
+					active={overlayControlState.showHeatSummary}
+					onClick={() => {
+						if (overlayControlState.selectedHeat) {
+							updateOverlayControlState({
+								showHeatSummary:
+									!overlayControlState.showHeatSummary
+							})
+						} else {
+							toast.error(
+								"Please select a competitoin and heat to use this feature"
+							)
+						}
+					}}
 					activeColor="green"
 					inactiveColor="red"
 					textColor="white"

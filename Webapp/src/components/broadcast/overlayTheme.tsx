@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material"
-
+import type {} from "@mui/x-data-grid/themeAugmentation"
 const icfLightBlue = "rgb(28, 154, 215)"
 const icfDarkBlue = "rgb(12, 40, 80)"
 const icfWhite = "#f8f9fc"
@@ -14,7 +14,7 @@ export const lightTheme = createTheme({
 			main: "#008a73" // Secondary accent
 		},
 		background: {
-			default: "linear-gradient(90deg, #1d82c5, #0c2850)", // Subtle gradient
+			default: icfWhite, // Subtle gradient
 			paper: icfDarkBlue
 		},
 		text: {
@@ -43,20 +43,20 @@ export const lightTheme = createTheme({
 			textTransform: "uppercase"
 		},
 		h4: {
-			fontSize: "2rem",
+			fontSize: "2.25rem",
 			fontWeight: 600,
 			letterSpacing: "0.05rem",
 			textTransform: "uppercase"
 		},
 		h5: {
-			fontSize: "1.75rem",
+			fontSize: "2.25rem",
 			fontWeight: 500,
 			letterSpacing: "0.04rem",
 			textTransform: "uppercase"
 		},
 		h6: {
-			fontSize: "1.5rem",
-			fontWeight: 500,
+			fontSize: "2rem",
+			fontWeight: 600,
 			letterSpacing: "0.03rem",
 			textTransform: "uppercase"
 		},
@@ -80,6 +80,26 @@ export const lightTheme = createTheme({
 				}
 			}
 		},
+		MuiButton: {
+			styleOverrides: {
+				root: {
+					backgroundColor: "transparent", // No background
+					color: "transparent", // No text color
+					boxShadow: "none", // No shadow
+					border: "none", // No border
+					padding: 0, // Remove padding
+					minWidth: 0, // Remove minimum width
+					minHeight: 0, // Remove minimum height
+					"&:hover": {
+						backgroundColor: "transparent" // No hover effect
+					},
+					"&:focus": {
+						outline: "none" // Remove focus outline
+					}
+				}
+			}
+		},
+
 		MuiPaper: {
 			styleOverrides: {
 				root: {
@@ -94,12 +114,61 @@ export const lightTheme = createTheme({
 			}
 		},
 
+		MuiModal: {
+			styleOverrides: {
+				root: {
+					boxShadow: "none" // Remove drop shadow from the modal
+				}
+			}
+		},
+		MuiBackdrop: {
+			styleOverrides: {
+				root: {
+					backgroundColor: "transparent" // Remove the shadow and background
+				}
+			}
+		},
+		MuiIconButton: {
+			styleOverrides: {
+				root: {
+					backgroundColor: "transparent", // No background
+					color: "transparent", // No icon color
+					boxShadow: "none", // No shadow
+					border: "none", // No border
+					padding: 0, // Remove padding
+					minWidth: 0, // Remove minimum width
+					minHeight: 0, // Remove minimum height
+					"&:hover": {
+						backgroundColor: "transparent" // No hover effect
+					},
+					"&:focus": {
+						outline: "none" // Remove focus outline
+					}
+				}
+			}
+		},
+		MuiDivider: {
+			styleOverrides: {
+				root: {
+					background:
+						// eslint-disable-next-line max-len
+						"linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))",
+					height: "2px" // Adjust thickness globally
+				}
+			}
+		},
 		MuiTypography: {
 			styleOverrides: {
 				root: {
 					textShadow: "none"
 				}
 			}
+		}
+	},
+	mixins: {
+		MuiDataGrid: {
+			// Headers, and top & bottom fixed rows
+			containerBackground: icfWhite
 		}
 	}
 })

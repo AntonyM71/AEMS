@@ -35,8 +35,8 @@ const EventSelector = ({
 }) => {
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const setSelectedEvent = (newevent: string) =>
-		dispatch(updateSelectedEvent(newevent))
+	const setSelectedEvent = (newEvent: string) =>
+		dispatch(updateSelectedEvent(newEvent))
 	const selectedEvent = useSelector(getSelectedEvent)
 	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 
