@@ -1,6 +1,4 @@
-import Box from "@mui/material/Box"
 import Grid from "@mui/material/Grid2"
-import Modal from "@mui/material/Modal"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect, useRef } from "react"
 import { useDispatch } from "react-redux"
@@ -12,14 +10,15 @@ import {
 	updateSelectedHeat,
 	updateSelectedPhase
 } from "../../redux/atoms/competitions"
+import { HeatSummaryTable } from "../competition/HeatSummaryTable"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../Interfaces"
-import { HeatSummaryTable } from "../competition/HeatSummaryTable"
 import { SlidingImageCard } from "./Cards/ICFLogo"
 import { LiveTimerSpace } from "./Cards/LiveTimer"
 import { lightTheme } from "./overlayTheme"
+import SlidingModal from "./SlidingModal"
 
 interface OverlayProps extends React.FC {
 	noLayout?: boolean
@@ -115,25 +114,12 @@ const Overlay: OverlayProps = () => {
 					</Grid>
 				</header>
 				<main style={{ padding: "1rem" }}>
-					<Modal
-						open={overlayControlState.showHeatSummary}
-						aria-labelledby="modal-modal-title"
-						aria-describedby="modal-modal-description"
+					<SlidingModal
+						direction="up"
+						show={overlayControlState.showHeatSummary}
 					>
-						<Box
-							sx={{
-								position: "absolute",
-								top: "50%",
-								left: "50%",
-								transform: "translate(-50%, -50%)",
-								width: "70%",
-								height: "80%",
-								border: "1px solid transparent" // Transparent border
-							}}
-						>
-							<HeatSummaryTable />
-						</Box>
-					</Modal>
+						<HeatSummaryTable />
+					</SlidingModal>
 				</main>
 				<footer style={{ padding: "1rem" }}>
 					<Grid container spacing={2} alignItems="stretch">
