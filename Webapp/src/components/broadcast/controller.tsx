@@ -44,14 +44,10 @@ const OverlayController: React.FC = () => {
 
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
+		if (socketRef.current) {
+			socketRef.current.close()
+		}
 		socketRef.current = connectBroadcastControlSocket()
-	}
-
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-
-	if (socketRef.current) {
 		socketRef.current.onclose = () => {
 			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
 		}
@@ -62,6 +58,11 @@ const OverlayController: React.FC = () => {
 			}
 		}
 	}
+
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+
 	useEffect(() => {
 		if (
 			socketRef.current &&

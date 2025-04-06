@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material"
+import { createTheme } from "@mui/material/styles"
 import type {} from "@mui/x-data-grid/themeAugmentation"
 const icfLightBlue = "rgb(28, 154, 215)"
 const icfDarkBlue = "rgb(12, 40, 80)"
@@ -168,7 +168,7 @@ export const lightTheme = createTheme({
 	mixins: {
 		MuiDataGrid: {
 			// Headers, and top & bottom fixed rows
-			containerBackground: icfWhite
+			containerBackground: "rgba(255, 255, 255, 0.1)"
 		}
 	}
 })
