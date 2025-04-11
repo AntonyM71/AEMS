@@ -7,7 +7,7 @@ interface TimeInfo {
 	time_remaining: number
 	status: string
 }
-const LiveTimer: React.FC = () => {
+export const LiveTimerLogic: React.FC = () => {
 	const [time, setTime] = useState<number>(0)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
@@ -32,20 +32,20 @@ const LiveTimer: React.FC = () => {
 		connectWebSocket()
 	}, [])
 
-	return (
-		<Paper
-			data-testid="final-score"
-			sx={{
-				padding: "0.5em",
-				height: "100%"
-			}}
-		>
-			<Typography variant="h5">Timer:</Typography>
-			<div style={{ textAlign: "center" }}>
-				<Typography variant="h5">{Math.round(time)}</Typography>
-			</div>
-		</Paper>
-	)
+	return <Typography variant="h5">{Math.round(time)}</Typography>
 }
-
+const LiveTimer: React.FC = () => (
+	<Paper
+		data-testid="final-score"
+		sx={{
+			padding: "0.5em",
+			height: "100%"
+		}}
+	>
+		<Typography variant="h5">Timer:</Typography>
+		<div style={{ textAlign: "center" }}>
+			<LiveTimerLogic />
+		</div>
+	</Paper>
+)
 export default LiveTimer
