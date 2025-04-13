@@ -35,13 +35,11 @@ const Overlay: OverlayProps = () => {
 		}
 		socketRef.current = connectBroadcastControlSocket()
 
-		console.log(socketRef.current)
 		socketRef.current.onmessage = (event) => {
-			console.log("Got Event")
 			const jsonData = JSON.parse(
 				event.data as string
 			) as OverlayControlState
-			console.log(jsonData)
+
 			setOverlayControlState(() => ({
 				...jsonData
 			}))
