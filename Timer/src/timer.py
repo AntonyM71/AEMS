@@ -7,11 +7,11 @@ import os
 import queue
 import threading
 import time
-from typing import Any, Optional
-
+from typing import Any, Optional, Literal
+from dataclasses import dataclass, asdict
 import RPi.GPIO as GPIO
 import websockets
-
+from tm1637 import TM1637Decimal
 logging.basicConfig(level=logging.WARN)
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -35,6 +35,20 @@ GPIO.output(PIN_READY_LIGHT, GPIO.HIGH)
 GPIO.setup(PIN_RUNNING_LIGHT, GPIO.OUT)
 GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
+CLK = 8
+DIO = 7
+def swap(segs):
+    length = len(segs)
+    if length == 4 or length == 5:
+        segs.extend(bytearray([0] * (6 - length)))
+    segs[0], segs[2] = segs[2], segs[0]
+    if length >= 4:
+        segs[3], segs[5] = segs[5], segs[3]
+    return segs
+
+
+tm = TM1637Decimal(clk=CLK, dio=DIO)
+tm.write(swap(tm.encode_string('READY')))
 
 # Environment variable configuration
 # Set to "0", "false", or "no" to disable WebSocket functionality
@@ -53,6 +67,23 @@ websocket_running = True  # Flag to control the WebSocket thread
 
 # Server configuration - change this to match your server address
 WS_SERVER_URL = os.environ.get("WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+
+StatusLiteral = Literal["started", "running", "finished", "cancelled"]
+
+def get_short_status(status: StatusLiteral) -> str:
+    """Returns a three-letter abbreviation for the given status."""
+    status_map = {
+        "started": "STA",
+        "running": "RUN",
+        "finished": "FIN",
+        "cancelled": "CAN"
+    }
+    return status_map.get(status, "UNK")  # "UNK" for unknown statuses
+
+@dataclass(order=True)
+class QueueItem:
+    status: StatusLiteral
+    time_remaining: int
 
 
 # WebSocket communication functions broken down into smaller parts
@@ -73,6 +104,7 @@ async def check_connection(websocket: Any) -> bool:
 
 async def connect_to_websocket() -> Any:
     """Establish a new WebSocket connection"""
+
     try:
         websocket = await websockets.connect(WS_SERVER_URL)
         logging.info("Connected to WebSocket server at %s", WS_SERVER_URL)
@@ -90,13 +122,17 @@ async def process_message_queue(websocket: Any) -> None:
 
     try:
         # Non-blocking check for messages
-        message = message_queue.get(block=False)
+        message: QueueItem = message_queue.get(block=False)
         # Send the message
-        await websocket.send(message)
+        await websocket.send(json.dumps(asdict(message)))
+        tm.write(swap(tm.encode_string(f'{get_short_status(message.status)}-{int(message.time_remaining):02}')))
         message_queue.task_done()
     except queue.Empty:
         # No messages to process
         pass
+    except Exception as e:
+        logging.error(f"Error processing item from queue: {e}")
+
 
 
 async def cleanup_websocket(websocket: Any) -> None:
@@ -171,12 +207,11 @@ def send_timer_update(status: str, time_remaining: Optional[float] = None) -> No
         return
 
     try:
-        data = {"status": status}
-        if time_remaining is not None:
-            # Convert to string to ensure proper JSON serialization
-            data["time_remaining"] = str(time_remaining)
 
-        payload = json.dumps(data)
+        payload = QueueItem(status=status,
+                            time_remaining = round(time_remaining,0) if time_remaining else 0
+                            )
+
         message_queue.put(payload)
     except Exception as e:
         logging.info("Error queuing timer update: %s", e)
@@ -266,7 +301,7 @@ def timer_task() -> None:
 
     # Signal end of first phase if not cancelled
     if phase1_completed:
-        print(elapsed_time)
+
         buzz(duration=sec10_buzz_duration)
         elapsed_time = (
             elapsed_time + sec10_buzz_duration
