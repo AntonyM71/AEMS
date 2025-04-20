@@ -88,12 +88,13 @@ export default ({
 	)
 
 	const socketRef = useRef<WebSocket | null>(null)
-
 	const connectWebSocket = () => {
-		if (socketRef.current) {
-			socketRef.current.close()
-		}
 		socketRef.current = connectWebRunStatusSocket()
+	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+	if (socketRef.current) {
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(event.data as string) as RunStatus
 
@@ -114,10 +115,6 @@ export default ({
 			}
 		}
 	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
 		setAllJudgeScores((prevAllScores) => {
 			const newAllScores = [...prevAllScores]

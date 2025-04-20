@@ -10,15 +10,20 @@ import {
 	updateSelectedHeat,
 	updateSelectedPhase
 } from "../../redux/atoms/competitions"
-import { HeatSummaryTable } from "../competition/HeatSummaryTable"
+import { updateRun } from "../../redux/atoms/scoring"
+
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../Interfaces"
+import AthleteInfoCard from "./Cards/AthleteInfoCard"
+import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
 import { SlidingImageCard } from "./Cards/ICFLogo"
+import { LiveRunScoreSpace } from "./Cards/LiveRunScore"
 import { LiveTimerSpace } from "./Cards/LiveTimer"
+import { PhaseScoreTable } from "./Cards/PhaseResultsTable"
+import RunCard from "./Cards/RunCard"
 import { lightTheme } from "./overlayTheme"
-import SlidingModal from "./SlidingModal"
 
 interface OverlayProps extends React.FC {
 	noLayout?: boolean
@@ -30,11 +35,9 @@ const Overlay: OverlayProps = () => {
 	)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (socketRef.current) {
-			socketRef.current.close() // Close any existing connection
+		if (!socketRef.current) {
+			socketRef.current = connectBroadcastControlSocket()
 		}
-		socketRef.current = connectBroadcastControlSocket()
-
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(
 				event.data as string
@@ -51,6 +54,7 @@ const Overlay: OverlayProps = () => {
 		}
 		socketRef.current.onerror = (error) => {
 			console.error("WebSocket error:", error)
+
 			if (socketRef?.current) {
 				socketRef.current.close() // Trigger onclose event for reconnection
 			}
@@ -89,7 +93,12 @@ const Overlay: OverlayProps = () => {
 			setSelectedHeat(overlayControlState.selectedHeat)
 		}
 	}, [overlayControlState.selectedHeat])
-
+	const setSelectedRun = (newRun: number) => dispatch(updateRun(newRun))
+	useEffect(() => {
+		if (overlayControlState.selectedHeat) {
+			setSelectedRun(overlayControlState.selectedRun)
+		}
+	}, [overlayControlState.selectedRun])
 	useEffect(() => {
 		connectWebSocket()
 	}, [])
@@ -100,7 +109,8 @@ const Overlay: OverlayProps = () => {
 				style={{
 					display: "grid",
 					gridTemplateRows: "15% auto 15%",
-					height: "100vh"
+					height: "100vh",
+					overflow: "clip"
 				}}
 			>
 				<header style={{ padding: "1rem" }}>
@@ -112,15 +122,33 @@ const Overlay: OverlayProps = () => {
 					</Grid>
 				</header>
 				<main style={{ padding: "1rem" }}>
-					<SlidingModal
-						direction="up"
-						show={overlayControlState.showHeatSummary}
-					>
-						<HeatSummaryTable />
-					</SlidingModal>
+					<HeatSummaryTable
+						overlayControlState={overlayControlState}
+					/>
+					<PhaseScoreTable
+						overlayControlState={overlayControlState}
+					/>
 				</main>
 				<footer style={{ padding: "1rem" }}>
-					<Grid container spacing={2} alignItems="stretch">
+					<Grid
+						container
+						spacing={2}
+						alignItems="stretch"
+						sx={{
+							transition: "all 0.3s ease-in-out",
+							"& .MuiGrid-item": {
+								transition: "all 0.3s ease-in-out"
+							}
+						}}
+					>
+						<AthleteInfoCard
+							overlayControlState={overlayControlState}
+						/>
+						<LiveRunScoreSpace
+							overlayControlState={overlayControlState}
+						/>
+
+						<RunCard overlayControlState={overlayControlState} />
 						<LiveTimerSpace
 							overlayControlState={overlayControlState}
 						/>

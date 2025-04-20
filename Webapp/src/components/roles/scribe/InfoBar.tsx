@@ -46,18 +46,6 @@ export const InfoBar = ({
 
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
-	const bonusList = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [paddlerInfo.scoresheet]
-	})
-
-	const scoredBonuses = useSelector(getScoredBonuses)
-	const currentScore = calculateSingleJudgeRunScore(
-		scoredMoves,
-		scoredBonuses,
-		availableMoves || [],
-		(bonusList.data as AvailableBonusType[]) || []
-	)
 
 	return (
 		<div style={{ height: "100%" }}>
@@ -90,7 +78,10 @@ export const InfoBar = ({
 					</Button>
 				</Grid>
 				<Grid size={3}>
-					<CurrentScore currentScore={currentScore} />
+					<CurrentScoreCalculation
+						availableMoves={availableMoves}
+						scoresheet={paddlerInfo.scoresheet}
+					/>
 				</Grid>
 				<Grid size={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
@@ -115,6 +106,29 @@ export const InfoBar = ({
 			</Grid>
 		</div>
 	)
+}
+
+export const CurrentScoreCalculation = ({
+	availableMoves,
+	scoresheet
+}: {
+	availableMoves: movesType[]
+	scoresheet: string
+}) => {
+	const bonusList = useGetManyAvailablebonusesGetQuery({
+		sheetIdListComparisonOperator: "Equal",
+		sheetIdList: [scoresheet]
+	})
+	const scoredMoves = useSelector(getScoredMoves)
+	const scoredBonuses = useSelector(getScoredBonuses)
+	const currentScore = calculateSingleJudgeRunScore(
+		scoredMoves,
+		scoredBonuses,
+		availableMoves || [],
+		(bonusList.data as AvailableBonusType[]) || []
+	)
+
+	return <CurrentScore currentScore={currentScore} />
 }
 
 export const CurrentScore = ({

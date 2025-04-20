@@ -80,10 +80,12 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (socketRef.current) {
-			socketRef.current.close()
-		}
 		socketRef.current = connectWebRunStatusSocket()
+	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
+	if (socketRef.current) {
 		socketRef.current.onmessage = (event) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			const jsonData = JSON.parse(event.data) as RunStatus
@@ -106,10 +108,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			}
 		}
 	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-
 	useEffect(() => {
 		if (httpRunStatus.data) {
 			setRunStatus(httpRunStatus.data[0] as RunStatus)

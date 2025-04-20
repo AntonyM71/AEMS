@@ -63,34 +63,32 @@ export const JudgeCard = ({
 		)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-			if (socketRef.current) {
-		socketRef.current.close()
+		if (!socketRef.current) {
+			socketRef.current = connectCurrentScoreStatusSocket()
+		}
+		socketRef.current.onmessage = (event) => {
+			const jsonData = JSON.parse(
+				event.data as string
+			) as ScoredMovesAndBonusesWithMetadata
+
+			if (
+				jsonData?.run_number === selectedRun &&
+				jsonData?.athlete_id === selectedAthlete?.id &&
+				jsonData?.heat_id === selectedHeat &&
+				jsonData?.judge_id === judge
+			) {
+				setMoveAndBonusData(jsonData.movesAndBonuses)
 			}
-
-		socketRef.current = connectCurrentScoreStatusSocket()
-				socketRef.current.onmessage = (event) => {
-					const jsonData = JSON.parse(
-						event.data as string
-					) as ScoredMovesAndBonusesWithMetadata
-
-					if (
-						jsonData?.run_number === selectedRun &&
-						jsonData?.athlete_id === selectedAthlete?.id &&
-						jsonData?.heat_id === selectedHeat &&
-						jsonData?.judge_id === judge
-					) {
-						setMoveAndBonusData(jsonData.movesAndBonuses)
-					}
-				}
-				socketRef.current.onclose = () => {
-					setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-				}
-				socketRef.current.onerror = (error) => {
-					console.error("WebSocket error:", error)
-					if (socketRef?.current) {
-						socketRef.current.close() // Trigger onclose event for reconnection
-					}
-				}
+		}
+		socketRef.current.onclose = () => {
+			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
+		}
+		socketRef.current.onerror = (error) => {
+			console.error("WebSocket error:", error)
+			if (socketRef?.current) {
+				socketRef.current.close() // Trigger onclose event for reconnection
+			}
+		}
 	}
 
 	useEffect(() => {
