@@ -27,6 +27,7 @@ lint.select = [
 ]
 lint.fixable = ["ALL"]
 line-length = 88
+extend-exclude = ["src/tm1637.py"]
 [tool.ruff.lint.flake8-bugbear]
 [tool.pytest.ini_options]
 addopts = ["--cov=.", "--cov-report=term-missing"]

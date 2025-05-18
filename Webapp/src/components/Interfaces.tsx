@@ -1,13 +1,14 @@
 import { AthleteInfo } from "./roles/scribe/InfoBar"
 
 export interface OverlayControlState {
+	// flags to show/hide different components
 	showTimer: boolean
 	showImageCard: boolean
 	showHeatSummary: boolean
 	showLiveRunScore: boolean
 	showPhaseResults: boolean
 
-	//
+	// data
 	selectedCompetition: string
 	selectedEvent: string
 	selectedPhase: string
