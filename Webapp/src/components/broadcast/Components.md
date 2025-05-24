@@ -16,9 +16,10 @@ kanban
         Mini Heat Scores
 
     In Progress
-        Athlete Live Run Score @{priority: "High"}
+
 
     Initial Capability
+        Athlete Live Run Score @{priority: "High"}
         Phase Scoreboard
         Heat List
         Timer

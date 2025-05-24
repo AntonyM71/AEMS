@@ -10,10 +10,7 @@ import { useSelector } from "react-redux"
 import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
-import {
-	calculateSingleJudgeRunScore,
-	RunScoreInfo
-} from "../../../utils/scoringUtils"
+import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
 import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
@@ -128,14 +125,10 @@ export const CurrentScoreCalculation = ({
 		(bonusList.data as AvailableBonusType[]) || []
 	)
 
-	return <CurrentScore currentScore={currentScore} />
+	return <CurrentScore currentScore={currentScore.score} />
 }
 
-export const CurrentScore = ({
-	currentScore
-}: {
-	currentScore: RunScoreInfo
-}) => (
+export const CurrentScore = ({ currentScore }: { currentScore: number }) => (
 	<Paper
 		sx={{
 			padding: "0.5em",
@@ -144,7 +137,7 @@ export const CurrentScore = ({
 	>
 		<Typography>Score:</Typography>
 		<div style={{ textAlign: "center" }}>
-			<Typography>{currentScore.score}</Typography>
+			<Typography>{currentScore}</Typography>
 		</div>
 	</Paper>
 )
