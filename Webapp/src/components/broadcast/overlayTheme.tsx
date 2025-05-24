@@ -6,17 +6,19 @@ const icfWhite = "#f8f9fc"
 
 export const lightTheme = createTheme({
 	palette: {
-		mode: "light",
+		mode: "dark", // Aero Glass had a translucent dark aesthetic
 		primary: {
-			main: "#d88225" // Accent color for highlights
+			main: "#d88225" // Soft glowing blue from Windows Vista's highlights
 		},
 		secondary: {
-			main: "#008a73" // Secondary accent
+			main: "#008a73" // A lighter cyan for accents
 		},
+
 		background: {
-			default: icfWhite, // Subtle gradient
-			paper: icfDarkBlue
+			default: "rgba(20, 20, 20, 0.6)", // Semi-transparent dark background
+			paper: "rgba(30, 30, 30, 0.5)" // Slightly lighter for elevation
 		},
+
 		text: {
 			primary: icfWhite,
 			secondary: "rgba(255, 255, 255, 0.7)" // Slightly muted secondary text
@@ -76,26 +78,8 @@ export const lightTheme = createTheme({
 			styleOverrides: {
 				root: {
 					height: "100%", // Make Grid items fill the height
-					width: "100%" // Make Grid items fill the width
-				}
-			}
-		},
-		MuiButton: {
-			styleOverrides: {
-				root: {
-					backgroundColor: "transparent", // No background
-					color: "transparent", // No text color
-					boxShadow: "none", // No shadow
-					border: "none", // No border
-					padding: 0, // Remove padding
-					minWidth: 0, // Remove minimum width
-					minHeight: 0, // Remove minimum height
-					"&:hover": {
-						backgroundColor: "transparent" // No hover effect
-					},
-					"&:focus": {
-						outline: "none" // Remove focus outline
-					}
+					width: "100%", // Make Grid items fill the width
+					boxShadow: "none" // Remove drop shadow from the modal
 				}
 			}
 		},
@@ -103,13 +87,23 @@ export const lightTheme = createTheme({
 		MuiPaper: {
 			styleOverrides: {
 				root: {
-					borderRadius: 0,
-					padding: "1rem", // Add padding for better spacing
-					// boxShadow: "none", // Flat design,
-					background: "linear-gradient(135deg, #1d82c5, #0c2850)", // Gradient background
-					color: icfWhite, // Ensure text is readable
-					height: "100%", // Full height for the card
-					boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)" // Subtle shadow for depth
+					backgroundColor: "rgba(30, 30, 30, 0.7)", // Transparent glassy effect
+					position: "relative",
+					padding: "1em", // Add some margin for spacing
+
+					overflow: "hidden", // Ensures the blur effect stays contained
+
+					backgroundImage: `
+					  radial-gradient(circle, rgba(255, 255, 255, 0.05) 10%, transparent 80%),
+					  linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.6) 100%)
+					`,
+
+					boxShadow:
+						"inset 0px 0px 8px rgba(255, 255, 255, 0.1), 4px 4px 20px rgba(0, 0, 0, 0.6)", // Inner glow
+
+					borderRadius: "9px", // Smooth rounded corners
+					borderImage:
+						"linear-gradient(transparent, rgba(255,255,255,0.2)) 2" // Light reflection
 				}
 			}
 		},
@@ -117,43 +111,32 @@ export const lightTheme = createTheme({
 		MuiModal: {
 			styleOverrides: {
 				root: {
-					boxShadow: "none" // Remove drop shadow from the modal
+					backgroundColor: "rgba(0, 0, 0, 0)", // Fully transparent
+					outline: "none",
+					"&:focus-visible": {
+						outline: "none"
+					}
 				}
 			}
 		},
 		MuiBackdrop: {
 			styleOverrides: {
 				root: {
-					backgroundColor: "transparent" // Remove the shadow and background
+					backgroundColor: "transparent", // Remove the shadow and background
+					boxShadow: "none" // No shadow// Remove drop shadow from the modal
 				}
 			}
 		},
-		MuiIconButton: {
-			styleOverrides: {
-				root: {
-					backgroundColor: "transparent", // No background
-					color: "transparent", // No icon color
-					boxShadow: "none", // No shadow
-					border: "none", // No border
-					padding: 0, // Remove padding
-					minWidth: 0, // Remove minimum width
-					minHeight: 0, // Remove minimum height
-					"&:hover": {
-						backgroundColor: "transparent" // No hover effect
-					},
-					"&:focus": {
-						outline: "none" // Remove focus outline
-					}
-				}
-			}
-		},
+
 		MuiDivider: {
 			styleOverrides: {
 				root: {
-					background:
-						// eslint-disable-next-line max-len
-						"linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))",
-					height: "2px" // Adjust thickness globally
+					borderImage:
+						"linear-gradient(90deg, " +
+						"rgba(255, 255, 255, 0.1), " +
+						"rgba(255, 255, 255, 0.3), " +
+						"rgba(255, 255, 255, 0.1)) 1",
+					borderWidth: "2px"
 				}
 			}
 		},
@@ -163,12 +146,6 @@ export const lightTheme = createTheme({
 					textShadow: "none"
 				}
 			}
-		}
-	},
-	mixins: {
-		MuiDataGrid: {
-			// Headers, and top & bottom fixed rows
-			containerBackground: "rgba(255, 255, 255, 0.1)"
 		}
 	}
 })

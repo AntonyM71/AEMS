@@ -48,7 +48,13 @@ export const BasicTable = ({
 			aria-label="simple table"
 		>
 			<TableHead>
-				<TableRow sx={{ background: "rgba(255, 255, 255, 0.3)" }}>
+				<TableRow
+					sx={{
+						backgroundImage:
+							"linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(40, 40, 40, 0.5) 100%)",
+						borderBottom: "2px solid rgba(255, 255, 255, 0.2)"
+					}}
+				>
 					{Object.keys(data[0]).map((k) => (
 						<TableCell key={k} sx={{ fontWeight: "bold" }}>
 							{k}
@@ -75,10 +81,8 @@ export const BasicTable = ({
 			<TableFooter>
 				<TableRow
 					sx={{
-						background: "rgba(255, 255, 255, 0.3)",
-						"&:last-child td, &:last-child th": {
-							border: 0
-						}
+						background: "rgba(40, 40, 40, 0.6)",
+						borderTop: "2px solid rgba(255, 255, 255, 0.2)"
 					}}
 				>
 					<TableCell

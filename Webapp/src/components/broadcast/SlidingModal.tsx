@@ -13,7 +13,7 @@ const SlidingModal: React.FC<SlidingWrapperProps> = ({
 	show,
 	direction = "up" // Default slide direction
 }) => (
-	<Modal open={show}>
+	<Modal open={show} disableAutoFocus={true}>
 		<Slide direction={direction} in={show}>
 			<Box
 				sx={{
@@ -22,10 +22,9 @@ const SlidingModal: React.FC<SlidingWrapperProps> = ({
 					left: "15%", // Center horizontally
 					transform: "translate(-50%, -50%)", // Adjust for both axes
 					width: "70%",
-					height: "80%",
-					bgcolor: "background.paper",
-					border: "none", // Transparent border
-					boxShadow: 24
+					height: "70%",
+
+					border: "none" // Transparent border
 				}}
 			>
 				{children}
