@@ -36,7 +36,7 @@ graph LR
         12vGround[Ground]
 
     end
-    subgraph 5vPSU[5v PSU]
+    subgraph 5vPSU[5v PSU] n
         5vPositive[Pos]
         5vNegative[Neg]
 
@@ -46,7 +46,7 @@ graph LR
         GPIO4[GPIO Pin 5 - Cancel Timer Switch Input]
         GPIO8[GPIO Pin 8 - Display Clock]
         GPIO7[GPIO Pin 4 - Display DIO]
-        GPIO27[GPIO Pin 27 - Buzzer Output]
+        GPIO15[GPIO Pin 15 - Buzzer Output]
         GPIO6[GPIO Pin 6 - Ready Light]
         GPIO14[GPIO Pin 14 - Running Light]
         PowerRail5V[5V Power Rail]
@@ -57,8 +57,8 @@ graph LR
     subgraph RelayModule[5V Triggered Relay Module]
         IN[ Control Signal In]
         IN --> CoilPositive
-        12vPositive --> CoilPositive[Coil +]
-        CoilNegative[Coil -] --> 12vNegative
+        PowerRail5V --> CoilPositive[Coil +]
+        CoilNegative[Coil -] --> RPIGround
         NO[Normally Open]
         COM[Common Contact] --> 12vNegative
         NC[Normally Closed]
@@ -94,8 +94,9 @@ graph LR
     end
     PowerRail5V --> PowerRail33V
 
-    12vPositive --> Collector
-    GPIO27 --> Base
+    PowerRail5V --> Collector
+    GPIO15 --> TransistorProtectionResistor[1K Resistor]
+    TransistorProtectionResistor --> Base
     Emitter --> IN
     12vPositive --> COM
     12vNegative --> RCD
@@ -113,7 +114,7 @@ graph LR
     Coil --> CoilNegative
     PowerRail5V[5V Power Rail] -->  Switch1[Start Timer Switch]
 
-    PowerRail5V --> GPIO27
+    PowerRail5V --> GPIO15
     PowerRail5V --> GPIO6
     PowerRail5V --> GPIO14
     PowerRail5V --> GPIO7

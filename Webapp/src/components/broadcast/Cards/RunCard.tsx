@@ -1,9 +1,9 @@
+import { Collapse } from "@mui/material"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
-import SlidingWrapper from "../SlidingWrapper"
 
 const RunCard = ({
 	overlayControlState
@@ -23,13 +23,10 @@ const RunCard = ({
 		)?.[0]?.number_of_runs ?? 0
 
 	return (
-		<SlidingWrapper
-			show={
-				overlayControlState.showLiveRunScore &&
-				!!overlayControlState.selectedRun.toString() &&
-				athletes.isSuccess
-			}
-			gridSize={1}
+		<Collapse
+			in={overlayControlState.showLiveRunScore}
+			orientation="horizontal"
+			sx={{ display: "flex", justifyContent: "flex-end" }}
 		>
 			<Paper
 				sx={{
@@ -52,7 +49,7 @@ const RunCard = ({
 					</Stack>
 				</Stack>
 			</Paper>
-		</SlidingWrapper>
+		</Collapse>
 	)
 }
 

@@ -53,7 +53,8 @@ const OverlayController: React.FC = () => {
 				first_name: athleteData[currentPaddlerIndex].first_name,
 				last_name: athleteData[currentPaddlerIndex].last_name,
 				bib: athleteData[currentPaddlerIndex].bib,
-				scoresheet: athleteData[currentPaddlerIndex].scoresheet
+				scoresheet: athleteData[currentPaddlerIndex].scoresheet,
+				affiliation: athleteData[currentPaddlerIndex].affiliation
 			})
 		} else {
 			setSelectedAthlete(undefined)
@@ -162,6 +163,19 @@ const OverlayController: React.FC = () => {
 				/>
 			</Grid>
 			<Grid size={12}>
+				<ConfigurableButton
+					label="Show Heat Event Title"
+					active={overlayControlState.showEventTitle}
+					onClick={() => {
+						if (overlayControlState.selectedEvent) {
+							toggleKey("showEventTitle")
+						} else {
+							toast.error(
+								"Please select an event to use this feature"
+							)
+						}
+					}}
+				/>
 				<ConfigurableButton
 					label="Show Heat Summary Modal"
 					active={overlayControlState.showHeatSummary}

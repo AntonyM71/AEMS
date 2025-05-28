@@ -1,3 +1,4 @@
+import Collapse from "@mui/material/Collapse"
 import { useState } from "react"
 import {
 	useGetManyAvailablebonusesGetQuery,
@@ -9,7 +10,6 @@ import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { MoveSubscriberUpdater } from "../../roles/headJudge/JudgeCard"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
-import SlidingWrapper from "../SlidingWrapper"
 
 export const LiveRunScoreSpace = ({
 	overlayControlState
@@ -48,9 +48,10 @@ export const LiveRunScoreSpace = ({
 		.map((_, i) => i + 1)
 
 	return (
-		<SlidingWrapper
-			show={overlayControlState.showLiveRunScore && !!scoresheet}
-			gridSize={1}
+		<Collapse
+			in={overlayControlState.showLiveRunScore}
+			orientation="horizontal"
+			sx={{ display: "flex", justifyContent: "flex-end" }}
 		>
 			{judgeNumberArray.map((judge) => (
 				<MoveSubscriberUpdater
@@ -68,11 +69,12 @@ export const LiveRunScoreSpace = ({
 					judge={judge}
 				/>
 			))}
+
 			<FinalScore
 				allJudgeScores={allJudgeScores}
 				locked={false}
 				did_not_start={false}
 			/>
-		</SlidingWrapper>
+		</Collapse>
 	)
 }

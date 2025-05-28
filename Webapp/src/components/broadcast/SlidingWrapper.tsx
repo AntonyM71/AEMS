@@ -1,4 +1,3 @@
-import Grid from "@mui/material/Grid2"
 import Slide from "@mui/material/Slide"
 import React from "react"
 
@@ -12,12 +11,21 @@ interface SlidingWrapperProps {
 const SlidingWrapper: React.FC<SlidingWrapperProps> = ({
 	children,
 	show,
-	direction = "up", // Default slide direction
-	gridSize = 2 // Default Grid item size
-}) => (
-	<Slide direction={direction} in={show} mountOnEnter unmountOnExit>
-		<Grid size={gridSize}>{children}</Grid>
-	</Slide>
-)
+	direction = "up" // Default slide direction
+}) => {
+	const containerRef = React.useRef<HTMLElement>(null)
+
+	return (
+		<Slide
+			direction={direction}
+			in={show}
+			container={containerRef.current}
+			mountOnEnter
+			unmountOnExit
+		>
+			<div>{children}</div>
+		</Slide>
+	)
+}
 
 export default SlidingWrapper

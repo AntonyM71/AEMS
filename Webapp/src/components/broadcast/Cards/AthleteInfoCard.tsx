@@ -1,20 +1,18 @@
+import Collapse from "@mui/material/Collapse"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { OverlayControlState } from "../../Interfaces"
-import SlidingWrapper from "../SlidingWrapper"
 
 const AthleteInfoCard = ({
 	overlayControlState
 }: {
 	overlayControlState: OverlayControlState
 }) => (
-	<SlidingWrapper
-		show={
-			overlayControlState.showLiveRunScore &&
-			!!overlayControlState.selectedAthlete
-		}
-		gridSize={3}
+	<Collapse
+		in={overlayControlState.showLiveRunScore}
+		orientation="horizontal"
+		sx={{ display: "flex", justifyContent: "flex-end" }}
 	>
 		<Paper
 			sx={{
@@ -24,23 +22,32 @@ const AthleteInfoCard = ({
 		>
 			<Stack
 				spacing={2}
-				direction={"row"}
-				justifyContent={"space-between"}
+				direction={"column"}
+				justifyContent={"space-around"}
 			>
-				<Typography>
-					{overlayControlState.selectedAthlete?.bib}
-				</Typography>
-				<Stack spacing={2} direction={"row"}>
+				<Stack
+					spacing={2}
+					direction={"row"}
+					justifyContent={"space-between"}
+				>
 					<Typography>
-						{overlayControlState.selectedAthlete?.first_name}
+						{overlayControlState.selectedAthlete?.bib}
 					</Typography>
-					<Typography>
-						{overlayControlState.selectedAthlete?.last_name.toUpperCase()}
-					</Typography>
+					<Stack spacing={2} direction={"row"}>
+						<Typography>
+							{overlayControlState.selectedAthlete?.first_name}
+						</Typography>
+						<Typography>
+							{overlayControlState.selectedAthlete?.last_name.toUpperCase()}
+						</Typography>
+					</Stack>
 				</Stack>
+				<Typography sx={{ textAlign: "right", width: "100%" }}>
+					{overlayControlState.selectedAthlete?.affiliation}
+				</Typography>
 			</Stack>
 		</Paper>
-	</SlidingWrapper>
+	</Collapse>
 )
 
 export default AthleteInfoCard

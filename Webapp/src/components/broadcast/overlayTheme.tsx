@@ -94,12 +94,14 @@ export const lightTheme = createTheme({
 					overflow: "hidden", // Ensures the blur effect stays contained
 
 					backgroundImage: `
-					  radial-gradient(circle, rgba(255, 255, 255, 0.05) 10%, transparent 80%),
-					  linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.6) 100%)
+	  					radial-gradient(circle, rgba(255, 255, 255, 0.05) 10%, transparent 80%),
+					  	linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.8) 100%)
 					`,
 
-					boxShadow:
-						"inset 0px 0px 8px rgba(255, 255, 255, 0.1), 4px 4px 20px rgba(0, 0, 0, 0.6)", // Inner glow
+					boxShadow: `
+						inset 0px 0px 8px rgba(255, 255, 255, 0.1),
+						4px 4px 20px rgba(0, 0, 0, 0.6)
+						`, // Inner glow
 
 					borderRadius: "9px", // Smooth rounded corners
 					borderImage:

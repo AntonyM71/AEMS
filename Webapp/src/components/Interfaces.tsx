@@ -7,7 +7,7 @@ export interface OverlayControlState {
 	showHeatSummary: boolean
 	showLiveRunScore: boolean
 	showPhaseResults: boolean
-
+	showEventTitle: boolean
 	// data
 	selectedCompetition: string
 	selectedEvent: string
@@ -22,6 +22,7 @@ export const defaultOverlayControllerState: OverlayControlState = {
 	showTimer: false,
 	showImageCard: true,
 	showHeatSummary: false,
+	showEventTitle: false,
 	showLiveRunScore: false,
 	showPhaseResults: false,
 	selectedCompetition: "",

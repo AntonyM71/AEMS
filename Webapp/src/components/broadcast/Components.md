@@ -7,7 +7,7 @@ This document outlines the components required for a sports TV broadcast overlay
 ```mermaid
 kanban
     Backlog
-        Competition & Event Title Card @{priority: "High"}
+
         Athlete Run Scores @{priority: "High"}
         Custom Text @{priority: "High"}
         Sponsor Logos
@@ -19,12 +19,14 @@ kanban
 
 
     Initial Capability
+        Competition & Event Title Card @{priority: "High"}
         Athlete Live Run Score @{priority: "High"}
         Phase Scoreboard
         Heat List
         Timer
         Athlete Card
         ICF/Event Logo
+        Themes
     Polished
 
 ```

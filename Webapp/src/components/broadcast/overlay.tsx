@@ -1,7 +1,9 @@
+import { Stack } from "@mui/material"
 import Grid from "@mui/material/Grid2"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect, useRef } from "react"
 import { useDispatch } from "react-redux"
+import TransitionGroup from "react-transition-group/TransitionGroup"
 import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
 
 import {
@@ -17,6 +19,7 @@ import {
 	OverlayControlState
 } from "../Interfaces"
 import AthleteInfoCard from "./Cards/AthleteInfoCard"
+import { EventTitle } from "./Cards/EventTitle"
 import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
 import { SlidingImageCard } from "./Cards/ICFLogo"
 import { LiveRunScoreSpace } from "./Cards/LiveRunScore"
@@ -128,18 +131,13 @@ const Overlay: OverlayProps = () => {
 					<PhaseScoreTable
 						overlayControlState={overlayControlState}
 					/>
+					<EventTitle overlayControlState={overlayControlState} />
 				</main>
 				<footer style={{ padding: "1rem" }}>
-					<Grid
-						container
+					<TransitionGroup
+						component={Stack}
+						direction="row"
 						spacing={2}
-						alignItems="stretch"
-						sx={{
-							transition: "all 0.3s ease-in-out",
-							"& .MuiGrid-item": {
-								transition: "all 0.3s ease-in-out"
-							}
-						}}
 					>
 						<AthleteInfoCard
 							overlayControlState={overlayControlState}
@@ -147,12 +145,12 @@ const Overlay: OverlayProps = () => {
 						<LiveRunScoreSpace
 							overlayControlState={overlayControlState}
 						/>
-
 						<RunCard overlayControlState={overlayControlState} />
+
 						<LiveTimerSpace
 							overlayControlState={overlayControlState}
 						/>
-					</Grid>
+					</TransitionGroup>
 				</footer>
 			</div>
 		</ThemeProvider>
