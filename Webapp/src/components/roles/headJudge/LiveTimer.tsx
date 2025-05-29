@@ -11,13 +11,11 @@ export const LiveTimerLogic: React.FC = () => {
 	const [time, setTime] = useState<number>(0)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectTimerSocket()
-		}
+		socketRef.current ??= connectTimerSocket()
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(event.data as string) as TimeInfo
 
-			if (jsonData?.time_remaining) {
+			if (jsonData?.time_remaining !== undefined) {
 				setTime(jsonData.time_remaining)
 			}
 		}

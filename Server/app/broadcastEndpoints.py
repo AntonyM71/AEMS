@@ -26,7 +26,7 @@ async def runstatus_websocket(websocket: WebSocket) -> None:
         )
     except WebSocketDisconnect as e:
         if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Current Score Websocket")
+            logging.exception(f"Error with Current Score Websocket: {e}")
 
         await websocket.close()
 
