@@ -23,6 +23,7 @@ export interface AthleteInfo {
 	last_name: string
 	bib: string
 	scoresheet: string
+	affiliation?: string
 }
 interface PropsType {
 	paddlerInfo: AthleteInfo
