@@ -34,14 +34,17 @@ broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
 async def ws_receiver(
     websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
 ) -> None:
-    while True:  # Keep the receiver alive indefinitely
+    while True:  # This loop should break when connection is closed
         try:
             async for message in websocket.iter_text():
                 await publisher(message=message, channel=channel, side_effect=side_effect)
         except Exception as e:
+            if "disconnect message has been received" in str(e):
+                logging.info(
+                    f"WebSocket disconnected on channel {channel}: { e}")
+                break  # Exit the loop when we get disconnect message
             logging.exception(f"Receiver error on channel {channel}: {e}")
-            await asyncio.sleep(1)  # Brief pause before retry
-            continue  # Keep the receiver alive even after errors
+            await asyncio.sleep(1)
 
 
 async def publisher(
@@ -66,6 +69,6 @@ async def ws_sender(
                         await websocket.send_text(str(data))
                     else:
                         await websocket.send_text(event.message)
-        except Exception:
+        except Exception as e:
             logging.exception(f"Sender error on channel {channel}: {e}")
             raise
