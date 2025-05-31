@@ -1,3 +1,4 @@
+import logging
 import os
 from collections.abc import Awaitable, Callable
 from typing import Optional
@@ -49,11 +50,15 @@ async def ws_sender(
     channel: str,
     fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
 ) -> None:
-    async with broadcast.subscribe(channel=channel) as subscriber:
-        async for event in subscriber:
-            if fetch_data_with_message:
-                data = await fetch_data_with_message(event.message)
-
-                await websocket.send_text(str(data))
-            else:
-                await websocket.send_text(event.message)
+    while True:  # Keep trying to maintain subscription
+        try:
+            async with broadcast.subscribe(channel=channel) as subscriber:
+                async for event in subscriber:
+                    if fetch_data_with_message:
+                        data = await fetch_data_with_message(event.message)
+                        await websocket.send_text(str(data))
+                    else:
+                        await websocket.send_text(event.message)
+        except Exception:
+            logging.exception("Error with WebSocket Sender: {e}")
+            raise
