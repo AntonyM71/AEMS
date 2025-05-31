@@ -7,11 +7,14 @@ import os
 import queue
 import threading
 import time
-from typing import Any, Optional, Literal
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import Any, Literal, Optional
+
 import RPi.GPIO as GPIO
 import websockets
+
 from tm1637 import TM1637Decimal
+
 logging.basicConfig(level=logging.WARN)
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -37,6 +40,8 @@ GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
 CLK = 8
 DIO = 7
+
+
 def swap(segs):
     length = len(segs)
     if length == 4 or length == 5:
@@ -66,9 +71,11 @@ message_queue = queue.Queue()  # Thread-safe queue for WebSocket messages
 websocket_running = True  # Flag to control the WebSocket thread
 
 # Server configuration - change this to match your server address
-WS_SERVER_URL = os.environ.get("WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+WS_SERVER_URL = os.environ.get(
+    "WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
 
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
+
 
 def get_short_status(status: StatusLiteral) -> str:
     """Returns a three-letter abbreviation for the given status."""
@@ -79,6 +86,7 @@ def get_short_status(status: StatusLiteral) -> str:
         "cancelled": "CAN"
     }
     return status_map.get(status, "UNK")  # "UNK" for unknown statuses
+
 
 @dataclass(order=True)
 class QueueItem:
@@ -125,14 +133,14 @@ async def process_message_queue(websocket: Any) -> None:
         message: QueueItem = message_queue.get(block=False)
         # Send the message
         await websocket.send(json.dumps(asdict(message)))
-        tm.write(swap(tm.encode_string(f'{get_short_status(message.status)}-{int(message.time_remaining):02}')))
+        tm.write(swap(tm.encode_string(
+            f'{get_short_status(message.status)}-{int(message.time_remaining):02}')))
         message_queue.task_done()
     except queue.Empty:
         # No messages to process
         pass
     except Exception as e:
-        logging.error(f"Error processing item from queue: {e}")
-
+        logging.exception(f"Error processing item from queue: {e}")
 
 
 async def cleanup_websocket(websocket: Any) -> None:
@@ -189,7 +197,8 @@ def start_websocket_thread() -> None:
 
     if websocket_thread is None or not websocket_thread.is_alive():
         websocket_running = True
-        websocket_thread = threading.Thread(target=websocket_worker, daemon=True)
+        websocket_thread = threading.Thread(
+            target=websocket_worker, daemon=True)
         websocket_thread.start()
 
 
@@ -209,7 +218,8 @@ def send_timer_update(status: str, time_remaining: Optional[float] = None) -> No
     try:
 
         payload = QueueItem(status=status,
-                            time_remaining = round(time_remaining,0) if time_remaining else 0
+                            time_remaining=round(
+                                time_remaining, 0) if time_remaining else 0
                             )
 
         message_queue.put(payload)
@@ -225,13 +235,12 @@ def set_running_light_off() -> None:
     GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
 
-def buzz( duration: float = 1.0) -> None:
+def buzz(duration: float = 1.0) -> None:
 
     GPIO.output(PIN_BUZZER, GPIO.HIGH)
 
     time.sleep(duration)
     GPIO.output(PIN_BUZZER, GPIO.LOW)
-
 
 
 def double_buzz(duration: float = 0.33, gap: float = 0.33) -> None:
@@ -287,7 +296,7 @@ def timer_task() -> None:
     # Timer phase durations
     total_duration_1 = 35  # First phase duration
     sec10_buzz_duration = 0.25
-    total_duration_2 = 10 - sec10_buzz_duration # Second phase duration
+    total_duration_2 = 10 - sec10_buzz_duration  # Second phase duration
 
     total_duration = total_duration_1 + total_duration_2 + sec10_buzz_duration
 
