@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -9,31 +10,24 @@ broadcast_router = APIRouter(tags=["broadcast"])
 
 
 @broadcast_router.websocket("/timer")
+@broadcast_router.websocket("/timer")
 async def runstatus_websocket(websocket: WebSocket) -> None:
     channel = "timer"
     await websocket.accept()
     try:
-        await run_until_first_complete(
-            (
-                ws_receiver,
-                {
-                    "websocket": websocket,
-                    "side_effect": None,
-                    "channel": channel,
-                },
-            ),
-            (ws_sender, {"websocket": websocket, "channel": channel}),
+        # Run both tasks until they complete or error
+        await asyncio.gather(
+            ws_receiver(websocket=websocket,
+                        side_effect=None, channel=channel),
+            ws_sender(websocket=websocket, channel=channel)
         )
     except WebSocketDisconnect as e:
-
-        logging.exception(
-            f"Timer WebSocket disconnected with code {e.code} - Error: {e}")
+        logging.info(
+            f"Timer WebSocket disconnected normally with code {e.code} :{e}")
     except Exception as e:
-
-        logging.exception(f"Error with Current Score Websocket: {e}")
+        logging.exception(f"Timer WebSocket error: {e}")
     finally:
         await websocket.close()
-        logging.info(f"Timer WebSocket closed for channel {channel}")
 
 
 @broadcast_router.websocket("/broadcast_control")
