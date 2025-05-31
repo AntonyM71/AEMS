@@ -1,4 +1,3 @@
-import asyncio
 import os
 from collections.abc import Awaitable, Callable
 from typing import Optional
@@ -33,25 +32,6 @@ broadcast_cache_location = os.environ.get(
 broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
 
 
-async def ws_receiver(
-    websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
-) -> None:
-    logger.info("receiver.start", channel=channel)
-    while True:
-        try:
-            async for message in websocket.iter_text():
-                logger.debug("receiver.message",
-                             channel=channel, message=message)
-                await publisher(message=message, channel=channel, side_effect=side_effect)
-        except Exception as e:
-            if "disconnect message has been received" in str(e):
-                logger.info("receiver.disconnect",
-                            channel=channel, error=str(e))
-                break
-            logger.exception("receiver.error", channel=channel, error=str(e))
-            await asyncio.sleep(1)
-
-
 async def publisher(
     message: str, channel: str, side_effect: Optional[Callable[[str], None]] = None
 ) -> None:
@@ -60,31 +40,60 @@ async def publisher(
         side_effect(message)
 
 
+async def ws_receiver(
+    websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
+) -> None:
+    logger.info("receiver.start", channel=channel)
+    while True:
+        try:
+            async for message in websocket.iter_text():
+
+                logger.info(
+                    "websocket.message",
+                    channel=channel,
+                    raw_message=message,
+                    message_type=type(message).__name__
+                )
+                await publisher(message=message, channel=channel, side_effect=side_effect)
+        except Exception as e:
+            # Log the EXACT state when disconnect happens
+            logger.exception(
+                "websocket.state_at_disconnect",
+                channel=channel,
+                client_state=websocket.client_state,
+                application_state=websocket.application_state,
+                error_type=type(e).__name__,
+                error_full=repr(e),
+                error_str=str(e)
+            )
+            raise  # Let the error propagate so we can see the full chain
+
+
 async def ws_sender(
     websocket: WebSocket,
     channel: str,
     fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
 ) -> None:
     logger.info("sender.start", channel=channel)
-    while True:  # Keep trying to maintain subscription
+    while True:
         try:
-            logger.debug("sender.subscribing", channel=channel)
             async with broadcast.subscribe(channel=channel) as subscriber:
-                logger.debug("sender.subscribed", channel=channel)
+                # Log the exact state of both connections
+                logger.info(
+                    "connections.state",
+                    channel=channel,
+                    websocket_state=websocket.client_state,
+                    broadcast_connected=subscriber
+                )
                 async for event in subscriber:
-                    logger.debug("sender.event",
-                                 channel=channel,
-                                 event_message=event.message)
-                    if fetch_data_with_message:
-                        data = await fetch_data_with_message(event.message)
-                        await websocket.send_text(str(data))
-                    else:
-                        await websocket.send_text(event.message)
+                    await websocket.send_text(event.message)
         except Exception as e:
-            logger.exception(
-                "sender.error",
+            # Log the state when sender fails
+            logger.error(
+                "sender.state_at_failure",
                 channel=channel,
+                websocket_state=websocket.client_state,
                 error_type=type(e).__name__,
-                error_str=str(e)
+                error_full=repr(e)
             )
             raise
