@@ -52,9 +52,14 @@ async def ws_receiver(
                 "websocket.raw_message",
                 channel=channel,
                 message_type=raw_message.get("type"),
-                message=raw_message
+                message=raw_message,
+                source={
+                    "client": websocket.client.host,
+                    "port": websocket.client.port,
+                    "headers": dict(websocket.headers),
+                    "asgi_scope": {k: v for k, v in websocket.scope.items() if isinstance(v, (str, int, bool))}
+                }
             )
-
             if raw_message["type"] == "websocket.receive":
                 message = raw_message.get("text", "")
                 await publisher(message=message, channel=channel, side_effect=side_effect)
