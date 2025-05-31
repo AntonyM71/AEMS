@@ -46,15 +46,26 @@ async def ws_receiver(
     logger.info("receiver.start", channel=channel)
     while True:
         try:
-            async for message in websocket.iter_text():
+            # Log the raw ASGI message before we process it
+            raw_message = await websocket._receive()
+            logger.info(
+                "websocket.raw_message",
+                channel=channel,
+                message_type=raw_message.get("type"),
+                message=raw_message
+            )
 
-                logger.info(
-                    "websocket.message",
-                    channel=channel,
-                    raw_message=message,
-                    message_type=type(message).__name__
-                )
+            if raw_message["type"] == "websocket.receive":
+                message = raw_message.get("text", "")
                 await publisher(message=message, channel=channel, side_effect=side_effect)
+            elif raw_message["type"] == "websocket.disconnect":
+                logger.info(
+                    "websocket.disconnect_request",
+                    channel=channel,
+                    code=raw_message.get("code"),
+                    reason=raw_message.get("reason")
+                )
+                break
         except Exception as e:
             # Log the EXACT state when disconnect happens
             logger.exception(
