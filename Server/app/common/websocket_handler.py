@@ -33,8 +33,14 @@ broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
 async def ws_receiver(
     websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
 ) -> None:
-    async for message in websocket.iter_text():
-        await publisher(message=message, channel=channel, side_effect=side_effect)
+    try:
+        async for message in websocket.iter_text():
+            await publisher(message=message, channel=channel, side_effect=side_effect)
+    except Exception as e:
+        logging.exception(f"Receiver error on channel {channel}: {e}")
+        raise
+    finally:
+        logging.info(f"Receiver closed for channel {channel}")
 
 
 async def publisher(
@@ -60,5 +66,5 @@ async def ws_sender(
                     else:
                         await websocket.send_text(event.message)
         except Exception:
-            logging.exception("Error with WebSocket Sender: {e}")
+            logging.exception(f"Sender error on channel {channel}: {e}")
             raise

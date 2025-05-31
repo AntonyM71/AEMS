@@ -24,11 +24,16 @@ async def runstatus_websocket(websocket: WebSocket) -> None:
             ),
             (ws_sender, {"websocket": websocket, "channel": channel}),
         )
+    except WebSocketDisconnect as e:
+        if e.code != 1001:  # 1001 is normal closure
+            logging.exception(
+                f"Timer WebSocket disconnected with code {e.code} - Error: {e}")
     except Exception as e:
 
         logging.exception(f"Error with Current Score Websocket: {e}")
-
+    finally:
         await websocket.close()
+        logging.info(f"Timer WebSocket closed for channel {channel}")
 
 
 @broadcast_router.websocket("/broadcast_control")
