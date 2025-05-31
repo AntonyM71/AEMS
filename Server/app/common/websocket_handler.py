@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from collections.abc import Awaitable, Callable
@@ -33,14 +34,14 @@ broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
 async def ws_receiver(
     websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
 ) -> None:
-    try:
-        async for message in websocket.iter_text():
-            await publisher(message=message, channel=channel, side_effect=side_effect)
-    except Exception as e:
-        logging.exception(f"Receiver error on channel {channel}: {e}")
-        raise
-    finally:
-        logging.info(f"Receiver closed for channel {channel}")
+    while True:  # Keep the receiver alive indefinitely
+        try:
+            async for message in websocket.iter_text():
+                await publisher(message=message, channel=channel, side_effect=side_effect)
+        except Exception as e:
+            logging.exception(f"Receiver error on channel {channel}: {e}")
+            await asyncio.sleep(1)  # Brief pause before retry
+            continue  # Keep the receiver alive even after errors
 
 
 async def publisher(
