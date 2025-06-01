@@ -11,19 +11,17 @@ broadcast_router = APIRouter(tags=["broadcast"])
 
 @broadcast_router.websocket("/timer")
 @broadcast_router.websocket("/timer")
-async def runstatus_websocket(websocket: WebSocket) -> None:
+async def timer_websocket(websocket: WebSocket) -> None:
     channel = "timer"
     await websocket.accept()
     try:
         # Run both tasks until they complete or error
         await asyncio.gather(
-            ws_receiver(websocket=websocket,
-                        side_effect=None, channel=channel),
-            ws_sender(websocket=websocket, channel=channel)
+            ws_receiver(websocket=websocket, side_effect=None, channel=channel),
+            ws_sender(websocket=websocket, channel=channel),
         )
     except WebSocketDisconnect as e:
-        logging.info(
-            f"Timer WebSocket disconnected normally with code {e.code} :{e}")
+        logging.info(f"Timer WebSocket disconnected normally with code {e.code} :{e}")
     except Exception as e:
         logging.exception(f"Timer WebSocket error: {e}")
     finally:

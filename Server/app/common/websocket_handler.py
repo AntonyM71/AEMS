@@ -23,8 +23,7 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-            logger.info("connection.removed",
-                        total=len(self.active_connections))
+            logger.info("connection.removed", total=len(self.active_connections))
 
     async def broadcast(self, message: str) -> None:
         dead = []
@@ -47,18 +46,40 @@ class PgPubSub:
         self._sub_conn: Optional[asyncpg.Connection] = None
 
     async def connect(self) -> None:
-        if not self._pub_conn:
-            self._pub_conn = await asyncpg.connect(self.dsn)
-        if not self._sub_conn:
-            self._sub_conn = await asyncpg.connect(self.dsn)
+        try:
+            if not self._pub_conn:
+                logger.info("pubsub.pub_connection.connecting")
+                self._pub_conn = await asyncpg.connect(self.dsn)
+                logger.info(
+                    "pubsub.pub_connection.connected",
+                )
+            if not self._sub_conn:
+                logger.info("pubsub.sub_connection.connecting")
+                self._sub_conn = await asyncpg.connect(self.dsn)
+                logger.info(
+                    "pubsub.sub_connection.connected",
+                )
+        except asyncpg.PostgresConnectionError as e:
+            logger.error("pubsub.connection.failed", error=str(e))
+            raise
 
     async def close(self) -> None:
-        if self._pub_conn:
-            await self._pub_conn.close()
-            self._pub_conn = None
-        if self._sub_conn:
-            await self._sub_conn.close()
-            self._sub_conn = None
+        try:
+            if self._pub_conn:
+                logger.info(
+                    "pubsub.pub_connection.closing", pid=self._pub_conn.get_server_pid()
+                )
+                await self._pub_conn.close()
+                self._pub_conn = None
+            if self._sub_conn:
+                logger.info(
+                    "pubsub.sub_connection.closing", pid=self._sub_conn.get_server_pid()
+                )
+                await self._sub_conn.close()
+                self._sub_conn = None
+        except Exception as e:
+            logger.error("pubsub.close.failed", error=str(e))
+            raise
 
     async def publish(self, channel: str, message: str) -> None:
         if not self._pub_conn:
@@ -69,32 +90,75 @@ class PgPubSub:
         await self._pub_conn.execute("SELECT pg_notify($1, $2)", channel, message)
 
     @asynccontextmanager
-    async def subscribe(self, channel: str, callback: Callable[[str], Awaitable[None]]) -> AsyncIterator["PgPubSub"]:
+    async def subscribe(
+        self, channel: str, callback: Callable[[str], Awaitable[None]]
+    ) -> AsyncIterator["PgPubSub"]:
         if not self._sub_conn:
             logger.info("subscribe.connecting", channel=channel)
             await self.connect()
         assert self._sub_conn is not None
 
-        async def notification_handler(conn: asyncpg.Connection, pid: int, notify_channel: str, payload: str) -> None:
-            if notify_channel == channel:  # Only process messages for this channel
-                logger.info("notify.received",
-                            channel=channel, payload=payload)
-                await callback(payload)
+        async def notification_handler(
+            conn: asyncpg.Connection, pid: int, notify_channel: str, payload: str
+        ) -> None:
+            logger.info(
+                "notify.handler_called",
+                channel=notify_channel,
+                expected_channel=channel,
+                connection_id=id(conn),
+                server_pid=pid,
+            )
+            if notify_channel == channel:
+                logger.info(
+                    "notify.received",
+                    channel=channel,
+                    payload=payload,
+                    connection_id=id(conn),
+                    server_pid=pid,
+                )
+                try:
+                    await callback(payload)
+                except Exception as e:
+                    logger.exception(
+                        "notify.callback_failed",
+                        channel=channel,
+                        error=str(e),
+                        connection_state=self._sub_conn.is_closed()
+                        if self._sub_conn
+                        else "no_connection",
+                    )
 
         try:
+            if self._sub_conn.is_closed():
+                logger.error("subscribe.connection_closed", channel=channel)
+                await self.connect()
             logger.info("subscribe.start", channel=channel)
             await self._sub_conn.add_listener(channel, notification_handler)
             yield self
+        except Exception as e:
+            logger.exception(
+                "subscribe.failed",
+                channel=channel,
+                error=str(e),
+                connection_state=self._sub_conn.is_closed()
+                if self._sub_conn
+                else "no_connection",
+            )
+            raise
         finally:
-            logger.info("subscribe.cleanup", channel=channel)
-            if self._sub_conn:
+            if self._sub_conn and not self._sub_conn.is_closed():
                 await self._sub_conn.remove_listener(channel, notification_handler)
+                logger.info("subscribe.cleanup.success", channel=channel)
+            else:
+                logger.error("subscribe.cleanup.connection_closed", channel=channel)
 
     async def _notify_callback(self, payload: str) -> None:
         """Callback to be overridden by subscribers"""
         pass
 
-    async def _on_notify(self, _: asyncpg.Connection, __: int, channel: str, payload: str) -> None:
+    async def _on_notify(
+        self, _: asyncpg.Connection, __: int, channel: str, payload: str
+    ) -> None:
         logger.info("notify.received", channel=channel, payload=payload)
         await self._notify_callback(payload)
 
@@ -120,7 +184,7 @@ async def publisher(
 async def ws_receiver(
     websocket: WebSocket,
     channel: str,
-    side_effect: Optional[Callable[[str], None]] = None
+    side_effect: Optional[Callable[[str], None]] = None,
 ) -> None:
     logger.info("receiver.start", channel=channel)
     while True:
@@ -135,18 +199,24 @@ async def ws_receiver(
                     "client": websocket.client.host,
                     "port": websocket.client.port,
                     "headers": dict(websocket.headers),
-                    "asgi_scope": {k: v for k, v in websocket.scope.items() if isinstance(v, str | int | bool)}
-                }
+                    "asgi_scope": {
+                        k: v
+                        for k, v in websocket.scope.items()
+                        if isinstance(v, str | int | bool)
+                    },
+                },
             )
             if raw_message["type"] == "websocket.receive":
                 message = raw_message.get("text", "")
-                await publisher(message=message, channel=channel, side_effect=side_effect)
+                await publisher(
+                    message=message, channel=channel, side_effect=side_effect
+                )
             elif raw_message["type"] == "websocket.disconnect":
                 logger.info(
                     "websocket.disconnect_request",
                     channel=channel,
                     code=raw_message.get("code"),
-                    reason=raw_message.get("reason")
+                    reason=raw_message.get("reason"),
                 )
                 break
         except Exception as e:
@@ -157,7 +227,7 @@ async def ws_receiver(
                 application_state=websocket.application_state,
                 error_type=type(e).__name__,
                 error_full=repr(e),
-                error_str=str(e)
+                error_str=str(e),
             )
             raise
 
@@ -169,23 +239,53 @@ async def ws_sender(
 ) -> None:
     logger.info("sender.start", channel=channel)
     try:
+
         async def handle_message(payload: str) -> None:
             try:
+                if websocket.client_state.value != 1:  # Not CONNECTED
+                    logger.error(
+                        "sender.websocket_state_invalid",
+                        channel=channel,
+                        client_state=websocket.client_state,
+                        application_state=websocket.application_state,
+                    )
+                    return
+
                 if fetch_data_with_message:
                     payload = await fetch_data_with_message(payload)
                 await websocket.send_text(payload)
             except Exception as e:
-                logger.exception("sender.message_failed", error=str(e))
+                logger.exception(
+                    "sender.message_failed",
+                    channel=channel,
+                    error=str(e),
+                    client_state=websocket.client_state,
+                    application_state=websocket.application_state,
+                )
+                raise
 
+        prev_state = websocket.client_state
         async with pubsub.subscribe(channel=channel, callback=handle_message):
             logger.info(
                 "connections.state",
                 channel=channel,
                 websocket_state=websocket.client_state,
-                pg_connected=True
+                pg_connected=True,
             )
-            # Keep connection alive
+            # Monitor connection state
             while True:
+                if websocket.client_state != prev_state:
+                    logger.warning(
+                        "sender.state_changed",
+                        channel=channel,
+                        previous_state=prev_state,
+                        current_state=websocket.client_state,
+                    )
+                    prev_state = websocket.client_state
+                    if websocket.client_state.value != 1:  # Not CONNECTED
+                        raise Exception(
+                            f"WebSocket disconnected: {websocket.client_state}"
+                        )
                 await asyncio.sleep(1)
     except Exception as e:
         # Log the state when sender fails
@@ -194,6 +294,6 @@ async def ws_sender(
             channel=channel,
             websocket_state=websocket.client_state,
             error_type=type(e).__name__,
-            error_full=repr(e)
+            error_full=repr(e),
         )
         raise
