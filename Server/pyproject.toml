@@ -49,6 +49,7 @@ indent-style = "space"
 [project]
 dependencies = [
     "anyio",
+    "broadcaster[postgres]",
     "sqlalchemy",
     "alembic",
     "psycopg2",
