@@ -41,7 +41,8 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(
+    bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
 
@@ -105,7 +106,8 @@ async def logging_middleware(
     try:
         response = await call_next(request)
     except Exception:
-        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger(
+            "api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time

@@ -1,5 +1,7 @@
 import asyncio
 import os
+import resource
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -14,16 +16,22 @@ logger = structlog.get_logger()
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
+        logger.info("worker.initialized", pid=os.getpid(),
+                    worker_class=os.environ.get("WORKER_CLASS", "unknown"))
 
     async def connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
-        logger.info("connection.added", total=len(self.active_connections))
+        logger.info("connection.added",
+                    total=len(self.active_connections),
+                    pid=os.getpid(),
+                    memory_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     def disconnect(self, websocket: WebSocket) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-            logger.info("connection.removed", total=len(self.active_connections))
+            logger.info("connection.removed",
+                        total=len(self.active_connections))
 
     async def broadcast(self, message: str) -> None:
         dead = []
@@ -44,6 +52,8 @@ class PgPubSub:
         self.dsn = dsn
         self._pub_conn: Optional[asyncpg.Connection] = None
         self._sub_conn: Optional[asyncpg.Connection] = None
+        self._last_message_time: float = 0.0
+        self._message_count: int = 0
 
     async def connect(self) -> None:
         try:
@@ -86,7 +96,18 @@ class PgPubSub:
             logger.info("publish.connecting", channel=channel)
             await self.connect()
         assert self._pub_conn is not None
-        logger.info("publish.notify", channel=channel, message=message)
+
+        current_time = time.time()
+        time_since_last = current_time - self._last_message_time
+        self._message_count += 1
+        logger.info("publish.notify",
+                    channel=channel,
+                    message=message,
+                    msg_count=self._message_count,
+                    time_since_last=time_since_last,
+                    msg_rate=self._message_count/max(1, current_time - self._last_message_time))
+        self._last_message_time = current_time
+
         await self._pub_conn.execute("SELECT pg_notify($1, $2)", channel, message)
 
     @asynccontextmanager
@@ -107,6 +128,8 @@ class PgPubSub:
                 expected_channel=channel,
                 connection_id=id(conn),
                 server_pid=pid,
+                message_time=time.time(),
+                worker_pid=os.getpid()
             )
             if notify_channel == channel:
                 logger.info(
@@ -150,7 +173,8 @@ class PgPubSub:
                 await self._sub_conn.remove_listener(channel, notification_handler)
                 logger.info("subscribe.cleanup.success", channel=channel)
             else:
-                logger.error("subscribe.cleanup.connection_closed", channel=channel)
+                logger.error(
+                    "subscribe.cleanup.connection_closed", channel=channel)
 
     async def _notify_callback(self, payload: str) -> None:
         """Callback to be overridden by subscribers"""
