@@ -11,6 +11,7 @@ broadcast_router = APIRouter(tags=["broadcast"])
 @broadcast_router.websocket("/timer")
 async def timer_websocket(websocket: WebSocket) -> None:
     channel = "timer"
+    await websocket.accept()
     try:
         # Run both tasks until they complete or error
         await run_until_first_complete(
@@ -30,6 +31,7 @@ async def timer_websocket(websocket: WebSocket) -> None:
 @broadcast_router.websocket("/broadcast_control")
 async def broadcast_control_websocket(websocket: WebSocket) -> None:
     channel = "broadcast_control"
+    await websocket.accept()
     try:
         await run_until_first_complete(
             (ws_receiver, {"websocket": websocket,
