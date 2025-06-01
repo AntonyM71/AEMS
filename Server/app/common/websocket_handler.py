@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -23,8 +22,6 @@ class ConnectionManager:
         if channel not in self.subscribers:
             self.subscribers[channel] = []
         self.subscribers[channel].append(websocket)
-        logger.info("connection.added", channel=channel,
-                    total_connections=len(self.subscribers[channel]))
 
     def disconnect(self, websocket: WebSocket, channel: str) -> None:
         if channel in self.subscribers and websocket in self.subscribers[channel]:
@@ -98,20 +95,8 @@ class PgPubSub:
 
     async def publish(self, channel: str, message: str) -> None:
         if not self._pub_conn:
-            logger.info("publish.connecting", channel=channel)
             await self.connect()
         assert self._pub_conn is not None
-
-        current_time = time.time()
-        time_since_last = current_time - self._last_message_time
-        self._message_count += 1
-        logger.info("publish.notify",
-                    channel=channel,
-                    message=message,
-                    msg_count=self._message_count,
-                    time_since_last=time_since_last,
-                    msg_rate=self._message_count/max(1, current_time - self._last_message_time))
-        self._last_message_time = current_time
 
         await self._pub_conn.execute("SELECT pg_notify($1, $2)", channel, message)
 
@@ -127,23 +112,7 @@ class PgPubSub:
         async def notification_handler(
             conn: asyncpg.Connection, pid: int, notify_channel: str, payload: str
         ) -> None:
-            logger.info(
-                "notify.handler_called",
-                channel=notify_channel,
-                expected_channel=channel,
-                connection_id=id(conn),
-                server_pid=pid,
-                message_time=time.time(),
-                worker_pid=os.getpid()
-            )
             if notify_channel == channel:
-                logger.info(
-                    "notify.received",
-                    channel=channel,
-                    payload=payload,
-                    connection_id=id(conn),
-                    server_pid=pid,
-                )
                 try:
                     await callback(payload)
                 except Exception as e:
@@ -285,23 +254,12 @@ async def ws_sender(
                         "sender.websocket_state_invalid",
                         channel=channel,
                         client_state=websocket.client_state,
-                        application_state=websocket.application_state,
                     )
                     return
-
-                logger.info("sender.pre_send",
-                            channel=channel,
-                            client_state=websocket.client_state,
-                            application_state=websocket.application_state)
 
                 if fetch_data_with_message:
                     payload = await fetch_data_with_message(payload)
                 await connection_manager.broadcast(message=payload, channel=channel)
-
-                logger.info("sender.post_send",
-                            channel=channel,
-                            client_state=websocket.client_state,
-                            application_state=websocket.application_state)
             except Exception as e:
                 logger.exception(
                     "sender.message_failed",
