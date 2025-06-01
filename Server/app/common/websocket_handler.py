@@ -59,19 +59,19 @@ class PgPubSub:
     async def connect(self) -> None:
         try:
             if not self._pub_conn:
-                logger.info("pubsub.pub_connection.connecting")
+
                 self._pub_conn = await asyncpg.connect(self.dsn)
                 logger.info(
                     "pubsub.pub_connection.connected",
                 )
             if not self._sub_conn:
-                logger.info("pubsub.sub_connection.connecting")
+
                 self._sub_conn = await asyncpg.connect(self.dsn)
                 logger.info(
                     "pubsub.sub_connection.connected",
                 )
         except asyncpg.PostgresConnectionError as e:
-            logger.error("pubsub.connection.failed", error=str(e))
+            logger.exception("pubsub.connection.failed", error=str(e))
             raise
 
     async def close(self) -> None:
@@ -89,7 +89,7 @@ class PgPubSub:
                 await self._sub_conn.close()
                 self._sub_conn = None
         except Exception as e:
-            logger.error("pubsub.close.failed", error=str(e))
+            logger.exception("pubsub.close.failed", error=str(e))
             raise
 
     async def publish(self, channel: str, message: str) -> None:
@@ -123,15 +123,6 @@ class PgPubSub:
         async def notification_handler(
             conn: asyncpg.Connection, pid: int, notify_channel: str, payload: str
         ) -> None:
-            logger.info(
-                "notify.handler_called",
-                channel=notify_channel,
-                expected_channel=channel,
-                connection_id=id(conn),
-                server_pid=pid,
-                message_time=time.time(),
-                worker_pid=os.getpid()
-            )
             if notify_channel == channel:
                 logger.info(
                     "notify.received",
@@ -224,13 +215,6 @@ async def ws_receiver(
     while True:
         try:
             raw_message = await websocket._receive()
-            logger.info(
-                "websocket.raw_message",
-                channel=channel,
-                message_type=raw_message.get("type"),
-                message=raw_message,
-            )
-
             if raw_message["type"] == "websocket.receive":
                 message = raw_message.get("text", "")
                 await publisher(
