@@ -1,7 +1,7 @@
-import asyncio
 import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi.concurrency import run_until_first_complete
 
 from app.common.websocket_handler import ws_receiver, ws_sender
 
@@ -13,16 +13,16 @@ async def timer_websocket(websocket: WebSocket) -> None:
     channel = "timer"
     try:
         # Run both tasks until they complete or error
-        await asyncio.gather(
-            ws_receiver(websocket=websocket,
-                        side_effect=None, channel=channel),
-            ws_sender(websocket=websocket, channel=channel),
+        await run_until_first_complete(
+            (ws_receiver, {"websocket": websocket,
+             "side_effect": None, "channel": channel}),
+            (ws_sender, {"websocket": websocket, "channel": channel}),
         )
     except WebSocketDisconnect as e:
         logging.info(
-            f"Timer WebSocket disconnected normally with code {e.code} :{e}")
-    except Exception as e:
-        logging.exception(f"Timer WebSocket error: {e}")
+            "Timer WebSocket disconnected normally with code %s :%s", e.code, e)
+    except Exception:
+        logging.exception("Timer WebSocket error")
     finally:
         await websocket.close()
 
@@ -31,10 +31,10 @@ async def timer_websocket(websocket: WebSocket) -> None:
 async def broadcast_control_websocket(websocket: WebSocket) -> None:
     channel = "broadcast_control"
     try:
-        await asyncio.gather(
-            ws_receiver(websocket=websocket,
-                        side_effect=None, channel=channel),
-            ws_sender(websocket=websocket, channel=channel),
+        await run_until_first_complete(
+            (ws_receiver, {"websocket": websocket,
+             "side_effect": None, "channel": channel}),
+            (ws_sender, {"websocket": websocket, "channel": channel}),
         )
     except WebSocketDisconnect as e:
         if e.code != 1001:  # 1001 is a "happy" disconnect

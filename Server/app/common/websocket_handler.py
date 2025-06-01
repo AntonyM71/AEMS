@@ -101,12 +101,7 @@ class PgPubSub:
         current_time = time.time()
         time_since_last = current_time - self._last_message_time
         self._message_count += 1
-        logger.info("publish.notify",
-                    channel=channel,
-                    message=message,
-                    msg_count=self._message_count,
-                    time_since_last=time_since_last,
-                    msg_rate=self._message_count/max(1, current_time - self._last_message_time))
+
         self._last_message_time = current_time
 
         await self._pub_conn.execute("SELECT pg_notify($1, $2)", channel, message)
@@ -124,13 +119,7 @@ class PgPubSub:
             conn: asyncpg.Connection, pid: int, notify_channel: str, payload: str
         ) -> None:
             if notify_channel == channel:
-                logger.info(
-                    "notify.received",
-                    channel=channel,
-                    payload=payload,
-                    connection_id=id(conn),
-                    server_pid=pid,
-                )
+
                 try:
                     await callback(payload)
                 except Exception as e:
