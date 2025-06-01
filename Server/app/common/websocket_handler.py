@@ -1,6 +1,5 @@
 import asyncio
 import os
-import resource
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
@@ -15,36 +14,41 @@ logger = structlog.get_logger()
 
 class ConnectionManager:
     def __init__(self) -> None:
-        self.active_connections: list[WebSocket] = []
+        self.subscribers: dict[str, list[WebSocket]] = {}
         logger.info("worker.initialized", pid=os.getpid(),
                     worker_class=os.environ.get("WORKER_CLASS", "unknown"))
 
-    async def connect(self, websocket: WebSocket) -> None:
+    async def connect(self, websocket: WebSocket, channel: str) -> None:
         await websocket.accept()
-        self.active_connections.append(websocket)
-        logger.info("connection.added",
-                    total=len(self.active_connections),
-                    pid=os.getpid(),
-                    memory_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        if channel not in self.subscribers:
+            self.subscribers[channel] = []
+        self.subscribers[channel].append(websocket)
+        logger.info("connection.added", channel=channel,
+                    total_connections=len(self.subscribers[channel]))
 
-    def disconnect(self, websocket: WebSocket) -> None:
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-            logger.info("connection.removed",
-                        total=len(self.active_connections))
+    def disconnect(self, websocket: WebSocket, channel: str) -> None:
+        if channel in self.subscribers and websocket in self.subscribers[channel]:
+            self.subscribers[channel].remove(websocket)
+            logger.info("connection.removed", channel=channel,
+                        total_connections=len(self.subscribers[channel]))
+            if not self.subscribers[channel]:
+                del self.subscribers[channel]
 
-    async def broadcast(self, message: str) -> None:
+    async def broadcast(self, message: str, channel: str) -> None:
+        if channel not in self.subscribers:
+            return
         dead = []
-        for connection in self.active_connections:
+        for connection in self.subscribers[channel]:
             try:
                 await connection.send_text(message)
             except Exception as e:
-                logger.exception("broadcast.failed", error=str(e))
+                logger.exception("broadcast.failed",
+                                 error=str(e), channel=channel)
                 dead.append(connection)
 
         # Clean up dead connections
         for conn in dead:
-            self.disconnect(conn)
+            self.disconnect(conn, channel)
 
 
 class PgPubSub:
@@ -54,6 +58,7 @@ class PgPubSub:
         self._sub_conn: Optional[asyncpg.Connection] = None
         self._last_message_time: float = 0.0
         self._message_count: int = 0
+        self._active_subscriptions: dict[str, set[int]] = {}
 
     async def connect(self) -> None:
         try:
@@ -155,7 +160,16 @@ class PgPubSub:
             if self._sub_conn.is_closed():
                 logger.error("subscribe.connection_closed", channel=channel)
                 await self.connect()
-            logger.info("subscribe.start", channel=channel)
+            conn_id = id(self._sub_conn)
+            if channel not in self._active_subscriptions:
+                self._active_subscriptions[channel] = set()
+            self._active_subscriptions[channel].add(conn_id)
+
+            logger.info("subscribe.start",
+                        channel=channel,
+                        connection_id=conn_id,
+                        active_subscriptions=len(self._active_subscriptions[channel]))
+
             await self._sub_conn.add_listener(channel, notification_handler)
             yield self
         except Exception as e:
@@ -275,9 +289,19 @@ async def ws_sender(
                     )
                     return
 
+                logger.info("sender.pre_send",
+                            channel=channel,
+                            client_state=websocket.client_state,
+                            application_state=websocket.application_state)
+
                 if fetch_data_with_message:
                     payload = await fetch_data_with_message(payload)
-                await websocket.send_text(payload)
+                await connection_manager.broadcast(message=payload, channel=channel)
+
+                logger.info("sender.post_send",
+                            channel=channel,
+                            client_state=websocket.client_state,
+                            application_state=websocket.application_state)
             except Exception as e:
                 logger.exception(
                     "sender.message_failed",
