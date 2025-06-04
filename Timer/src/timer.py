@@ -14,8 +14,13 @@ import RPi.GPIO as GPIO
 import websockets
 
 from tm1637 import TM1637Decimal
+import sys
+sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 
-logging.basicConfig(level=logging.WARN)
+from custom_logging import setup_logging
+
+
+setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 
@@ -96,20 +101,20 @@ class QueueItem:
     status: StatusLiteral
     time_remaining: int
 
+async def send_heartbeat(websocket):
+    """Keep the WebSocket connection alive manually"""
+    while True:
+        try:
+            # logging.info("Sending heartbeat ping to WebSocket server")
+            # await websocket.ping()  # Custom ping message
 
-async def connect_to_websocket() -> Any:
-    """Establish a new WebSocket connection"""
+            response = await websocket.recv()  # Try receiving pong
+            logging.debug(f"Received WebSocket message: {response}")
 
-    try:
-        websocket = await websockets.connect(WS_SERVER_URL,
-                                             ping_interval=20,
-                                             ping_timeout=10)
-        logging.info("Connected to WebSocket server at %s", WS_SERVER_URL)
-    except Exception as e:
-        logging.info("Error connecting to WebSocket server: %s", e)
-        return None
-    else:
-        return websocket
+            # await asyncio.sleep(10)  # Send every 10 seconds
+        except websockets.exceptions.ConnectionClosedError:
+            break  # Exit when disconnected
+
 
 
 async def process_message_queue(websocket: Any) -> None:
@@ -155,21 +160,24 @@ async def run_websocket_loop() -> None:
     while websocket_running:
         connection_start = time.time()
         try:
-            async with websockets.connect(
-                WS_SERVER_URL,
-                # Keep defaults for now
-            ) as websocket:
+            async with websockets.connect(WS_SERVER_URL,
+                                             ping_interval=30,
+                                             ping_timeout=10) as websocket:
                 logging.warning(
                     "Connected to WebSocket server at %s", WS_SERVER_URL)
+                heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
+
 
                 while websocket_running:
                     try:
                         await process_message_queue(websocket)
                         await asyncio.sleep(SLEEP_INTERVAL)
                     except Exception:
-                        logging.exception("Error in message processing loop after %d seconds: %s",
+                        logging.exception("Error in message processing loop after %d seconds",
                                           int(time.time() - connection_start))
                         raise
+
+                heartbeat_task.cancel()
 
         except websockets.ConnectionClosed as e:
             logging.warning("Connection closed after %d seconds with code %s: %s",
@@ -180,10 +188,19 @@ async def run_websocket_loop() -> None:
             await asyncio.sleep(2)
 
 
+
 def websocket_worker() -> None:
     """Worker thread that maintains a WebSocket connection and sends messages from the queue"""
     logging.info("Starting WebSocket communication thread")
-    asyncio.run(run_websocket_loop())
+
+    # Create a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(run_websocket_loop())
+    finally:
+        loop.close()  # Proper cleanup
 
 
 def start_websocket_thread() -> None:
@@ -298,7 +315,6 @@ def timer_task() -> None:
 
     total_duration = round(
         total_duration_1 + total_duration_2 + sec10_buzz_duration)
-    print(f"total_duration = {total_duration}")
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
         total_duration_1, elapsed_time, last_whole_second, total_duration
