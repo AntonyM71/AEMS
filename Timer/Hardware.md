@@ -36,7 +36,7 @@ graph LR
         12vGround[Ground]
 
     end
-    subgraph 5vPSU[5v PSU] n
+    subgraph 5vPSU[5v PSU]
         5vPositive[Pos]
         5vNegative[Neg]
 

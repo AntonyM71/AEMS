@@ -94,14 +94,14 @@ export const lightTheme = createTheme({
 					overflow: "hidden", // Ensures the blur effect stays contained
 
 					backgroundImage: `
-	  					radial-gradient(circle, rgba(255, 255, 255, 0.05) 10%, transparent 80%),
-					  	linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.8) 100%)
+						linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.8) 100%)
 					`,
 
+					// Inset shadow for inward shadow effect
 					boxShadow: `
-						inset 0px 0px 8px rgba(255, 255, 255, 0.1),
-						4px 4px 20px rgba(0, 0, 0, 0.6)
-						`, // Inner glow
+						inset 0 0 24px 8px rgba(0,0,0,0.3),
+						inset 0 0 8px 2px rgba(255,255,255,0.08)
+					`,
 
 					borderRadius: "9px", // Smooth rounded corners
 					borderImage:
@@ -133,19 +133,25 @@ export const lightTheme = createTheme({
 		MuiDivider: {
 			styleOverrides: {
 				root: {
-					borderImage:
-						"linear-gradient(90deg, " +
-						"rgba(255, 255, 255, 0.1), " +
-						"rgba(255, 255, 255, 0.3), " +
-						"rgba(255, 255, 255, 0.1)) 1",
-					borderWidth: "2px"
+					border: "none",
+					height: "2px",
+					background:
+						"linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.15) 100%)",
+					opacity: 0.8,
+					boxShadow:
+						"0 1px 8px 0 rgba(0,0,0,0.18), 0 0.5px 0px 0 rgba(255,255,255,0.12)"
 				}
 			}
 		},
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					textShadow: "none"
+					// Aero Glass style dark glow around white text
+					textShadow: `
+						0 1px 6px rgba(0,0,0,0.85),
+						0 0px 12px rgba(0,0,0,0.55),
+						0 2px 4px rgba(0,0,0,0.65)
+					`
 				}
 			}
 		}

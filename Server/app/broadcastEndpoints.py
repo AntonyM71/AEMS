@@ -20,9 +20,10 @@ async def timer_websocket(websocket: WebSocket) -> None:
     try:
         # Run both tasks until they complete or error
         await run_until_first_complete(
-            (ws_receiver, {"websocket": websocket,
-             "side_effect": None, "channel": channel}),
-            (ws_sender, {"websocket": websocket, "channel": channel}),
+            (ws_receiver, {"websocket": websocket, "side_effect": None,
+             "channel": channel, "last_message_time": last_message_time}),
+            (ws_sender, {"websocket": websocket, "channel": channel,
+             "last_message_time": last_message_time}),
         )
     except WebSocketDisconnect as e:
         logging.info(
@@ -32,8 +33,11 @@ async def timer_websocket(websocket: WebSocket) -> None:
     except Exception as e:
         logging.exception("Timer WebSocket error: %s", e)
     finally:
+        # Log the time since last message
+        now = time.time()
         logging.info(
-            "WebSocket /timer: entering finally block, client_state=%s", websocket.client_state)
+            "WebSocket /timer: entering finally block, client_state=%s, last_message_time=%.2f, now=%.2f, delta=%.2f",
+            websocket.client_state, last_message_time, now, now - last_message_time)
         if websocket.client_state == WebSocketState.CONNECTED:
             await websocket.close()
         logging.info("WebSocket /timer: connection closed")
