@@ -19,7 +19,7 @@ services:
       [
         "bash",
         "-c",
-        "alembic upgrade head && python -m scripts.seed_scoresheets &&  gunicorn -w 4 -k uvicorn.workers.UvicornWorker --timeout 0 --keep-alive 3600 main:app -b 0.0.0.0:8000",
+        "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 4 -k uvicorn.workers.UvicornWorker --timeout 3600 main:app -b 0.0.0.0:8000",
       ]
 
     depends_on:
@@ -37,7 +37,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "80:80"
+      - "81:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:

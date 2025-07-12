@@ -3,5 +3,8 @@ bash setup_scripts/apt_update_cron.sh
 
 bash setup_scripts/add_python_deps.sh
 
+bash setup_scripts/add_logs_dir.sh
+
 bash setup_scripts/add_timer_as_systemd_service.sh
+
 
