@@ -43,7 +43,9 @@ export const BasicTable = ({
 				// display: "flex",
 				flexDirection: "column",
 				height: "100%", // Make the table fill its parent
-				minWidth: 650
+				minWidth: 650,
+
+				boxShadow: "0 4px 24px 0 rgba(0,0,0,0.18)"
 			}}
 			aria-label="simple table"
 		>
@@ -56,7 +58,17 @@ export const BasicTable = ({
 					}}
 				>
 					{Object.keys(data[0]).map((k) => (
-						<TableCell key={k} sx={{ fontWeight: "bold" }}>
+						<TableCell
+							key={k}
+							sx={{
+								fontWeight: "bold",
+								textShadow: `
+								0 1px 6px rgba(0,0,0,0.85),
+								0 0px 12px rgba(0,0,0,0.55),
+								0 2px 4px rgba(0,0,0,0.65)
+							`
+							}}
+						>
 							{k}
 						</TableCell>
 					))}
@@ -71,7 +83,16 @@ export const BasicTable = ({
 						}}
 					>
 						{Object.keys(row).map((d) => (
-							<TableCell key={d}>
+							<TableCell
+								key={d}
+								sx={{
+									textShadow: `
+									0 1px 6px rgba(0,0,0,0.85),
+									0 0px 12px rgba(0,0,0,0.55),
+									0 2px 4px rgba(0,0,0,0.65)
+								`
+								}}
+							>
 								{String(row[d] ?? "")}
 							</TableCell>
 						))}
@@ -86,7 +107,15 @@ export const BasicTable = ({
 					}}
 				>
 					<TableCell
-						sx={{ fontWeight: "bold", textAlign: "right" }}
+						sx={{
+							fontWeight: "bold",
+							textAlign: "right",
+							textShadow: `
+							0 1px 6px rgba(0,0,0,0.85),
+							0 0px 12px rgba(0,0,0,0.55),
+							0 2px 4px rgba(0,0,0,0.65)
+						`
+						}}
 						colSpan={Object.keys(data[0]).length}
 					>
 						{`Page: ${currentPage + 1}/${totalPages}`}
