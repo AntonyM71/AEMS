@@ -113,11 +113,12 @@ export const HeatSummaryTable = ({
 							container
 							justifyContent="space-between"
 							alignItems="center"
+							spacing={2}
 						>
 							<Grid>
 								<Typography variant="h6">{`Heat: ${
 									data.name || ""
-								}`}</Typography>
+								}`}</Typography>{" "}
 							</Grid>
 							<Grid sx={{ padding: "0.5em" }}>
 								<Stack spacing={2} direction="row">
@@ -145,6 +146,10 @@ export const HeatSummaryTable = ({
 										Heat Summary PDF
 									</Button>
 								</Stack>
+							</Grid>{" "}
+							<Grid size={12}>
+								{" "}
+								<Divider />
 							</Grid>
 							<Grid size={12}>
 								<HeatAthleteTable showAdmin={showAddAthletes} />

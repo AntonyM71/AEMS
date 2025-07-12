@@ -15,7 +15,12 @@ import {
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { AthleteInfo, CurrentScore } from "../scribe/InfoBar"
 import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
-import { directionType, movesType } from "../scribe/Interfaces"
+import {
+	convertListToScoredBonusType,
+	convertListToScoredMovesType,
+	directionType,
+	movesType
+} from "../scribe/Interfaces"
 import { ScoredMovesAndBonusesWithMetadata } from "./RunStatus"
 import { connectCurrentScoreStatusSocket } from "./WebSocketConnections"
 
@@ -25,7 +30,6 @@ interface JudgeCardProps {
 	updateHeadJudgeScore: (newScore: number, judgeNumber: number) => void
 }
 
-// eslint-disable-next-line complexity
 export const JudgeCard = ({
 	judge,
 	selectedAthlete,
@@ -33,7 +37,7 @@ export const JudgeCard = ({
 }: JudgeCardProps) => {
 	const selectedRun = useSelector(getSelectedRun)
 	const selectedHeat = useSelector(getSelectedHeat)
-
+	const [currentScore, setCurrentScore] = useState<number>(0)
 	const availableBonuses = useGetManyAvailablebonusesGetQuery({
 		sheetIdListComparisonOperator: "Equal",
 		sheetIdList: [selectedAthlete.scoresheet ?? ""]
@@ -45,31 +49,106 @@ export const JudgeCard = ({
 		},
 		{ skip: !selectedAthlete?.scoresheet }
 	)
-	const [moveAndBonusData, setMoveAndBonusData] = useState<
-		ScoredMovesAndBonusesResponse | undefined
-	>(undefined)
+
+	const updateScore = (newScore: number, judgeNumber: number) => {
+		updateHeadJudgeScore(newScore, judgeNumber)
+		setCurrentScore(newScore)
+	}
+	const [moveAndBonusData, setMoveAndBonusData] =
+		useState<ScoredMovesAndBonusesResponse>({ moves: [], bonuses: [] })
+	const scoredMoves = convertListToScoredMovesType(moveAndBonusData.moves)
+	if (availableMoves.isSuccess && availableBonuses.isSuccess) {
+		return (
+			<Grid container spacing={1} alignItems={"stretch"}>
+				<Grid size={6}>
+					<MoveSubscriberUpdater
+						selectedHeat={selectedHeat}
+						selectedRun={selectedRun}
+						selectedAthleteId={selectedAthlete.id}
+						updateHeadJudgeScore={updateScore}
+						availableBonuses={
+							availableBonuses.data as AvailableBonusType[]
+						}
+						availableMoves={availableMoves.data as movesType[]}
+						judge={judge}
+						setMovesAndBonuses={setMoveAndBonusData}
+					/>
+					<Paper
+						sx={{
+							padding: "1em",
+							height: "100%"
+						}}
+					>
+						<Typography>{`Judge: ${judge}`}</Typography>
+					</Paper>
+				</Grid>
+				<Grid size={6}>
+					<CurrentScore currentScore={currentScore} />
+				</Grid>
+
+				{[...scoredMoves] // put these into a new array so that reverse works
+					.reverse()
+					.map((scoredMove) => (
+						<Grid key={scoredMove.id} size={12}>
+							<ScoredMove
+								key={scoredMove.id}
+								scoredMove={scoredMove}
+								scoredMovesList={scoredMoves}
+								scoredBonuses={convertListToScoredBonusType(
+									moveAndBonusData.bonuses
+								)}
+								chipActionsDisabled={true}
+							/>
+						</Grid>
+					))}
+			</Grid>
+		)
+	}
+
+	return <Skeleton />
+}
+
+export const MoveSubscriberUpdater = ({
+	selectedHeat,
+	selectedRun,
+	judge,
+	selectedAthleteId,
+	updateHeadJudgeScore,
+	availableMoves,
+	availableBonuses,
+	setMovesAndBonuses
+}: {
+	selectedHeat: string
+	selectedRun: number
+	judge: number
+	selectedAthleteId: string
+	updateHeadJudgeScore: (newScore: number, judgeNumber: number) => void
+	availableMoves: movesType[]
+	availableBonuses: AvailableBonusType[]
+	setMovesAndBonuses?: (
+		movesAndBonuses: ScoredMovesAndBonusesResponse
+	) => void
+}) => {
+	const [moveAndBonusData, setMoveAndBonusData] =
+		useState<ScoredMovesAndBonusesResponse>({ moves: [], bonuses: [] })
 	const { data: moveAndBonusHttpData, isUninitialized } =
 		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
 			{
 				runNumber: selectedRun.toString(),
-				athleteId: selectedAthlete?.id ?? "",
+				athleteId: selectedAthleteId,
 				judgeId: judge.toString(),
 				heatId: selectedHeat
 			},
 			{
-				skip: !selectedAthlete?.id,
+				skip: !selectedAthleteId,
 				refetchOnMountOrArgChange: true
 			}
 		)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		socketRef.current = connectCurrentScoreStatusSocket()
-	}
-
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
+		if (!socketRef.current) {
+			socketRef.current = connectCurrentScoreStatusSocket()
+		}
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(
 				event.data as string
@@ -77,7 +156,7 @@ export const JudgeCard = ({
 
 			if (
 				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id === selectedAthlete?.id &&
+				jsonData?.athlete_id === selectedAthleteId &&
 				jsonData?.heat_id === selectedHeat &&
 				jsonData?.judge_id === judge
 			) {
@@ -94,8 +173,13 @@ export const JudgeCard = ({
 			}
 		}
 	}
+
 	useEffect(() => {
-		if (!isUninitialized) {
+		connectWebSocket()
+	}, [])
+
+	useEffect(() => {
+		if (!isUninitialized && moveAndBonusHttpData) {
 			setMoveAndBonusData(moveAndBonusHttpData)
 		}
 	}, [moveAndBonusHttpData])
@@ -117,44 +201,18 @@ export const JudgeCard = ({
 	const currentScore = calculateSingleJudgeRunScore(
 		scoredMoves,
 		scoredBonuses,
-		(availableMoves.data as movesType[]) || [],
-		(availableBonuses.data as AvailableBonusType[]) || []
+		availableMoves,
+		availableBonuses
 	)
 	useEffect(() => {
 		updateHeadJudgeScore(currentScore.score, judge - 1) // compensate for zero index
 	}, [currentScore.score])
-	if (!isUninitialized) {
-		return (
-			<Grid container spacing={1} alignItems={"stretch"}>
-				<Grid size={6}>
-					<Paper
-						sx={{
-							padding: "1em",
-							height: "100%"
-						}}
-					>
-						<Typography>{`Judge: ${judge}`}</Typography>
-					</Paper>
-				</Grid>
-				<Grid size={6}>
-					<CurrentScore currentScore={currentScore} />
-				</Grid>
-				{[...scoredMoves] // put these into a new array so that reverse works
-					.reverse()
-					.map((scoredMove) => (
-						<Grid key={scoredMove.id} size={12}>
-							<ScoredMove
-								key={scoredMove.id}
-								scoredMove={scoredMove}
-								scoredMovesList={scoredMoves}
-								scoredBonuses={scoredBonuses}
-								chipActionsDisabled={true}
-							/>
-						</Grid>
-					))}
-			</Grid>
-		)
-	}
 
-	return <Skeleton />
+	useEffect(() => {
+		if (setMovesAndBonuses) {
+			setMovesAndBonuses(moveAndBonusData)
+		}
+	}, [moveAndBonusData])
+
+	return null
 }

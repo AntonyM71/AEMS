@@ -16,17 +16,19 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # noqa: 
     return event_dict
 
 
-def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
+def setup_logging(
+    *, json_logs: bool = False, log_level: str = "INFO", log_name: str = "unnamed"
+) -> None:
     timestamper = structlog.processors.TimeStamper(fmt="iso")
 
     shared_processors: list[Processor] = [
-        structlog.contextvars.merge_contextvars,
+        timestamper,
         structlog.stdlib.add_logger_name,
+        structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.stdlib.ExtraAdder(),
         drop_color_message_key,
-        timestamper,
         structlog.processors.StackInfoRenderer(),
     ]
 
@@ -79,7 +81,7 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO") -> None:
     root_logger.setLevel(log_level.upper())
     if json_logs:
         rotating_file_handler = RotatingFileHandler(
-            "../logs/server.log",
+            f"../logs/{log_name}.log",
             maxBytes=100000,
         )
         rotating_file_handler.setFormatter(json_formatter)

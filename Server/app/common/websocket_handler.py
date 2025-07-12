@@ -1,3 +1,4 @@
+import logging
 import os
 from collections.abc import Awaitable, Callable
 from typing import Optional
@@ -49,11 +50,34 @@ async def ws_sender(
     channel: str,
     fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
 ) -> None:
-    async with broadcast.subscribe(channel=channel) as subscriber:
-        async for event in subscriber:
-            if fetch_data_with_message:
-                data = await fetch_data_with_message(event.message)
-
-                await websocket.send_text(str(data))
-            else:
-                await websocket.send_text(event.message)
+    logger = logging.getLogger("app.common.websocket_handler")
+    try:
+        msg = f"Starting broadcast subscription for channel: {channel}"
+        logger.info(msg)
+        async with broadcast.subscribe(channel=channel) as subscriber:
+            msg = f"Subscribed to broadcast channel: {channel}"
+            logger.info(msg)
+            async for event in subscriber:
+                try:
+                    if fetch_data_with_message:
+                        data = await fetch_data_with_message(event.message)
+                        await websocket.send_text(str(data))
+                    else:
+                        await websocket.send_text(event.message)
+                except Exception as e:
+                    msg = (
+                        f"Failed to send message to websocket on channel {channel}: {e}"
+                    )
+                    logger.exception(
+                        msg,
+                    )
+    except Exception as e:
+        msg = (
+            f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
+        )
+        logger.exception(
+            msg,
+        )
+    finally:
+        msg = f"Broadcast subscription closed for channel: {channel}"
+        logger.info(msg)

@@ -7,8 +7,8 @@ CURRENT_DIRECTORY=$(pwd)
 SERVICE_NAME="timer.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
 PYTHON_SCRIPT_PATH="$CURRENT_DIRECTORY/src/timer.py"
-WORKING_DIR="$CURRENT_DIRECTORY/src"
 
+echo "Running from $CURRENT_DIRECTORY"
 
 
 # Create the service file
@@ -22,7 +22,7 @@ After=network.target
 ExecStart=/usr/bin/python3 $PYTHON_SCRIPT_PATH
 Restart=always
 RestartSec=5
-WorkingDirectory=$WORKING_DIR
+WorkingDirectory=$CURRENT_DIRECTORY
 User=$(whoami)
 
 [Install]

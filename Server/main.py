@@ -44,7 +44,7 @@ request_origins = [frontend_url]
 
 LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL)
+setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 
 access_logger = structlog.stdlib.get_logger("api.access")
 

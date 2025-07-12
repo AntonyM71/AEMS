@@ -55,7 +55,7 @@ crud_route_event_by_phase = generic_sql_crud_router_builder(
     db_session=get_transaction_session,
     sql_type=SqlType("postgresql"),
     foreign_include=[Phase],
-    crud_methods=[CrudMethods.FIND_MANY_WITH_FOREIGN_TREE],
+    crud_methods=[CrudMethods.FIND_ONE, CrudMethods.FIND_MANY_WITH_FOREIGN_TREE],
 )
 # Phase: GET by event_id, GET by id, POST, PATCH
 crud_route_phase = generic_sql_crud_router_builder(

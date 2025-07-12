@@ -7,20 +7,15 @@ interface TimeInfo {
 	time_remaining: number
 	status: string
 }
-const LiveTimer: React.FC = () => {
+export const LiveTimerLogic: React.FC = () => {
 	const [time, setTime] = useState<number>(0)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		socketRef.current = connectTimerSocket()
-	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
+		socketRef.current ??= connectTimerSocket()
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(event.data as string) as TimeInfo
 
-			if (jsonData?.time_remaining) {
+			if (jsonData?.time_remaining !== undefined) {
 				setTime(jsonData.time_remaining)
 			}
 		}
@@ -33,21 +28,24 @@ const LiveTimer: React.FC = () => {
 			}
 		}
 	}
+	useEffect(() => {
+		connectWebSocket()
+	}, [])
 
-	return (
-		<Paper
-			data-testid="final-score"
-			sx={{
-				padding: "0.5em",
-				height: "100%"
-			}}
-		>
-			<Typography variant="h5">Timer:</Typography>
-			<div style={{ textAlign: "center" }}>
-				<Typography variant="h5">{Math.round(time)}</Typography>
-			</div>
-		</Paper>
-	)
+	return <Typography variant="h5">{Math.round(time)}</Typography>
 }
-
+const LiveTimer: React.FC = () => (
+	<Paper
+		data-testid="final-score"
+		sx={{
+			padding: "0.5em",
+			height: "100%"
+		}}
+	>
+		<Typography variant="h5">Timer:</Typography>
+		<div style={{ textAlign: "center" }}>
+			<LiveTimerLogic />
+		</div>
+	</Paper>
+)
 export default LiveTimer

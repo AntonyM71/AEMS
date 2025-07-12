@@ -10,10 +10,7 @@ import { useSelector } from "react-redux"
 import { getScoredBonuses, getScoredMoves } from "../../../redux/atoms/scoring"
 
 import { useGetManyAvailablebonusesGetQuery } from "../../../redux/services/aemsApi"
-import {
-	calculateSingleJudgeRunScore,
-	RunScoreInfo
-} from "../../../utils/scoringUtils"
+import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
 import { PaddlerSelector } from "./InfoBar/PaddlerSelector"
@@ -26,6 +23,7 @@ export interface AthleteInfo {
 	last_name: string
 	bib: string
 	scoresheet: string
+	affiliation?: string
 }
 interface PropsType {
 	paddlerInfo: AthleteInfo
@@ -46,18 +44,6 @@ export const InfoBar = ({
 
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
-	const bonusList = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [paddlerInfo.scoresheet]
-	})
-
-	const scoredBonuses = useSelector(getScoredBonuses)
-	const currentScore = calculateSingleJudgeRunScore(
-		scoredMoves,
-		scoredBonuses,
-		availableMoves || [],
-		(bonusList.data as AvailableBonusType[]) || []
-	)
 
 	return (
 		<div style={{ height: "100%" }}>
@@ -90,7 +76,10 @@ export const InfoBar = ({
 					</Button>
 				</Grid>
 				<Grid size={3}>
-					<CurrentScore currentScore={currentScore} />
+					<CurrentScoreCalculation
+						availableMoves={availableMoves}
+						scoresheet={paddlerInfo.scoresheet}
+					/>
 				</Grid>
 				<Grid size={6}>
 					<PaddlerSelector paddlerInfo={paddlerInfo} />
@@ -117,11 +106,30 @@ export const InfoBar = ({
 	)
 }
 
-export const CurrentScore = ({
-	currentScore
+export const CurrentScoreCalculation = ({
+	availableMoves,
+	scoresheet
 }: {
-	currentScore: RunScoreInfo
-}) => (
+	availableMoves: movesType[]
+	scoresheet: string
+}) => {
+	const bonusList = useGetManyAvailablebonusesGetQuery({
+		sheetIdListComparisonOperator: "Equal",
+		sheetIdList: [scoresheet]
+	})
+	const scoredMoves = useSelector(getScoredMoves)
+	const scoredBonuses = useSelector(getScoredBonuses)
+	const currentScore = calculateSingleJudgeRunScore(
+		scoredMoves,
+		scoredBonuses,
+		availableMoves || [],
+		(bonusList.data as AvailableBonusType[]) || []
+	)
+
+	return <CurrentScore currentScore={currentScore.score} />
+}
+
+export const CurrentScore = ({ currentScore }: { currentScore: number }) => (
 	<Paper
 		sx={{
 			padding: "0.5em",
@@ -130,7 +138,7 @@ export const CurrentScore = ({
 	>
 		<Typography>Score:</Typography>
 		<div style={{ textAlign: "center" }}>
-			<Typography>{currentScore.score}</Typography>
+			<Typography>{currentScore}</Typography>
 		</div>
 	</Paper>
 )

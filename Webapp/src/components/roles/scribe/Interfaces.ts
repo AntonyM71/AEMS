@@ -1,3 +1,8 @@
+import {
+	PydanticScoredBonusesResponse,
+	PydanticScoredMovesResponse
+} from "../../../redux/services/aemsApi"
+
 export interface BonusPropsType {
 	bonus: bonusesType
 	addScoredMove: addScoredMoveType
@@ -50,3 +55,20 @@ export interface MovePropsType {
 	move: movesType
 	isRunLocked?: boolean
 }
+export const convertListToScoredBonusType = (
+	responses: PydanticScoredBonusesResponse[]
+): scoredBonusType[] =>
+	responses.map((response) => ({
+		id: response.id,
+		moveId: response.move_id,
+		bonusId: response.bonus_id
+	}))
+
+export const convertListToScoredMovesType = (
+	responses: PydanticScoredMovesResponse[]
+): scoredMovesType[] =>
+	responses.map((response) => ({
+		id: response.id,
+		moveId: response.move_id,
+		direction: response.direction as directionType // Assuming directionType is defined
+	}))

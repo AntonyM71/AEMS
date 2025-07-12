@@ -19,9 +19,9 @@
     "eslint.lintTask.enable": true,
     "editor.formatOnSave": true,
     "typescript.preferences.quoteStyle": "double",
-    "eslint.alwaysShowStatus": true,
+
     "files.trimTrailingWhitespace": true,
-    "eslint.migration.2_x": "off",
+
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
@@ -37,9 +37,6 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
     "editor.suggestSelection": "first",
-    "yaml.schemas": {
-      "file:///Users/antonymitchell/.vscode/extensions/atlassian.atlascode-2.10.12/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-    },
     "git.autofetch": true,
     "explorer.confirmDragAndDrop": false,
     "explorer.confirmDelete": false,
@@ -53,8 +50,6 @@
       "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "editor.formatOnType": true,
-    "terminal.integrated.inheritEnv": false,
-    "eslint.configFile": "./Webapp/.eslintrc.js",
     "python.envFile": "${workspaceFolder}/Server/.env",
 
     "breadcrumbs.showMethods": false,

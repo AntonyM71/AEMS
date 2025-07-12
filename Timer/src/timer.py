@@ -7,19 +7,27 @@ import os
 import queue
 import threading
 import time
-from typing import Any, Optional
+from dataclasses import asdict, dataclass
+from typing import Any, Literal, Optional
 
 import RPi.GPIO as GPIO
 import websockets
 
-logging.basicConfig(level=logging.WARN)
+from tm1637 import TM1637Decimal
+import sys
+sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
+
+from custom_logging import setup_logging
+
+
+setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
 
 # GPIO pin assignments
 PIN_INPUT_START = 4
 PIN_INPUT_CANCEL = 5
-PIN_BUZZER = 27
+PIN_BUZZER = 15
 PIN_RUNNING_LIGHT = 14
 PIN_READY_LIGHT = 6
 
@@ -35,6 +43,25 @@ GPIO.output(PIN_READY_LIGHT, GPIO.HIGH)
 GPIO.setup(PIN_RUNNING_LIGHT, GPIO.OUT)
 GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
+CLK = 8
+DIO = 7
+
+
+SLEEP_INTERVAL = 0.05
+
+
+def swap(segs: bytearray) -> bytearray:
+    length = len(segs)
+    if length == 4 or length == 5:
+        segs.extend(bytearray([0] * (6 - length)))
+    segs[0], segs[2] = segs[2], segs[0]
+    if length >= 4:
+        segs[3], segs[5] = segs[5], segs[3]
+    return segs
+
+
+tm = TM1637Decimal(clk=CLK, dio=DIO)
+tm.write(swap(tm.encode_string('READY')))
 
 # Environment variable configuration
 # Set to "0", "false", or "no" to disable WebSocket functionality
@@ -52,35 +79,42 @@ message_queue = queue.Queue()  # Thread-safe queue for WebSocket messages
 websocket_running = True  # Flag to control the WebSocket thread
 
 # Server configuration - change this to match your server address
-WS_SERVER_URL = os.environ.get("WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+WS_SERVER_URL = os.environ.get(
+    "WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+
+StatusLiteral = Literal["started", "running", "finished", "cancelled"]
 
 
-# WebSocket communication functions broken down into smaller parts
-async def check_connection(websocket: Any) -> bool:
-    """Check if a websocket connection is active using ping/pong"""
-    if websocket is None:
-        return False
-
-    try:
-        # Try a ping to check if connection is alive
-        pong = await websocket.ping()
-        await asyncio.wait_for(pong, timeout=1.0)
-    except Exception:
-        return False
-    else:
-        return True
+def get_short_status(status: StatusLiteral) -> str:
+    """Returns a three-letter abbreviation for the given status."""
+    status_map = {
+        "started": "STA",
+        "running": "RUN",
+        "finished": "FIN",
+        "cancelled": "CAN"
+    }
+    return status_map.get(status, "UNK")  # "UNK" for unknown statuses
 
 
-async def connect_to_websocket() -> Any:
-    """Establish a new WebSocket connection"""
-    try:
-        websocket = await websockets.connect(WS_SERVER_URL)
-        logging.info("Connected to WebSocket server at %s", WS_SERVER_URL)
-    except Exception as e:
-        logging.info("Error connecting to WebSocket server: %s", e)
-        return None
-    else:
-        return websocket
+@dataclass(order=True)
+class QueueItem:
+    status: StatusLiteral
+    time_remaining: int
+
+async def send_heartbeat(websocket):
+    """Keep the WebSocket connection alive manually"""
+    while True:
+        try:
+            # logging.info("Sending heartbeat ping to WebSocket server")
+            # await websocket.ping()  # Custom ping message
+
+            response = await websocket.recv()  # Try receiving pong
+            logging.debug(f"Received WebSocket message: {response}")
+
+            # await asyncio.sleep(10)  # Send every 10 seconds
+        except websockets.exceptions.ConnectionClosedError:
+            break  # Exit when disconnected
+
 
 
 async def process_message_queue(websocket: Any) -> None:
@@ -88,15 +122,24 @@ async def process_message_queue(websocket: Any) -> None:
     if websocket is None:
         return
 
+    message: QueueItem | None = None
     try:
         # Non-blocking check for messages
         message = message_queue.get(block=False)
         # Send the message
-        await websocket.send(message)
-        message_queue.task_done()
+        if message is not None:
+            await websocket.send(json.dumps(asdict(message)))
+
+            message_queue.task_done()
     except queue.Empty:
         # No messages to process
         pass
+    except Exception:
+        logging.exception(
+            "Error processing item from queue - Message: %s", message)
+        if message is not None:
+            message_queue.put(message)
+        raise  # Re-raise the exception
 
 
 async def cleanup_websocket(websocket: Any) -> None:
@@ -109,42 +152,55 @@ async def cleanup_websocket(websocket: Any) -> None:
             logging.info("Error closing WebSocket: %s", e)
 
 
+# ...existing code...
 async def run_websocket_loop() -> None:
     """Main websocket communication loop"""
     global websocket_running
-    websocket = None
 
     while websocket_running:
+        connection_start = time.time()
         try:
-            # Manage connection state
-            connection_active = await check_connection(websocket)
+            async with websockets.connect(WS_SERVER_URL,
+                                             ping_interval=30,
+                                             ping_timeout=10) as websocket:
+                logging.warning(
+                    "Connected to WebSocket server at %s", WS_SERVER_URL)
+                heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
 
-            if not connection_active:
-                websocket = await connect_to_websocket()
-                if websocket is None:
-                    # Connection failed, wait before retry
-                    await asyncio.sleep(2)
-                    continue
 
-            # Process any pending messages
-            await process_message_queue(websocket)
+                while websocket_running:
+                    try:
+                        await process_message_queue(websocket)
+                        await asyncio.sleep(SLEEP_INTERVAL)
+                    except Exception:
+                        logging.exception("Error in message processing loop after %d seconds",
+                                          int(time.time() - connection_start))
+                        raise
 
-            # Short sleep to avoid tight loop
-            await asyncio.sleep(0.1)
+                heartbeat_task.cancel()
 
-        except Exception as e:
-            logging.info("Error in WebSocket thread: %s", e)
-            websocket = None  # Reset so we reconnect
-            await asyncio.sleep(1)  # Wait before retrying
+        except websockets.ConnectionClosed as e:
+            logging.warning("Connection closed after %d seconds with code %s: %s",
+                            int(time.time() - connection_start), e.code, e.reason)
+            await asyncio.sleep(2)
+        except Exception:
+            logging.exception("Unexpected WebSocket error: %s")
+            await asyncio.sleep(2)
 
-    # Clean up when loop exits
-    await cleanup_websocket(websocket)
 
 
 def websocket_worker() -> None:
     """Worker thread that maintains a WebSocket connection and sends messages from the queue"""
     logging.info("Starting WebSocket communication thread")
-    asyncio.run(run_websocket_loop())
+
+    # Create a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(run_websocket_loop())
+    finally:
+        loop.close()  # Proper cleanup
 
 
 def start_websocket_thread() -> None:
@@ -153,11 +209,12 @@ def start_websocket_thread() -> None:
 
     if websocket_thread is None or not websocket_thread.is_alive():
         websocket_running = True
-        websocket_thread = threading.Thread(target=websocket_worker, daemon=True)
+        websocket_thread = threading.Thread(
+            target=websocket_worker, daemon=True)
         websocket_thread.start()
 
 
-def send_timer_update(status: str, time_remaining: Optional[float] = None) -> None:
+def send_timer_update(status: StatusLiteral, time_remaining: Optional[float] = None) -> None:
     """
     Queue a timer status update to be sent by the WebSocket thread.
     Non-blocking and safe to call from the timer thread.
@@ -167,16 +224,19 @@ def send_timer_update(status: str, time_remaining: Optional[float] = None) -> No
         time_remaining (float, optional): Remaining time in seconds
     """
     # Skip if WebSocket functionality is disabled
+    display_time = int(time_remaining) if time_remaining is not None else 0
+    tm.write(swap(tm.encode_string(
+        f'{get_short_status(status)}-{display_time:02}')))
     if not ENABLE_WEBSOCKET:
         return
 
     try:
-        data = {"status": status}
-        if time_remaining is not None:
-            # Convert to string to ensure proper JSON serialization
-            data["time_remaining"] = str(time_remaining)
 
-        payload = json.dumps(data)
+        payload = QueueItem(status=status,
+                            time_remaining=int(
+                                time_remaining) if time_remaining else 0
+                            )
+
         message_queue.put(payload)
     except Exception as e:
         logging.info("Error queuing timer update: %s", e)
@@ -190,17 +250,12 @@ def set_running_light_off() -> None:
     GPIO.output(PIN_RUNNING_LIGHT, GPIO.LOW)
 
 
-def buzz(pitch: float = 100, duration: float = 1.0) -> None:
-    period = 1.0 / pitch
-    p2 = period / 2
-    cycles = int(duration * pitch)
-    for _ in range(cycles):
-        GPIO.output(PIN_BUZZER, GPIO.HIGH)
+def buzz(duration: float = 1.0) -> None:
 
-        time.sleep(p2)
-        GPIO.output(PIN_BUZZER, GPIO.LOW)
+    GPIO.output(PIN_BUZZER, GPIO.HIGH)
 
-        time.sleep(p2)
+    time.sleep(duration)
+    GPIO.output(PIN_BUZZER, GPIO.LOW)
 
 
 def double_buzz(duration: float = 0.33, gap: float = 0.33) -> None:
@@ -229,16 +284,16 @@ def run_timer_phase(
 
     phase_elapsed = 0
     while timer_running and phase_elapsed < duration:
-        time.sleep(0.1)  # Short sleep interval
-        phase_elapsed += 0.1
-        elapsed_time += 0.1
+        time.sleep(SLEEP_INTERVAL)  # Short sleep interval
+        phase_elapsed += SLEEP_INTERVAL
+        elapsed_time += SLEEP_INTERVAL
 
         # Send update on each whole second
         current_second = int(elapsed_time)
         if current_second > last_whole_second:
             last_whole_second = current_second
             time_remaining = total_duration - elapsed_time
-            send_timer_update("running", time_remaining)
+            send_timer_update("running", round(time_remaining))
 
     # Return if we completed normally or were cancelled
     return elapsed_time, last_whole_second, timer_running
@@ -255,10 +310,11 @@ def timer_task() -> None:
 
     # Timer phase durations
     total_duration_1 = 35  # First phase duration
-    total_duration_2 = 9  # Second phase duration
-    sec10_buzz_duration = 1
-    total_duration = total_duration_1 + total_duration_2 + sec10_buzz_duration
+    sec10_buzz_duration = 0.33
+    total_duration_2 = 10 - sec10_buzz_duration  # Second phase duration
 
+    total_duration = round(
+        total_duration_1 + total_duration_2 + sec10_buzz_duration)
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
         total_duration_1, elapsed_time, last_whole_second, total_duration
@@ -266,7 +322,7 @@ def timer_task() -> None:
 
     # Signal end of first phase if not cancelled
     if phase1_completed:
-        print(elapsed_time)
+
         buzz(duration=sec10_buzz_duration)
         elapsed_time = (
             elapsed_time + sec10_buzz_duration
@@ -337,7 +393,7 @@ if __name__ == "__main__":
             if GPIO.input(PIN_INPUT_CANCEL) == GPIO.HIGH:
                 cancel_timer()
 
-            time.sleep(0.1)  # Avoid busy waiting
+            time.sleep(SLEEP_INTERVAL)  # Avoid busy waiting
 
     except KeyboardInterrupt:
         logging.info("Exiting program")
@@ -351,3 +407,4 @@ if __name__ == "__main__":
                 websocket_thread.join(timeout=1.0)
 
         GPIO.cleanup()
+        logging.info("GPIO cleanup complete. Exiting.")
