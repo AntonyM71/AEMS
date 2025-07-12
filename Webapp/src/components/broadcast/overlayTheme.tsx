@@ -136,6 +136,7 @@ export const lightTheme = createTheme({
 					border: "none",
 					height: "2px",
 					background:
+						// eslint-disable-next-line max-len
 						"linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.15) 100%)",
 					opacity: 0.8,
 					boxShadow:

@@ -16,7 +16,9 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # noqa: 
     return event_dict
 
 
-def setup_logging(*, json_logs: bool = False, log_level: str = "INFO", log_name: str = "unnamed") -> None:
+def setup_logging(
+    *, json_logs: bool = False, log_level: str = "INFO", log_name: str = "unnamed"
+) -> None:
     timestamper = structlog.processors.TimeStamper(fmt="iso")
 
     shared_processors: list[Processor] = [
@@ -27,7 +29,6 @@ def setup_logging(*, json_logs: bool = False, log_level: str = "INFO", log_name:
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.stdlib.ExtraAdder(),
         drop_color_message_key,
-
         structlog.processors.StackInfoRenderer(),
     ]
 

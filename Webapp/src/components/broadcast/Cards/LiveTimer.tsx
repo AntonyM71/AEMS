@@ -1,5 +1,6 @@
 import AlarmAddIcon from "@mui/icons-material/AlarmAdd"
-import { Collapse } from "@mui/material"
+
+import Collapse from "@mui/material/Collapse"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import { OverlayControlState } from "../../Interfaces"

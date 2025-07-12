@@ -44,8 +44,6 @@ async def publisher(
     if side_effect:
         side_effect(message)
 
-# ...existing code...
-
 
 async def ws_sender(
     websocket: WebSocket,
@@ -54,9 +52,11 @@ async def ws_sender(
 ) -> None:
     logger = logging.getLogger("app.common.websocket_handler")
     try:
-        logger.info(f"Starting broadcast subscription for channel: {channel}")
+        msg = f"Starting broadcast subscription for channel: {channel}"
+        logger.info(msg)
         async with broadcast.subscribe(channel=channel) as subscriber:
-            logger.info(f"Subscribed to broadcast channel: {channel}")
+            msg = f"Subscribed to broadcast channel: {channel}"
+            logger.info(msg)
             async for event in subscriber:
                 try:
                     if fetch_data_with_message:
@@ -65,10 +65,19 @@ async def ws_sender(
                     else:
                         await websocket.send_text(event.message)
                 except Exception as e:
-                    logger.error(
-                        f"Failed to send message to websocket on channel {channel}: {e}", exc_info=True)
+                    msg = (
+                        f"Failed to send message to websocket on channel {channel}: {e}"
+                    )
+                    logger.exception(
+                        msg,
+                    )
     except Exception as e:
-        logger.error(
-            f"Broadcast subscription failed or disconnected for channel {channel}: {e}", exc_info=True)
+        msg = (
+            f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
+        )
+        logger.exception(
+            msg,
+        )
     finally:
-        logger.info(f"Broadcast subscription closed for channel: {channel}")
+        msg = f"Broadcast subscription closed for channel: {channel}"
+        logger.info(msg)

@@ -43,7 +43,7 @@ class TestLoggingMiddleware:
             ),
         ):
             mock_file_handler.return_value = MagicMock()
-            setup_logging(json_logs=True)
+            setup_logging(json_logs=True, log_name="server")
 
             mock_file_handler.assert_called_once_with(
                 "../logs/server.log", maxBytes=100000

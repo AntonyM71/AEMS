@@ -1,4 +1,4 @@
-import { Collapse } from "@mui/material"
+import Collapse from "@mui/material/Collapse"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
