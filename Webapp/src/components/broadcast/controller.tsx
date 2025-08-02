@@ -1,6 +1,5 @@
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
-import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import React, { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
@@ -141,11 +140,14 @@ const OverlayController: React.FC = () => {
 			</Grid>
 			{selectedAthlete ? (
 				<Grid size={6}>
-					<Stack direction="row" spacing={2}>
-						<PaddlerSelector paddlerInfo={selectedAthlete} />
-
-						<RunSelector />
-					</Stack>
+					<Grid container direction="row" spacing={2}>
+						<Grid size={6}>
+							<PaddlerSelector paddlerInfo={selectedAthlete} />
+						</Grid>
+						<Grid size={6}>
+							<RunSelector />
+						</Grid>
+					</Grid>
 				</Grid>
 			) : (
 				<Grid size={12}>
