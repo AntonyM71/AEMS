@@ -1,10 +1,9 @@
-"""Timer module for controlling physical competition timer and sending WebSocket updates."""
-
 import asyncio
 import json
 import logging
 import os
 import queue
+import sys
 import threading
 import time
 from dataclasses import asdict, dataclass
@@ -13,11 +12,11 @@ from typing import Any, Literal, Optional
 import RPi.GPIO as GPIO
 import websockets
 
-from tm1637 import TM1637Decimal
-import sys
 sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
-
 from custom_logging import setup_logging
+
+from tm1637 import TM1637Decimal
+
 
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
@@ -30,10 +29,12 @@ PIN_INPUT_CANCEL = 5
 PIN_BUZZER = 15
 PIN_RUNNING_LIGHT = 14
 PIN_READY_LIGHT = 6
-
+PIN_MODE_SWITCH = 16  # Use any available GPIO pin
+PIN_MANUAL_BUZZ = 18
+GPIO.setup(PIN_MODE_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(PIN_INPUT_START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_CANCEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
+GPIO.setup(PIN_MANUAL_BUZZ, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_BUZZER, GPIO.OUT)
 GPIO.output(PIN_BUZZER, GPIO.LOW)
 
@@ -48,6 +49,25 @@ DIO = 7
 
 
 SLEEP_INTERVAL = 0.05
+
+float_time = 45
+squirt_time = 60
+timer_buzzing = False
+
+
+def get_total_duration() -> int:
+    """Return total timer duration based on mode switch state."""
+    print(GPIO.input(PIN_MODE_SWITCH))
+    if GPIO.input(PIN_MODE_SWITCH) == GPIO.HIGH:
+        print("Squirt mode selected")
+        return squirt_time
+    else:
+        return float_time
+
+
+# In your timer_task or start_timer, use:
+total_duration = get_total_duration()
+end_warning_buzz_time = 10
 
 
 def swap(segs: bytearray) -> bytearray:
@@ -85,6 +105,14 @@ WS_SERVER_URL = os.environ.get(
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
 
 
+def update_buzzer(*, manual_buzz: bool, timer_buzz: bool) -> None:
+    """Set buzzer state based on manual button and timer."""
+    if manual_buzz or timer_buzz:
+        GPIO.output(PIN_BUZZER, GPIO.HIGH)
+    else:
+        GPIO.output(PIN_BUZZER, GPIO.LOW)
+
+
 def get_short_status(status: StatusLiteral) -> str:
     """Returns a three-letter abbreviation for the given status."""
     status_map = {
@@ -101,20 +129,19 @@ class QueueItem:
     status: StatusLiteral
     time_remaining: int
 
-async def send_heartbeat(websocket):
+
+async def send_heartbeat(websocket: Any) -> None:
     """Keep the WebSocket connection alive manually"""
     while True:
         try:
-            # logging.info("Sending heartbeat ping to WebSocket server")
             # await websocket.ping()  # Custom ping message
 
             response = await websocket.recv()  # Try receiving pong
-            logging.debug(f"Received WebSocket message: {response}")
+            logging.debug("Received WebSocket message: %s", response)
 
             # await asyncio.sleep(10)  # Send every 10 seconds
         except websockets.exceptions.ConnectionClosedError:
             break  # Exit when disconnected
-
 
 
 async def process_message_queue(websocket: Any) -> None:
@@ -161,12 +188,11 @@ async def run_websocket_loop() -> None:
         connection_start = time.time()
         try:
             async with websockets.connect(WS_SERVER_URL,
-                                             ping_interval=30,
-                                             ping_timeout=10) as websocket:
-                logging.warning(
+                                          ping_interval=30,
+                                          ping_timeout=10) as websocket:
+                logging.info(
                     "Connected to WebSocket server at %s", WS_SERVER_URL)
                 heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
-
 
                 while websocket_running:
                     try:
@@ -186,7 +212,6 @@ async def run_websocket_loop() -> None:
         except Exception:
             logging.exception("Unexpected WebSocket error: %s")
             await asyncio.sleep(2)
-
 
 
 def websocket_worker() -> None:
@@ -251,11 +276,11 @@ def set_running_light_off() -> None:
 
 
 def buzz(duration: float = 1.0) -> None:
-
-    GPIO.output(PIN_BUZZER, GPIO.HIGH)
+    global timer_buzzing
+    timer_buzzing = True
 
     time.sleep(duration)
-    GPIO.output(PIN_BUZZER, GPIO.LOW)
+    timer_buzzing = False
 
 
 def double_buzz(duration: float = 0.33, gap: float = 0.33) -> None:
@@ -281,7 +306,7 @@ def run_timer_phase(
         tuple: (updated elapsed_time, updated last_whole_second, whether phase completed)
     """
     global timer_running
-
+    send_timer_update("running", round(total_duration))
     phase_elapsed = 0
     while timer_running and phase_elapsed < duration:
         time.sleep(SLEEP_INTERVAL)  # Short sleep interval
@@ -309,15 +334,18 @@ def timer_task() -> None:
     last_whole_second = 0
 
     # Timer phase durations
-    total_duration_1 = 35  # First phase duration
-    sec10_buzz_duration = 0.33
-    total_duration_2 = 10 - sec10_buzz_duration  # Second phase duration
 
+    sec10_buzz_duration = 0.33
+    second_phase_duration = end_warning_buzz_time - \
+        sec10_buzz_duration  # Second phase duration
+
+    first_phase_duration = get_total_duration(
+    ) - end_warning_buzz_time  # First phase duration
     total_duration = round(
-        total_duration_1 + total_duration_2 + sec10_buzz_duration)
+        first_phase_duration + second_phase_duration + sec10_buzz_duration)
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
-        total_duration_1, elapsed_time, last_whole_second, total_duration
+        first_phase_duration, elapsed_time, last_whole_second, total_duration
     )
 
     # Signal end of first phase if not cancelled
@@ -329,7 +357,7 @@ def timer_task() -> None:
         )  # Update time for buzz duration
         # Run second phase
         elapsed_time, last_whole_second, phase2_completed = run_timer_phase(
-            total_duration_2, elapsed_time, last_whole_second, total_duration
+            second_phase_duration, elapsed_time, last_whole_second, total_duration
         )
 
         # Signal end of second phase if not cancelled
@@ -352,8 +380,6 @@ def start_timer() -> None:
 
     timer_running = True
 
-    # Notify when timer starts
-    send_timer_update("started", 45)  # 34 + 10 = 44 seconds total (rounded up)
 
     # Start timer thread
     timer_thread = threading.Thread(target=timer_task)
@@ -392,7 +418,8 @@ if __name__ == "__main__":
             # Check if the cancel pin is HIGH
             if GPIO.input(PIN_INPUT_CANCEL) == GPIO.HIGH:
                 cancel_timer()
-
+            manual_buzz = GPIO.input(PIN_MANUAL_BUZZ) == GPIO.HIGH
+            update_buzzer(manual_buzz=manual_buzz, timer_buzz=timer_buzzing)
             time.sleep(SLEEP_INTERVAL)  # Avoid busy waiting
 
     except KeyboardInterrupt:
