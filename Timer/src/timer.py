@@ -1,10 +1,9 @@
-"""Timer module for controlling physical competition timer and sending WebSocket updates."""
-
 import asyncio
 import json
 import logging
 import os
 import queue
+import sys
 import threading
 import time
 from dataclasses import asdict, dataclass
@@ -12,12 +11,11 @@ from typing import Any, Literal, Optional
 
 import RPi.GPIO as GPIO
 import websockets
+from custom_logging import setup_logging
 
 from tm1637 import TM1637Decimal
-import sys
-sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 
-from custom_logging import setup_logging
+sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
@@ -30,7 +28,9 @@ PIN_INPUT_CANCEL = 5
 PIN_BUZZER = 15
 PIN_RUNNING_LIGHT = 14
 PIN_READY_LIGHT = 6
+PIN_MODE_SWITCH = 17  # Use any available GPIO pin
 
+GPIO.setup(PIN_MODE_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_CANCEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
@@ -48,6 +48,22 @@ DIO = 7
 
 
 SLEEP_INTERVAL = 0.05
+
+float_time = 45
+squirt_time = 60
+
+
+def get_total_duration() -> int:
+    """Return total timer duration based on mode switch state."""
+    if GPIO.input(PIN_MODE_SWITCH) == GPIO.HIGH:
+        return squirt_time
+    else:
+        return float_time
+
+
+# In your timer_task or start_timer, use:
+total_duration = get_total_duration()
+end_warning_buzz_time = 10
 
 
 def swap(segs: bytearray) -> bytearray:
@@ -101,20 +117,19 @@ class QueueItem:
     status: StatusLiteral
     time_remaining: int
 
-async def send_heartbeat(websocket):
+
+async def send_heartbeat(websocket: Any) -> None:
     """Keep the WebSocket connection alive manually"""
     while True:
         try:
-            # logging.info("Sending heartbeat ping to WebSocket server")
             # await websocket.ping()  # Custom ping message
 
             response = await websocket.recv()  # Try receiving pong
-            logging.debug(f"Received WebSocket message: {response}")
+            logging.debug("Received WebSocket message: %s", response)
 
             # await asyncio.sleep(10)  # Send every 10 seconds
         except websockets.exceptions.ConnectionClosedError:
             break  # Exit when disconnected
-
 
 
 async def process_message_queue(websocket: Any) -> None:
@@ -161,12 +176,11 @@ async def run_websocket_loop() -> None:
         connection_start = time.time()
         try:
             async with websockets.connect(WS_SERVER_URL,
-                                             ping_interval=30,
-                                             ping_timeout=10) as websocket:
-                logging.warning(
+                                          ping_interval=30,
+                                          ping_timeout=10) as websocket:
+                logging.info(
                     "Connected to WebSocket server at %s", WS_SERVER_URL)
                 heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
-
 
                 while websocket_running:
                     try:
@@ -186,7 +200,6 @@ async def run_websocket_loop() -> None:
         except Exception:
             logging.exception("Unexpected WebSocket error: %s")
             await asyncio.sleep(2)
-
 
 
 def websocket_worker() -> None:
@@ -309,15 +322,18 @@ def timer_task() -> None:
     last_whole_second = 0
 
     # Timer phase durations
-    total_duration_1 = 35  # First phase duration
-    sec10_buzz_duration = 0.33
-    total_duration_2 = 10 - sec10_buzz_duration  # Second phase duration
 
+    sec10_buzz_duration = 0.33
+    second_phase_duration = end_warning_buzz_time - \
+        sec10_buzz_duration  # Second phase duration
+
+    first_phase_duration = get_total_duration(
+    ) - end_warning_buzz_time  # First phase duration
     total_duration = round(
-        total_duration_1 + total_duration_2 + sec10_buzz_duration)
+        first_phase_duration + second_phase_duration + sec10_buzz_duration)
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
-        total_duration_1, elapsed_time, last_whole_second, total_duration
+        first_phase_duration, elapsed_time, last_whole_second, total_duration
     )
 
     # Signal end of first phase if not cancelled
@@ -329,7 +345,7 @@ def timer_task() -> None:
         )  # Update time for buzz duration
         # Run second phase
         elapsed_time, last_whole_second, phase2_completed = run_timer_phase(
-            total_duration_2, elapsed_time, last_whole_second, total_duration
+            second_phase_duration, elapsed_time, last_whole_second, total_duration
         )
 
         # Signal end of second phase if not cancelled
@@ -352,8 +368,10 @@ def start_timer() -> None:
 
     timer_running = True
 
+    total_duration = get_total_duration()
     # Notify when timer starts
-    send_timer_update("started", 45)  # 34 + 10 = 44 seconds total (rounded up)
+    # 34 + 10 = 44 seconds total (rounded up)
+    send_timer_update("started", total_duration)
 
     # Start timer thread
     timer_thread = threading.Thread(target=timer_task)
