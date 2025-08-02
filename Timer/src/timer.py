@@ -29,7 +29,7 @@ PIN_BUZZER = 15
 PIN_RUNNING_LIGHT = 14
 PIN_READY_LIGHT = 6
 PIN_MODE_SWITCH = 17  # Use any available GPIO pin
-
+PIN_MANUAL_BUZZ = 18
 GPIO.setup(PIN_MODE_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_CANCEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -51,6 +51,7 @@ SLEEP_INTERVAL = 0.05
 
 float_time = 45
 squirt_time = 60
+timer_buzzing = False
 
 
 def get_total_duration() -> int:
@@ -99,6 +100,14 @@ WS_SERVER_URL = os.environ.get(
     "WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
 
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
+
+
+def update_buzzer(*, manual_buzz: bool, timer_buzz: bool) -> None:
+    """Set buzzer state based on manual button and timer."""
+    if manual_buzz or timer_buzz:
+        GPIO.output(PIN_BUZZER, GPIO.HIGH)
+    else:
+        GPIO.output(PIN_BUZZER, GPIO.LOW)
 
 
 def get_short_status(status: StatusLiteral) -> str:
@@ -264,11 +273,11 @@ def set_running_light_off() -> None:
 
 
 def buzz(duration: float = 1.0) -> None:
-
-    GPIO.output(PIN_BUZZER, GPIO.HIGH)
+    global timer_buzzing
+    timer_buzzing = True
 
     time.sleep(duration)
-    GPIO.output(PIN_BUZZER, GPIO.LOW)
+    timer_buzzing = False
 
 
 def double_buzz(duration: float = 0.33, gap: float = 0.33) -> None:
@@ -410,7 +419,8 @@ if __name__ == "__main__":
             # Check if the cancel pin is HIGH
             if GPIO.input(PIN_INPUT_CANCEL) == GPIO.HIGH:
                 cancel_timer()
-
+            manual_buzz = GPIO.input(PIN_MANUAL_BUZZ) == GPIO.HIGH
+            update_buzzer(manual_buzz=manual_buzz, timer_buzz=timer_buzzing)
             time.sleep(SLEEP_INTERVAL)  # Avoid busy waiting
 
     except KeyboardInterrupt:
