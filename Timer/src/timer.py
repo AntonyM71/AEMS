@@ -11,11 +11,12 @@ from typing import Any, Literal, Optional
 
 import RPi.GPIO as GPIO
 import websockets
+
+sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 from custom_logging import setup_logging
 
 from tm1637 import TM1637Decimal
 
-sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
@@ -28,12 +29,12 @@ PIN_INPUT_CANCEL = 5
 PIN_BUZZER = 15
 PIN_RUNNING_LIGHT = 14
 PIN_READY_LIGHT = 6
-PIN_MODE_SWITCH = 17  # Use any available GPIO pin
+PIN_MODE_SWITCH = 16  # Use any available GPIO pin
 PIN_MANUAL_BUZZ = 18
-GPIO.setup(PIN_MODE_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(PIN_MODE_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(PIN_INPUT_START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_INPUT_CANCEL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
+GPIO.setup(PIN_MANUAL_BUZZ, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(PIN_BUZZER, GPIO.OUT)
 GPIO.output(PIN_BUZZER, GPIO.LOW)
 
@@ -56,7 +57,9 @@ timer_buzzing = False
 
 def get_total_duration() -> int:
     """Return total timer duration based on mode switch state."""
+    print(GPIO.input(PIN_MODE_SWITCH))
     if GPIO.input(PIN_MODE_SWITCH) == GPIO.HIGH:
+        print("Squirt mode selected")
         return squirt_time
     else:
         return float_time
@@ -303,7 +306,7 @@ def run_timer_phase(
         tuple: (updated elapsed_time, updated last_whole_second, whether phase completed)
     """
     global timer_running
-
+    send_timer_update("running", round(total_duration))
     phase_elapsed = 0
     while timer_running and phase_elapsed < duration:
         time.sleep(SLEEP_INTERVAL)  # Short sleep interval
@@ -377,10 +380,6 @@ def start_timer() -> None:
 
     timer_running = True
 
-    total_duration = get_total_duration()
-    # Notify when timer starts
-    # 34 + 10 = 44 seconds total (rounded up)
-    send_timer_update("started", total_duration)
 
     # Start timer thread
     timer_thread = threading.Thread(target=timer_task)
