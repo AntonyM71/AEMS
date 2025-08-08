@@ -6,7 +6,7 @@
 		"@emotion/styled": "^11.14.0",
 		"@mui/icons-material": "^6.4.3",
 		"@mui/material": "^6.4.3",
-		"@mui/x-data-grid": "^7.26.0",
+		"@mui/x-data-grid": "^7.29.9",
 		"@next/eslint-plugin-next": "^15.1.7",
 		"@react-md/utils": "^5.1.3",
 		"@reduxjs/toolkit": "^2.6.0",
