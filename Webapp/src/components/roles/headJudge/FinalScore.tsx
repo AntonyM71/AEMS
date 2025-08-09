@@ -6,7 +6,7 @@ import { makeLockedScoreStyle } from "../../competition/HeatScoreTable"
 const calculateAverage = (numbers: number[]): number =>
 	numbers.reduce((acc, curr) => acc + curr, 0) / numbers.length
 
-export const FinalScore = ({
+export const FinalScoreLogic = ({
 	allJudgeScores,
 	locked,
 	did_not_start,
@@ -17,6 +17,29 @@ export const FinalScore = ({
 	did_not_start: boolean
 	textSize?: Variant
 }) => (
+	<Typography
+		variant={textSize}
+		data-testid="final-score-value"
+		color={locked ? "success" : "textPrimary"}
+		sx={makeLockedScoreStyle(locked)}
+	>
+		{did_not_start ? "DNS" : calculateAverage(allJudgeScores).toFixed(2)}
+	</Typography>
+)
+
+export const FinalScore = ({
+	allJudgeScores,
+	locked,
+	did_not_start,
+	textSize = "h5",
+	direction = "column"
+}: {
+	allJudgeScores: number[]
+	locked: boolean
+	did_not_start: boolean
+	textSize?: Variant
+	direction?: "row" | "column"
+}) => (
 	<Paper
 		data-testid="final-score"
 		sx={{
@@ -24,19 +47,15 @@ export const FinalScore = ({
 			height: "100%"
 		}}
 	>
-		<Stack direction="row" spacing={2}>
+		<Stack direction={direction} spacing={1}>
 			<Typography variant={textSize}>Score:</Typography>
 			<div style={{ textAlign: "center" }}>
-				<Typography
-					variant={textSize}
-					data-testid="final-score-value"
-					color={locked ? "success" : "textPrimary"}
-					sx={makeLockedScoreStyle(locked)}
-				>
-					{did_not_start
-						? "DNS"
-						: calculateAverage(allJudgeScores).toFixed(2)}
-				</Typography>
+				<FinalScoreLogic
+					allJudgeScores={allJudgeScores}
+					locked={locked}
+					did_not_start={did_not_start}
+					textSize={textSize}
+				/>
 			</div>
 		</Stack>
 	</Paper>

@@ -100,6 +100,7 @@ export const SubscribedFinalScore = ({
 				locked={false}
 				did_not_start={false}
 				textSize={textSize}
+				direction="row"
 			/>
 		</>
 	)

@@ -4,7 +4,7 @@ import random
 
 import websockets
 
-WS_SERVER_URL = "ws://localhost:8001/timer"
+WS_SERVER_URL = "ws://192.168.0.28:81/api/timer"
 
 
 async def send_messages(websocket):
