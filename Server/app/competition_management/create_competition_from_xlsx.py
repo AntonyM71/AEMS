@@ -6,7 +6,7 @@ import pandas.api.types as ptypes
 from numpy import ndarray
 from sqlalchemy.orm import Session
 
-from db.client import get_transaction_session
+from db.client import transaction_session_context_manager
 from db.models import Athlete, AthleteHeat, Competition, Event, Heat, Phase, ScoreSheet
 
 # Set API endpoint URLs
@@ -94,7 +94,8 @@ def check_scoresheet_exists(scoresheet_name: str, db: Session) -> str:
         scoresheet_id = select_scoresheet_by_name(scoresheets, scoresheet_name)
 
         if scoresheet_id:
-            print(f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
+            print(
+                f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
             return scoresheet_id
         else:
             msg = f"Could not find scoresheet with name: {scoresheet_name}"
@@ -149,14 +150,13 @@ def process_competitors_df(
     paddler_count = 0
     competition_id = generate_uuid()
 
-    session_generator = get_transaction_session()
-    db = next(session_generator)
-    with db.begin():
+    with transaction_session_context_manager() as db:
         competition_data = [{"name": competition_name, "id": competition_id}]
 
         post_competition(competition_data, db=db)
 
-        scoresheet_id = check_scoresheet_exists(scoresheet_name=scoresheet_name, db=db)
+        scoresheet_id = check_scoresheet_exists(
+            scoresheet_name=scoresheet_name, db=db)
 
         unique_events = competitors_df["Event"].unique()
         if random_heats:

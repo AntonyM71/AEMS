@@ -38,6 +38,7 @@ export const SubscribedFinalScore = ({
 	textSize?: Variant
 }) => {
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
+
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
 		setAllJudgeScores((prevAllScores) => {
 			const newAllScores = [...prevAllScores]
@@ -46,6 +47,7 @@ export const SubscribedFinalScore = ({
 			return newAllScores
 		})
 	}
+
 	const { data } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{
 			id: overlayControlState.selectedPhase
@@ -60,10 +62,13 @@ export const SubscribedFinalScore = ({
 		},
 		{ skip: !scoresheet }
 	)
-	const availableBonuses = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [scoresheet ?? ""]
-	})
+	const availableBonuses = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [scoresheet ?? ""]
+		},
+		{ skip: !scoresheet }
+	)
 	const judgeNumberArray = new Array(data?.number_of_judges)
 		.fill(null)
 		.map((_, i) => i + 1)
@@ -92,6 +97,7 @@ export const SubscribedFinalScore = ({
 				locked={false}
 				did_not_start={false}
 				textSize={textSize}
+				direction="row"
 			/>
 		</>
 	)

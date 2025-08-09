@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Extra
 
-from db.client import get_transaction_session
+from db.client import transaction_session_context_manager
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
 
 scoresheet_files = os.listdir(path=Path("data"))
@@ -31,7 +31,7 @@ for file in scoresheet_files:
     scoresheet_name = file.split(".")[0] or ""
     print(scoresheet_name)
 
-    with next(get_transaction_session()) as db:
+    with transaction_session_context_manager() as db:
         if (
             db.query(ScoreSheet).filter(ScoreSheet.name == scoresheet_name)
         ).one_or_none():
@@ -40,7 +40,8 @@ for file in scoresheet_files:
         else:
             print("Making Scoresheet")
             scoresheet_id = uuid4()
-            db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
+            db.bulk_save_objects(
+                [ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
             with open(Path("data", file)) as json_file:
                 data = json.loads(json_file.read())
 
@@ -77,7 +78,8 @@ for file in scoresheet_files:
                             move_id=move_id,
                             name=bonus_name,
                             score=pydantic_move.dict()[bonus_name],
-                            display_order=bonus_order.get(bonus_name.lower(), None),
+                            display_order=bonus_order.get(
+                                bonus_name.lower(), None),
                         )
                         for bonus_name in bonus_names
                     ]

@@ -1,28 +1,12 @@
+import asyncio
 import logging
 import os
 from collections.abc import Awaitable, Callable
 from typing import Optional
 
 from broadcaster import Broadcast
-from fastapi import WebSocket
-
-
-class ConnectionManager:
-    # From https://fastapi.tiangolo.com/advanced/websockets/#handling-disconnections-and-multiple-clients
-    def __init__(self) -> None:
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket) -> None:
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket) -> None:
-        self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str) -> None:
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
+from fastapi import WebSocket, WebSocketDisconnect
+from websockets import ConnectionClosedOK
 
 broadcast_cache_location = os.environ.get(
     "CONNECTION_STRING", default="memory://"
@@ -64,13 +48,15 @@ async def ws_sender(
                         await websocket.send_text(str(data))
                     else:
                         await websocket.send_text(event.message)
-                except Exception as e:
-                    msg = (
-                        f"Failed to send message to websocket on channel {channel}: {e}"
-                    )
-                    logger.exception(
-                        msg,
-                    )
+                except asyncio.CancelledError as e:
+                    logger.info(f"WebSocket handler cancelled: {e}")
+                    await websocket.close()
+                    raise
+                except (WebSocketDisconnect, ConnectionClosedOK) as e:
+                    msg = f"WebSocket closed normally: {e}"
+                    logger.info(msg)
+                    await websocket.close()
+                    break
 
     except Exception as e:
         msg = (

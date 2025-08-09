@@ -51,11 +51,19 @@ The required hardware and wiring details are provided in the `Hardware.md` file.
    - Monitor GPIO Pin 4 to cancel an ongoing timer.
    - Activate a buzzer connected to GPIO Pin 17 for 1 second when the timer completes.
 
-## Code Structure
+## `fake_timer.py` — WebSocket Timer Test Client
 
-```plaintext
-Project/
-├── timer.py      # Main application code
-├── Hardware.md   # Hardware wiring details
-└── pyproject.toml # Dependency management
+This script simulates a timer device for testing WebSocket communication with the AEMS backend.
+
+**Features:**
+
+- Connects to the backend WebSocket endpoint (default: `ws://localhost:8001/timer`).
+- Periodically sends JSON messages containing a random `time_remaining` value and a fixed `status` field (`"running"`), mimicking timer updates.
+- Concurrently listens for and prints any messages received from the server.
+- Useful for testing and debugging backend WebSocket handling logic without requiring real hardware.
+
+**Usage:**
+
+```bash
+python fake_timer.py
 ```
