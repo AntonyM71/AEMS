@@ -1,10 +1,10 @@
 import asyncio
 import json
 import random
-
+import os
 import websockets
 
-WS_SERVER_URL = "ws://192.168.0.28:81/api/timer"
+WS_SERVER_URL = os.environ.get("WS_SERVER_URL", "ws://localhost:81/api/timer")
 
 
 async def send_messages(websocket):
