@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -36,6 +37,9 @@ export const BasicTable = ({
 		currentPage * pageLimit,
 		(currentPage + 1) * pageLimit
 	)
+	if (!data || data.length === 0) {
+		return <></>
+	}
 
 	return (
 		<Table
@@ -69,7 +73,7 @@ export const BasicTable = ({
 							`
 							}}
 						>
-							{k}
+							<Typography>{k}</Typography>
 						</TableCell>
 					))}
 				</TableRow>
@@ -93,7 +97,7 @@ export const BasicTable = ({
 								`
 								}}
 							>
-								{String(row[d] ?? "")}
+								<Typography>{String(row[d] ?? "")}</Typography>
 							</TableCell>
 						))}
 					</TableRow>

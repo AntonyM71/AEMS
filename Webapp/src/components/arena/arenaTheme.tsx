@@ -30,6 +30,18 @@ export const darkTheme = createTheme({
 			letterSpacing: "0.05em",
 			textTransform: "uppercase"
 		},
+		h4: {
+			fontSize: "4rem",
+			fontWeight: 700,
+			letterSpacing: "0.05em",
+			textTransform: "uppercase"
+		},
+		h5: {
+			fontSize: "4rem",
+			fontWeight: 700,
+			letterSpacing: "0.05em",
+			textTransform: "uppercase"
+		},
 		body1: {
 			fontSize: "2rem",
 			fontWeight: 600
@@ -43,12 +55,41 @@ export const darkTheme = createTheme({
 				}
 			}
 		},
+		MuiGrid: {
+			styleOverrides: {
+				root: {
+					height: "100%", // Make Grid items fill the height
+					width: "100%", // Make Grid items fill the width
+					boxShadow: "none" // Remove drop shadow from the modal
+				}
+			}
+		},
+
 		MuiPaper: {
 			styleOverrides: {
 				root: {
 					backgroundColor: "#222",
 					borderRadius: "8px",
-					boxShadow: "none"
+					boxShadow: "none",
+					padding: "1em" // Add some margin for spacing
+				}
+			}
+		},
+		MuiModal: {
+			styleOverrides: {
+				root: {
+					outline: "none",
+					"&:focus-visible": {
+						outline: "none"
+					}
+				}
+			}
+		},
+		MuiBackdrop: {
+			styleOverrides: {
+				root: {
+					backgroundColor: "#181818", // Remove the shadow and background
+					boxShadow: "none" // No shadow// Remove drop shadow from the modal
 				}
 			}
 		}

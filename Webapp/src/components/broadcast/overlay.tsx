@@ -19,7 +19,7 @@ import {
 	OverlayControlState
 } from "../Interfaces"
 import AthleteInfoCard from "./Cards/AthleteInfoCard"
-import { EventTitle } from "./Cards/EventTitle"
+import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
 import { SlidingImageCard } from "./Cards/ICFLogo"
 import { LiveRunScoreSpace } from "./Cards/LiveRunScore"
@@ -131,7 +131,9 @@ const Overlay: OverlayProps = () => {
 					<PhaseScoreTable
 						overlayControlState={overlayControlState}
 					/>
-					<EventTitle overlayControlState={overlayControlState} />
+					<EventTitleModal
+						overlayControlState={overlayControlState}
+					/>
 				</main>
 				<footer style={{ padding: "1rem" }}>
 					<TransitionGroup

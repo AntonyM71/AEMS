@@ -2,6 +2,7 @@ import Divider from "@mui/material/Divider"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
+import { useEffect } from "react"
 import { useSelector } from "react-redux"
 import {
 	getSelectedEvent,
@@ -18,32 +19,42 @@ import SlidingModal from "../SlidingModal"
 import { BasicTable } from "./BasicBroadcastTable"
 
 export const PhaseScoreTable = ({
-	overlayControlState
+	overlayControlState,
+	size
 }: {
 	overlayControlState: OverlayControlState
+	size?: number
 }) => {
 	const selectedPhase = useSelector(getSelectedPhase)
-	const { data, isLoading } = useGetOneByPrimaryKeyPhaseIdGetQuery(
+	const {
+		data,
+		isLoading,
+		refetch: refetchPhase
+	} = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{
 			id: selectedPhase
 		},
-		{ skip: !selectedPhase }
-	)
-	const {
-		data: scoreData,
-		isLoading: isScoreLoading,
-		isSuccess: isScoreSuccess
-	} = useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
-		{
-			phaseId: selectedPhase
-		},
 		{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
 	)
+	const { data: scoreData, refetch: refetchScores } =
+		useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
+			{
+				phaseId: selectedPhase
+			},
+			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
+		)
+	useEffect(() => {
+		if (overlayControlState.showPhaseResults) {
+			void refetchPhase()
+			void refetchScores()
+		}
+	}, [overlayControlState.showPhaseResults])
 
 	return (
 		<SlidingModal
 			direction="up"
 			show={overlayControlState.showPhaseResults}
+			size={size}
 		>
 			{scoreData?.scores && (
 				<Paper>
@@ -100,7 +111,9 @@ const processScoresData = (
 
 	return data.map((d) => {
 		const runScores = runNumbers.reduce((acc, rn) => {
-			acc[`Run ${rn}`] = d.run_scores[rn - 1]?.mean_run_score ?? "-"
+			acc[`Run ${rn}`] = d.run_scores[rn - 1]?.did_not_start
+				? "DNS"
+				: d.run_scores[rn - 1]?.mean_run_score.toFixed(2) ?? "-"
 
 			return acc
 		}, {} as Record<string, string | number>)
@@ -111,7 +124,7 @@ const processScoresData = (
 			Number: d.bib_number,
 			Affiliation: d.affiliation,
 			...runScores,
-			"Total Score": d.total_score
+			"Total Score": d.total_score?.toFixed(2)
 		}
 	})
 }
