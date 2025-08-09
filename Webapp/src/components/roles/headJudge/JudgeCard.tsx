@@ -158,7 +158,14 @@ export const MoveSubscriberUpdater = ({
 				jsonData?.heat_id === selectedHeat &&
 				jsonData?.judge_id === judge
 			) {
-				setMoveAndBonusData(jsonData.movesAndBonuses)
+				const updateStates = async () => {
+					setMoveAndBonusData(jsonData.movesAndBonuses)
+					if (setMovesAndBonuses) {
+						await Promise.resolve()
+						setMovesAndBonuses({ ...jsonData.movesAndBonuses })
+					}
+				}
+				void updateStates()
 			}
 		}
 		socketRef.current.onclose = () => {
@@ -178,37 +185,63 @@ export const MoveSubscriberUpdater = ({
 
 	useEffect(() => {
 		if (!isUninitialized && moveAndBonusHttpData) {
-			setMoveAndBonusData(moveAndBonusHttpData)
+			const updateStates = async () => {
+				setMoveAndBonusData(moveAndBonusHttpData)
+				if (setMovesAndBonuses) {
+					await Promise.resolve()
+					setMovesAndBonuses({ ...moveAndBonusHttpData })
+				}
+			}
+			void updateStates()
 		}
-	}, [moveAndBonusHttpData])
+	}, [moveAndBonusHttpData, isUninitialized, setMovesAndBonuses])
 
 	useEffect(() => {
-		const scoredMoves = moveAndBonusData?.moves
-			? moveAndBonusData.moves.map((m) => ({
+		const updateStates = async () => {
+			if (!moveAndBonusData) {
+				return
+			}
+
+			// Update moves and bonuses first if provided
+			if (setMovesAndBonuses) {
+				await Promise.resolve()
+				setMovesAndBonuses({ ...moveAndBonusData })
+			}
+
+			// Calculate and update score in same cycle
+			const scoredMoves =
+				moveAndBonusData.moves?.map((m) => ({
 					moveId: m.move_id,
 					id: m.id,
 					direction: m.direction as directionType
-			  }))
-			: []
+				})) ?? []
 
-		const scoredBonuses = moveAndBonusData?.bonuses
-			? moveAndBonusData.bonuses.map((b) => ({
+			const scoredBonuses =
+				moveAndBonusData.bonuses?.map((b) => ({
 					id: b.id,
 					moveId: b.move_id,
 					bonusId: b.bonus_id
-			  }))
-			: []
-		const currentScore = calculateSingleJudgeRunScore(
-			scoredMoves,
-			scoredBonuses,
-			availableMoves,
-			availableBonuses
-		)
-		updateHeadJudgeScore(currentScore.score, judge - 1)
-		if (setMovesAndBonuses) {
-			setMovesAndBonuses({ ...moveAndBonusData })
-		}
-	}, [moveAndBonusData])
+				})) ?? []
 
-	return <div style={{ display: "none" }} /> // to force react to render and process updates from the component
+			const currentScore = calculateSingleJudgeRunScore(
+				scoredMoves,
+				scoredBonuses,
+				availableMoves,
+				availableBonuses
+			)
+			await Promise.resolve()
+			updateHeadJudgeScore(currentScore.score, judge - 1)
+		}
+
+		void updateStates()
+	}, [
+		moveAndBonusData,
+		setMovesAndBonuses,
+		availableMoves,
+		availableBonuses,
+		judge,
+		updateHeadJudgeScore
+	])
+
+	return null
 }
