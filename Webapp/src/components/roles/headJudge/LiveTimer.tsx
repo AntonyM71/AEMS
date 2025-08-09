@@ -15,7 +15,7 @@ export const LiveTimerLogic = ({ textSize = "h5" }: { textSize?: Variant }) => {
 		socketRef.current ??= connectTimerSocket()
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(event.data as string) as TimeInfo
-
+			console.log(jsonData)
 			if (jsonData?.time_remaining !== undefined) {
 				setTime(jsonData.time_remaining)
 			}

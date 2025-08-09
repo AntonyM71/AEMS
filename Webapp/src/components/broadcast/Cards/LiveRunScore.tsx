@@ -40,7 +40,12 @@ export const SubscribedFinalScore = ({
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
 		setAllJudgeScores((prevAllScores) => {
+			console.log("Updating judge score:", { newScore, judgeNumber })
+
 			const newAllScores = [...prevAllScores]
+			while (newAllScores.length <= judgeNumber) {
+				newAllScores.push(0)
+			}
 			newAllScores[judgeNumber] = newScore
 
 			return newAllScores
@@ -60,10 +65,13 @@ export const SubscribedFinalScore = ({
 		},
 		{ skip: !scoresheet }
 	)
-	const availableBonuses = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [scoresheet ?? ""]
-	})
+	const availableBonuses = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [scoresheet ?? ""]
+		},
+		{ skip: !scoresheet }
+	)
 	const judgeNumberArray = new Array(data?.number_of_judges)
 		.fill(null)
 		.map((_, i) => i + 1)

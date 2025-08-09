@@ -198,15 +198,17 @@ export const MoveSubscriberUpdater = ({
 				bonusId: b.bonus_id
 		  }))
 		: []
-	const currentScore = calculateSingleJudgeRunScore(
-		scoredMoves,
-		scoredBonuses,
-		availableMoves,
-		availableBonuses
-	)
+
 	useEffect(() => {
+		const currentScore = calculateSingleJudgeRunScore(
+			scoredMoves,
+			scoredBonuses,
+			availableMoves,
+			availableBonuses
+		)
+
 		updateHeadJudgeScore(currentScore.score, judge - 1) // compensate for zero index
-	}, [currentScore.score])
+	}, [scoredMoves, scoredBonuses, availableMoves, availableBonuses])
 
 	useEffect(() => {
 		if (setMovesAndBonuses) {
