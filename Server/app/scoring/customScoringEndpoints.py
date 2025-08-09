@@ -251,6 +251,10 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
 
 
 async def get_moves_from_server(message: str) -> str:
+    """
+    Receives a message, parses metadata, and returns scored moves and bonuses.
+    Uses a transaction session context manager to ensure consistent session management.
+    """
     metadata = UpdatedRideMetaData(**json.loads(message))
     with transaction_session_context_manager() as db:
         scored_moves_and_bonuses = await get_athlete_moves_and_bonnuses(
