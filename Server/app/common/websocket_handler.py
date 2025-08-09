@@ -71,6 +71,7 @@ async def ws_sender(
                     logger.exception(
                         msg,
                     )
+
     except Exception as e:
         msg = (
             f"Broadcast subscription failed or disconnected for channel {channel}: {e}"

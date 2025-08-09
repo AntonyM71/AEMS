@@ -1,4 +1,5 @@
 import Paper from "@mui/material/Paper"
+import { Variant } from "@mui/material/styles/createTypography"
 import Typography from "@mui/material/Typography"
 import React, { useEffect, useRef, useState } from "react"
 import { connectTimerSocket } from "./WebSocketConnections"
@@ -7,7 +8,7 @@ interface TimeInfo {
 	time_remaining: number
 	status: string
 }
-export const LiveTimerLogic: React.FC = () => {
+export const LiveTimerLogic = ({ textSize = "h5" }: { textSize?: Variant }) => {
 	const [time, setTime] = useState<number>(0)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
@@ -32,7 +33,7 @@ export const LiveTimerLogic: React.FC = () => {
 		connectWebSocket()
 	}, [])
 
-	return <Typography variant="h5">{Math.round(time)}</Typography>
+	return <Typography variant={textSize}>{Math.round(time)}</Typography>
 }
 const LiveTimer: React.FC = () => (
 	<Paper

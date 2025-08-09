@@ -179,6 +179,7 @@ export const MoveSubscriberUpdater = ({
 	}, [])
 
 	useEffect(() => {
+		console.log("MovesAndBonusData:", moveAndBonusHttpData)
 		if (!isUninitialized && moveAndBonusHttpData) {
 			setMoveAndBonusData(moveAndBonusHttpData)
 		}

@@ -1,4 +1,5 @@
 import Collapse from "@mui/material/Collapse"
+import { Variant } from "@mui/material/styles/createTypography"
 import { useState } from "react"
 import {
 	useGetManyAvailablebonusesGetQuery,
@@ -10,11 +11,31 @@ import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { MoveSubscriberUpdater } from "../../roles/headJudge/JudgeCard"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
-
 export const LiveRunScoreSpace = ({
-	overlayControlState
+	overlayControlState,
+	textSize = "h5"
 }: {
 	overlayControlState: OverlayControlState
+	textSize?: Variant
+}) => (
+	<Collapse
+		in={overlayControlState.showLiveRunScore}
+		orientation="horizontal"
+		sx={{ display: "flex", justifyContent: "flex-end" }}
+	>
+		<SubscribedFinalScore
+			overlayControlState={overlayControlState}
+			textSize={textSize}
+		/>
+	</Collapse>
+)
+
+export const SubscribedFinalScore = ({
+	overlayControlState,
+	textSize = "h5"
+}: {
+	overlayControlState: OverlayControlState
+	textSize?: Variant
 }) => {
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
@@ -48,11 +69,7 @@ export const LiveRunScoreSpace = ({
 		.map((_, i) => i + 1)
 
 	return (
-		<Collapse
-			in={overlayControlState.showLiveRunScore}
-			orientation="horizontal"
-			sx={{ display: "flex", justifyContent: "flex-end" }}
-		>
+		<>
 			{judgeNumberArray.map((judge) => (
 				<MoveSubscriberUpdater
 					key={judge}
@@ -74,7 +91,8 @@ export const LiveRunScoreSpace = ({
 				allJudgeScores={allJudgeScores}
 				locked={false}
 				did_not_start={false}
+				textSize={textSize}
 			/>
-		</Collapse>
+		</>
 	)
 }
