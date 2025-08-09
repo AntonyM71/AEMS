@@ -38,19 +38,16 @@ export const SubscribedFinalScore = ({
 	textSize?: Variant
 }) => {
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
+
 	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
 		setAllJudgeScores((prevAllScores) => {
-			console.log("Updating judge score:", { newScore, judgeNumber })
-
 			const newAllScores = [...prevAllScores]
-			while (newAllScores.length <= judgeNumber) {
-				newAllScores.push(0)
-			}
 			newAllScores[judgeNumber] = newScore
 
 			return newAllScores
 		})
 	}
+
 	const { data } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{
 			id: overlayControlState.selectedPhase

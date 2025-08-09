@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from collections.abc import Awaitable, Callable
@@ -47,17 +48,15 @@ async def ws_sender(
                         await websocket.send_text(str(data))
                     else:
                         await websocket.send_text(event.message)
+                except asyncio.CancelledError as e:
+                    logger.info(f"WebSocket handler cancelled: {e}")
+                    await websocket.close()
+                    raise
                 except (WebSocketDisconnect, ConnectionClosedOK) as e:
                     msg = f"WebSocket closed normally: {e}"
                     logger.info(msg)
+                    await websocket.close()
                     break
-                except Exception as e:
-                    msg = (
-                        f"Failed to send message to websocket on channel {channel}: {e}"
-                    )
-                    logger.exception(
-                        msg,
-                    )
 
     except Exception as e:
         msg = (

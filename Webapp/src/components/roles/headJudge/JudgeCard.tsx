@@ -146,9 +146,7 @@ export const MoveSubscriberUpdater = ({
 		)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectCurrentScoreStatusSocket()
-		}
+		socketRef.current ??= connectCurrentScoreStatusSocket()
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(
 				event.data as string
@@ -183,38 +181,34 @@ export const MoveSubscriberUpdater = ({
 			setMoveAndBonusData(moveAndBonusHttpData)
 		}
 	}, [moveAndBonusHttpData])
-	const scoredMoves = moveAndBonusData?.moves
-		? moveAndBonusData.moves.map((m) => ({
-				moveId: m.move_id,
-				id: m.id,
-				direction: m.direction as directionType
-		  }))
-		: []
-
-	const scoredBonuses = moveAndBonusData?.bonuses
-		? moveAndBonusData.bonuses.map((b) => ({
-				id: b.id,
-				moveId: b.move_id,
-				bonusId: b.bonus_id
-		  }))
-		: []
 
 	useEffect(() => {
+		const scoredMoves = moveAndBonusData?.moves
+			? moveAndBonusData.moves.map((m) => ({
+					moveId: m.move_id,
+					id: m.id,
+					direction: m.direction as directionType
+			  }))
+			: []
+
+		const scoredBonuses = moveAndBonusData?.bonuses
+			? moveAndBonusData.bonuses.map((b) => ({
+					id: b.id,
+					moveId: b.move_id,
+					bonusId: b.bonus_id
+			  }))
+			: []
 		const currentScore = calculateSingleJudgeRunScore(
 			scoredMoves,
 			scoredBonuses,
 			availableMoves,
 			availableBonuses
 		)
-
-		updateHeadJudgeScore(currentScore.score, judge - 1) // compensate for zero index
-	}, [scoredMoves, scoredBonuses, availableMoves, availableBonuses])
-
-	useEffect(() => {
+		updateHeadJudgeScore(currentScore.score, judge - 1)
 		if (setMovesAndBonuses) {
-			setMovesAndBonuses(moveAndBonusData)
+			setMovesAndBonuses({ ...moveAndBonusData })
 		}
 	}, [moveAndBonusData])
 
-	return null
+	return <div style={{ display: "none" }} /> // to force react to render and process updates from the component
 }
