@@ -1,5 +1,6 @@
 import os
 from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 
 from dotenv import load_dotenv
@@ -31,6 +32,17 @@ def setup_database() -> None:
 
 
 def get_transaction_session() -> Generator[Session, Any, None]:
+    """Get a database session for use in a transaction"""
+    setup_database()
+    try:
+        db = session()
+        yield db
+    finally:
+        db.close()
+
+
+@contextmanager
+def transaction_session_context_manager() -> Generator[Session, Any, None]:
     """Get a database session for use in a transaction"""
     setup_database()
     try:
