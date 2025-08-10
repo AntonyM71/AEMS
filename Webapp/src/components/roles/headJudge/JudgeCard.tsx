@@ -18,7 +18,6 @@ import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
 import {
 	convertListToScoredBonusType,
 	convertListToScoredMovesType,
-	directionType,
 	movesType
 } from "../scribe/Interfaces"
 import { ScoredMovesAndBonusesWithMetadata } from "./RunStatus"
@@ -50,9 +49,16 @@ export const JudgeCard = ({
 		{ skip: !selectedAthlete?.scoresheet }
 	)
 
-	const updateScore = (newScore: number, judgeNumber: number) => {
-		updateHeadJudgeScore(newScore, judgeNumber)
-		setCurrentScore(newScore)
+	const updateJudgeData = (newData: {
+		score: number
+		judgeNumber: number
+		movesAndBonuses: ScoredMovesAndBonusesResponse
+	}) => {
+		// console.log("New Score:", newData.score)
+		updateHeadJudgeScore(newData.score, newData.judgeNumber)
+		setCurrentScore(newData.score)
+
+		setMoveAndBonusData(newData.movesAndBonuses)
 	}
 	const [moveAndBonusData, setMoveAndBonusData] =
 		useState<ScoredMovesAndBonusesResponse>({ moves: [], bonuses: [] })
@@ -65,13 +71,12 @@ export const JudgeCard = ({
 						selectedHeat={selectedHeat}
 						selectedRun={selectedRun}
 						selectedAthleteId={selectedAthlete.id}
-						updateHeadJudgeScore={updateScore}
+						updateJudgeData={updateJudgeData}
 						availableBonuses={
 							availableBonuses.data as AvailableBonusType[]
 						}
 						availableMoves={availableMoves.data as movesType[]}
 						judge={judge}
-						setMovesAndBonuses={setMoveAndBonusData}
 					/>
 					<Paper
 						sx={{
@@ -108,29 +113,52 @@ export const JudgeCard = ({
 	return <Skeleton />
 }
 
+const calculateAndUpdateScore = (
+	data: ScoredMovesAndBonusesResponse,
+	judge: number,
+	availableMoves: movesType[],
+	availableBonuses: AvailableBonusType[],
+	updateJudgeData: (newData: {
+		score: number
+		judgeNumber: number
+		movesAndBonuses: ScoredMovesAndBonusesResponse
+	}) => void
+) => {
+	const score = calculateSingleJudgeRunScore(
+		convertListToScoredMovesType(data.moves),
+		convertListToScoredBonusType(data.bonuses),
+		availableMoves,
+		availableBonuses
+	).score
+
+	updateJudgeData({
+		score,
+		judgeNumber: judge - 1,
+		movesAndBonuses: data
+	})
+}
+
 export const MoveSubscriberUpdater = ({
 	selectedHeat,
 	selectedRun,
 	judge,
 	selectedAthleteId,
-	updateHeadJudgeScore,
+	updateJudgeData,
 	availableMoves,
-	availableBonuses,
-	setMovesAndBonuses
+	availableBonuses
 }: {
 	selectedHeat: string
 	selectedRun: number
 	judge: number
 	selectedAthleteId: string
-	updateHeadJudgeScore: (newScore: number, judgeNumber: number) => void
+	updateJudgeData: (newData: {
+		score: number
+		judgeNumber: number
+		movesAndBonuses: ScoredMovesAndBonusesResponse
+	}) => void
 	availableMoves: movesType[]
 	availableBonuses: AvailableBonusType[]
-	setMovesAndBonuses?: (
-		movesAndBonuses: ScoredMovesAndBonusesResponse
-	) => void
 }) => {
-	const [moveAndBonusData, setMoveAndBonusData] =
-		useState<ScoredMovesAndBonusesResponse>({ moves: [], bonuses: [] })
 	const { data: moveAndBonusHttpData, isUninitialized } =
 		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
 			{
@@ -151,21 +179,27 @@ export const MoveSubscriberUpdater = ({
 			const jsonData = JSON.parse(
 				event.data as string
 			) as ScoredMovesAndBonusesWithMetadata
-
+			// console.log("WebSocket handler values:", {
+			// 	selectedRun,
+			// 	selectedAthleteId,
+			// 	selectedHeat,
+			// 	judge,
+			// 	availableMoves,
+			// 	availableBonuses
+			// })
 			if (
 				jsonData?.run_number === selectedRun &&
 				jsonData?.athlete_id === selectedAthleteId &&
 				jsonData?.heat_id === selectedHeat &&
 				jsonData?.judge_id === judge
 			) {
-				const updateStates = async () => {
-					setMoveAndBonusData(jsonData.movesAndBonuses)
-					if (setMovesAndBonuses) {
-						await Promise.resolve()
-						setMovesAndBonuses({ ...jsonData.movesAndBonuses })
-					}
-				}
-				void updateStates()
+				calculateAndUpdateScore(
+					jsonData.movesAndBonuses,
+					judge,
+					availableMoves,
+					availableBonuses,
+					updateJudgeData
+				)
 			}
 		}
 		socketRef.current.onclose = () => {
@@ -180,68 +214,20 @@ export const MoveSubscriberUpdater = ({
 	}
 
 	useEffect(() => {
+		if (!isUninitialized && moveAndBonusHttpData) {
+			calculateAndUpdateScore(
+				moveAndBonusHttpData,
+				judge,
+				availableMoves,
+				availableBonuses,
+				updateJudgeData
+			)
+		}
+	}, [moveAndBonusHttpData, isUninitialized])
+
+	useEffect(() => {
 		connectWebSocket()
 	}, [])
-
-	useEffect(() => {
-		if (!isUninitialized && moveAndBonusHttpData) {
-			const updateStates = async () => {
-				setMoveAndBonusData(moveAndBonusHttpData)
-				if (setMovesAndBonuses) {
-					await Promise.resolve()
-					setMovesAndBonuses({ ...moveAndBonusHttpData })
-				}
-			}
-			void updateStates()
-		}
-	}, [moveAndBonusHttpData, isUninitialized, setMovesAndBonuses])
-
-	useEffect(() => {
-		const updateStates = async () => {
-			if (!moveAndBonusData) {
-				return
-			}
-
-			// Update moves and bonuses first if provided
-			if (setMovesAndBonuses) {
-				await Promise.resolve()
-				setMovesAndBonuses({ ...moveAndBonusData })
-			}
-
-			// Calculate and update score in same cycle
-			const scoredMoves =
-				moveAndBonusData.moves?.map((m) => ({
-					moveId: m.move_id,
-					id: m.id,
-					direction: m.direction as directionType
-				})) ?? []
-
-			const scoredBonuses =
-				moveAndBonusData.bonuses?.map((b) => ({
-					id: b.id,
-					moveId: b.move_id,
-					bonusId: b.bonus_id
-				})) ?? []
-
-			const currentScore = calculateSingleJudgeRunScore(
-				scoredMoves,
-				scoredBonuses,
-				availableMoves,
-				availableBonuses
-			)
-			await Promise.resolve()
-			updateHeadJudgeScore(currentScore.score, judge - 1)
-		}
-
-		void updateStates()
-	}, [
-		moveAndBonusData,
-		setMovesAndBonuses,
-		availableMoves,
-		availableBonuses,
-		judge,
-		updateHeadJudgeScore
-	])
 
 	return null
 }

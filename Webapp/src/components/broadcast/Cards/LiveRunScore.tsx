@@ -2,6 +2,7 @@ import Collapse from "@mui/material/Collapse"
 import { Variant } from "@mui/material/styles/createTypography"
 import { useState } from "react"
 import {
+	ScoredMovesAndBonusesResponse,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery
@@ -47,6 +48,14 @@ export const SubscribedFinalScore = ({
 			return newAllScores
 		})
 	}
+	const updateJudgeData = (newData: {
+		score: number
+		judgeNumber: number
+		movesAndBonuses: ScoredMovesAndBonusesResponse
+	}) => {
+		console.log("New Score:", newData.score)
+		updateSingleJudgeScore(newData.score, newData.judgeNumber)
+	}
 
 	const { data } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{
@@ -87,7 +96,7 @@ export const SubscribedFinalScore = ({
 						(availableBonuses.data ?? []) as AvailableBonusType[]
 					}
 					availableMoves={(availableMoves.data ?? []) as movesType[]}
-					updateHeadJudgeScore={updateSingleJudgeScore}
+					updateJudgeData={updateJudgeData}
 					judge={judge}
 				/>
 			))}
