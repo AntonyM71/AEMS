@@ -1,6 +1,6 @@
 import Collapse from "@mui/material/Collapse"
 import { Variant } from "@mui/material/styles/createTypography"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
 	ScoredMovesAndBonusesResponse,
 	useGetManyAvailablebonusesGetQuery,
@@ -40,20 +40,23 @@ export const SubscribedFinalScore = ({
 }) => {
 	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
 
-	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
-		setAllJudgeScores((prevAllScores) => {
-			const newAllScores = [...prevAllScores]
-			newAllScores[judgeNumber] = newScore
+	const updateSingleJudgeScore = useCallback(
+		(newScore: number, judgeNumber: number) => {
+			setAllJudgeScores((prevAllScores) => {
+				const newAllScores = [...prevAllScores]
+				newAllScores[judgeNumber] = newScore
 
-			return newAllScores
-		})
-	}
+				return newAllScores
+			})
+		},
+		[]
+	)
 	const updateJudgeData = (newData: {
 		score: number
 		judgeNumber: number
 		movesAndBonuses: ScoredMovesAndBonusesResponse
 	}) => {
-		console.log("New Score:", newData.score)
+		// console.log("New Score:", newData.score)
 		updateSingleJudgeScore(newData.score, newData.judgeNumber)
 	}
 

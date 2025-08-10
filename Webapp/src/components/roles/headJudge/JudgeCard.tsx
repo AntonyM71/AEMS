@@ -2,7 +2,7 @@ import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import { getSelectedRun } from "../../../redux/atoms/scoring"
@@ -49,17 +49,20 @@ export const JudgeCard = ({
 		{ skip: !selectedAthlete?.scoresheet }
 	)
 
-	const updateJudgeData = (newData: {
-		score: number
-		judgeNumber: number
-		movesAndBonuses: ScoredMovesAndBonusesResponse
-	}) => {
-		// console.log("New Score:", newData.score)
-		updateHeadJudgeScore(newData.score, newData.judgeNumber)
-		setCurrentScore(newData.score)
+	const updateJudgeData = useCallback(
+		(newData: {
+			score: number
+			judgeNumber: number
+			movesAndBonuses: ScoredMovesAndBonusesResponse
+		}) => {
+			// console.log("New Score:", newData.score)
+			updateHeadJudgeScore(newData.score, newData.judgeNumber)
+			setCurrentScore(newData.score)
 
-		setMoveAndBonusData(newData.movesAndBonuses)
-	}
+			setMoveAndBonusData(newData.movesAndBonuses)
+		},
+		[]
+	)
 	const [moveAndBonusData, setMoveAndBonusData] =
 		useState<ScoredMovesAndBonusesResponse>({ moves: [], bonuses: [] })
 	const scoredMoves = convertListToScoredMovesType(moveAndBonusData.moves)
@@ -229,5 +232,5 @@ export const MoveSubscriberUpdater = ({
 		connectWebSocket()
 	}, [])
 
-	return null
+	return <></>
 }
