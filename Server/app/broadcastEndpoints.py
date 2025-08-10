@@ -26,7 +26,6 @@ async def timer_websocket(websocket: WebSocket) -> None:
                     "websocket": websocket,
                     "side_effect": None,
                     "channel": channel,
-
                 },
             ),
             (
@@ -34,13 +33,11 @@ async def timer_websocket(websocket: WebSocket) -> None:
                 {
                     "websocket": websocket,
                     "channel": channel,
-
                 },
             ),
         )
     except WebSocketDisconnect as e:
-        logging.info(
-            "Timer WebSocket disconnected with code %s :%s", e.code, e)
+        logging.info("Timer WebSocket disconnected with code %s :%s", e.code, e)
         logging.info(
             "WebSocket /timer: disconnect reason: %s, code: %s",
             getattr(e, "reason", None),

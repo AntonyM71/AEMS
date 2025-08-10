@@ -49,7 +49,8 @@ async def ws_sender(
                     else:
                         await websocket.send_text(event.message)
                 except asyncio.CancelledError as e:
-                    logger.info(f"WebSocket handler cancelled: {e}")
+                    msg = f"WebSocket handler cancelled: {e}"
+                    logger.info(msg)
                     await websocket.close()
                     raise
                 except (WebSocketDisconnect, ConnectionClosedOK) as e:

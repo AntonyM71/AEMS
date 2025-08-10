@@ -47,7 +47,12 @@ export const FinalScore = ({
 			height: "100%"
 		}}
 	>
-		<Stack direction={direction} spacing={1}>
+		<Stack
+			direction={direction}
+			spacing={1}
+			alignItems="center"
+			sx={{ height: "100%" }}
+		>
 			<Typography variant={textSize}>Score:</Typography>
 			<div style={{ textAlign: "center" }}>
 				<FinalScoreLogic

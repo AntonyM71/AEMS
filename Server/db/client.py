@@ -43,5 +43,5 @@ def get_transaction_session() -> Generator[Session, Any, None]:
 
 @contextmanager
 def transaction_session_context_manager() -> Generator[Session, Any, None]:
-    """Get a database session for use in a transaction"""
+    """Get a database session for use in a transaction using a context manager"""
     yield from get_transaction_session()

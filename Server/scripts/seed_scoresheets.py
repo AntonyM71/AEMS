@@ -40,8 +40,7 @@ for file in scoresheet_files:
         else:
             print("Making Scoresheet")
             scoresheet_id = uuid4()
-            db.bulk_save_objects(
-                [ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
+            db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
             with open(Path("data", file)) as json_file:
                 data = json.loads(json_file.read())
 
@@ -78,8 +77,7 @@ for file in scoresheet_files:
                             move_id=move_id,
                             name=bonus_name,
                             score=pydantic_move.dict()[bonus_name],
-                            display_order=bonus_order.get(
-                                bonus_name.lower(), None),
+                            display_order=bonus_order.get(bonus_name.lower(), None),
                         )
                         for bonus_name in bonus_names
                     ]

@@ -94,8 +94,7 @@ def check_scoresheet_exists(scoresheet_name: str, db: Session) -> str:
         scoresheet_id = select_scoresheet_by_name(scoresheets, scoresheet_name)
 
         if scoresheet_id:
-            print(
-                f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
+            print(f"Selected scoresheet '{scoresheet_name}' with ID {scoresheet_id}")
             return scoresheet_id
         else:
             msg = f"Could not find scoresheet with name: {scoresheet_name}"
@@ -144,9 +143,6 @@ def process_competitors_df(
     *,
     random_heats: bool = False,
 ) -> int:
-    event_count = 0
-    phase_count = 0
-
     paddler_count = 0
     competition_id = generate_uuid()
 
@@ -155,8 +151,7 @@ def process_competitors_df(
 
         post_competition(competition_data, db=db)
 
-        scoresheet_id = check_scoresheet_exists(
-            scoresheet_name=scoresheet_name, db=db)
+        scoresheet_id = check_scoresheet_exists(scoresheet_name=scoresheet_name, db=db)
 
         unique_events = competitors_df["Event"].unique()
         if random_heats:
@@ -180,7 +175,6 @@ def process_competitors_df(
 
             post_event(event_data, db=db)
 
-            event_count += 1
             phase_id = generate_uuid()
             phase_data = [
                 {
@@ -196,7 +190,6 @@ def process_competitors_df(
 
             post_phase(phase_data, db=db)
 
-            phase_count += 1
             event_phase_map[event_name] = phase_id
 
         heat_map = create_heats(
