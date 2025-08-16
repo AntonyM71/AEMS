@@ -1110,7 +1110,9 @@ class TestValidateColumnsAndDataTypes:
         self, test_df: pd.DataFrame
     ) -> None:
         validate_columns_and_data_types(
-            competition_df=test_df, random_heats=False)
+            competition_df=test_df,
+            random_heats=False,
+        )
 
     @pytest.mark.parametrize("column", MANDATORY_COLUMNS)
     def test_it_raises_an_error_when_mandatory_columns_not_there(
