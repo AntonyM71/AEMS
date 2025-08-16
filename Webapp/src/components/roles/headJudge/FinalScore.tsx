@@ -12,7 +12,7 @@ export const FinalScoreLogic = ({
 	did_not_start,
 	textSize = "h5"
 }: {
-	allJudgeScores: number[]
+	allJudgeScores: Record<string, number>
 	locked: boolean
 	did_not_start: boolean
 	textSize?: Variant
@@ -23,7 +23,9 @@ export const FinalScoreLogic = ({
 		color={locked ? "success" : "textPrimary"}
 		sx={makeLockedScoreStyle(locked)}
 	>
-		{did_not_start ? "DNS" : calculateAverage(allJudgeScores).toFixed(2)}
+		{did_not_start
+			? "DNS"
+			: calculateAverage(Object.values(allJudgeScores)).toFixed(2)}
 	</Typography>
 )
 
@@ -34,7 +36,7 @@ export const FinalScore = ({
 	textSize = "h5",
 	direction = "column"
 }: {
-	allJudgeScores: number[]
+	allJudgeScores: Record<string, number>
 	locked: boolean
 	did_not_start: boolean
 	textSize?: Variant

@@ -16,7 +16,7 @@ import {
 import {
 	PydanticScoredBonuses,
 	PydanticScoredMoves,
-	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery,
+	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyAvailablemovesGetQuery,
 	useGetManyRunStatusGetQuery,
@@ -184,7 +184,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 		isFetching: isMoveAndBonusFetching,
 		isUninitialized
-	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberJudgeIdGetQuery(
+	} = useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
 		{
 			runNumber: selectedRun.toString(),
 			athleteId: selectedAthlete?.id ?? "",
