@@ -8,7 +8,7 @@ import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import { getSelectedRun } from "../../../redux/atoms/scoring"
 import {
 	ScoredMovesAndBonusesResponse,
-	useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
+	useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
@@ -124,8 +124,6 @@ export const WebsocketMoveSubscriberUpdater = ({
 				jsonData?.athlete_id === selectedAthleteId &&
 				jsonData?.heat_id === selectedHeat
 			) {
-				console.log("Details Match")
-
 				updateJudgeData(jsonData.movesAndBonuses, false, [
 					String(jsonData.judge_id)
 				])
@@ -167,7 +165,7 @@ export const HTTPMoveSubscriberUpdater = ({
 	) => void
 }) => {
 	const { data: moveAndBonusHttpData, isUninitialized } =
-		useGetAthleteMovesAndBonnusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
+		useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
 			{
 				runNumber: selectedRun.toString(),
 				athleteId: selectedAthleteId,

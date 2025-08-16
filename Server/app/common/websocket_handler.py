@@ -13,7 +13,7 @@ broadcast_cache_location = os.environ.get(
 )  # fall back to memeory if postgress conection is not available.
 
 
-def get_broadcast():
+def get_broadcast() -> Broadcast:
     # Create a new instance for each request/connection
     return Broadcast(broadcast_cache_location)
 
@@ -38,7 +38,6 @@ async def ws_sender(
     websocket: WebSocket,
     channel: str,
     fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
-
 ) -> None:
     async with get_broadcast() as broadcast:
         logger = logging.getLogger("app.common.websocket_handler")
@@ -67,9 +66,7 @@ async def ws_sender(
                         break
 
         except Exception as e:
-            msg = (
-                f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
-            )
+            msg = f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
             logger.exception(
                 msg,
             )

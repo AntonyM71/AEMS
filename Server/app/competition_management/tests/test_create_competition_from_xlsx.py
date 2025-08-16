@@ -33,8 +33,7 @@ def reset_test_uuids_count() -> None:
 @pytest.fixture
 def test_df() -> pd.DataFrame:
     return pd.DataFrame(
-        columns=["first_name", "last_name", "bib",
-                 "Event", "Heat", "affiliation"],
+        columns=["first_name", "last_name", "bib", "Event", "Heat", "affiliation"],
         data=[
             ["James", "Wilkinson", 1, "Senior Elite C1M", 1, "England"],
             ["John", "Hutchinson", 126, "Senior Intermediate K1M", 1, "England"],
@@ -1123,8 +1122,7 @@ class TestValidateColumnsAndDataTypes:
             validate_columns_and_data_types(
                 competition_df=modified_test_df, random_heats=False
             )
-        assert str(
-            excinfo.value) == f"Column '{column}' is missing from the file"
+        assert str(excinfo.value) == f"Column '{column}' is missing from the file"
 
     def test_it_passes_no_heats_are_provided_if_random_heats_is_true(
         self, test_df: pd.DataFrame
@@ -1151,8 +1149,7 @@ class TestValidateColumnsAndDataTypes:
     def test_it_passes_when_columns_are_there_and_dtypes_are_correct(
         self, test_df: pd.DataFrame
     ) -> None:
-        validate_columns_and_data_types(
-            competition_df=test_df, random_heats=False)
+        validate_columns_and_data_types(competition_df=test_df, random_heats=False)
 
 
 @pytest.mark.parametrize(
