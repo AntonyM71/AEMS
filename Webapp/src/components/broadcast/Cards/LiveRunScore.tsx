@@ -10,7 +10,10 @@ import {
 import { OverlayControlState } from "../../Interfaces"
 import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
-import { HTTPMoveSubscriberUpdater } from "../../roles/headJudge/JudgeCard"
+import {
+	HTTPMoveSubscriberUpdater,
+	WebsocketMoveSubscriberUpdater
+} from "../../roles/headJudge/JudgeCard"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
 export const LiveRunScoreSpace = ({
@@ -134,6 +137,14 @@ export const SubscribedFinalScore = ({
 
 	return (
 		<>
+			<WebsocketMoveSubscriberUpdater
+				selectedHeat={overlayControlState.selectedHeat}
+				selectedRun={overlayControlState.selectedRun}
+				selectedAthleteId={
+					overlayControlState?.selectedAthlete?.id ?? ""
+				}
+				updateJudgeData={updateJudgeData}
+			/>
 			<HTTPMoveSubscriberUpdater
 				selectedHeat={overlayControlState.selectedHeat}
 				selectedRun={overlayControlState.selectedRun}
