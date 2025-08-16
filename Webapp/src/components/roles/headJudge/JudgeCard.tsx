@@ -107,7 +107,8 @@ export const WebsocketMoveSubscriberUpdater = ({
 	selectedAthleteId: string
 	updateJudgeData: (
 		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean
+		clear: boolean,
+		judgesToUpdate: string[]
 	) => void
 }) => {
 	const socketRef = useRef<WebSocket | null>(null)
@@ -124,7 +125,10 @@ export const WebsocketMoveSubscriberUpdater = ({
 				jsonData?.heat_id === selectedHeat
 			) {
 				console.log("Details Match")
-				updateJudgeData(jsonData.movesAndBonuses, false)
+
+				updateJudgeData(jsonData.movesAndBonuses, false, [
+					String(jsonData.judge_id)
+				])
 			}
 		}
 		socketRef.current.onclose = () => {
@@ -158,7 +162,8 @@ export const HTTPMoveSubscriberUpdater = ({
 	selectedAthleteId: string
 	updateJudgeData: (
 		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean
+		clear: boolean,
+		judgesToUpdate: string[]
 	) => void
 }) => {
 	const { data: moveAndBonusHttpData, isUninitialized } =
@@ -176,7 +181,15 @@ export const HTTPMoveSubscriberUpdater = ({
 
 	useEffect(() => {
 		if (!isUninitialized && moveAndBonusHttpData) {
-			updateJudgeData(moveAndBonusHttpData, true)
+			const judgesToUpdate = Array.from(
+				new Set([
+					...(moveAndBonusHttpData.moves?.map((m) => m.judge_id) ??
+						[]),
+					...(moveAndBonusHttpData.bonuses?.map((b) => b.judge_id) ??
+						[])
+				])
+			)
+			updateJudgeData(moveAndBonusHttpData, true, judgesToUpdate)
 		}
 	}, [moveAndBonusHttpData, isUninitialized])
 

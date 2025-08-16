@@ -94,11 +94,15 @@ export default ({
 		},
 		{ skip: !selectedAthlete?.scoresheet }
 	)
-
 	const updateJudgeData = (
 		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean = false
+		clear: boolean = false,
+		judgesToUpdate: string[] = []
 	) => {
+		const judgeInfo: Record<
+			string,
+			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
+		> = {}
 		if (clear) {
 			setAllJudgeScores((prevScores) =>
 				Object.fromEntries(
@@ -114,17 +118,8 @@ export default ({
 				)
 			)
 		}
-		const judgeIds = Array.from(
-			new Set([
-				...(movesAndBonuses.moves?.map((m) => m.judge_id) ?? []),
-				...(movesAndBonuses.bonuses?.map((b) => b.judge_id) ?? [])
-			])
-		)
-		const judgeInfo: Record<
-			string,
-			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
-		> = {}
-		judgeIds.forEach((jid: string) => {
+
+		judgesToUpdate.forEach((jid: string) => {
 			const filteredMovesAndBonuses: ScoredMovesAndBonusesResponse = {
 				moves:
 					movesAndBonuses.moves?.filter((m) => m.judge_id === jid) ??
@@ -134,6 +129,7 @@ export default ({
 						(b) => b.judge_id === jid
 					) ?? []
 			}
+
 			const score = calculateMoveAndBonusScore(
 				filteredMovesAndBonuses,
 				(availableMoves.data ?? []) as movesType[],
@@ -152,7 +148,6 @@ export default ({
 				])
 			)
 		}))
-
 		setAllJudgeMoveAndBonusData((prevData) => ({
 			...prevData,
 			...Object.fromEntries(

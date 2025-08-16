@@ -45,29 +45,35 @@ export const SubscribedFinalScore = ({
 	const [allJudgeScores, setAllJudgeScores] = useState<
 		Record<string, number>
 	>({})
-
+	const [allJudgeMoveAndBonusData, setAllJudgeMoveAndBonusData] = useState<
+		Record<string, ScoredMovesAndBonusesResponse>
+	>({})
 	const updateJudgeData = (
 		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean = false
+		clear: boolean = false,
+		judgesToUpdate: string[] = []
 	) => {
+		const judgeInfo: Record<
+			string,
+			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
+		> = {}
 		if (clear) {
 			setAllJudgeScores((prevScores) =>
 				Object.fromEntries(
 					Object.keys(prevScores).map((jid) => [jid, 0])
 				)
 			)
+			setAllJudgeMoveAndBonusData((prevData) =>
+				Object.fromEntries(
+					Object.keys(prevData).map((jid) => [
+						jid,
+						{ moves: [], bonuses: [] }
+					])
+				)
+			)
 		}
-		const judgeIds = Array.from(
-			new Set([
-				...(movesAndBonuses.moves?.map((m) => m.judge_id) ?? []),
-				...(movesAndBonuses.bonuses?.map((b) => b.judge_id) ?? [])
-			])
-		)
-		const judgeInfo: Record<
-			string,
-			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
-		> = {}
-		judgeIds.forEach((jid: string) => {
+
+		judgesToUpdate.forEach((jid: string) => {
 			const filteredMovesAndBonuses: ScoredMovesAndBonusesResponse = {
 				moves:
 					movesAndBonuses.moves?.filter((m) => m.judge_id === jid) ??
@@ -77,6 +83,7 @@ export const SubscribedFinalScore = ({
 						(b) => b.judge_id === jid
 					) ?? []
 			}
+
 			const score = calculateMoveAndBonusScore(
 				filteredMovesAndBonuses,
 				(availableMoves.data ?? []) as movesType[],
@@ -92,6 +99,15 @@ export const SubscribedFinalScore = ({
 				Object.entries(judgeInfo).map(([jid, value]) => [
 					jid,
 					value.score
+				])
+			)
+		}))
+		setAllJudgeMoveAndBonusData((prevData) => ({
+			...prevData,
+			...Object.fromEntries(
+				Object.entries(judgeInfo).map(([jid, value]) => [
+					jid,
+					value.movesAndBonuses
 				])
 			)
 		}))
@@ -112,16 +128,14 @@ export const SubscribedFinalScore = ({
 		},
 		{ skip: !scoresheet }
 	)
-	const { data: phaseData, isLoading: isPhaseDataLoading } =
-		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
-			{ heatId: overlayControlState.selectedHeat },
-			{ skip: !overlayControlState.selectedHeat }
-		)
+	const { data: phaseData } = useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
+		{ heatId: overlayControlState.selectedHeat },
+		{ skip: !overlayControlState.selectedHeat }
+	)
 	const maxJudges =
 		(phaseData &&
 			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
 		1
-
 	useEffect(() => {
 		// Example: get judgeIds from phaseData or another source
 		const judgeIds: string[] = Array.from({ length: maxJudges }, (_, i) =>
@@ -133,6 +147,14 @@ export const SubscribedFinalScore = ({
 			initialScores[jid] = 0
 		})
 		setAllJudgeScores(initialScores)
+		const initialMovesAndBonuses: Record<
+			string,
+			ScoredMovesAndBonusesResponse
+		> = {}
+		judgeIds.forEach((jid) => {
+			initialMovesAndBonuses[jid] = { moves: [], bonuses: [] }
+		})
+		setAllJudgeMoveAndBonusData(initialMovesAndBonuses)
 	}, [maxJudges, phaseData])
 
 	return (
