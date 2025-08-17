@@ -292,7 +292,7 @@ async def get_athlete_moves_and_bonuses(
         .filter(ScoredMoves.athlete_id == athlete_id)
         .filter(ScoredMoves.run_number == run_number)
     )
-    if judge_id is not None:
+    if judge_id is not None and judge_id.strip():
         query = query.filter(ScoredMoves.judge_id == judge_id)
     moves = query.all()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
