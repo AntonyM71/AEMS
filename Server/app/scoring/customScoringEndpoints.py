@@ -1,7 +1,7 @@
 import json
 import logging
 from math import inf
-from typing import Annotated, Optional
+from typing import Optional
 from uuid import UUID
 
 from fastapi import (
@@ -13,7 +13,6 @@ from fastapi import (
     status,
 )
 from fastapi.concurrency import run_until_first_complete
-from fastapi.params import Query
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
@@ -283,7 +282,7 @@ async def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: str,
-    judge_id: Annotated[Optional[str], Query(None)],
+    judge_id: Optional[str] = None,
     db: Session = Depends(get_transaction_session),
 ) -> ScoredMovesAndBonusesResponse:
     query = (
