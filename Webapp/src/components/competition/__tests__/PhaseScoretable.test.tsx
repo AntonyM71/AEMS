@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { rest } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -213,7 +214,8 @@ describe("PhaseScoreTable", () => {
 
 		// Wait for download button to appear
 		const downloadButton = await screen.findByTestId("download-pdf-button")
-		downloadButton.click()
+		const user = userEvent.setup()
+		await user.click(downloadButton)
 
 		// Verify PDF download
 		await waitFor(() => {

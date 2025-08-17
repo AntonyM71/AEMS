@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { rest } from "msw"
 import { toast } from "react-hot-toast"
 import { Provider } from "react-redux"
@@ -223,14 +224,16 @@ describe("HeatSummaryTable", () => {
 		const resultsButton = await screen.findByText("Heat Results PDF")
 		const summaryButton = await screen.findByText("Heat Summary PDF")
 
+		const user = userEvent.setup()
+
 		// Click results button and verify
-		resultsButton.click()
+		await user.click(resultsButton)
 		await new Promise((resolve) => setTimeout(resolve, 100))
 		expect(mockWindowOpen).toHaveBeenCalled()
 		expect(mockWindow.location.href).toBe("mock-url")
 
 		// Click summary button and verify
-		summaryButton.click()
+		await user.click(summaryButton)
 		await new Promise((resolve) => setTimeout(resolve, 100))
 		expect(mockWindowOpen).toHaveBeenCalled()
 		expect(mockWindow.location.href).toBe("mock-url")
@@ -443,7 +446,8 @@ describe("HeatAthleteTable", () => {
 
 		// Change heat
 		const heatSelect = screen.getByTestId("heat-select")
-		fireEvent.mouseDown(heatSelect)
+		const user = userEvent.setup()
+		await user.click(heatSelect)
 
 		// Wait for menu items to appear in the portal
 		await new Promise((resolve) => setTimeout(resolve, 500))
@@ -452,11 +456,11 @@ describe("HeatAthleteTable", () => {
 			{},
 			{ timeout: 2000 }
 		)
-		fireEvent.click(heatOption)
+		await user.click(heatOption)
 
 		// Submit form
 		const editButton = screen.getByText("Edit Athlete")
-		fireEvent.click(editButton)
+		await user.click(editButton)
 
 		// Wait for async operations
 		await new Promise((resolve) => setTimeout(resolve, 100))
@@ -538,7 +542,8 @@ describe("AddAthletesToHeat", () => {
 
 		// Try to submit without filling required fields
 		const addButton = screen.getByText("Add Athlete")
-		fireEvent.click(addButton)
+		const user = userEvent.setup()
+		await user.click(addButton)
 
 		// Verify error toast was called
 		expect(toast.error).toHaveBeenCalledWith(
@@ -636,15 +641,16 @@ describe("AddAthletesToHeat", () => {
 		const addButton = screen.getByText("Add Athlete")
 
 		// Fill in form
-		fireEvent.change(firstNameInput, { target: { value: "John" } })
-		fireEvent.change(lastNameInput, { target: { value: "Doe" } })
-		fireEvent.change(bibInput, { target: { value: "123" } })
-		fireEvent.mouseDown(phaseSelect)
+		const user = userEvent.setup()
+		await user.type(firstNameInput, "John")
+		await user.type(lastNameInput, "Doe")
+		await user.type(bibInput, "123")
+		await user.click(phaseSelect)
 		const phaseOption = screen.getByText("Test Event - Test Phase")
-		fireEvent.click(phaseOption)
+		await user.click(phaseOption)
 
 		// Submit form
-		fireEvent.click(addButton)
+		await user.click(addButton)
 
 		// Verify success toast
 		await waitFor(() => {

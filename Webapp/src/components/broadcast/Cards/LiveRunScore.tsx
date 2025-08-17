@@ -35,6 +35,7 @@ export const LiveRunScoreSpace = ({
 	</Collapse>
 )
 
+// eslint-disable-next-line complexity
 export const SubscribedFinalScore = ({
 	overlayControlState,
 	textSize = "h5"
