@@ -1,16 +1,21 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import React from "react"
 import { Provider } from "react-redux"
 import configureStore from "redux-mock-store"
 import { updatePreferDark } from "../../../redux/atoms/utilities"
 import Header, { DarkModeButton } from "../Header"
 
 // Mock next/image since it's not available in test environment
+
 jest.mock("next/image", () => ({
 	__esModule: true,
-	default: (props: any) => (
+	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+		const { alt, ...rest } = props
+
 		// eslint-disable-next-line @next/next/no-img-element
-		<img {...props} />
-	)
+		return <img alt={alt ?? ""} {...rest} />
+	}
 }))
 
 const mockStore = configureStore([])
@@ -92,7 +97,7 @@ describe("DarkModeButton Component", () => {
 		expect(screen.getByTestId("darkModeButton")).toBeInTheDocument()
 	})
 
-	it("dispatches updatePreferDark action when clicked", () => {
+	it("dispatches updatePreferDark action when clicked", async () => {
 		render(
 			<Provider store={store}>
 				<DarkModeButton />
@@ -100,7 +105,8 @@ describe("DarkModeButton Component", () => {
 		)
 
 		const button = screen.getByTestId("darkModeButton")
-		fireEvent.click(button)
+		const user = userEvent.setup()
+		await user.click(button)
 
 		const actions = store.getActions()
 		expect(actions).toHaveLength(1)
