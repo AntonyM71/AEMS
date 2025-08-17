@@ -55,6 +55,8 @@ export const RunDetails = ({
 				spacing={2}
 				direction={"row"}
 				justifyContent={"space-between"}
+				alignItems="center"
+				sx={{ height: "100%" }}
 			>
 				<Typography variant={textSize}>Run:</Typography>
 				<Stack direction={"row"}>

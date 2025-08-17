@@ -148,7 +148,7 @@ const ScoredMove = React.memo(
 
 						{scoredMoveAvailableBonuses.map((availableBonus) => (
 							<BonusChip
-								key={scoredMove.id}
+								key={`${scoredMove.id}-${availableBonus.id}`}
 								availableBonus={availableBonus}
 								scoredMove={scoredMove}
 								scoredMoveBonuses={scoredMoveBonuses}

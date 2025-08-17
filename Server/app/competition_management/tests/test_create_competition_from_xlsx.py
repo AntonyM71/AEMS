@@ -1,5 +1,5 @@
 import uuid
-from unittest.mock import ANY, call, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
 import pandas as pd
 import pytest
@@ -47,12 +47,20 @@ def test_df() -> pd.DataFrame:
 class TestScoring:
     @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
     @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
     def test_it_raises_an_error_if_the_scoresheet_does_not_exist(
         self,
+        mock_transaction_manager,  # noqa: ANN001
         mock_post_competition,  # noqa: ANN001
         mock_get_scoresheets,  # noqa: ANN001
         test_df,  # noqa: ANN001
     ) -> None:
+        # Set up the mock context manager
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
+
         mock_get_scoresheets.return_value([])
         with pytest.raises(ScoresheetWithSpecifiedNameDoesNotExistError):
             process_competitors_df(test_df, "test_comp")
@@ -69,8 +77,12 @@ class TestScoring:
     @patch("app.competition_management.create_competition_from_xlsx.post_event")
     @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
     @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet(
         self,
+        mock_transaction_manager,  # noqa: ANN001
         mock_post_competition,  # noqa: ANN001
         mock_get_scoresheets,  # noqa: ANN001
         mock_post_event,  # noqa: ANN001
@@ -81,6 +93,9 @@ class TestScoring:
         mock_uuid,  # noqa: ANN001
         test_df,  # noqa: ANN001
     ) -> None:
+        # Set up the mock context manager
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
         mock_get_scoresheets.return_value = [
             {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
         ]
@@ -320,8 +335,12 @@ class TestScoring:
     @patch("app.competition_management.create_competition_from_xlsx.post_event")
     @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
     @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_without_affiliations(
         self,
+        mock_transaction_manager,  # noqa: ANN001
         mock_post_competition,  # noqa: ANN001
         mock_get_scoresheets,  # noqa: ANN001
         mock_post_event,  # noqa: ANN001
@@ -332,6 +351,10 @@ class TestScoring:
         mock_uuid,  # noqa: ANN001
         test_df,  # noqa: ANN001
     ) -> None:
+        # Set up the mock context manager
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
+
         mock_get_scoresheets.return_value = [
             {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
         ]
@@ -572,8 +595,12 @@ class TestScoring:
     @patch("app.competition_management.create_competition_from_xlsx.post_event")
     @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
     @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_with_last_phase_ranks(
         self,
+        mock_transaction_manager,  # noqa: ANN001
         mock_post_competition,  # noqa: ANN001
         mock_get_scoresheets,  # noqa: ANN001
         mock_post_event,  # noqa: ANN001
@@ -584,6 +611,9 @@ class TestScoring:
         mock_uuid,  # noqa: ANN001
         test_df,  # noqa: ANN001
     ) -> None:
+        # Set up the mock context manager
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
         mock_get_scoresheets.return_value = [
             {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
         ]
@@ -824,8 +854,12 @@ class TestScoring:
     @patch("app.competition_management.create_competition_from_xlsx.post_event")
     @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
     @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_and_random_heats(
         self,
+        mock_transaction_manager,  # noqa: ANN001
         mock_post_competition,  # noqa: ANN001
         mock_get_scoresheets,  # noqa: ANN001
         mock_post_event,  # noqa: ANN001
@@ -836,6 +870,9 @@ class TestScoring:
         mock_uuid,  # noqa: ANN001
         test_df,  # noqa: ANN001
     ) -> None:
+        # Set up the mock context manager
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
         mock_get_scoresheets.return_value = [
             {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
         ]
@@ -1071,7 +1108,10 @@ class TestValidateColumnsAndDataTypes:
     def test_it_passes_when_mandatory_columns_are_there(
         self, test_df: pd.DataFrame
     ) -> None:
-        validate_columns_and_data_types(competition_df=test_df, random_heats=False)
+        validate_columns_and_data_types(
+            competition_df=test_df,
+            random_heats=False,
+        )
 
     @pytest.mark.parametrize("column", MANDATORY_COLUMNS)
     def test_it_raises_an_error_when_mandatory_columns_not_there(

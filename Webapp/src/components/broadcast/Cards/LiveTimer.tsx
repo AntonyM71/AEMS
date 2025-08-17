@@ -25,7 +25,12 @@ export const LiveTimerSpace = ({
 				height: "100%"
 			}}
 		>
-			<Stack direction="row" spacing={1} alignItems="center">
+			<Stack
+				direction="row"
+				spacing={1}
+				alignItems="center"
+				justifyContent={"space-between"}
+			>
 				<AlarmAddIcon />
 
 				<LiveTimerLogic />

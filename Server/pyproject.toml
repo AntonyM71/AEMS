@@ -58,6 +58,7 @@ dependencies = [
     "asyncpg",
     "fastapi",
     "pandas",
+    "pandas[performance]",
     "uvicorn[standard]",
     "python-multipart",
     "pydantic<=1.10.22",

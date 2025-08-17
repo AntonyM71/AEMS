@@ -26,7 +26,6 @@ async def timer_websocket(websocket: WebSocket) -> None:
                     "websocket": websocket,
                     "side_effect": None,
                     "channel": channel,
-                    "last_message_time": last_message_time,
                 },
             ),
             (
@@ -34,7 +33,6 @@ async def timer_websocket(websocket: WebSocket) -> None:
                 {
                     "websocket": websocket,
                     "channel": channel,
-                    "last_message_time": last_message_time,
                 },
             ),
         )

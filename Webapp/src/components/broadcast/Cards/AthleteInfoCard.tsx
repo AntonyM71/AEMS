@@ -37,7 +37,12 @@ export const AthleteInfo = ({
 			height: "100%"
 		}}
 	>
-		<Grid2 container spacing={2}>
+		<Grid2
+			container
+			spacing={2}
+			alignItems="center"
+			sx={{ height: "100%" }}
+		>
 			<Grid2 size={9}>
 				<Typography
 					variant={textSize}

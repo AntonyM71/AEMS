@@ -1,7 +1,7 @@
 import json
 import logging
 from math import inf
-from typing import Optional
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import (
@@ -13,6 +13,7 @@ from fastapi import (
     status,
 )
 from fastapi.concurrency import run_until_first_complete
+from fastapi.params import Query
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, parse_obj_as
 from sqlalchemy.orm import Session
@@ -39,7 +40,7 @@ from app.scoring.scoring_logic import (
     check_athlete_started_at_least_one_ride,
     organise_moves_by_athlete_run_judge,
 )
-from db.client import get_transaction_session
+from db.client import get_transaction_session, transaction_session_context_manager
 from db.models import (
     Athlete,
     AthleteHeat,
@@ -249,45 +250,51 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
 
 
 async def get_moves_from_server(message: str) -> str:
+    """
+    Receives a message, parses metadata, and returns scored moves and bonuses.
+    Uses a transaction session context manager to ensure consistent session management.
+    """
     metadata = UpdatedRideMetaData(**json.loads(message))
-    scored_moves_and_bonuses = await get_athlete_moves_and_bonnuses(
-        heat_id=metadata.heat_id,
-        athlete_id=metadata.athlete_id,
-        run_number=str(metadata.run_number),
-        judge_id=str(metadata.judge_id),
-        db=next(get_transaction_session()),
-    )
+    with transaction_session_context_manager() as db:
+        scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
+            heat_id=metadata.heat_id,
+            athlete_id=metadata.athlete_id,
+            run_number=str(metadata.run_number),
+            judge_id=str(metadata.judge_id),
+            db=db,
+        )
 
-    return ScoredMovesAndBonusesResponseWithMetaData(
-        movesAndBonuses=scored_moves_and_bonuses,
-        heat_id=metadata.heat_id,
-        athlete_id=metadata.athlete_id,
-        run_number=metadata.run_number,
-        phase_id=metadata.phase_id,
-        judge_id=metadata.judge_id,
-    ).json()
+        return ScoredMovesAndBonusesResponseWithMetaData(
+            movesAndBonuses=scored_moves_and_bonuses,
+            heat_id=metadata.heat_id,
+            athlete_id=metadata.athlete_id,
+            run_number=metadata.run_number,
+            phase_id=metadata.phase_id,
+            judge_id=metadata.judge_id,
+        ).json()
 
 
 @scoring_router.get(
-    "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}/{judge_id}",
+    "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}",
     response_class=ORJSONResponse,
     response_model=ScoredMovesAndBonusesResponse,
 )
-async def get_athlete_moves_and_bonnuses(
+async def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: str,
-    judge_id: str,
+    judge_id: Annotated[Optional[str], Query(None)],
     db: Session = Depends(get_transaction_session),
 ) -> ScoredMovesAndBonusesResponse:
-    moves = (
+    query = (
         db.query(ScoredMoves)
         .filter(ScoredMoves.heat_id == heat_id)
         .filter(ScoredMoves.athlete_id == athlete_id)
         .filter(ScoredMoves.run_number == run_number)
-        .filter(ScoredMoves.judge_id == judge_id)
-        .all()
     )
+    if judge_id is not None and judge_id.strip():
+        query = query.filter(ScoredMoves.judge_id == judge_id)
+    moves = query.all()
     pydantic_moves = parse_obj_as(list[PydanticScoredMovesResponse], moves)
 
     move_ids = [m.id for m in pydantic_moves]
@@ -570,7 +577,7 @@ async def runstatus_websocket(websocket: WebSocket) -> None:
 
 def copy_message_to_db(data: str) -> None:
     run_status = RunStatusSchema.parse_raw(data)
-    with next(get_transaction_session()) as db:
+    with transaction_session_context_manager() as db:
         existing_run_status = (
             db.query(RunStatus)
             .filter(

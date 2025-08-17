@@ -1,33 +1,21 @@
+import asyncio
 import logging
 import os
 from collections.abc import Awaitable, Callable
 from typing import Optional
 
 from broadcaster import Broadcast
-from fastapi import WebSocket
-
-
-class ConnectionManager:
-    # From https://fastapi.tiangolo.com/advanced/websockets/#handling-disconnections-and-multiple-clients
-    def __init__(self) -> None:
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket) -> None:
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket) -> None:
-        self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str) -> None:
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
+from fastapi import WebSocket, WebSocketDisconnect
+from websockets import ConnectionClosedOK
 
 broadcast_cache_location = os.environ.get(
     "CONNECTION_STRING", default="memory://"
 )  # fall back to memeory if postgress conection is not available.
-broadcast = Broadcast(os.environ.get("CONNECTION_STRING", default="memory://"))
+
+
+def get_broadcast() -> Broadcast:
+    # Create a new instance for each request/connection
+    return Broadcast(broadcast_cache_location)
 
 
 async def ws_receiver(
@@ -40,9 +28,10 @@ async def ws_receiver(
 async def publisher(
     message: str, channel: str, side_effect: Optional[Callable[[str], None]] = None
 ) -> None:
-    await broadcast.publish(channel=channel, message=message)
-    if side_effect:
-        side_effect(message)
+    async with get_broadcast() as broadcast:
+        await broadcast.publish(channel=channel, message=message)
+        if side_effect:
+            side_effect(message)
 
 
 async def ws_sender(
@@ -50,35 +39,37 @@ async def ws_sender(
     channel: str,
     fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
 ) -> None:
-    logger = logging.getLogger("app.common.websocket_handler")
-    try:
-        msg = f"Starting broadcast subscription for channel: {channel}"
-        logger.info(msg)
-        async with broadcast.subscribe(channel=channel) as subscriber:
-            msg = f"Subscribed to broadcast channel: {channel}"
+    async with get_broadcast() as broadcast:
+        logger = logging.getLogger("app.common.websocket_handler")
+        try:
+            msg = f"Starting broadcast subscription for channel: {channel}"
             logger.info(msg)
-            async for event in subscriber:
-                try:
-                    if fetch_data_with_message:
-                        data = await fetch_data_with_message(event.message)
-                        await websocket.send_text(str(data))
-                    else:
-                        await websocket.send_text(event.message)
-                except Exception as e:
-                    msg = (
-                        f"Failed to send message to websocket on channel {channel}: {e}"
-                    )
-                    logger.exception(
-                        msg,
-                    )
+            async with broadcast.subscribe(channel=channel) as subscriber:
+                msg = f"Subscribed to broadcast channel: {channel}"
+                logger.info(msg)
+                async for event in subscriber:
+                    try:
+                        if fetch_data_with_message:
+                            data = await fetch_data_with_message(event.message)
+                            await websocket.send_text(str(data))
+                        else:
+                            await websocket.send_text(event.message)
+                    except asyncio.CancelledError as e:
+                        msg = f"WebSocket handler cancelled: {e}"
+                        logger.info(msg)
+                        await websocket.close()
+                        raise
+                    except (WebSocketDisconnect, ConnectionClosedOK) as e:
+                        msg = f"WebSocket closed normally: {e}"
+                        logger.info(msg)
+                        await websocket.close()
+                        break
 
-    except Exception as e:
-        msg = (
-            f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
-        )
-        logger.exception(
-            msg,
-        )
-    finally:
-        msg = f"Broadcast subscription closed for channel: {channel}"
-        logger.info(msg)
+        except Exception as e:
+            msg = f"Broadcast subscription failed or disconnected for channel {channel}: {e}"
+            logger.exception(
+                msg,
+            )
+        finally:
+            msg = f"Broadcast subscription closed for channel: {channel}"
+            logger.info(msg)

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.scoring.customScoringEndpoints import (
     ScoredMovesAndBonusesResponse,
     check_run_is_locked,
-    get_athlete_moves_and_bonnuses,
+    get_athlete_moves_and_bonuses,
     get_heat_info_logic,
 )
 from db.models import (
@@ -149,7 +149,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(
 
 
 @pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonnuses(mock_db_session: Session) -> None:
+async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     # Create mock data for database models
     mock_db_moves = [
         ScoredMoves(
@@ -185,7 +185,7 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_session: Session) -> None:
     mock_db_session.query.reset_mock()
 
     # Call the function
-    result = await get_athlete_moves_and_bonnuses(
+    result = await get_athlete_moves_and_bonuses(
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -201,6 +201,71 @@ async def test_get_athlete_moves_and_bonnuses(mock_db_session: Session) -> None:
     assert result.moves[0].move_id == mock_db_moves[0].move_id
     assert result.bonuses[0].id == mock_db_bonuses[0].id
     assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
+
+
+@pytest.mark.asyncio
+async def test_get_athlete_moves_and_bonuses_without_judge_id(
+    mock_db_session: Session,
+) -> None:
+    # Create mock data for database models
+    mock_db_moves = [
+        ScoredMoves(
+            id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+            move_id=UUID("17e3baf1-ce39-4a1f-971b-efea37d84aae"),
+            heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+            run_number="1",
+            phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+            judge_id="meg",
+            athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+            direction="B",
+        ),
+        ScoredMoves(
+            id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+            move_id=UUID("17e3baf1-ce39-4a1f-971b-efea37d84aae"),
+            heat_id=UUID("8fa0fe12-12e3-4020-892a-ffffe96f676d"),
+            run_number="1",
+            phase_id=UUID("942e908e-b074-48b7-926a-59b9dd214dc7"),
+            judge_id="charlie",
+            athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120002"),
+            direction="B",
+        ),
+    ]
+
+    mock_db_bonuses = [
+        ScoredBonuses(
+            id=UUID("6a6ec3f8-a251-44c6-b7df-93543a7a5dbe"),
+            move_id=UUID("e2d65876-01b5-4607-8caf-ad0740f9e3e2"),
+            bonus_id=UUID("3883d4f2-7592-45a2-b7d4-22ca20d546b3"),
+            judge_id="meg",
+        )
+    ]
+
+    # Configure mock database responses for moves (without judge_id filter)
+    moves_query = mock_db_session.query.return_value
+    moves_query.filter.return_value.filter.return_value.filter.return_value.all.return_value = mock_db_moves
+
+    # Configure mock database responses for bonuses
+    bonuses_query = mock_db_session.query.return_value
+    bonuses_query.filter.return_value.all.return_value = mock_db_bonuses
+
+    # Call the function without judge_id
+    result = await get_athlete_moves_and_bonuses(
+        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
+        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+        run_number="1",
+        judge_id=None,
+        db=mock_db_session,
+    )
+
+    # Verify the result matches the expected response type
+    assert isinstance(result, ResponseType)
+    assert len(result.moves) == 2
+    assert len(result.bonuses) == 1
+    assert result.moves[0].id == mock_db_moves[0].id
+    assert result.moves[0].move_id == mock_db_moves[0].move_id
+    assert result.moves[1].id == mock_db_moves[1].id
+    assert result.moves[1].move_id == mock_db_moves[1].move_id
+    assert result.bonuses[0].id == mock_db_bonuses[0].id
 
 
 def test_check_run_is_locked_returns_false_when_no_status(
