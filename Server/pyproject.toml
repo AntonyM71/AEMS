@@ -61,9 +61,9 @@ dependencies = [
     "pandas[performance]",
     "uvicorn[standard]",
     "python-multipart",
-    "pydantic<=1.10.22",
+    "pydantic<=2.11.7",
     "SQLAlchemy<=1.4.54",
-    "starlette==0.14.2",
+    "starlette==0.47.2",
     "fpdf2",
     "pandas",
     # Dev
