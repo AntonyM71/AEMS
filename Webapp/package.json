@@ -21,7 +21,7 @@
 		"@typescript-eslint/eslint-plugin": "^8.24.1",
 		"axios": "^0.30.0",
 		"esbuild-runner": "^2.2.2",
-		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-jest-dom": "^5.5.0",
 		"eslint-plugin-jsx-a11y": "^6.10.2",
 		"eslint-plugin-prefer-arrow": "^1.2.3",
