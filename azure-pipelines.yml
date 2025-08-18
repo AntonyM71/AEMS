@@ -14,7 +14,11 @@ jobs:
           uv sync --dev
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
-
+      - script: |
+          ruff check .
+        displayName: "Run Python Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+        continueOnError: true
       - script: |
           uv run python -m pytest --junitxml=pytest-results.xml
         displayName: "Run Python Tests"
@@ -39,6 +43,12 @@ jobs:
       - script: |
           npm test -- --reporters="jest-junit" --outputFile="junit.xml"
         displayName: "Run Node.js Tests"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+        continueOnError: true
+      - script: |
+          npm run lint"
+
+        displayName: "Run Node.js Lint"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
 
