@@ -19,7 +19,7 @@ AEMS (Athlete and Event Management System) is a multi-component system for manag
 ### General Principles
 
 - **Always use the devcontainer for local development if possible.**
-- **Always run `npm install` in Webapp/ and `uv sync` in Server/ before building or testing.**
+- **Always run `npm install` in Webapp/, and activate the virtual environment (`source .venv/bin/activate`) before running `uv sync` in Server/ prior to building or testing.**
 - **Always apply database migrations (`alembic upgrade head`) before running backend tests or starting the server.**
 - **Lint and format code before submitting changes.**
 - **Trust these instructions unless you encounter errors; only search for additional info if these steps fail.**
