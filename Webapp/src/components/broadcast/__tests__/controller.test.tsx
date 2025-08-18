@@ -5,8 +5,8 @@ import * as wsConnections from "../../roles/headJudge/WebSocketConnections"
 import OverlayController from "../controller"
 
 // Mock WebSocket and connectBroadcastControlSocket
-let mockSend: jest.Mock
-let mockClose: jest.Mock
+let mockSend: jest.Mock<unknown, unknown[]>
+let mockClose: jest.Mock<unknown[], any>
 let mockReadyState: number
 class MockWebSocket {
 	public onclose: (() => void) | null = null
@@ -55,7 +55,7 @@ describe("OverlayController WebSocket interactions", () => {
 		)
 		const wsInstance = (
 			wsConnections.connectBroadcastControlSocket as jest.Mock
-		).mock.results[0].value
+		).mock.results[0].value as MockWebSocket
 		wsInstance.onerror?.(new Error("Test error"))
 		expect(mockClose).toHaveBeenCalled()
 	})
