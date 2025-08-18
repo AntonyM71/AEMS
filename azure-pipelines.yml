@@ -5,7 +5,8 @@ pool:
   vmImage: "ubuntu-latest"
 
 jobs:
-  - job: Build
+  - job: Python
+    displayName: "Python Build & Test"
     steps:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -31,14 +32,16 @@ jobs:
           failTaskOnFailedTests: true
         displayName: "Publish Python Test Results"
 
+  - job: NodeJS
+    displayName: "Node.js Build & Test"
+    steps:
       - script: |
-          npm install
+          npm ci
         displayName: "Install Node.js Dependencies"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          npm test --  --reporters="jest-junit"
-
+          npm test -- --reporters="jest-junit" --outputFile="junit.xml"
         displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
@@ -48,6 +51,11 @@ jobs:
         displayName: "Run Node.js Lint"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
+
+      - script: |
+          npm run build
+        displayName: "Build Node.js Project"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - task: PublishTestResults@2
         inputs:
