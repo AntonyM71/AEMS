@@ -18,7 +18,7 @@
 		"@types/react": "^19.0.8",
 		"@types/react-dom": "^19.0.3",
 		"@types/react-router-dom": "^5.1.7",
-		"@typescript-eslint/eslint-plugin": "^8.24.1",
+		"@typescript-eslint/eslint-plugin": "^8.40.0",
 		"axios": "^0.30.0",
 		"esbuild-runner": "^2.2.2",
 		"eslint-plugin-import": "^2.32.0",
