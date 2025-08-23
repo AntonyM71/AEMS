@@ -143,6 +143,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	}, [dispatch, selectedAthlete, athletes.data])
 	const [addUpdateMovesAndBonuses] =
 		useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation()
+
 	const submitScores = () => {
 		if (selectedAthlete && athleteData) {
 			const formattedScoredMoves: PydanticScoredMoves[] = scoredMoves.map(
@@ -181,21 +182,32 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	const {
 		data: moveAndBonusdata,
-
+		originalArgs: moveAndBonusDataArgs,
 		isFetching: isMoveAndBonusFetching,
 		isUninitialized
 	} = useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
 		{
 			runNumber: selectedRun.toString(),
-			athleteId: selectedAthlete?.id ?? "",
+			// eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+			athleteId: selectedAthlete?.id!,
 			judgeId: scribeNumber,
 			heatId: selectedHeat
 		},
 		{ skip: !selectedAthlete?.id, refetchOnMountOrArgChange: true }
 	)
 
+	// eslint-disable-next-line complexity
 	useEffect(() => {
-		if (!isMoveAndBonusFetching) {
+		if (
+			!isMoveAndBonusFetching &&
+			!isUninitialized &&
+			moveAndBonusdata &&
+			moveAndBonusDataArgs &&
+			moveAndBonusDataArgs.runNumber === selectedRun.toString() &&
+			moveAndBonusDataArgs.athleteId === selectedAthlete?.id &&
+			moveAndBonusDataArgs.judgeId === scribeNumber &&
+			moveAndBonusDataArgs.heatId === selectedHeat
+		) {
 			setScoredMovesAndBonuses(
 				moveAndBonusdata?.moves
 					? moveAndBonusdata.moves.map((m) => ({
