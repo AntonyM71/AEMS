@@ -12,17 +12,16 @@ import {
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun,
-	updatePaddler,
-	updateRun
+	updatePaddlerAndRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
 import { AthleteInfo, calculateNewIndex } from "../InfoBar"
 
 export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	const dispatch = useDispatch()
-	const setCurrentPaddler = (newPaddler: number) =>
-		dispatch(updatePaddler(newPaddler))
-	const setCurrentRun = (newRun: number) => dispatch(updateRun(newRun))
+	const setCurrentPaddlerAndRun = (newPaddler: number, newRun: number) =>
+		dispatch(updatePaddlerAndRun({ paddler: newPaddler, run: newRun }))
+
 	const numberOfRuns = useSelector(getNumberOfRuns)
 	const currentPaddler = useSelector(getCurrentPaddlerIndex)
 	const currentRun = useSelector(getSelectedRun)
@@ -42,14 +41,13 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 			numberOfPaddlers
 		)
 
+		let newRun = currentRun
 		if (number > 0 && newPaddlerIndex < currentPaddler) {
-			const newRun = calculateNewIndex(currentRun + 1, numberOfRuns)
-			setCurrentRun(newRun)
+			newRun = calculateNewIndex(currentRun + 1, numberOfRuns)
 		} else if (number < 0 && newPaddlerIndex > currentPaddler) {
-			const newRun = calculateNewIndex(currentRun - 1, numberOfRuns)
-			setCurrentRun(newRun)
+			newRun = calculateNewIndex(currentRun - 1, numberOfRuns)
 		}
-		setCurrentPaddler(newPaddlerIndex)
+		setCurrentPaddlerAndRun(newPaddlerIndex, newRun)
 	}
 
 	return (
