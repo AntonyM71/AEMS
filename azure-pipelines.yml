@@ -41,14 +41,20 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          npm test -- --reporters="jest-junit" --outputFile="junit.xml"
-        displayName: "Run Node.js Tests"
+          npm run tsc
+        displayName: "Run TypeScript Compiler"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
+
       - script: |
           npm run lint"
-
         displayName: "Run Node.js Lint"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+        continueOnError: true
+
+      - script: |
+          npm test -- --reporters="jest-junit" --outputFile="junit.xml"
+        displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
         continueOnError: true
 
