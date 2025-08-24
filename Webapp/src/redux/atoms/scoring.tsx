@@ -43,6 +43,11 @@ export const updateAvailableMoves = createAction<movesType[]>(
 )
 export const updatePaddler = createAction<number>("updatePaddler")
 export const updateRun = createAction<number>("updateRun")
+export const updatePaddlerAndRun = createAction<{
+	paddler: number
+	run: number
+}>("updatePaddlerAndRun")
+
 export const scoringReducer = createReducer(scoringInitialState, (builder) => {
 	builder
 		.addCase(updatePaddler, (state, action) => {
@@ -52,6 +57,10 @@ export const scoringReducer = createReducer(scoringInitialState, (builder) => {
 		.addCase(updateRun, (state, action) => {
 			// "mutate" the array by calling push()
 			state.selectedRun = action.payload
+		})
+		.addCase(updatePaddlerAndRun, (state, action) => {
+			state.selectedPaddler = action.payload.paddler
+			state.selectedRun = action.payload.run
 		})
 		.addCase(updateScoredMovesAndBonuses, (state, action) => {
 			state.scoredBonuses = action.payload.bonuses
