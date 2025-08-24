@@ -16,12 +16,10 @@ const createTestStore = () =>
 			competitions: competitionsReducer,
 			score: scoringReducer
 		},
-		middleware: (getDefaultMiddleware) => [
-			...getDefaultMiddleware({
+		middleware: (getDefaultMiddleware) =>
+			getDefaultMiddleware({
 				serializableCheck: false
-			}),
-			aemsApi.middleware
-		],
+			}).concat(aemsApi.middleware),
 		preloadedState: {
 			competitions: {
 				selectedPhase: "",
@@ -188,12 +186,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",
@@ -267,12 +263,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",
@@ -340,12 +334,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",
@@ -391,12 +383,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",
@@ -438,12 +428,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",
@@ -497,12 +485,10 @@ describe("HeadJudge", () => {
 				competitions: competitionsReducer,
 				score: scoringReducer
 			},
-			middleware: (getDefaultMiddleware) => [
-				...getDefaultMiddleware({
+			middleware: (getDefaultMiddleware) =>
+				getDefaultMiddleware({
 					serializableCheck: false
-				}),
-				aemsApi.middleware
-			],
+				}).concat(aemsApi.middleware),
 			preloadedState: {
 				competitions: {
 					selectedPhase: "phase-1",

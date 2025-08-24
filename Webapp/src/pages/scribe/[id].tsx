@@ -1,3 +1,4 @@
+import Typography from "@mui/material/Typography"
 import { useRouter } from "next/router"
 import Scribe from "../../components/roles/scribe/ScribePage"
 
@@ -8,4 +9,10 @@ export default function ScribePage() {
 	if (typeof id === "string") {
 		return <Scribe scribeNumber={id} />
 	}
+
+	return (
+		<Typography>
+			No Scribe Selected, scribe identifier must be a string.
+		</Typography>
+	)
 }
