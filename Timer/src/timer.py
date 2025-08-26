@@ -306,7 +306,7 @@ def run_timer_phase(
         tuple: (updated elapsed_time, updated last_whole_second, whether phase completed)
     """
     global timer_running
-    send_timer_update("running", round(total_duration))
+    send_timer_update("running", round(total_duration - elapsed_time))
     phase_elapsed = 0
     while timer_running and phase_elapsed < duration:
         time.sleep(SLEEP_INTERVAL)  # Short sleep interval
