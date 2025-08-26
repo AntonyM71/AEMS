@@ -3,6 +3,7 @@ import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
 import { useEffect, useRef } from "react"
+import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import { getSelectedRun } from "../../../redux/atoms/scoring"
@@ -145,6 +146,34 @@ export const WebsocketMoveSubscriberUpdater = ({
 	useEffect(() => {
 		connectWebSocket()
 	}, [selectedHeat, selectedRun, selectedAthleteId, updateJudgeData])
+	useEffect(() => {
+		connectWebSocket()
+
+		const handleVisibilityOrFocus = () => {
+			// If socket is closed, reconnect
+			if (
+				!socketRef.current ||
+				socketRef.current.readyState !== WebSocket.OPEN
+			) {
+				toast("Reconnecting WebSocket after sleep/focus...")
+				connectWebSocket()
+			}
+		}
+
+		window.addEventListener("focus", handleVisibilityOrFocus)
+		document.addEventListener("visibilitychange", handleVisibilityOrFocus)
+
+		return () => {
+			window.removeEventListener("focus", handleVisibilityOrFocus)
+			document.removeEventListener(
+				"visibilitychange",
+				handleVisibilityOrFocus
+			)
+			if (socketRef.current) {
+				socketRef.current.close()
+			}
+		}
+	}, [])
 
 	return <></>
 }
