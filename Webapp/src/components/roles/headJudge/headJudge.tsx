@@ -15,18 +15,32 @@ import {
 	getSelectedRun
 } from "../../../redux/atoms/scoring"
 import {
+	ScoredMovesAndBonusesResponse,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
+	useGetManyAvailablebonusesGetQuery,
+	useGetManyAvailablemovesGetQuery,
 	useGetManyRunStatusGetQuery
 } from "../../../redux/services/aemsApi"
+import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { HeatSummaryTable } from "../../competition/HeatSummaryTable"
 import { SelectorDisplay } from "../../competition/MainSelector"
 import { AthleteInfo } from "../scribe/InfoBar"
 import { PaddlerSelector } from "../scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../scribe/InfoBar/Runselector"
+import { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
+import {
+	convertListToScoredBonusType,
+	convertListToScoredMovesType,
+	movesType
+} from "../scribe/Interfaces"
 import { FinalScore } from "./FinalScore"
-import { JudgeCard } from "./JudgeCard"
+import {
+	HTTPMoveSubscriberUpdater,
+	JudgeCard,
+	WebsocketMoveSubscriberUpdater
+} from "./JudgeCard"
 import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
 import { connectWebRunStatusSocket } from "./WebSocketConnections"
@@ -40,7 +54,12 @@ export default ({
 	showLiveTimer?: boolean
 }) => {
 	const [scoresOpen, setScoresOpen] = useState(false)
-	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
+	const [allJudgeScores, setAllJudgeScores] = useState<
+		Record<string, number>
+	>({})
+	const [allJudgeMoveAndBonusData, setAllJudgeMoveAndBonusData] = useState<
+		Record<string, ScoredMovesAndBonusesResponse>
+	>({})
 	const handleScoresOpen = () => setScoresOpen(true)
 	const handleScoresClose = () => setScoresOpen(false)
 
@@ -61,6 +80,85 @@ export default ({
 		},
 		{ skip: !selectedHeat }
 	)
+	const availableBonuses = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
+		},
+		{ skip: !selectedAthlete?.scoresheet }
+	)
+	const availableMoves = useGetManyAvailablemovesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
+		},
+		{ skip: !selectedAthlete?.scoresheet }
+	)
+	const updateJudgeData = (
+		movesAndBonuses: ScoredMovesAndBonusesResponse,
+		clear: boolean = false,
+		judgesToUpdate: string[] = []
+	) => {
+		const judgeInfo: Record<
+			string,
+			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
+		> = {}
+		if (clear) {
+			setAllJudgeScores((prevScores) =>
+				Object.fromEntries(
+					Object.keys(prevScores).map((jid) => [jid, 0])
+				)
+			)
+			setAllJudgeMoveAndBonusData((prevData) =>
+				Object.fromEntries(
+					Object.keys(prevData).map((jid) => [
+						jid,
+						{ moves: [], bonuses: [] }
+					])
+				)
+			)
+		}
+
+		judgesToUpdate.forEach((jid: string) => {
+			const filteredMovesAndBonuses: ScoredMovesAndBonusesResponse = {
+				moves:
+					movesAndBonuses.moves?.filter((m) => m.judge_id === jid) ??
+					[],
+				bonuses:
+					movesAndBonuses.bonuses?.filter(
+						(b) => b.judge_id === jid
+					) ?? []
+			}
+
+			const score = calculateMoveAndBonusScore(
+				filteredMovesAndBonuses,
+				(availableMoves.data ?? []) as movesType[],
+				(availableBonuses.data ?? []) as AvailableBonusType[]
+			)
+
+			judgeInfo[jid] = { score, movesAndBonuses: filteredMovesAndBonuses }
+		})
+
+		setAllJudgeScores((prevScores) => ({
+			...prevScores,
+			...Object.fromEntries(
+				Object.entries(judgeInfo).map(([jid, value]) => [
+					jid,
+					value.score
+				])
+			)
+		}))
+		setAllJudgeMoveAndBonusData((prevData) => ({
+			...prevData,
+			...Object.fromEntries(
+				Object.entries(judgeInfo).map(([jid, value]) => [
+					jid,
+					value.movesAndBonuses
+				])
+			)
+		}))
+	}
+
 	useEffect(() => {
 		if (athleteData) {
 			setSelectedAthlete({
@@ -115,14 +213,6 @@ export default ({
 			}
 		}
 	}
-	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
-		setAllJudgeScores((prevAllScores) => {
-			const newAllScores = [...prevAllScores]
-			newAllScores[judgeNumber] = newScore
-
-			return newAllScores
-		})
-	}
 
 	useEffect(() => {
 		if (httpRunStatus.data) {
@@ -145,8 +235,25 @@ export default ({
 		.map((_, i) => i + 1)
 
 	useEffect(() => {
-		setAllJudgeScores(new Array(maxJudges).fill(0))
-	}, [maxJudges])
+		// Example: get judgeIds from phaseData or another source
+		const judgeIds: string[] = Array.from({ length: maxJudges }, (_, i) =>
+			String(i + 1)
+		)
+
+		const initialScores: Record<string, number> = {}
+		judgeIds.forEach((jid) => {
+			initialScores[jid] = 0
+		})
+		setAllJudgeScores(initialScores)
+		const initialMovesAndBonuses: Record<
+			string,
+			ScoredMovesAndBonusesResponse
+		> = {}
+		judgeIds.forEach((jid) => {
+			initialMovesAndBonuses[jid] = { moves: [], bonuses: [] }
+		})
+		setAllJudgeMoveAndBonusData(initialMovesAndBonuses)
+	}, [maxJudges, phaseData])
 
 	if (!selectedHeat) {
 		return (
@@ -364,12 +471,25 @@ export default ({
 					<Grid size={12}>
 						<Divider />
 					</Grid>
+					<WebsocketMoveSubscriberUpdater
+						selectedHeat={selectedHeat}
+						selectedRun={selectedRun}
+						selectedAthleteId={selectedAthlete.id}
+						updateJudgeData={updateJudgeData}
+					/>
+					<HTTPMoveSubscriberUpdater
+						selectedHeat={selectedHeat}
+						selectedRun={selectedRun}
+						selectedAthleteId={selectedAthlete.id}
+						updateJudgeData={updateJudgeData}
+					/>
 					{judgeNumberArray.map((jn) => (
 						<Grid key={jn} size={Math.floor(12 / maxJudges)}>
 							<JudgeCard
 								judge={jn}
 								selectedAthlete={selectedAthlete}
-								updateHeadJudgeScore={updateSingleJudgeScore}
+								moveAndBonusData={allJudgeMoveAndBonusData[jn]}
+								currentScore={allJudgeScores[jn]}
 							/>
 						</Grid>
 					))}
@@ -379,4 +499,20 @@ export default ({
 	}
 
 	return <Skeleton data-testid="loading-skeleton" />
+}
+
+export const calculateMoveAndBonusScore = (
+	data: ScoredMovesAndBonusesResponse,
+
+	availableMoves: movesType[],
+	availableBonuses: AvailableBonusType[]
+): number => {
+	const score = calculateSingleJudgeRunScore(
+		convertListToScoredMovesType(data.moves),
+		convertListToScoredBonusType(data.bonuses),
+		availableMoves,
+		availableBonuses
+	).score
+
+	return score
 }

@@ -1,36 +1,119 @@
 import Collapse from "@mui/material/Collapse"
-import { useState } from "react"
+import { Variant } from "@mui/material/styles/createTypography"
+import { useEffect, useState } from "react"
 import {
+	ScoredMovesAndBonusesResponse,
+	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
 	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery,
-	useGetOneByPrimaryKeyPhaseIdGetQuery
+	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
 import { FinalScore } from "../../roles/headJudge/FinalScore"
-import { MoveSubscriberUpdater } from "../../roles/headJudge/JudgeCard"
+import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
+import {
+	HTTPMoveSubscriberUpdater,
+	WebsocketMoveSubscriberUpdater
+} from "../../roles/headJudge/JudgeCard"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
-
 export const LiveRunScoreSpace = ({
-	overlayControlState
+	overlayControlState,
+	textSize = "h5"
 }: {
 	overlayControlState: OverlayControlState
-}) => {
-	const [allJudgeScores, setAllJudgeScores] = useState<number[]>([])
-	const updateSingleJudgeScore = (newScore: number, judgeNumber: number) => {
-		setAllJudgeScores((prevAllScores) => {
-			const newAllScores = [...prevAllScores]
-			newAllScores[judgeNumber] = newScore
+	textSize?: Variant
+}) => (
+	<Collapse
+		in={overlayControlState.showLiveRunScore}
+		orientation="horizontal"
+		sx={{ display: "flex", justifyContent: "flex-end" }}
+	>
+		<SubscribedFinalScore
+			overlayControlState={overlayControlState}
+			textSize={textSize}
+		/>
+	</Collapse>
+)
 
-			return newAllScores
+// eslint-disable-next-line complexity
+export const SubscribedFinalScore = ({
+	overlayControlState,
+	textSize = "h5"
+}: {
+	overlayControlState: OverlayControlState
+	textSize?: Variant
+}) => {
+	const [allJudgeScores, setAllJudgeScores] = useState<
+		Record<string, number>
+	>({})
+	const [allJudgeMoveAndBonusData, setAllJudgeMoveAndBonusData] = useState<
+		Record<string, ScoredMovesAndBonusesResponse>
+	>({})
+	const updateJudgeData = (
+		movesAndBonuses: ScoredMovesAndBonusesResponse,
+		clear: boolean = false,
+		judgesToUpdate: string[] = []
+	) => {
+		const judgeInfo: Record<
+			string,
+			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
+		> = {}
+		if (clear) {
+			setAllJudgeScores((prevScores) =>
+				Object.fromEntries(
+					Object.keys(prevScores).map((jid) => [jid, 0])
+				)
+			)
+			setAllJudgeMoveAndBonusData((prevData) =>
+				Object.fromEntries(
+					Object.keys(prevData).map((jid) => [
+						jid,
+						{ moves: [], bonuses: [] }
+					])
+				)
+			)
+		}
+
+		judgesToUpdate.forEach((jid: string) => {
+			const filteredMovesAndBonuses: ScoredMovesAndBonusesResponse = {
+				moves:
+					movesAndBonuses.moves?.filter((m) => m.judge_id === jid) ??
+					[],
+				bonuses:
+					movesAndBonuses.bonuses?.filter(
+						(b) => b.judge_id === jid
+					) ?? []
+			}
+
+			const score = calculateMoveAndBonusScore(
+				filteredMovesAndBonuses,
+				(availableMoves.data ?? []) as movesType[],
+				(availableBonuses.data ?? []) as AvailableBonusType[]
+			)
+
+			judgeInfo[jid] = { score, movesAndBonuses: filteredMovesAndBonuses }
 		})
+
+		setAllJudgeScores((prevScores) => ({
+			...prevScores,
+			...Object.fromEntries(
+				Object.entries(judgeInfo).map(([jid, value]) => [
+					jid,
+					value.score
+				])
+			)
+		}))
+		setAllJudgeMoveAndBonusData((prevData) => ({
+			...prevData,
+			...Object.fromEntries(
+				Object.entries(judgeInfo).map(([jid, value]) => [
+					jid,
+					value.movesAndBonuses
+				])
+			)
+		}))
 	}
-	const { data } = useGetOneByPrimaryKeyPhaseIdGetQuery(
-		{
-			id: overlayControlState.selectedPhase
-		},
-		{ skip: !overlayControlState.selectedPhase }
-	)
+
 	const scoresheet = overlayControlState.selectedAthlete?.scoresheet
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
@@ -39,42 +122,68 @@ export const LiveRunScoreSpace = ({
 		},
 		{ skip: !scoresheet }
 	)
-	const availableBonuses = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
-		sheetIdList: [scoresheet ?? ""]
-	})
-	const judgeNumberArray = new Array(data?.number_of_judges)
-		.fill(null)
-		.map((_, i) => i + 1)
+	const availableBonuses = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdListComparisonOperator: "Equal",
+			sheetIdList: [scoresheet ?? ""]
+		},
+		{ skip: !scoresheet }
+	)
+	const { data: phaseData } = useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
+		{ heatId: overlayControlState.selectedHeat },
+		{ skip: !overlayControlState.selectedHeat }
+	)
+	const maxJudges =
+		(phaseData &&
+			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
+		1
+	useEffect(() => {
+		// Example: get judgeIds from phaseData or another source
+		const judgeIds: string[] = Array.from({ length: maxJudges }, (_, i) =>
+			String(i + 1)
+		)
+
+		const initialScores: Record<string, number> = {}
+		judgeIds.forEach((jid) => {
+			initialScores[jid] = 0
+		})
+		setAllJudgeScores(initialScores)
+		const initialMovesAndBonuses: Record<
+			string,
+			ScoredMovesAndBonusesResponse
+		> = {}
+		judgeIds.forEach((jid) => {
+			initialMovesAndBonuses[jid] = { moves: [], bonuses: [] }
+		})
+		setAllJudgeMoveAndBonusData(initialMovesAndBonuses)
+	}, [maxJudges, phaseData])
 
 	return (
-		<Collapse
-			in={overlayControlState.showLiveRunScore}
-			orientation="horizontal"
-			sx={{ display: "flex", justifyContent: "flex-end" }}
-		>
-			{judgeNumberArray.map((judge) => (
-				<MoveSubscriberUpdater
-					key={judge}
-					selectedHeat={overlayControlState.selectedHeat}
-					selectedRun={overlayControlState.selectedRun}
-					selectedAthleteId={
-						overlayControlState?.selectedAthlete?.id ?? ""
-					}
-					availableBonuses={
-						(availableBonuses.data ?? []) as AvailableBonusType[]
-					}
-					availableMoves={(availableMoves.data ?? []) as movesType[]}
-					updateHeadJudgeScore={updateSingleJudgeScore}
-					judge={judge}
-				/>
-			))}
+		<>
+			<WebsocketMoveSubscriberUpdater
+				selectedHeat={overlayControlState.selectedHeat}
+				selectedRun={overlayControlState.selectedRun}
+				selectedAthleteId={
+					overlayControlState?.selectedAthlete?.id ?? ""
+				}
+				updateJudgeData={updateJudgeData}
+			/>
+			<HTTPMoveSubscriberUpdater
+				selectedHeat={overlayControlState.selectedHeat}
+				selectedRun={overlayControlState.selectedRun}
+				selectedAthleteId={
+					overlayControlState?.selectedAthlete?.id ?? ""
+				}
+				updateJudgeData={updateJudgeData}
+			/>
 
 			<FinalScore
 				allJudgeScores={allJudgeScores}
 				locked={false}
 				did_not_start={false}
+				textSize={textSize}
+				direction="row"
 			/>
-		</Collapse>
+		</>
 	)
 }

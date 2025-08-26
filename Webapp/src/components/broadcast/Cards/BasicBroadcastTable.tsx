@@ -4,6 +4,7 @@ import TableCell from "@mui/material/TableCell"
 import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
+import Typography from "@mui/material/Typography"
 import { useEffect, useState } from "react"
 
 export const BasicTable = ({
@@ -36,6 +37,9 @@ export const BasicTable = ({
 		currentPage * pageLimit,
 		(currentPage + 1) * pageLimit
 	)
+	if (!data || data.length === 0) {
+		return <></>
+	}
 
 	return (
 		<Table
@@ -69,7 +73,7 @@ export const BasicTable = ({
 							`
 							}}
 						>
-							{k}
+							<Typography>{k}</Typography>
 						</TableCell>
 					))}
 				</TableRow>
@@ -93,7 +97,7 @@ export const BasicTable = ({
 								`
 								}}
 							>
-								{String(row[d] ?? "")}
+								<Typography>{String(row[d] ?? "")}</Typography>
 							</TableCell>
 						))}
 					</TableRow>

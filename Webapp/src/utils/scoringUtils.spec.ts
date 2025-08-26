@@ -1,5 +1,7 @@
 import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
+	AvailableMoveDirections,
+	directionType,
 	movesType,
 	scoredBonusType,
 	scoredMovesType
@@ -15,9 +17,9 @@ import {
 } from "./scoringUtils"
 
 describe("calculateSingleJudgeRunScore", () => {
-	const mockScoredMoves = [
-		{ id: "1", moveId: "move1", direction: "F" },
-		{ id: "2", moveId: "move2", direction: "R" }
+	const mockScoredMoves: scoredMovesType[] = [
+		{ id: "1", moveId: "move1", direction: "F" as directionType },
+		{ id: "2", moveId: "move2", direction: "R" as directionType }
 	]
 
 	const mockScoredBonuses = [{ id: "bonus1", moveId: "1", bonusId: "bonus1" }]
@@ -26,14 +28,14 @@ describe("calculateSingleJudgeRunScore", () => {
 		{
 			id: "move1",
 			name: "Move 1",
-			direction: "FB",
+			direction: "FB" as AvailableMoveDirections,
 			fl_score: 10,
 			rb_score: 5
 		},
 		{
 			id: "move2",
 			name: "Move 2",
-			direction: "LR",
+			direction: "LR" as AvailableMoveDirections,
 			fl_score: 15,
 			rb_score: 20
 		}
@@ -43,7 +45,7 @@ describe("calculateSingleJudgeRunScore", () => {
 		{
 			id: "bonus1",
 			name: "Bonus 1",
-			shortName: "B1",
+			sheet_id: "test_sheet",
 			move_id: "move1",
 			score: 5
 		}
@@ -66,8 +68,8 @@ describe("calculateSingleJudgeRunScore", () => {
 	// eslint-disable-next-line max-len
 	it("should calculate the correct run score and highest move when runs both side are scored with a single bonus", () => {
 		const bothSideScoredMoves = [
-			{ id: "1", moveId: "move1", direction: "F" },
-			{ id: "2", moveId: "move1", direction: "B" }
+			{ id: "1", moveId: "move1", direction: "F" as directionType },
+			{ id: "2", moveId: "move1", direction: "B" as directionType }
 		]
 
 		const bothSiddeScoredBonuses = [
@@ -90,8 +92,8 @@ describe("calculateSingleJudgeRunScore", () => {
 	// eslint-disable-next-line max-len
 	it("should calculate the correct run score and highest move when runs both side are scored with a both side bonus", () => {
 		const bothSideScoredMoves = [
-			{ id: "1", moveId: "move1", direction: "F" },
-			{ id: "2", moveId: "move1", direction: "B" }
+			{ id: "1", moveId: "move1", direction: "F" as directionType },
+			{ id: "2", moveId: "move1", direction: "B" as directionType }
 		]
 
 		const bothSiddeScoredBonuses = [
@@ -128,13 +130,17 @@ describe("calculateSingleJudgeRunScore", () => {
 	// Add more test cases to cover different scenarios and edge cases
 })
 describe("calculateMoveScore", () => {
-	const mockScoredMove = { id: "1", moveId: "move1", direction: "L" }
+	const mockScoredMove = {
+		id: "1",
+		moveId: "move1",
+		direction: "L" as directionType
+	}
 	const mockScoredBonuses = [{ id: "bonus1", moveId: "1", bonusId: "bonus1" }]
 	const mockAvailableMoves = [
 		{
 			id: "move1",
 			name: "Move 1",
-			direction: "FB",
+			direction: "FB" as AvailableMoveDirections,
 			fl_score: 10,
 			rb_score: 5
 		}
@@ -143,7 +149,7 @@ describe("calculateMoveScore", () => {
 		{
 			id: "bonus1",
 			name: "Bonus 1",
-			shortName: "B1",
+			sheet_id: "test_sheet",
 			move_id: "move1",
 			score: 5
 		}
@@ -289,11 +295,11 @@ describe("getMoveBaseScore", () => {
 		expect(result).toBe(10)
 	})
 
-	it("should return rb_score when direction is not in frontLeftDirectionValues", () => {
+	it("should return fb_score when direction is not in frontLeftDirectionValues", () => {
 		const mockScoredMove: scoredMovesType = {
 			id: "2",
 			moveId: "move1",
-			direction: "RB"
+			direction: "B"
 		}
 		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
 		expect(result).toBe(5)
@@ -303,7 +309,7 @@ describe("getMoveBaseScore", () => {
 		const mockScoredMove: scoredMovesType = {
 			id: "3",
 			moveId: "move2",
-			direction: "LF"
+			direction: "L"
 		}
 		const result = getMoveBaseScore(mockScoredMove, mockAvailableMoves)
 		expect(result).toBe(0)
@@ -315,7 +321,7 @@ describe("getScoredMoveValues", () => {
 		{
 			id: "move1",
 			name: "Move 1",
-			direction: "LF",
+			direction: "LR",
 			fl_score: 10,
 			rb_score: 5
 		}
@@ -325,7 +331,7 @@ describe("getScoredMoveValues", () => {
 		const mockScoredMove: scoredMovesType = {
 			id: "1",
 			moveId: "move1",
-			direction: "LF"
+			direction: "L"
 		}
 		const result = getScoredMoveValues(mockScoredMove, mockAvailableMoves)
 		expect(result).toEqual(mockAvailableMoves[0])
@@ -335,7 +341,7 @@ describe("getScoredMoveValues", () => {
 		const mockScoredMove: scoredMovesType = {
 			id: "2",
 			moveId: "move2",
-			direction: "LF"
+			direction: "L"
 		}
 		const result = getScoredMoveValues(mockScoredMove, mockAvailableMoves)
 		expect(result).toBeUndefined()
@@ -347,7 +353,7 @@ describe("getBonusScore", () => {
 		{
 			id: "bonus1",
 			name: "Bonus 1",
-			shortName: "B1",
+			sheet_id: "testSheet",
 			move_id: "move1",
 			score: 5
 		}

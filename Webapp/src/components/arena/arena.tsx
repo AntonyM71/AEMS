@@ -1,11 +1,9 @@
-import Grid from "@mui/material/Grid2"
-import Stack from "@mui/material/Stack"
+import CssBaseline from "@mui/material/CssBaseline"
+import GlobalStyles from "@mui/material/GlobalStyles"
+import Grid2 from "@mui/material/Grid2"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect, useRef } from "react"
 import { useDispatch } from "react-redux"
-import TransitionGroup from "react-transition-group/TransitionGroup"
-import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
-
 import {
 	updateSelectedCompetition,
 	updateSelectedEvent,
@@ -13,34 +11,26 @@ import {
 	updateSelectedPhase
 } from "../../redux/atoms/competitions"
 import { updateRun } from "../../redux/atoms/scoring"
-
+import { AthleteInfo } from "../broadcast/Cards/AthleteInfoCard"
+import { EventTitleModal } from "../broadcast/Cards/EventTitle"
+import { HeatSummaryTable } from "../broadcast/Cards/HeatSummaryTable"
+import { SubscribedFinalScore } from "../broadcast/Cards/LiveRunScore"
+import { PhaseScoreTable } from "../broadcast/Cards/PhaseResultsTable"
+import { RunDetails } from "../broadcast/Cards/RunCard"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../Interfaces"
-import AthleteInfoCard from "./Cards/AthleteInfoCard"
-import { EventTitleModal } from "./Cards/EventTitle"
-import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
-import { SlidingImageCard } from "./Cards/ICFLogo"
-import { LiveRunScoreSpace } from "./Cards/LiveRunScore"
-import { LiveTimerSpace } from "./Cards/LiveTimer"
-import { PhaseScoreTable } from "./Cards/PhaseResultsTable"
-import RunCard from "./Cards/RunCard"
-import { lightTheme } from "./overlayTheme"
-
-interface OverlayProps extends React.FC {
-	noLayout?: boolean
-}
-
-const Overlay: OverlayProps = () => {
+import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
+import { darkTheme } from "./arenaTheme"
+import LiveTimerArena from "./liveTimerArena"
+const Arena = () => {
 	const [overlayControlState, setOverlayControlState] = React.useState(
 		defaultOverlayControllerState
 	)
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectBroadcastControlSocket()
-		}
+		socketRef.current ??= connectBroadcastControlSocket()
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(
 				event.data as string
@@ -107,56 +97,59 @@ const Overlay: OverlayProps = () => {
 	}, [])
 
 	return (
-		<ThemeProvider theme={lightTheme}>
-			<div
-				style={{
-					display: "grid",
-					gridTemplateRows: "15% auto 15%",
-					height: "100vh",
-					overflow: "clip"
+		<ThemeProvider theme={darkTheme}>
+			<CssBaseline />
+			<HeatSummaryTable
+				overlayControlState={overlayControlState}
+				size={100}
+			/>
+			<PhaseScoreTable
+				overlayControlState={overlayControlState}
+				size={100}
+			/>
+			<EventTitleModal
+				overlayControlState={overlayControlState}
+				size={100}
+			/>
+			<GlobalStyles
+				styles={{
+					body: { backgroundColor: "#181818", height: "100%" }
+				}}
+			/>
+			<Grid2
+				container
+				spacing={5}
+				alignItems="stretch"
+				sx={{
+					paddingTop: "1em",
+					paddingBottom: "1em",
+					height: "100vh"
 				}}
 			>
-				<header style={{ padding: "1rem" }}>
-					{" "}
-					<Grid container spacing={2} alignItems="stretch">
-						<SlidingImageCard
-							overlayControlState={overlayControlState}
-						/>
-					</Grid>
-				</header>
-				<main style={{ padding: "1rem" }}>
-					<HeatSummaryTable
+				<Grid2 size={12}>
+					<AthleteInfo
 						overlayControlState={overlayControlState}
+						textSize="h1"
 					/>
-					<PhaseScoreTable
+				</Grid2>
+				<Grid2 size={6}>
+					<LiveTimerArena />
+				</Grid2>
+				<Grid2 size={6}>
+					<RunDetails
 						overlayControlState={overlayControlState}
+						textSize="h1"
 					/>
-					<EventTitleModal
+				</Grid2>
+				<Grid2 size={12}>
+					<SubscribedFinalScore
 						overlayControlState={overlayControlState}
+						textSize="h1"
 					/>
-				</main>
-				<footer style={{ padding: "1rem" }}>
-					<TransitionGroup
-						component={Stack}
-						direction="row"
-						spacing={2}
-					>
-						<AthleteInfoCard
-							overlayControlState={overlayControlState}
-						/>
-						<LiveRunScoreSpace
-							overlayControlState={overlayControlState}
-						/>
-						<RunCard overlayControlState={overlayControlState} />
-
-						<LiveTimerSpace
-							overlayControlState={overlayControlState}
-						/>
-					</TransitionGroup>
-				</footer>
-			</div>
+				</Grid2>
+			</Grid2>
 		</ThemeProvider>
 	)
 }
-Overlay.noLayout = true
-export default Overlay
+
+export default Arena

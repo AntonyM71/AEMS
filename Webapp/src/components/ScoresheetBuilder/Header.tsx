@@ -92,6 +92,7 @@ export const ScoresheetBuilderHeader = ({
 									onClick={() =>
 										handleMoveItem(bonuses, i, "left")
 									}
+									data-testid={`move-bonus-left-${b}`}
 								>
 									<ChevronLeft />
 								</IconButton>
@@ -101,6 +102,7 @@ export const ScoresheetBuilderHeader = ({
 									onClick={() =>
 										handleMoveItem(bonuses, i, "right")
 									}
+									data-testid={`move-bonus-right-${b}`}
 								>
 									<ChevronRight />
 								</IconButton>

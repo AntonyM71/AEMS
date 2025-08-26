@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Extra
 
-from db.client import get_transaction_session
+from db.client import transaction_session_context_manager
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
 
 scoresheet_files = os.listdir(path=Path("data"))
@@ -31,7 +31,7 @@ for file in scoresheet_files:
     scoresheet_name = file.split(".")[0] or ""
     print(scoresheet_name)
 
-    with next(get_transaction_session()) as db:
+    with transaction_session_context_manager() as db:
         if (
             db.query(ScoreSheet).filter(ScoreSheet.name == scoresheet_name)
         ).one_or_none():

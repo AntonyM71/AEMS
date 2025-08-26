@@ -5,6 +5,7 @@ import { useEffect } from "react"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 
 import { updateUserRole } from "../../../redux/atoms/scoring"
+import { SelectorDisplay } from "../../competition/MainSelector"
 import Float from "./Scribe"
 
 const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
@@ -29,9 +30,16 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				</Grid>
 			</Grid>
 		)
+	} else {
+		return (
+			<SelectorDisplay
+				showCompetition={true}
+				showEvent={false}
+				showPhase={false}
+				showHeat={true}
+			/>
+		)
 	}
-
-	return <></>
 }
 
 export default Scribe

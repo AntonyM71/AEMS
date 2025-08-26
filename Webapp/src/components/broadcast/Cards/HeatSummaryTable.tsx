@@ -14,9 +14,11 @@ import SlidingModal from "../SlidingModal"
 import { BasicTable } from "./BasicBroadcastTable"
 
 export const HeatSummaryTable = ({
-	overlayControlState
+	overlayControlState,
+	size
 }: {
 	overlayControlState: OverlayControlState
+	size?: number
 }) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 
@@ -27,18 +29,11 @@ export const HeatSummaryTable = ({
 		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
 	)
 
-	const { data: heatData, isLoading: heatIsLoading } =
-		useGetOneByPrimaryKeyHeatIdGetQuery(
-			{
-				id: selectedHeat
-			},
-			{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
-		)
-
 	return (
 		<SlidingModal
 			direction="down"
 			show={overlayControlState.showHeatSummary}
+			size={size}
 		>
 			{athletes && (
 				<Paper>

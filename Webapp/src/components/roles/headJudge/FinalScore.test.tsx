@@ -5,7 +5,7 @@ describe("FinalScore", () => {
 	it("should display DNS when did_not_start is true", () => {
 		render(
 			<FinalScore
-				allJudgeScores={[]}
+				allJudgeScores={{}}
 				locked={false}
 				did_not_start={true}
 			/>
@@ -17,7 +17,7 @@ describe("FinalScore", () => {
 	it("should display average score when did_not_start is false", () => {
 		render(
 			<FinalScore
-				allJudgeScores={[10, 20, 30]}
+				allJudgeScores={{ judge1: 10, judge2: 20, judge3: 30 }}
 				locked={false}
 				did_not_start={false}
 			/>

@@ -6,7 +6,7 @@ import pandas.api.types as ptypes
 from numpy import ndarray
 from sqlalchemy.orm import Session
 
-from db.client import get_transaction_session
+from db.client import transaction_session_context_manager
 from db.models import Athlete, AthleteHeat, Competition, Event, Heat, Phase, ScoreSheet
 
 # Set API endpoint URLs
@@ -143,15 +143,10 @@ def process_competitors_df(
     *,
     random_heats: bool = False,
 ) -> int:
-    event_count = 0
-    phase_count = 0
-
     paddler_count = 0
     competition_id = generate_uuid()
 
-    session_generator = get_transaction_session()
-    db = next(session_generator)
-    with db.begin():
+    with transaction_session_context_manager() as db:
         competition_data = [{"name": competition_name, "id": competition_id}]
 
         post_competition(competition_data, db=db)
@@ -180,7 +175,6 @@ def process_competitors_df(
 
             post_event(event_data, db=db)
 
-            event_count += 1
             phase_id = generate_uuid()
             phase_data = [
                 {
@@ -196,7 +190,6 @@ def process_competitors_df(
 
             post_phase(phase_data, db=db)
 
-            phase_count += 1
             event_phase_map[event_name] = phase_id
 
         heat_map = create_heats(
