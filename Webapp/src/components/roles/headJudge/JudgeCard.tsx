@@ -114,9 +114,11 @@ export const WebsocketMoveSubscriberUpdater = ({
 }) => {
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
-		if (socketRef.current === null) {
-			socketRef.current = connectCurrentScoreStatusSocket()
+		if (socketRef.current) {
+			socketRef.current.close()
 		}
+			socketRef.current = connectCurrentScoreStatusSocket()
+
 		socketRef.current.onmessage = (event) => {
 			const jsonData = JSON.parse(
 				event.data as string
