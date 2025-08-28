@@ -32,9 +32,10 @@ def upgrade() -> None:
     if result.rowcount > 0:
         for bonus, order in bonus_order.items():
             conn.execute(
-                f'UPDATE "availableBonuses" SET display_order = {order} WHERE name = {bonus}'
+                f'UPDATE "availableBonuses" SET display_order = {order} WHERE name = %s',
+                (bonus,)
             )
-    # ### end Alembic commands ###
+    # ### end Alembic commands ###ls
 
 
 def downgrade() -> None:
