@@ -24,13 +24,12 @@ def upgrade() -> None:
         "availableBonuses", sa.Column(
             "display_order", sa.Integer(), nullable=True)
     )
-
     # Check if the "name" column exists and populate display_order if possible
     conn = op.get_bind()
     result = conn.execute(
         "SELECT column_name FROM information_schema.columns WHERE table_name='availableBonuses' AND column_name='name'"
     )
-    if result.fetchone() is not None:
+    if result.rowcount > 0:
         for bonus, order in bonus_order.items():
             conn.execute(
                 f'UPDATE "availableBonuses" SET display_order = {order} WHERE name = {bonus}'
