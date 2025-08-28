@@ -127,7 +127,7 @@ def setup_pdf_footer(
         self.cell(0, 5, footer_text, align="L")
 
         if include_page_numbers:
-            self.cell(0, 5, f"Page {self.page_no()}/{'{nb}'}", align="R")
+            self.cell(0, 5, f"Page {self.page_no()}/{{nb}}", align="R")
 
         # Restore original font
         self.set_font(current_font, current_style, current_size)
