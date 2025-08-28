@@ -96,7 +96,6 @@ def setup_pdf_footer(
     Args:
         pdf: The FPDF object
         text: Footer text to display
-        include_timestamp: Whether to include a timestamp
         include_page_numbers: Whether to include page numbers
 
     Returns:
