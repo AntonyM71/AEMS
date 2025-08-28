@@ -1,5 +1,6 @@
 import logging
 import os
+import types
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -19,26 +20,17 @@ from db.models import Competition, Event, Heat, Phase
 pdf_router = APIRouter(tags=["pdf generation"])
 
 
-@pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
-async def phase_pdf(
-    phase_id: str,
-    db: Session = Depends(get_transaction_session),
-) -> Response:
-    try:
-        phase_scores = calculate_phase_scores(phase_id=phase_id, db=db)
-        phase_metadata = db.query(Phase).filter(Phase.id == phase_id).one()
-        event_metadata = (
-            db.query(Event).filter(Event.id == phase_metadata.event_id).one()
-        )
-        competition_metadata = (
-            db.query(Competition)
-            .filter(Competition.id == event_metadata.competition_id)
-            .one()
-        )
+def get_footer_text() -> str:
+    return "Athlete Event Management System - Enquiries: kayak.freestyle.app@gmail.com"
 
-        # Create a sample PDF file
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
-        pdf.add_page()
+
+def phase_pdf_header(
+    pdf: FPDF,
+    competition_metadata: Competition,
+    event_metadata: Event,
+    phase_metadata: Phase,
+) -> None:
+    def header(self: FPDF) -> None:
         pdf.set_font(size=24)
         pdf.cell(
             0,
@@ -88,6 +80,91 @@ async def phase_pdf(
             new_x="LMARGIN",
             new_y="NEXT",
         )
+
+    # Apply the footer method to this PDF
+    pdf.header = types.MethodType(header, pdf)
+
+
+def setup_pdf_footer(
+    pdf: FPDF, text: str | None = None, *, include_page_numbers: bool = True
+) -> FPDF:
+    """
+    Configure a footer for all pages in a PDF document.
+
+    Must be called right after creating the PDF, before adding any pages.
+
+    Args:
+        pdf: The FPDF object
+        text: Footer text to display
+        include_timestamp: Whether to include a timestamp
+        include_page_numbers: Whether to include page numbers
+
+    Returns:
+        The configured PDF object
+    """
+    # Prepare footer text
+    footer_text = text if text is not None else get_footer_text()
+
+    # Define footer function
+
+    def footer(self: FPDF) -> None:
+        # Position at 1.5 cm from bottom
+        self.set_y(-15)
+
+        # Save current font settings
+        current_font = self.font_family
+        current_style = self.font_style
+        current_size = self.font_size
+
+        if (
+            "PYTEST_CURRENT_TEST" not in os.environ
+            and hasattr(self, "font_family")
+            and self.font_family == "helvetica-neue"
+        ):
+            self.set_font("helvetica-neue", "", 10)
+        else:
+            self.set_font("Helvetica", "", 10)
+
+        self.cell(0, 5, footer_text, align="L")
+
+        if include_page_numbers:
+            self.cell(0, 5, f"Page {self.page_no()}/{'{nb}'}", align="R")
+
+        # Restore original font
+        self.set_font(current_font, current_style, current_size)
+
+    # Apply the footer method to this PDF
+    pdf.footer = types.MethodType(footer, pdf)
+
+    # Set up alias for total pages
+    pdf.alias_nb_pages(alias="{nb}")
+
+    return pdf
+
+
+@pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
+async def phase_pdf(
+    phase_id: str,
+    db: Session = Depends(get_transaction_session),
+) -> Response:
+    try:
+        phase_scores = calculate_phase_scores(phase_id=phase_id, db=db)
+        phase_metadata = db.query(Phase).filter(Phase.id == phase_id).one()
+        event_metadata = (
+            db.query(Event).filter(Event.id == phase_metadata.event_id).one()
+        )
+        competition_metadata = (
+            db.query(Competition)
+            .filter(Competition.id == event_metadata.competition_id)
+            .one()
+        )
+
+        # Create a sample PDF file
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        phase_pdf_header(pdf, competition_metadata, event_metadata, phase_metadata)
+        setup_pdf_footer(pdf, text=None, include_page_numbers=True)
+        pdf.add_page()
+
         with pdf.table(
             col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
         ) as table:
@@ -159,6 +236,7 @@ async def heat_pdf(
 ) -> Response:
     try:
         pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        setup_pdf_footer(pdf, None, include_page_numbers=True)
         if not heat_ids:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -245,6 +323,7 @@ async def heat_results_pdf(
 ) -> Response:
     try:
         pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        setup_pdf_footer(pdf, None, include_page_numbers=True)
         if not heat_id:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
