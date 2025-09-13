@@ -31,7 +31,7 @@
 
 ## System Architecture
 
-> System archtecture is discussed in [the architecture documentation](architecture.md)
+> System architecture is discussed in [the architecture documentation](architecture.md)
 > AEMS follows a modern containerized architecture:
 
 ### Key Development Commands
