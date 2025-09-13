@@ -313,7 +313,7 @@ Network Configuration:
 
 - Network reliability in competition venues
 - Device battery life during long competitions
-- WebSocket connection stability under load
+- WebSocket connection stability under load (i.e., during peak usage, stress testing, or scenarios exceeding the typical ~5 concurrent users and ~10 requests/sec)
 - Data synchronization conflicts
 - Hardware failure of critical devices
 
