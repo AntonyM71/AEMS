@@ -7,7 +7,7 @@ This document outlines the complete workflow for managing a freestyle kayaking c
 ## Pre-Competition Setup
 
 ### 1. System Preparation
-- Set up network topology (see [Network Topology Guide](network-topology.md))
+- Set up network topology (see [Network Topology Guide](../deployment/network-topology.md))
 - Start AEMS on server laptop: `docker compose up`
 - Connect all judge tablets to network
 - Test WebSocket connections on all devices
