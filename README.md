@@ -31,7 +31,7 @@ AEMS is a comprehensive system designed for managing freestyle kayaking competit
 
 ## Quick Start
 
-To contribute see the [Software Maintenence Guide](/docs/smg.md)
+To contribute see the [Software Maintenance Guide](/docs/smg.md)
 
 If you just want to get started running the software see the [Server Setup Guide](/docs/server_setup_guide.md)
 
