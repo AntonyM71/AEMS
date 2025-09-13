@@ -40,7 +40,7 @@
 
 These instructions are based on the official guide on [the Docker Website](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 
-1. Install Ubuntu, either on windows as a WSL instance from the microsoft store, or on a seperate partition of your hard drive
+1. Install Ubuntu, either on windows as a WSL instance from the microsoft store, or on a separate partition of your hard drive
 
 2. Run the following commands to register the docker repository on `apt`
 
