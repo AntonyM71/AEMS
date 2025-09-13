@@ -116,8 +116,9 @@ Perfect for clubs and organizers comfortable with technical setup:
 ### For Professional Support
 📧 **Email**: [kayak.freestyle.app@gmail.com](mailto:kayak.freestyle.app@gmail.com)
 📱 **Consultation**: Available for planning calls and technical assessments
-🏆 **Competition Support**: On-site services available across Europe and beyond
+🏆 **Competition Support**: On-site services primarily available across Europe; availability in other regions may be possible upon request.
 
+> Please contact us to confirm service availability and scheduling for your specific location or event.
 *"Professional competition management shouldn't require a computer science degree. Let us handle the technology so you can focus on delivering an amazing event for your athletes."*
 
 ## Open Source Commitment
