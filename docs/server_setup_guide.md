@@ -106,6 +106,14 @@ To ensure your server maintains the same IP address (192.168.0.28), you'll need 
 
 > Note: Router interfaces vary by manufacturer. Consult your router's manual for specific steps.
 
+## Running the Server Code
+
+With the server machine and network settings correctly configured, we can run the server with:
+
+```bash
+docker compose -f docker-compose.yaml up --build
+```
+
 ## Setting Up the Timing Box (Raspberry Pi)
 
 To configure the timing box, you'll need to:
