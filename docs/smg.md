@@ -199,7 +199,7 @@ docker compose -f docker-compose.yaml up --build
 ```
 
 ### Production
-- Follow [Server Setup Guide](server_setup_guide.md) for complete deployment
+- Follow [Server Setup Guide](deployment/server_setup_guide.md) for complete deployment
 - Ensure network topology per [Network Topology Guide](deployment/network-topology.md)
 - Configure static IP and offline network as documented
 
@@ -207,7 +207,6 @@ docker compose -f docker-compose.yaml up --build
 
 For competition officials and end users:
 - [Competition Workflow Guide](user-guides/competition-workflow.md)
-- [Network Troubleshooting](websocket-resilience.md)
 
 ## Contributing Guidelines
 
