@@ -60,7 +60,7 @@ echo \
 sudo apt-get update
 ```
 
-3. Install docker and freinds with:
+3. Install docker and friends with:
 
 ```
 sudo bash install_docker.sh
