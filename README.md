@@ -122,7 +122,7 @@ Perfect for clubs and organizers comfortable with technical setup:
 
 ## Open Source Commitment
 
-AEMS remains **completely free and open source**. Our professional services support continued development and maintenance of the platform, ensuring it stays current with competition needs and technology advances.
+The core scoring functionality of AEMS remains **completely free and open source**. Our professional services support continued development and maintenance of the platform, ensuring it stays current with competition needs and technological advances.
 
 ### Contributing
 - 🐛 **Bug Reports** - Help us improve through [GitHub Issues](https://github.com/AntonyM71/AEMS/issues)

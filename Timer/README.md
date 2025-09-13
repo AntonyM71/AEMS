@@ -12,6 +12,8 @@ This is a Python-based timer application designed to run on a Raspberry Pi. The 
 
 The required hardware and wiring details are provided in the `Hardware.md` file. Please refer to it for proper setup before running the application.
 
+Timer is tested on Raspberry Pi 4 and Pi 5 (4GB RAM or more recommended).
+
 ## Prerequisites
 
 ### Software:
