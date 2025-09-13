@@ -28,12 +28,13 @@ def upgrade() -> None:
     # Check if the "name" column exists and populate display_order if possible
     conn = op.get_bind()
     result = conn.execute(
-        "SELECT column_name FROM information_schema.columns WHERE table_name='availableBonuses' AND column_name='name'"
+        sa.text("SELECT column_name FROM information_schema.columns WHERE table_name='availableBonuses' AND column_name='name'")
     )
     if result.fetchone() is not None:
         for bonus, order in bonus_order.items():
             conn.execute(
-                f'UPDATE "availableBonuses" SET display_order = {order} WHERE name = {bonus}'
+                sa.text('UPDATE "availableBonuses" SET display_order = :order WHERE name = :bonus'),
+                {"order": order, "bonus": bonus}
             )
     # ### end Alembic commands ###
 
