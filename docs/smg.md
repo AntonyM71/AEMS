@@ -1,4 +1,4 @@
-# Software Maintenence Guide
+# Software Maintenance Guide
 
 ## Local Development
 
