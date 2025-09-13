@@ -25,7 +25,7 @@
 		"eslint-plugin-jest-dom": "^5.5.0",
 		"eslint-plugin-jsx-a11y": "^6.10.2",
 		"eslint-plugin-prefer-arrow": "^1.2.3",
-		"eslint-plugin-react": "^7.37.4",
+		"eslint-plugin-react": "^7.37.5",
 		"eslint-plugin-testing-library": "^7.6.6",
 		"jest-environment-jsdom": "^29.7.0",
 		"jest-junit": "^16.0.0",
