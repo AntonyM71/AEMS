@@ -18,7 +18,6 @@ from app.autogenEndpoints import (
     crud_route_athleteheat,
     crud_route_availablebonuses,
     crud_route_availablemoves,
-    crud_route_competition,
     crud_route_event,
     crud_route_event_by_phase,
     crud_route_heat,
@@ -32,6 +31,7 @@ from app.competition_management.competition_management import (
     competition_management_router,
 )
 from app.competition_management.pdfEndpoints import pdf_router
+from app.crud.competition import competition_router
 from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
@@ -41,9 +41,11 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(
+    bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
+setup_logging(json_logs=LOG_JSON_FORMAT,
+              log_level=LOG_LEVEL, log_name="server")
 
 access_logger = structlog.stdlib.get_logger("api.access")
 
@@ -57,7 +59,7 @@ app = FastAPI()
         scoresheet_router,
         pdf_router,
         broadcast_router,
-        crud_route_competition,
+        competition_router,
         crud_route_event,
         crud_route_event_by_phase,
         crud_route_phase,
@@ -105,7 +107,8 @@ async def logging_middleware(
     try:
         response = await call_next(request)
     except Exception:
-        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger(
+            "api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time
