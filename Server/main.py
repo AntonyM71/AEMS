@@ -13,10 +13,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
-from app.autogenEndpoints import (
-    crud_route_event,
-    crud_route_event_by_phase,
-)
 from app.broadcastEndpoints import broadcast_router
 from app.competition_management.competition_management import (
     competition_management_router,
@@ -27,6 +23,7 @@ from app.crud.athleteheat import athleteheat_router
 from app.crud.availablebonuses import availablebonuses_router
 from app.crud.availablemoves import availablemoves_router
 from app.crud.competition import competition_router
+from app.crud.event import event_router
 from app.crud.heat import heat_router
 from app.crud.phase import phase_router
 from app.crud.run_status import run_status_router
@@ -58,10 +55,8 @@ app = FastAPI()
         pdf_router,
         broadcast_router,
         competition_router,
-        crud_route_event,
-        crud_route_event_by_phase,
+        event_router,
         phase_router,
-        crud_route_event,
         heat_router,
         athlete_router,
         scoresheet_crud_router,
