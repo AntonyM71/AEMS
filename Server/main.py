@@ -14,24 +14,24 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
 from app.autogenEndpoints import (
-    crud_route_athlete,
-    crud_route_athleteheat,
-    crud_route_availablebonuses,
-    crud_route_availablemoves,
     crud_route_event,
     crud_route_event_by_phase,
-    crud_route_heat,
-    crud_route_phase,
-    crud_route_run_status,
-    crud_route_scoredmoves,
-    crud_route_scoresheet,
 )
 from app.broadcastEndpoints import broadcast_router
 from app.competition_management.competition_management import (
     competition_management_router,
 )
 from app.competition_management.pdfEndpoints import pdf_router
+from app.crud.athlete import athlete_router
+from app.crud.athleteheat import athleteheat_router
+from app.crud.availablebonuses import availablebonuses_router
+from app.crud.availablemoves import availablemoves_router
 from app.crud.competition import competition_router
+from app.crud.heat import heat_router
+from app.crud.phase import phase_router
+from app.crud.run_status import run_status_router
+from app.crud.scoredmoves import scoredmoves_router
+from app.crud.scoresheet import scoresheet_router as scoresheet_crud_router
 from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
@@ -41,11 +41,9 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(
-    bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-setup_logging(json_logs=LOG_JSON_FORMAT,
-              log_level=LOG_LEVEL, log_name="server")
+setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 
 access_logger = structlog.stdlib.get_logger("api.access")
 
@@ -62,15 +60,16 @@ app = FastAPI()
         competition_router,
         crud_route_event,
         crud_route_event_by_phase,
-        crud_route_phase,
-        crud_route_heat,
-        crud_route_athlete,
-        crud_route_scoresheet,
-        crud_route_availablemoves,
-        crud_route_availablebonuses,
-        crud_route_scoredmoves,
-        crud_route_athleteheat,
-        crud_route_run_status,
+        phase_router,
+        crud_route_event,
+        heat_router,
+        athlete_router,
+        scoresheet_crud_router,
+        availablemoves_router,
+        availablebonuses_router,
+        scoredmoves_router,
+        athleteheat_router,
+        run_status_router,
     ]
 ]
 
@@ -107,8 +106,7 @@ async def logging_middleware(
     try:
         response = await call_next(request)
     except Exception:
-        structlog.stdlib.get_logger(
-            "api.error").exception("Uncaught exception")
+        structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
         raise
     finally:
         process_time = time.perf_counter_ns() - start_time

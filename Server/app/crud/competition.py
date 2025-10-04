@@ -31,8 +31,7 @@ class CompetitionWithEvents(CompetitionResponse):
     events: list[dict] = []
 
 
-competition_router = APIRouter(
-    prefix="/competition", tags=["competition"])
+competition_router = APIRouter(prefix="/competition", tags=["competition"])
 
 
 @competition_router.get("/", response_model=list[CompetitionResponse])
@@ -173,7 +172,7 @@ async def get_many_by_pk_from_event(
         {
             "id": str(event.id),
             "competition_id": str(event.competition_id),
-            "name": event.name
+            "name": event.name,
         }
         for event in events
     ]
