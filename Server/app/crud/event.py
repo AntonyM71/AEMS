@@ -238,9 +238,9 @@ async def get_many_with_foreign_tree(
                     query = query.order_by(Event.competition_id.asc())
 
     # Apply pagination
-    if offset:
+    if offset is not None:
         query = query.offset(offset)
-    if limit:
+    if limit is not None:
         query = query.limit(limit)
 
     result = db.execute(query)
