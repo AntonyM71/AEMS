@@ -16,17 +16,8 @@ scoresheet_router = APIRouter(prefix="/scoresheet", tags=["scoresheet"])
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    id____list_____comparison_operator: Optional[str] = Query(
-        None, alias="id____list_____comparison_operator"
-    ),
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____str_____comparison_operator: Optional[str] = Query(
-        None, alias="name____str_____comparison_operator"
-    ),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    name____list_____comparison_operator: Optional[str] = Query(
-        None, alias="name____list_____comparison_operator"
-    ),
     limit: Optional[int] = Query(None),
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
