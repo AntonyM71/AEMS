@@ -233,7 +233,7 @@ async def get_one_by_primary_key(
     return EventResponse(**event_dict)
 
 
-@event_router.get("/get_many_with_foreign_tree", response_model=list[EventResponse])
+@event_router.get("/get_many_with_foreign_tree/", response_model=list[EventResponse])
 async def get_many_with_foreign_tree(
     db: Session = Depends(get_transaction_session),
     id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
