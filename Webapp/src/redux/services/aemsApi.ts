@@ -389,14 +389,8 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/scoresheet/`,
 				params: {
 					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
 					name____str: queryArg.nameStr,
-					name____str_____comparison_operator:
-						queryArg.nameStrComparisonOperator,
 					name____list: queryArg.nameList,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns
@@ -826,11 +820,8 @@ export type GetManyScoresheetGetApiResponse =
 	/** status 200 Successful Response */ ScoreSheetResponse[]
 export type GetManyScoresheetGetApiArg = {
 	idList?: string[]
-	idListComparisonOperator?: string
 	nameStr?: string[]
-	nameStrComparisonOperator?: string
 	nameList?: string[]
-	nameListComparisonOperator?: string
 	limit?: number
 	offset?: number
 	orderByColumns?: string[]
@@ -1082,9 +1073,15 @@ export type AddUpdateScoresheetRequest = {
 	moves?: PydanticAvailableMoves[]
 	bonuses?: PydanticAvailableBonuses[]
 }
+export type EventNested = {
+	id: string
+	competition_id: string
+	name: string
+}
 export type CompetitionResponse = {
 	id: string
 	name: string
+	event_foreign?: EventNested[]
 }
 export type CompetitionCreate = {
 	id?: string
@@ -1112,11 +1109,6 @@ export type EventResponse = {
 }
 export type EventCreateRequest = {
 	id?: string
-	competition_id: string
-	name: string
-}
-export type EventNested = {
-	id: string
 	competition_id: string
 	name: string
 }

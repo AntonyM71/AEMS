@@ -4,6 +4,15 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class EventNested(BaseModel):
+    id: UUID
+    competition_id: UUID
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class AthleteHeatCreate(BaseModel):
     id: Optional[UUID] = None
     athlete_id: UUID
@@ -37,6 +46,7 @@ class CompetitionCreate(BaseModel):
 class CompetitionResponse(BaseModel):
     id: UUID
     name: str
+    event_foreign: Optional[list[EventNested]] = None
 
     class Config:
         orm_mode = True
@@ -136,15 +146,6 @@ class EventCreateRequest(BaseModel):
     id: Optional[UUID] = None
     competition_id: UUID
     name: str
-
-
-class EventNested(BaseModel):
-    id: UUID
-    competition_id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
 
 
 class PhaseResponse(BaseModel):
