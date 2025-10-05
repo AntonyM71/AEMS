@@ -116,9 +116,9 @@ async def get_many(
                     query = query.order_by(AvailableMoves.direction.asc())
 
     # Apply pagination
-    if offset:
+    if offset is not None:
         query = query.offset(offset)
-    if limit:
+    if limit is not None:
         query = query.limit(limit)
 
     result = db.execute(query)
