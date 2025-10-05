@@ -59,14 +59,11 @@ phase_router = APIRouter(prefix="/phase", tags=["phase"])
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    event_id____list: Optional[list[UUID]] = Query(
-        None, alias="event_id____list"),
+    event_id____list: Optional[list[UUID]] = Query(None, alias="event_id____list"),
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(
-        None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(
-        None, alias="number_of_runs____to"),
+    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
+    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
     number_of_runs____list: Optional[list[int]] = Query(
         None, alias="number_of_runs____list"
     ),
@@ -82,15 +79,12 @@ async def get_one_by_primary_key(
     number_of_judges____from: Optional[int] = Query(
         None, alias="number_of_judges____from"
     ),
-    number_of_judges____to: Optional[int] = Query(
-        None, alias="number_of_judges____to"),
+    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
     number_of_judges____list: Optional[list[int]] = Query(
         None, alias="number_of_judges____list"
     ),
-    scoresheet____list: Optional[list[UUID]] = Query(
-        None, alias="scoresheet____list"),
-    join_foreign_table: Optional[list[str]] = Query(
-        None, alias="join_foreign_table"),
+    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
+    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
 ) -> PhaseResponse:
     """Get one phase by primary key"""
     query = select(Phase).where(Phase.id == id)
@@ -123,16 +117,14 @@ async def get_one_by_primary_key(
         )
     if number_of_runs_for_score____list:
         query = query.where(
-            Phase.number_of_runs_for_score.in_(
-                number_of_runs_for_score____list)
+            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
         )
     if number_of_judges____from is not None:
         query = query.where(Phase.number_of_judges >= number_of_judges____from)
     if number_of_judges____to is not None:
         query = query.where(Phase.number_of_judges <= number_of_judges____to)
     if number_of_judges____list:
-        query = query.where(
-            Phase.number_of_judges.in_(number_of_judges____list))
+        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
     if scoresheet____list:
         query = query.where(Phase.scoresheet.in_(scoresheet____list))
 

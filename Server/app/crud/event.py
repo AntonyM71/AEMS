@@ -185,8 +185,7 @@ async def get_one_by_primary_key(
     ),
     name____str: Optional[str] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    join_foreign_table: Optional[list[str]] = Query(
-        None, alias="join_foreign_table"),
+    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
 ) -> EventResponse:
     """Get one event by id with optional filtering and foreign keys"""
     query = select(Event).where(Event.id == id)
@@ -348,10 +347,8 @@ async def get_many_by_pk_from_phase(
     id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
     name____str: Optional[str] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(
-        None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(
-        None, alias="number_of_runs____to"),
+    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
+    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
     number_of_runs____list: Optional[list[int]] = Query(
         None, alias="number_of_runs____list"
     ),
@@ -367,15 +364,12 @@ async def get_many_by_pk_from_phase(
     number_of_judges____from: Optional[int] = Query(
         None, alias="number_of_judges____from"
     ),
-    number_of_judges____to: Optional[int] = Query(
-        None, alias="number_of_judges____to"),
+    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
     number_of_judges____list: Optional[list[int]] = Query(
         None, alias="number_of_judges____list"
     ),
-    scoresheet____list: Optional[list[UUID]] = Query(
-        None, alias="scoresheet____list"),
-    join_foreign_table: Optional[list[str]] = Query(
-        None, alias="join_foreign_table"),
+    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
+    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
 ) -> list[PhaseResponse]:
     """Get all phases for a specific event"""
     query = select(Phase).where(Phase.event_id == event_pk_id)
@@ -416,8 +410,7 @@ async def get_many_by_pk_from_phase(
 
     if number_of_runs_for_score____list:
         query = query.where(
-            Phase.number_of_runs_for_score.in_(
-                number_of_runs_for_score____list)
+            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
         )
 
     if number_of_judges____from is not None:
@@ -427,8 +420,7 @@ async def get_many_by_pk_from_phase(
         query = query.where(Phase.number_of_judges <= number_of_judges____to)
 
     if number_of_judges____list:
-        query = query.where(
-            Phase.number_of_judges.in_(number_of_judges____list))
+        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
 
     if scoresheet____list:
         query = query.where(Phase.scoresheet.in_(scoresheet____list))

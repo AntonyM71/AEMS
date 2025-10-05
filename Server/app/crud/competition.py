@@ -202,11 +202,29 @@ async def get_many_by_pk_from_event(
     result = db.execute(query)
     events = result.scalars().all()
 
-    return [
-        {
-            "id": str(event.id),
-            "competition_id": str(event.competition_id),
+    event_responses = []
+    for event in events:
+        response_data = {
+            "id": event.id,
+            "competition_id": event.competition_id,
             "name": event.name,
         }
-        for event in events
-    ]
+        if join_foreign_table:
+            if "competition" in join_foreign_table:
+                response_data["competition_foreign"] = (
+                    [CompetitionNested.from_orm(event.competition)]
+                    if event.competition
+                    else []
+                )
+            if "phase" in join_foreign_table:
+                response_data["phase_foreign"] = (
+                    [
+                        PhaseNested.from_orm(phase)
+                        for phase in getattr(event, "phases", [])
+                    ]
+                    if hasattr(event, "phases")
+                    else []
+                )
+        event_responses.append(EventResponse(**response_data))
+
+    return event_responses

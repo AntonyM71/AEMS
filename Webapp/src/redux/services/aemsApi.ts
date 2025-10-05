@@ -526,9 +526,7 @@ const injectedRtkApi = api.injectEndpoints({
 				params: {
 					athlete_id____list: queryArg.athleteIdList,
 					heat_id____list: queryArg.heatIdList,
-					phase_id____list: queryArg.phaseIdList,
-					bib____str: queryArg.bibStr,
-					bib____list: queryArg.bibList
+					phase_id____list: queryArg.phaseIdList
 				}
 			})
 		}),
@@ -912,8 +910,6 @@ export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiArg = {
 	athleteIdList?: string[]
 	heatIdList?: string[]
 	phaseIdList?: string[]
-	bibStr?: string[]
-	bibList?: string[]
 	athleteHeatUpdate: AthleteHeatUpdate
 }
 export type GetManyRunStatusGetApiResponse =
@@ -1186,10 +1182,21 @@ export type PhaseCreate = {
 	number_of_judges?: number
 	scoresheet: string
 }
+export type CompetitionNested3 = {
+	id: string
+	name: string
+}
+export type AthleteHeatNested = {
+	id: string
+	athlete_id: string
+	heat_id: string
+}
 export type HeatResponse = {
 	id: string
 	competition_id: string
 	name: string
+	competition_foreign?: CompetitionNested3[]
+	athleteheat_foreign?: AthleteHeatNested[]
 }
 export type HeatCreate = {
 	id?: string

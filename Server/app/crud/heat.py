@@ -16,10 +16,29 @@ class HeatCreate(BaseModel):
     name: str
 
 
+class CompetitionNested(BaseModel):
+    id: UUID
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class AthleteHeatNested(BaseModel):
+    id: UUID
+    athlete_id: UUID
+    heat_id: UUID
+
+    class Config:
+        orm_mode = True
+
+
 class HeatResponse(BaseModel):
     id: UUID
     competition_id: UUID
     name: str
+    competition_foreign: Optional[list[CompetitionNested]] = None
+    athleteheat_foreign: Optional[list[AthleteHeatNested]] = None
 
     class Config:
         orm_mode = True
@@ -93,7 +112,25 @@ async def get_many(
     result = db.execute(query)
     heats = result.scalars().all()
 
-    return [HeatResponse.from_orm(heat) for heat in heats]
+    heat_responses = []
+    for heat in heats:
+        response_data = {
+            "id": heat.id,
+            "competition_id": heat.competition_id,
+            "name": heat.name,
+        }
+        if join_foreign_table:
+            if "competition" in join_foreign_table and heat.competition:
+                response_data["competition_foreign"] = [
+                    CompetitionNested.from_orm(heat.competition)
+                ]
+            if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
+                response_data["athleteheat_foreign"] = [
+                    AthleteHeatNested.from_orm(ah) for ah in heat.athletes
+                ]
+        heat_responses.append(HeatResponse(**response_data))
+
+    return heat_responses
 
 
 @heat_router.get("/{id}", response_model=HeatResponse)
@@ -131,7 +168,22 @@ async def get_one_by_primary_key(
     if not heat:
         raise HTTPException(status_code=404, detail="Heat not found")
 
-    return HeatResponse.from_orm(heat)
+    response_data = {
+        "id": heat.id,
+        "competition_id": heat.competition_id,
+        "name": heat.name,
+    }
+    if join_foreign_table:
+        if "competition" in join_foreign_table and heat.competition:
+            response_data["competition_foreign"] = [
+                CompetitionNested.from_orm(heat.competition)
+            ]
+        if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
+            response_data["athleteheat_foreign"] = [
+                AthleteHeatNested.from_orm(ah) for ah in heat.athletes
+            ]
+
+    return HeatResponse(**response_data)
 
 
 @heat_router.post("/", response_model=list[HeatResponse], status_code=201)
