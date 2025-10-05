@@ -2,39 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.schemas import AthleteCreate, AthleteResponse, AthleteUpdate
 from db.client import get_transaction_session
 from db.models import Athlete
-
-
-class AthleteCreate(BaseModel):
-    id: Optional[UUID] = None
-    first_name: str
-    last_name: str
-    affiliation: Optional[str] = None
-    bib: str
-
-
-class AthleteResponse(BaseModel):
-    id: UUID
-    first_name: str
-    last_name: str
-    affiliation: Optional[str] = None
-    bib: str
-
-    class Config:
-        orm_mode = True
-
-
-class AthleteUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    affiliation: Optional[str] = None
-    bib: Optional[str] = None
-
 
 athlete_router = APIRouter(prefix="/athlete", tags=["athlete"])
 

@@ -2,25 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.schemas import AvailableMovesResponse
 from db.client import get_transaction_session
 from db.models import AvailableMoves
-
-
-class AvailableMovesResponse(BaseModel):
-    id: UUID
-    sheet_id: UUID
-    name: str
-    fl_score: int  # Changed from float to int to match models.py
-    rb_score: int  # Added missing field
-    direction: str  # Added missing field
-
-    class Config:
-        orm_mode = True
-
 
 availablemoves_router = APIRouter(prefix="/availablemoves", tags=["availablemoves"])
 

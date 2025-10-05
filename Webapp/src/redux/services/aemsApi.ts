@@ -215,7 +215,7 @@ const injectedRtkApi = api.injectEndpoints({
 			GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiArg
 		>({
 			query: (queryArg) => ({
-				url: `/event/get_many_with_foreign_tree`,
+				url: `/event/get_many_with_foreign_tree/`,
 				params: {
 					id____list: queryArg.idList,
 					id____list_____comparison_operator:
@@ -684,7 +684,7 @@ export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	joinForeignTable?: string[]
 }
 export type GetManyEventGetApiResponse =
-	/** status 200 Successful Response */ EventResponse2[]
+	/** status 200 Successful Response */ EventResponse[]
 export type GetManyEventGetApiArg = {
 	idList?: string[]
 	idListComparisonOperator?: string
@@ -700,12 +700,12 @@ export type GetManyEventGetApiArg = {
 	joinForeignTable?: string[]
 }
 export type InsertManyEventPostApiResponse =
-	/** status 201 Successful Response */ EventResponse2[]
+	/** status 201 Successful Response */ EventResponse[]
 export type InsertManyEventPostApiArg = {
 	events: EventCreateRequest[]
 }
 export type GetOneByPrimaryKeyEventIdGetApiResponse =
-	/** status 200 Successful Response */ EventResponse2
+	/** status 200 Successful Response */ EventResponse
 export type GetOneByPrimaryKeyEventIdGetApiArg = {
 	id: string
 	competitionIdList?: string[]
@@ -714,7 +714,7 @@ export type GetOneByPrimaryKeyEventIdGetApiArg = {
 	joinForeignTable?: string[]
 }
 export type GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiResponse =
-	/** status 200 Successful Response */ EventResponse2[]
+	/** status 200 Successful Response */ EventResponse[]
 export type GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiArg = {
 	idList?: string[]
 	idListComparisonOperator?: string
@@ -748,7 +748,7 @@ export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	joinForeignTable?: string[]
 }
 export type GetOneByPrimaryKeyPhaseIdGetApiResponse =
-	/** status 200 Successful Response */ PhaseResponse3
+	/** status 200 Successful Response */ PhaseResponse2
 export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	id: string
 	eventIdList?: string[]
@@ -767,13 +767,13 @@ export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	joinForeignTable?: string[]
 }
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiResponse =
-	/** status 200 Successful Response */ PhaseResponse3
+	/** status 200 Successful Response */ PhaseResponse2
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiArg = {
 	id: string
 	phaseUpdate: PhaseUpdate
 }
 export type InsertManyPhasePostApiResponse =
-	/** status 201 Successful Response */ PhaseResponse3[]
+	/** status 201 Successful Response */ PhaseResponse2[]
 export type InsertManyPhasePostApiArg = {
 	phases: PhaseCreate[]
 }
@@ -1110,26 +1110,6 @@ export type EventResponse = {
 	competition_foreign?: CompetitionNested[]
 	phase_foreign?: PhaseNested[]
 }
-export type CompetitionNested2 = {
-	id: string
-	name: string
-}
-export type PhaseNested2 = {
-	id: string
-	event_id: string
-	name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	scoresheet: string
-}
-export type EventResponse2 = {
-	id: string
-	competition_id: string
-	name: string
-	competition_foreign?: CompetitionNested2[]
-	phase_foreign?: PhaseNested2[]
-}
 export type EventCreateRequest = {
 	id?: string
 	competition_id: string
@@ -1150,21 +1130,6 @@ export type PhaseResponse2 = {
 	scoresheet: string
 	event_foreign?: EventNested[]
 }
-export type EventNested2 = {
-	id: string
-	competition_id: string
-	name: string
-}
-export type PhaseResponse3 = {
-	id: string
-	event_id: string
-	name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	scoresheet: string
-	event_foreign?: EventNested2[]
-}
 export type PhaseUpdate = {
 	event_id?: string
 	name?: string
@@ -1182,10 +1147,6 @@ export type PhaseCreate = {
 	number_of_judges?: number
 	scoresheet: string
 }
-export type CompetitionNested3 = {
-	id: string
-	name: string
-}
 export type AthleteHeatNested = {
 	id: string
 	athlete_id: string
@@ -1195,7 +1156,7 @@ export type HeatResponse = {
 	id: string
 	competition_id: string
 	name: string
-	competition_foreign?: CompetitionNested3[]
+	competition_foreign?: CompetitionNested[]
 	athleteheat_foreign?: AthleteHeatNested[]
 }
 export type HeatCreate = {

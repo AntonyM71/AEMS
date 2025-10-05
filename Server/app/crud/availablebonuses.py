@@ -2,25 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.schemas import AvailableBonusesResponse
 from db.client import get_transaction_session
 from db.models import AvailableBonuses
-
-
-class AvailableBonusesResponse(BaseModel):
-    id: UUID
-    sheet_id: UUID
-    move_id: UUID
-    name: str
-    score: int  # Integer, not float - matches models.py
-    display_order: Optional[int] = None
-
-    class Config:
-        orm_mode = True
-
 
 availablebonuses_router = APIRouter(
     prefix="/availablebonuses", tags=["availablebonuses"]

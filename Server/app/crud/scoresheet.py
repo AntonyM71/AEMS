@@ -2,26 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.schemas import ScoreSheetCreate, ScoreSheetResponse
 from db.client import get_transaction_session
 from db.models import ScoreSheet
-
-
-class ScoreSheetCreate(BaseModel):
-    id: Optional[UUID] = None
-    name: str
-
-
-class ScoreSheetResponse(BaseModel):
-    id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
 
 scoresheet_router = APIRouter(prefix="/scoresheet", tags=["scoresheet"])
 

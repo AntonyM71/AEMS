@@ -2,55 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.crud.schemas import EventNested, PhaseCreate, PhaseResponse, PhaseUpdate
 from db.client import get_transaction_session
 from db.models import Phase
-
-
-class EventNested(BaseModel):
-    id: UUID
-    competition_id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-class PhaseCreate(BaseModel):
-    id: Optional[UUID] = None
-    event_id: UUID
-    name: str
-    number_of_runs: int = 3
-    number_of_runs_for_score: int = 2
-    number_of_judges: int = 3
-    scoresheet: UUID
-
-
-class PhaseResponse(BaseModel):
-    id: UUID
-    event_id: UUID
-    name: str
-    number_of_runs: int
-    number_of_runs_for_score: int
-    number_of_judges: int
-    scoresheet: UUID
-    event_foreign: Optional[list[EventNested]] = None
-
-    class Config:
-        orm_mode = True
-
-
-class PhaseUpdate(BaseModel):
-    event_id: Optional[UUID] = None
-    name: Optional[str] = None
-    number_of_runs: Optional[int] = None
-    number_of_runs_for_score: Optional[int] = None
-    number_of_judges: Optional[int] = None
-    scoresheet: Optional[UUID] = None
-
 
 phase_router = APIRouter(prefix="/phase", tags=["phase"])
 

@@ -2,26 +2,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.schemas import RunStatusResponse
 from db.client import get_transaction_session
 from db.models import RunStatus
-
-
-class RunStatusResponse(BaseModel):
-    id: UUID
-    heat_id: Optional[UUID] = None
-    run_number: int
-    phase_id: UUID
-    athlete_id: UUID
-    locked: bool
-    did_not_start: bool
-
-    class Config:
-        orm_mode = True
-
 
 run_status_router = APIRouter(prefix="/run_status", tags=["run_status"])
 

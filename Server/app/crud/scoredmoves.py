@@ -14,17 +14,15 @@ scoredmoves_router = APIRouter(prefix="/scoredmoves", tags=["scoredmoves"])
 @scoredmoves_router.delete("/", response_model=dict)
 async def delete_many(
     db: Session = Depends(get_transaction_session),
-    heat_id____list: Optional[list[UUID]] = Query(
-        None, alias="heat_id____list"),
-    athlete_id____list: Optional[list[UUID]] = Query(
-        None, alias="athlete_id____list"),
+    heat_id____list: Optional[list[UUID]] = Query(None, alias="heat_id____list"),
+    athlete_id____list: Optional[list[UUID]] = Query(None, alias="athlete_id____list"),
 ) -> dict:
     """Delete many scored moves by heat_id and athlete_id"""
     # Require at least one filter to prevent accidental mass deletion
     if not heat_id____list and not athlete_id____list:
         raise HTTPException(
             status_code=400,
-            detail="At least one filter (heat_id____list or athlete_id____list) must be provided"
+            detail="At least one filter (heat_id____list or athlete_id____list) must be provided",
         )
 
     query = delete(ScoredMoves)

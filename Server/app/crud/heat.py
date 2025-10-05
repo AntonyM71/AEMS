@@ -2,52 +2,17 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.crud.schemas import (
+    AthleteHeatNested,
+    CompetitionNested,
+    HeatCreate,
+    HeatResponse,
+)
 from db.client import get_transaction_session
 from db.models import Heat
-
-
-class HeatCreate(BaseModel):
-    id: Optional[UUID] = None
-    competition_id: UUID
-    name: str
-
-
-class CompetitionNested(BaseModel):
-    id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-class AthleteHeatNested(BaseModel):
-    id: UUID
-    athlete_id: UUID
-    heat_id: UUID
-
-    class Config:
-        orm_mode = True
-
-
-class HeatResponse(BaseModel):
-    id: UUID
-    competition_id: UUID
-    name: str
-    competition_foreign: Optional[list[CompetitionNested]] = None
-    athleteheat_foreign: Optional[list[AthleteHeatNested]] = None
-
-    class Config:
-        orm_mode = True
-
-
-class HeatUpdate(BaseModel):
-    competition_id: Optional[UUID] = None
-    name: Optional[str] = None
-
 
 heat_router = APIRouter(prefix="/heat", tags=["heat"])
 

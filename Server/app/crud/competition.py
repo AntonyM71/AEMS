@@ -2,66 +2,18 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.crud.schemas import (
+    CompetitionCreate,
+    CompetitionNested,
+    CompetitionResponse,
+    EventResponse,
+    PhaseNested,
+)
 from db.client import get_transaction_session
 from db.models import Competition, Event
-
-
-class CompetitionCreate(BaseModel):
-    id: Optional[UUID] = None
-    name: str
-
-
-class CompetitionResponse(BaseModel):
-    id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-class CompetitionUpdate(BaseModel):
-    name: Optional[str] = None
-
-
-class CompetitionWithEvents(CompetitionResponse):
-    events: list[dict] = []
-
-
-class CompetitionNested(BaseModel):
-    id: UUID
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-class PhaseNested(BaseModel):
-    id: UUID
-    event_id: UUID
-    name: str
-    number_of_runs: int
-    number_of_runs_for_score: int
-    number_of_judges: int
-    scoresheet: UUID
-
-    class Config:
-        orm_mode = True
-
-
-class EventResponse(BaseModel):
-    id: UUID
-    competition_id: UUID
-    name: str
-    competition_foreign: Optional[list[CompetitionNested]] = None
-    phase_foreign: Optional[list[PhaseNested]] = None
-
-    class Config:
-        orm_mode = True
-
 
 competition_router = APIRouter(prefix="/competition", tags=["competition"])
 
