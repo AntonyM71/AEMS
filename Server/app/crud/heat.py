@@ -46,7 +46,7 @@ async def get_many(
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
     join_foreign_table: Optional[list[str]] = Query(None),
-):
+) -> list[HeatResponse]:
     """Get many heats"""
     query = select(Heat)
 
@@ -106,7 +106,7 @@ async def get_one_by_primary_key(
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
     join_foreign_table: Optional[list[str]] = Query(None),
-):
+) -> HeatResponse:
     """Get one heat by primary key"""
     query = select(Heat).where(Heat.id == id)
 
@@ -138,7 +138,7 @@ async def get_one_by_primary_key(
 async def insert_many(
     heats: list[HeatCreate],
     db: Session = Depends(get_transaction_session),
-):
+) -> list[HeatResponse]:
     """Insert many heats"""
     db_heats = []
 

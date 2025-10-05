@@ -134,11 +134,11 @@ const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 
-		.map((d) => ({ value: d.id!, label: d.name! }))
+		.map((d) => ({ value: d.id, label: d.name }))
 	const submitNewEvent = async () => {
 		HandlePostResponse(
 			await postNewEvent({
-				insert: [
+				events: [
 					{
 						name: eventName,
 						id: uuid4(),

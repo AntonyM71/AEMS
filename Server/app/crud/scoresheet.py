@@ -44,7 +44,7 @@ async def get_many(
     limit: Optional[int] = Query(None),
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
-):
+) -> list[ScoreSheetResponse]:
     """Get many scoresheets"""
     query = select(ScoreSheet)
 
@@ -83,7 +83,7 @@ async def get_many(
 async def insert_many(
     scoresheets: list[ScoreSheetCreate],
     db: Session = Depends(get_transaction_session),
-):
+) -> list[ScoreSheetResponse]:
     """Insert many scoresheets"""
     db_scoresheets = []
 

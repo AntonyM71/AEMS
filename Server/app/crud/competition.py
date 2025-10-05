@@ -31,6 +31,38 @@ class CompetitionWithEvents(CompetitionResponse):
     events: list[dict] = []
 
 
+class CompetitionNested(BaseModel):
+    id: UUID
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class PhaseNested(BaseModel):
+    id: UUID
+    event_id: UUID
+    name: str
+    number_of_runs: int
+    number_of_runs_for_score: int
+    number_of_judges: int
+    scoresheet: UUID
+
+    class Config:
+        orm_mode = True
+
+
+class EventResponse(BaseModel):
+    id: UUID
+    competition_id: UUID
+    name: str
+    competition_foreign: Optional[list[CompetitionNested]] = None
+    phase_foreign: Optional[list[PhaseNested]] = None
+
+    class Config:
+        orm_mode = True
+
+
 competition_router = APIRouter(prefix="/competition", tags=["competition"])
 
 
@@ -44,7 +76,7 @@ async def get_many(
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
     join_foreign_table: Optional[list[str]] = Query(None),
-):
+) -> list[CompetitionResponse]:
     """Get many competitions"""
     query = select(Competition)
 
@@ -88,7 +120,7 @@ async def get_many(
 async def insert_many(
     competitions: list[CompetitionCreate],
     db: Session = Depends(get_transaction_session),
-):
+) -> list[CompetitionResponse]:
     """Insert many competitions"""
     db_competitions = []
 
@@ -114,7 +146,7 @@ async def partial_update_one_by_primary_key(
     # Query parameters from the OpenAPI spec
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-):
+) -> CompetitionResponse:
     """Partial update one competition by primary key"""
     query = select(Competition).where(Competition.id == id)
 
@@ -138,7 +170,9 @@ async def partial_update_one_by_primary_key(
     return CompetitionResponse.from_orm(db_competition)
 
 
-@competition_router.get("/{competition__pk__id}/event", response_model=list[dict])
+@competition_router.get(
+    "/{competition__pk__id}/event", response_model=list[EventResponse]
+)
 async def get_many_by_pk_from_event(
     competition__pk__id: UUID,
     db: Session = Depends(get_transaction_session),
@@ -146,7 +180,7 @@ async def get_many_by_pk_from_event(
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
     join_foreign_table: Optional[list[str]] = Query(None),
-):
+) -> list[EventResponse]:
     """Get many events by competition primary key"""
     query = select(Event).where(Event.competition_id == competition__pk__id)
 

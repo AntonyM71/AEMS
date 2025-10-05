@@ -22,7 +22,8 @@ class AvailableMovesResponse(BaseModel):
         orm_mode = True
 
 
-availablemoves_router = APIRouter(prefix="/availablemoves", tags=["availablemoves"])
+availablemoves_router = APIRouter(
+    prefix="/availablemoves", tags=["availablemoves"])
 
 
 @availablemoves_router.get("/", response_model=list[AvailableMovesResponse])
@@ -32,7 +33,8 @@ async def get_many(
     id____list_____comparison_operator: Optional[str] = Query(
         None, alias="id____list_____comparison_operator"
     ),
-    sheet_id____list: Optional[list[UUID]] = Query(None, alias="sheet_id____list"),
+    sheet_id____list: Optional[list[UUID]] = Query(
+        None, alias="sheet_id____list"),
     sheet_id____list_____comparison_operator: Optional[str] = Query(
         None, alias="sheet_id____list_____comparison_operator"
     ),
@@ -46,28 +48,32 @@ async def get_many(
     ),
     fl_score____from: Optional[int] = Query(None, alias="fl_score____from"),
     fl_score____to: Optional[int] = Query(None, alias="fl_score____to"),
-    fl_score____list: Optional[list[int]] = Query(None, alias="fl_score____list"),
+    fl_score____list: Optional[list[int]] = Query(
+        None, alias="fl_score____list"),
     fl_score____list_____comparison_operator: Optional[str] = Query(
         None, alias="fl_score____list_____comparison_operator"
     ),
     rb_score____from: Optional[int] = Query(None, alias="rb_score____from"),
     rb_score____to: Optional[int] = Query(None, alias="rb_score____to"),
-    rb_score____list: Optional[list[int]] = Query(None, alias="rb_score____list"),
+    rb_score____list: Optional[list[int]] = Query(
+        None, alias="rb_score____list"),
     rb_score____list_____comparison_operator: Optional[str] = Query(
         None, alias="rb_score____list_____comparison_operator"
     ),
-    direction____str: Optional[list[str]] = Query(None, alias="direction____str"),
+    direction____str: Optional[list[str]] = Query(
+        None, alias="direction____str"),
     direction____str_____comparison_operator: Optional[str] = Query(
         None, alias="direction____str_____comparison_operator"
     ),
-    direction____list: Optional[list[str]] = Query(None, alias="direction____list"),
+    direction____list: Optional[list[str]] = Query(
+        None, alias="direction____list"),
     direction____list_____comparison_operator: Optional[str] = Query(
         None, alias="direction____list_____comparison_operator"
     ),
     limit: Optional[int] = Query(None),
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
-):
+) -> list[AvailableMovesResponse]:
     """Get many available moves"""
     query = select(AvailableMoves)
 

@@ -10,6 +10,15 @@ from db.client import get_transaction_session
 from db.models import Phase
 
 
+class EventNested(BaseModel):
+    id: UUID
+    competition_id: UUID
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class PhaseCreate(BaseModel):
     id: Optional[UUID] = None
     event_id: UUID
@@ -28,6 +37,7 @@ class PhaseResponse(BaseModel):
     number_of_runs_for_score: int
     number_of_judges: int
     scoresheet: UUID
+    event_foreign: Optional[list[EventNested]] = None
 
     class Config:
         orm_mode = True
@@ -49,11 +59,14 @@ phase_router = APIRouter(prefix="/phase", tags=["phase"])
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    event_id____list: Optional[list[UUID]] = Query(None, alias="event_id____list"),
+    event_id____list: Optional[list[UUID]] = Query(
+        None, alias="event_id____list"),
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
     name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
+    number_of_runs____from: Optional[int] = Query(
+        None, alias="number_of_runs____from"),
+    number_of_runs____to: Optional[int] = Query(
+        None, alias="number_of_runs____to"),
     number_of_runs____list: Optional[list[int]] = Query(
         None, alias="number_of_runs____list"
     ),
@@ -69,15 +82,23 @@ async def get_one_by_primary_key(
     number_of_judges____from: Optional[int] = Query(
         None, alias="number_of_judges____from"
     ),
-    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
+    number_of_judges____to: Optional[int] = Query(
+        None, alias="number_of_judges____to"),
     number_of_judges____list: Optional[list[int]] = Query(
         None, alias="number_of_judges____list"
     ),
-    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
-    join_foreign_table: Optional[list[str]] = Query(None),
-):
+    scoresheet____list: Optional[list[UUID]] = Query(
+        None, alias="scoresheet____list"),
+    join_foreign_table: Optional[list[str]] = Query(
+        None, alias="join_foreign_table"),
+) -> PhaseResponse:
     """Get one phase by primary key"""
     query = select(Phase).where(Phase.id == id)
+
+    # Apply joins if requested
+    if join_foreign_table:
+        if "event" in join_foreign_table:
+            query = query.options(selectinload(Phase.event))
 
     # Apply additional filters if provided
     if event_id____list:
@@ -102,23 +123,18 @@ async def get_one_by_primary_key(
         )
     if number_of_runs_for_score____list:
         query = query.where(
-            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
+            Phase.number_of_runs_for_score.in_(
+                number_of_runs_for_score____list)
         )
     if number_of_judges____from is not None:
         query = query.where(Phase.number_of_judges >= number_of_judges____from)
     if number_of_judges____to is not None:
         query = query.where(Phase.number_of_judges <= number_of_judges____to)
     if number_of_judges____list:
-        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
+        query = query.where(
+            Phase.number_of_judges.in_(number_of_judges____list))
     if scoresheet____list:
         query = query.where(Phase.scoresheet.in_(scoresheet____list))
-
-    # Apply joins if requested
-    if join_foreign_table:
-        if "event" in join_foreign_table:
-            query = query.options(selectinload(Phase.event))
-        if "athleteheat" in join_foreign_table:
-            query = query.options(selectinload(Phase.athletes))
 
     result = db.execute(query)
     phase = result.scalar_one_or_none()
@@ -126,7 +142,24 @@ async def get_one_by_primary_key(
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
 
-    return PhaseResponse.from_orm(phase)
+    phase_dict = {
+        "id": phase.id,
+        "event_id": phase.event_id,
+        "name": phase.name,
+        "number_of_runs": phase.number_of_runs,
+        "number_of_runs_for_score": phase.number_of_runs_for_score,
+        "number_of_judges": phase.number_of_judges,
+        "scoresheet": phase.scoresheet,
+    }
+
+    # Add foreign relationships if requested
+    if join_foreign_table and "event" in join_foreign_table and phase.event:
+        phase_dict["event_foreign"] = [EventNested.from_orm(phase.event)]
+
+    return PhaseResponse(**phase_dict)
+
+
+# ...existing code...
 
 
 @phase_router.patch("/{id}", response_model=PhaseResponse)
@@ -134,68 +167,9 @@ async def partial_update_one_by_primary_key(
     id: UUID,
     phase_update: PhaseUpdate,
     db: Session = Depends(get_transaction_session),
-    event_id____list: Optional[list[UUID]] = Query(None, alias="event_id____list"),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
-    number_of_runs____list: Optional[list[int]] = Query(
-        None, alias="number_of_runs____list"
-    ),
-    number_of_runs_for_score____from: Optional[int] = Query(
-        None, alias="number_of_runs_for_score____from"
-    ),
-    number_of_runs_for_score____to: Optional[int] = Query(
-        None, alias="number_of_runs_for_score____to"
-    ),
-    number_of_runs_for_score____list: Optional[list[int]] = Query(
-        None, alias="number_of_runs_for_score____list"
-    ),
-    number_of_judges____from: Optional[int] = Query(
-        None, alias="number_of_judges____from"
-    ),
-    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
-    number_of_judges____list: Optional[list[int]] = Query(
-        None, alias="number_of_judges____list"
-    ),
-    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
-):
+) -> PhaseResponse:
     """Partial update one phase by primary key"""
     query = select(Phase).where(Phase.id == id)
-
-    # Apply additional filters if provided
-    if event_id____list:
-        query = query.where(Phase.event_id.in_(event_id____list))
-    if name____str:
-        query = query.where(Phase.name.in_(name____str))
-    if name____list:
-        query = query.where(Phase.name.in_(name____list))
-    if number_of_runs____from is not None:
-        query = query.where(Phase.number_of_runs >= number_of_runs____from)
-    if number_of_runs____to is not None:
-        query = query.where(Phase.number_of_runs <= number_of_runs____to)
-    if number_of_runs____list:
-        query = query.where(Phase.number_of_runs.in_(number_of_runs____list))
-    if number_of_runs_for_score____from is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score >= number_of_runs_for_score____from
-        )
-    if number_of_runs_for_score____to is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score <= number_of_runs_for_score____to
-        )
-    if number_of_runs_for_score____list:
-        query = query.where(
-            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
-        )
-    if number_of_judges____from is not None:
-        query = query.where(Phase.number_of_judges >= number_of_judges____from)
-    if number_of_judges____to is not None:
-        query = query.where(Phase.number_of_judges <= number_of_judges____to)
-    if number_of_judges____list:
-        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
-    if scoresheet____list:
-        query = query.where(Phase.scoresheet.in_(scoresheet____list))
 
     result = db.execute(query)
     phase = result.scalar_one_or_none()
@@ -217,7 +191,7 @@ async def partial_update_one_by_primary_key(
 async def insert_many(
     phases: list[PhaseCreate],
     db: Session = Depends(get_transaction_session),
-):
+) -> list[PhaseResponse]:
     """Insert many phases"""
     db_phases = []
 

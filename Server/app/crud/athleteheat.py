@@ -15,6 +15,7 @@ class AthleteHeatCreate(BaseModel):
     athlete_id: UUID
     heat_id: UUID
     phase_id: UUID
+    last_phase_rank: Optional[int] = None
 
 
 class AthleteHeatResponse(BaseModel):
@@ -31,6 +32,7 @@ class AthleteHeatUpdate(BaseModel):
     athlete_id: Optional[UUID] = None
     heat_id: Optional[UUID] = None
     phase_id: Optional[UUID] = None
+    last_phase_rank: Optional[int] = None
 
 
 athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
@@ -40,12 +42,13 @@ athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
 async def insert_many(
     athlete_heats: list[AthleteHeatCreate],
     db: Session = Depends(get_transaction_session),
-):
+) -> list[AthleteHeatResponse]:
     """Insert many athlete heats"""
     db_athlete_heats = []
 
     for athlete_heat_data in athlete_heats:
-        db_athlete_heat = AthleteHeat(**athlete_heat_data.dict(exclude_none=True))
+        db_athlete_heat = AthleteHeat(
+            **athlete_heat_data.dict(exclude_none=True))
         db.add(db_athlete_heat)
         db_athlete_heats.append(db_athlete_heat)
 
@@ -65,12 +68,15 @@ async def partial_update_one_by_primary_key(
     id: UUID,
     athlete_heat_update: AthleteHeatUpdate,
     db: Session = Depends(get_transaction_session),
-    athlete_id____list: Optional[list[UUID]] = Query(None, alias="athlete_id____list"),
-    heat_id____list: Optional[list[UUID]] = Query(None, alias="heat_id____list"),
-    phase_id____list: Optional[list[UUID]] = Query(None, alias="phase_id____list"),
+    athlete_id____list: Optional[list[UUID]] = Query(
+        None, alias="athlete_id____list"),
+    heat_id____list: Optional[list[UUID]] = Query(
+        None, alias="heat_id____list"),
+    phase_id____list: Optional[list[UUID]] = Query(
+        None, alias="phase_id____list"),
     bib____str: Optional[list[str]] = Query(None, alias="bib____str"),
     bib____list: Optional[list[str]] = Query(None, alias="bib____list"),
-):
+) -> AthleteHeatResponse:
     """Partial update one athlete heat by primary key"""
     query = select(AthleteHeat).where(AthleteHeat.id == id)
 

@@ -34,11 +34,13 @@ async def get_many(
     id____list_____comparison_operator: Optional[str] = Query(
         None, alias="id____list_____comparison_operator"
     ),
-    sheet_id____list: Optional[list[UUID]] = Query(None, alias="sheet_id____list"),
+    sheet_id____list: Optional[list[UUID]] = Query(
+        None, alias="sheet_id____list"),
     sheet_id____list_____comparison_operator: Optional[str] = Query(
         None, alias="sheet_id____list_____comparison_operator"
     ),
-    move_id____list: Optional[list[UUID]] = Query(None, alias="move_id____list"),
+    move_id____list: Optional[list[UUID]] = Query(
+        None, alias="move_id____list"),
     move_id____list_____comparison_operator: Optional[str] = Query(
         None, alias="move_id____list_____comparison_operator"
     ),
@@ -56,8 +58,10 @@ async def get_many(
     score____list_____comparison_operator: Optional[str] = Query(
         None, alias="score____list_____comparison_operator"
     ),
-    display_order____from: Optional[int] = Query(None, alias="display_order____from"),
-    display_order____to: Optional[int] = Query(None, alias="display_order____to"),
+    display_order____from: Optional[int] = Query(
+        None, alias="display_order____from"),
+    display_order____to: Optional[int] = Query(
+        None, alias="display_order____to"),
     display_order____list: Optional[list[int]] = Query(
         None, alias="display_order____list"
     ),
@@ -67,7 +71,7 @@ async def get_many(
     limit: Optional[int] = Query(None),
     offset: Optional[int] = Query(None),
     order_by_columns: Optional[list[str]] = Query(None),
-):
+) -> list[AvailableBonusesResponse]:
     """Get many available bonuses"""
     query = select(AvailableBonuses)
 
@@ -95,11 +99,14 @@ async def get_many(
         query = query.where(AvailableBonuses.score.in_(score____list))
 
     if display_order____from is not None:
-        query = query.where(AvailableBonuses.display_order >= display_order____from)
+        query = query.where(AvailableBonuses.display_order >=
+                            display_order____from)
     if display_order____to is not None:
-        query = query.where(AvailableBonuses.display_order <= display_order____to)
+        query = query.where(
+            AvailableBonuses.display_order <= display_order____to)
     if display_order____list:
-        query = query.where(AvailableBonuses.display_order.in_(display_order____list))
+        query = query.where(
+            AvailableBonuses.display_order.in_(display_order____list))
 
     # Apply ordering
     if order_by_columns:
@@ -116,9 +123,11 @@ async def get_many(
                     query = query.order_by(AvailableBonuses.score.asc())
             elif "display_order" in order_col.lower():
                 if "desc" in order_col.lower():
-                    query = query.order_by(AvailableBonuses.display_order.desc())
+                    query = query.order_by(
+                        AvailableBonuses.display_order.desc())
                 else:
-                    query = query.order_by(AvailableBonuses.display_order.asc())
+                    query = query.order_by(
+                        AvailableBonuses.display_order.asc())
             elif "sheet_id" in order_col.lower():
                 if "desc" in order_col.lower():
                     query = query.order_by(AvailableBonuses.sheet_id.desc())

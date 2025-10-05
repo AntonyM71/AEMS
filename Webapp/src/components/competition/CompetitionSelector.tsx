@@ -135,7 +135,7 @@ const AddCompetition = () => {
 			if (competitionName) {
 				HandlePostResponse(
 					await postNewCompetition({
-						insert: [{ name: competitionName, id: uuid4() }]
+						competitions: [{ name: competitionName, id: uuid4() }]
 					})
 				)
 				setCompetitionName("") // Clear input after successful submission
