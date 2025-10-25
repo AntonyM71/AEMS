@@ -15,7 +15,9 @@ sudo dpkg --configure -a
 sudo apt-get install -f
 sudo apt-get autoremove
 sudo apt-get autoclean
-
+# give permissions to write to exfat drives by default
+sudo apt update
+sudo apt install exfat-fuse exfatprogs
 # Force remove and reinstall curl packages to fix version mismatch
 echo "Forcing curl package resolution..."
 sudo apt-get remove --purge curl libcurl4t64
