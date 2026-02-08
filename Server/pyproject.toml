@@ -85,4 +85,4 @@ dependencies = [
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"
 version = "0.1.0"
-requires-python = ">=3.10,<3.11" # fastapi-quickcrud does not support anything newer than 3.10
+requires-python = ">=3.13,<3.14" # Testing Python 3.13 compatibility
