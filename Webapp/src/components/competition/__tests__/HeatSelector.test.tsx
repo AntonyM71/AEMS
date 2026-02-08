@@ -6,6 +6,11 @@ import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import HeatSelector from "../HeatSelector"
 
+interface HeatUpdateBody {
+	name?: string
+	competition_id?: string
+}
+
 describe("HeatSelector", () => {
 	// Temporarily commenting out other tests to focus on fixing the error test
 	it("shows nothing when no competition is selected", () => {
@@ -274,7 +279,9 @@ describe("HeatSelector", () => {
 				return res(
 					ctx.json({
 						id: req.params.id,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						name: body.name,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						competition_id: body.competition_id || "comp1"
 					})
 				)

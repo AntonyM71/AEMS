@@ -227,11 +227,12 @@ const EditHeatDialog = ({
 	)
 }
 
+// eslint-disable-next-line complexity
 const AddHeat = ({
 	refetch,
 	existingHeatData
 }: {
-	refetch: ReturnType<typeof useGetManyHeatGetQuery>["refetch"]
+	refetch: () => Promise<any>
 	existingHeatData?: ExistingHeatData
 }) => {
 	const [heatName, setHeatName] = useState<string>(
