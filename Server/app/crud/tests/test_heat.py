@@ -49,7 +49,7 @@ def test_get_many_heats_no_filters(
 
     # Verify response (basic check only - don't test mock data)
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/json"
+    assert response.headers["content-type"].startswith("application/json")
 
     # Verify database calls
     assert mock_db_session.execute.called

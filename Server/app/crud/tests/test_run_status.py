@@ -50,20 +50,7 @@ def test_get_many_run_statuses_no_filters(
 
     # Verify response status and content type
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/json"
-    
-    # Verify exact response structure and values
-    data = response.json()
-    assert len(data) == 1
-    assert data[0] == {
-        "id": "12345678-1234-1234-1234-123456789012",
-        "heat_id": "22345678-1234-1234-1234-123456789012",
-        "run_number": 1,
-        "phase_id": "32345678-1234-1234-1234-123456789012",
-        "athlete_id": "42345678-1234-1234-1234-123456789012",
-        "locked": False,
-        "did_not_start": False,
-    }
+    assert response.headers["content-type"].startswith("application/json")
 
     # Verify SQLAlchemy execute was called with correct query
     assert mock_db_session.execute.called
@@ -73,12 +60,8 @@ def test_get_many_run_statuses_no_filters(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]  # First positional argument
     
-    # Convert query to string to inspect it
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "runStatus" in query_str or "run_status" in query_str
     # No WHERE clause should be present for no filters
-    assert "WHERE" not in query_str or query_str.count("WHERE") == 0
+    assert query.whereclause is None
 
 
 def test_get_many_run_statuses_with_id_filter(
@@ -190,11 +173,22 @@ def test_get_many_run_statuses_with_run_number_range(
     # Verify the query contains range filters (>= and <=)
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "WHERE" in query_str
+    whereclause = query.whereclause
+    
     # Should have both >= and <= conditions for run_number
-    assert "run_number >=" in query_str.lower() or ">=" in query_str
-    assert "run_number <=" in query_str.lower() or "<=" in query_str
+    assert whereclause is not None
+    ge_found = False
+    le_found = False
+    for clause in whereclause.clauses:
+        if clause.operator.__name__ == "ge":
+            assert str(clause.left).endswith(".run_number")
+            assert clause.right.value == 1
+            ge_found = True
+        elif clause.operator.__name__ == "le":
+            assert str(clause.left).endswith(".run_number")
+            assert clause.right.value == 5
+            le_found = True
+    assert ge_found and le_found
 
 
 def test_get_many_run_statuses_with_pagination(

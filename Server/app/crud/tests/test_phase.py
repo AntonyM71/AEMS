@@ -68,14 +68,13 @@ def test_get_one_phase_by_id(
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
     
-    # Verify query structure
+    # Verify query filters by ID
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "phase" in query_str.lower()
-    assert "WHERE" in query_str
-    assert "phase.id =" in query_str.lower() or "phase.id =" in query_str
+    whereclause = query.whereclause
+    assert whereclause is not None
+    assert str(whereclause.left).endswith(".id")
+    assert whereclause.operator.__name__ == "eq"
 
 
 def test_get_one_phase_not_found(
@@ -328,13 +327,13 @@ def test_patch_update_phase_by_id(
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
     
-    # Verify query structure
+    # Verify query filters by ID
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "WHERE" in query_str
-    assert "phase.id" in query_str.lower()
+    whereclause = query.whereclause
+    assert whereclause is not None
+    assert str(whereclause.left).endswith(".id")
+    assert whereclause.operator.__name__ == "eq"
 
 
 def test_patch_update_phase_not_found(

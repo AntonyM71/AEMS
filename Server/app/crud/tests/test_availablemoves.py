@@ -68,12 +68,10 @@ def test_get_many_available_moves_no_filters(
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
     
-    # Verify the query structure
+    # Verify no WHERE clause for no filters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "availableMoves" in query_str or "available_moves" in query_str
+    assert query.whereclause is None
 
 
 def test_get_many_available_moves_with_id_filter(

@@ -152,15 +152,15 @@ def test_patch_update_athlete_by_id(
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
     
-    # Verify the execute was called with a SELECT query for the athlete
+    # Verify the execute was called with a SELECT query filtering by ID
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "athlete" in query_str.lower()
-    assert "WHERE" in query_str
+    whereclause = query.whereclause
+    
     # Should filter by the ID
-    assert "athlete.id" in query_str.lower() or "athlete.id =" in query_str
+    assert whereclause is not None
+    assert str(whereclause.left).endswith(".id")
+    assert whereclause.operator.__name__ == "eq"
 
 
 def test_patch_update_athlete_not_found(

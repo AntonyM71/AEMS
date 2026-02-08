@@ -46,7 +46,7 @@ def test_get_many_competitions_no_filters(
 
     # Verify exact response
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/json"
+    assert response.headers["content-type"].startswith("application/json")
 
     # Verify database calls
     assert mock_db_session.execute.called
