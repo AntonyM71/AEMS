@@ -276,11 +276,6 @@ const AddHeat = ({
 			}
 		} else {
 			try {
-				if (!existingHeatData.id) {
-					throw new Error(
-						`Cannot update heat without ID. Heat data: ${JSON.stringify(existingHeatData)}`
-					)
-				}
 				HandlePostResponse(
 					await updateExistingHeat({
 						id: existingHeatData.id,
@@ -373,7 +368,7 @@ interface CompetitionOptions {
 }
 
 interface ExistingHeatData {
-	id?: string
+	id: string
 	competition_id: string
 	name: string
 }

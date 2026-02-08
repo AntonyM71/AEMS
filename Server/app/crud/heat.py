@@ -168,7 +168,7 @@ async def partial_update_one_by_primary_key(
         raise HTTPException(status_code=404, detail="Heat not found")
 
     # Update only provided fields
-    update_data = heat_update.dict(exclude_unset=True)
+    update_data = heat_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(heat, field, value)
 
