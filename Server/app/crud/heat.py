@@ -10,6 +10,7 @@ from app.crud.schemas import (
     CompetitionNested,
     HeatCreate,
     HeatResponse,
+    HeatUpdate,
 )
 from db.client import get_transaction_session
 from db.models import Heat
@@ -149,6 +150,31 @@ async def get_one_by_primary_key(
             ]
 
     return HeatResponse(**response_data)
+
+
+@heat_router.patch("/{id}", response_model=HeatResponse)
+async def partial_update_one_by_primary_key(
+    id: UUID,
+    heat_update: HeatUpdate,
+    db: Session = Depends(get_transaction_session),
+) -> HeatResponse:
+    """Partial update one heat by primary key"""
+    query = select(Heat).where(Heat.id == id)
+
+    result = db.execute(query)
+    heat = result.scalar_one_or_none()
+
+    if not heat:
+        raise HTTPException(status_code=404, detail="Heat not found")
+
+    # Update only provided fields
+    update_data = heat_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(heat, field, value)
+
+    db.commit()
+    db.refresh(heat)
+    return HeatResponse.from_orm(heat)
 
 
 @heat_router.post("/", response_model=list[HeatResponse], status_code=201)

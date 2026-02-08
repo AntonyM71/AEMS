@@ -337,6 +337,16 @@ const injectedRtkApi = api.injectEndpoints({
 				body: queryArg.heats
 			})
 		}),
+		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse,
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg
+		>({
+			query: (queryArg) => ({
+				url: `/heat/${queryArg.id}`,
+				method: "PATCH",
+				body: queryArg.heatUpdate
+			})
+		}),
 		getOneByPrimaryKeyHeatIdGet: build.query<
 			GetOneByPrimaryKeyHeatIdGetApiResponse,
 			GetOneByPrimaryKeyHeatIdGetApiArg
@@ -788,6 +798,12 @@ export type InsertManyHeatPostApiResponse =
 export type InsertManyHeatPostApiArg = {
 	heats: HeatCreate[]
 }
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
+	/** status 200 Successful Response */ HeatResponse
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
+	id: string
+	heatUpdate: HeatUpdate
+}
 export type GetOneByPrimaryKeyHeatIdGetApiResponse =
 	/** status 200 Successful Response */ HeatResponse
 export type GetOneByPrimaryKeyHeatIdGetApiArg = {
@@ -1155,6 +1171,10 @@ export type HeatCreate = {
 	id?: string
 	competition_id: string
 	name: string
+}
+export type HeatUpdate = {
+	competition_id?: string
+	name?: string
 }
 export type AthleteResponse = {
 	id: string
