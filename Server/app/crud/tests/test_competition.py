@@ -2,6 +2,7 @@
 Unit tests for competition CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -71,23 +72,29 @@ def test_get_many_competitions_with_id_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".id"), (
+        f"Expected filtering on .id column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
+    assert any(str(val) == filter_id for val in filter_values), (
+        f"Expected {filter_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_competitions_with_name_str_filter(
@@ -107,24 +114,30 @@ def test_get_many_competitions_with_name_str_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".name"), (
+        f"Expected filtering on .name column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_name = mock_competition.name
     filter_values = whereclause.right.value
-    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
+    assert filter_name in filter_values, (
+        f"Expected {filter_name} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_competitions_with_name_list_filter(
@@ -137,7 +150,9 @@ def test_get_many_competitions_with_name_list_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with name____list filter
-    response = test_client.get("/competition/?name____list=Test Competition&name____list=Other")
+    response = test_client.get(
+        "/competition/?name____list=Test Competition&name____list=Other"
+    )
 
     # Verify exact response
     assert response.status_code == 200
@@ -209,11 +224,12 @@ def test_post_insert_many_competitions(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
     """Test POST /competition/ to insert many competitions"""
+
     # Create a function to add an ID when add() is called
     def mock_add(competition):  # noqa: ANN202, ANN001
         competition.id = UUID("22222222-2222-2222-2222-222222222222")
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -231,7 +247,7 @@ def test_post_insert_many_competitions(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
-    
+
     # Verify the add() was called with Competition object with ALL correct attributes
     add_call_args = mock_db_session.add.call_args
     added_competition = add_call_args[0][0]
@@ -275,7 +291,9 @@ def test_patch_update_competition_not_found(
 
     # Make request to update non-existent competition
     competition_id = "99999999-9999-9999-9999-999999999999"
-    response = test_client.patch(f"/competition/{competition_id}", json={"name": "Updated Name"})
+    response = test_client.patch(
+        f"/competition/{competition_id}", json={"name": "Updated Name"}
+    )
 
     # Verify exact response
     assert response.status_code == 404
@@ -301,7 +319,7 @@ def test_patch_update_competition_with_filters(
     competition_id = str(mock_competition.id)
     response = test_client.patch(
         f"/competition/{competition_id}?name____str=Test Competition",
-        json={"name": "Updated Name"}
+        json={"name": "Updated Name"},
     )
 
     # Verify exact response

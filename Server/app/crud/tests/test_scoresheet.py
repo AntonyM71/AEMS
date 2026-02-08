@@ -2,6 +2,7 @@
 Unit tests for scoresheet CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -61,11 +62,15 @@ def test_get_many_scoresheets_no_filters(
     query = call_args[0][0]
 
     # Ensure the query selects from the ScoreSheet entity
-    column_entities = {desc.get("entity") for desc in getattr(query, "column_descriptions", [])}
+    column_entities = {
+        desc.get("entity") for desc in getattr(query, "column_descriptions", [])
+    }
     assert ScoreSheet in column_entities
 
     # For the no-filter case, there should be no WHERE clause
     assert getattr(query, "whereclause", None) is None
+
+
 def test_get_many_scoresheets_with_id_filter(
     test_client: TestClient, mock_db_session: Session, mock_scoresheet: ScoreSheet
 ) -> None:
@@ -84,23 +89,29 @@ def test_get_many_scoresheets_with_id_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".id"), (
+        f"Expected filtering on .id column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
+    assert any(str(val) == filter_id for val in filter_values), (
+        f"Expected {filter_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_scoresheets_with_name_filter(
@@ -121,24 +132,30 @@ def test_get_many_scoresheets_with_name_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".name"), (
+        f"Expected filtering on .name column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_name = "Test ScoreSheet"
     filter_values = whereclause.right.value
-    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
+    assert filter_name in filter_values, (
+        f"Expected {filter_name} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_scoresheets_with_pagination(
@@ -205,11 +222,12 @@ def test_post_insert_many_scoresheets(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
     """Test POST /scoresheet/ to insert many scoresheets"""
+
     # Mock ID generation
     def mock_add(scoresheet):  # noqa: ANN202, ANN001
         scoresheet.id = UUID("22222222-2222-2222-2222-222222222222")
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -232,7 +250,7 @@ def test_post_insert_many_scoresheets(
     assert mock_db_session.add.called
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
-    
+
     # Verify the add() was called with ScoreSheet object with correct name
     add_call_args = mock_db_session.add.call_args
     added_scoresheet = add_call_args[0][0]

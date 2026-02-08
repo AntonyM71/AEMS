@@ -234,7 +234,6 @@ async def test_heat_pdf_multiple_heats(
         )
 
 
-
 @pytest.mark.asyncio
 async def test_heat_results_pdf_success(
     mock_db_session: Session, mock_competition: MagicMock, mock_heat: MagicMock
@@ -371,18 +370,18 @@ def test_sanitize_filename() -> None:
     """Test filename sanitization with various inputs"""
     # Test spaces are converted to underscores
     assert sanitize_filename("Test Competition Name") == "Test_Competition_Name"
-    
+
     # Test invalid characters are replaced with underscores
     assert sanitize_filename("Test<>Competition") == "Test__Competition"
     assert sanitize_filename('Test"File/Name') == "Test_File_Name"
     assert sanitize_filename("Test:File|Name") == "Test_File_Name"
-    
+
     # Test multiple special characters
     assert sanitize_filename("Test<>:/\\|?*File") == "Test________File"
-    
+
     # Test leading/trailing dots and spaces are removed
     assert sanitize_filename("  Test File  ") == "Test_File"
     assert sanitize_filename("...Test File...") == "Test_File"
-    
+
     # Test mixed characters
     assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"

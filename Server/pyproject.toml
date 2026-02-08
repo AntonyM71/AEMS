@@ -51,27 +51,26 @@ dependencies = [
     "anyio",
     "broadcaster[postgres]",
     "sqlalchemy",
-    "alembic",
+    "alembic>=1.18.0,<2.0",  # Upgraded from 1.14.1
     "psycopg2",
-    "gunicorn",
+    "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0
     "orjson",
-    "asyncpg",
+    "asyncpg>=0.31.0,<1.0",  # Upgraded from 0.26.0
     "fastapi",
     "pandas",
     "pandas[performance]",
-    "uvicorn[standard]",
+    "uvicorn[standard]>=0.40.0,<1.0",  # Upgraded from 0.19.0
     "python-multipart",
     "pydantic<=1.10.23",
     "SQLAlchemy<=1.4.54",
     "starlette==0.14.2",
     "fpdf2",
-    "pandas",
     # Dev
-    "ruff",
+    "ruff>=0.15.0,<1.0",  # Upgraded from 0.9.6
     "mypy",
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
+    "pytest>=8.3.0,<9.0",  # Keep pytest 8.x
+    "pytest-cov>=6.0.0,<7.0",
+    "pytest-asyncio>=1.0.0,<2.0",  # Upgraded from 0.25.3
     "sqlalchemy_utils",
     "sqlalchemy[mypy]",    # remove when we upgrade to 2.0
     "pydantic-sqlalchemy",

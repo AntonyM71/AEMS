@@ -2,6 +2,7 @@
 Unit tests for run_status CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -55,11 +56,11 @@ def test_get_many_run_statuses_no_filters(
     # Verify SQLAlchemy execute was called with correct query
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
-    
+
     # Verify the query structure passed to execute
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]  # First positional argument
-    
+
     # No WHERE clause should be present for no filters
     assert query.whereclause is None
 
@@ -83,23 +84,29 @@ def test_get_many_run_statuses_with_id_filter(
     # Verify execute was called
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".id"), (
+        f"Expected filtering on .id column, got {whereclause.left}"
+    )
+
     # Assert we're using the IN operator
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert filter_id in filter_values, f"Expected {filter_id} in filter values, got {filter_values}"
+    assert filter_id in filter_values, (
+        f"Expected {filter_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_run_statuses_with_heat_id_filter(
@@ -120,23 +127,29 @@ def test_get_many_run_statuses_with_heat_id_filter(
 
     # Verify execute was called
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".heat_id"), f"Expected filtering on .heat_id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".heat_id"), (
+        f"Expected filtering on .heat_id column, got {whereclause.left}"
+    )
+
     # Assert we're using the IN operator
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert filter_heat_id in filter_values, f"Expected {filter_heat_id} in filter values, got {filter_values}"
+    assert filter_heat_id in filter_values, (
+        f"Expected {filter_heat_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_run_statuses_with_run_number_range(
@@ -149,9 +162,7 @@ def test_get_many_run_statuses_with_run_number_range(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with run_number range
-    response = test_client.get(
-        "/run_status/?run_number____from=1&run_number____to=5"
-    )
+    response = test_client.get("/run_status/?run_number____from=1&run_number____to=5")
 
     # Verify exact response
     assert response.status_code == 200
@@ -169,12 +180,12 @@ def test_get_many_run_statuses_with_run_number_range(
 
     # Verify execute was called
     assert mock_db_session.execute.called
-    
+
     # Verify the query contains range filters (>= and <=)
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     whereclause = query.whereclause
-    
+
     # Should have both >= and <= conditions for run_number
     assert whereclause is not None
     ge_found = False
