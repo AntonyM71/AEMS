@@ -48,20 +48,26 @@ def test_get_many_run_statuses_no_filters(
     # Make request
     response = test_client.get("/run_status/")
 
-    # Verify response
+    # Verify response status and content type
     assert response.status_code == 200
+    assert response.headers["content-type"] == "application/json"
+    
+    # Verify exact response structure and values
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_run_status.id)
-    assert data[0]["heat_id"] == str(mock_run_status.heat_id)
-    assert data[0]["run_number"] == mock_run_status.run_number
-    assert data[0]["phase_id"] == str(mock_run_status.phase_id)
-    assert data[0]["athlete_id"] == str(mock_run_status.athlete_id)
-    assert data[0]["locked"] == mock_run_status.locked
-    assert data[0]["did_not_start"] == mock_run_status.did_not_start
+    assert data[0] == {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "heat_id": "22345678-1234-1234-1234-123456789012",
+        "run_number": 1,
+        "phase_id": "32345678-1234-1234-1234-123456789012",
+        "athlete_id": "42345678-1234-1234-1234-123456789012",
+        "locked": False,
+        "did_not_start": False,
+    }
 
-    # Verify SQLAlchemy execute was called
+    # Verify SQLAlchemy execute was called with correct query
     assert mock_db_session.execute.called
+    assert mock_db_session.execute.call_count == 1
 
 
 def test_get_many_run_statuses_with_id_filter(
@@ -82,10 +88,19 @@ def test_get_many_run_statuses_with_id_filter(
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_run_status.id)
+    assert data[0] == {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "heat_id": "22345678-1234-1234-1234-123456789012",
+        "run_number": 1,
+        "phase_id": "32345678-1234-1234-1234-123456789012",
+        "athlete_id": "42345678-1234-1234-1234-123456789012",
+        "locked": False,
+        "did_not_start": False,
+    }
 
     # Verify execute was called
     assert mock_db_session.execute.called
+    assert mock_db_session.execute.call_count == 1
 
 
 def test_get_many_run_statuses_with_heat_id_filter(
@@ -102,11 +117,19 @@ def test_get_many_run_statuses_with_heat_id_filter(
         f"/run_status/?heat_id____list={str(mock_run_status.heat_id)}"
     )
 
-    # Verify response
+    # Verify exact response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["heat_id"] == str(mock_run_status.heat_id)
+    assert data[0] == {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "heat_id": "22345678-1234-1234-1234-123456789012",
+        "run_number": 1,
+        "phase_id": "32345678-1234-1234-1234-123456789012",
+        "athlete_id": "42345678-1234-1234-1234-123456789012",
+        "locked": False,
+        "did_not_start": False,
+    }
 
     # Verify execute was called
     assert mock_db_session.execute.called
@@ -126,11 +149,19 @@ def test_get_many_run_statuses_with_run_number_range(
         "/run_status/?run_number____from=1&run_number____to=5"
     )
 
-    # Verify response
+    # Verify exact response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["run_number"] == mock_run_status.run_number
+    assert data[0] == {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "heat_id": "22345678-1234-1234-1234-123456789012",
+        "run_number": 1,
+        "phase_id": "32345678-1234-1234-1234-123456789012",
+        "athlete_id": "42345678-1234-1234-1234-123456789012",
+        "locked": False,
+        "did_not_start": False,
+    }
 
     # Verify execute was called
     assert mock_db_session.execute.called
@@ -193,7 +224,155 @@ def test_get_many_run_statuses_empty_result(
     # Verify response
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 0
+    assert data == []
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_phase_id_filter(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with phase_id filter"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with phase_id filter
+    response = test_client.get(
+        f"/run_status/?phase_id____list={str(mock_run_status.phase_id)}"
+    )
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["phase_id"] == str(mock_run_status.phase_id)
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_athlete_id_filter(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with athlete_id filter"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with athlete_id filter
+    response = test_client.get(
+        f"/run_status/?athlete_id____list={str(mock_run_status.athlete_id)}"
+    )
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["athlete_id"] == str(mock_run_status.athlete_id)
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_locked_filter(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with locked filter"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with locked filter
+    response = test_client.get("/run_status/?locked____list=false")
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["locked"] is False
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_did_not_start_filter(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with did_not_start filter"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with did_not_start filter
+    response = test_client.get("/run_status/?did_not_start____list=false")
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["did_not_start"] is False
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_run_number_list_filter(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with run_number list filter"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with run_number list filter
+    response = test_client.get("/run_status/?run_number____list=1&run_number____list=2")
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["run_number"] == 1
+
+    # Verify execute was called
+    assert mock_db_session.execute.called
+
+
+def test_get_many_run_statuses_with_multiple_filters(
+    test_client: TestClient, mock_db_session: Session, mock_run_status: RunStatus
+) -> None:
+    """Test GET /run_status/ with multiple filters combined"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_run_status]
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request with multiple filters
+    response = test_client.get(
+        f"/run_status/?heat_id____list={str(mock_run_status.heat_id)}"
+        f"&phase_id____list={str(mock_run_status.phase_id)}"
+        "&locked____list=false"
+    )
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0] == {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "heat_id": "22345678-1234-1234-1234-123456789012",
+        "run_number": 1,
+        "phase_id": "32345678-1234-1234-1234-123456789012",
+        "athlete_id": "42345678-1234-1234-1234-123456789012",
+        "locked": False,
+        "did_not_start": False,
+    }
 
     # Verify execute was called
     assert mock_db_session.execute.called

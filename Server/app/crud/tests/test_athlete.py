@@ -59,19 +59,23 @@ def test_post_insert_many_athletes(
     ]
     response = test_client.post("/athlete/", json=athlete_data)
 
-    # Verify response
+    # Verify response status and exact content
     assert response.status_code == 201
     data = response.json()
     assert len(data) == 1
-    # The IDs will be generated, so we just check the other fields
-    assert data[0]["first_name"] == "John"
-    assert data[0]["last_name"] == "Doe"
-    assert data[0]["affiliation"] == "Test Team"
-    assert data[0]["bib"] == "123"
+    assert data[0] == {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "first_name": "John",
+        "last_name": "Doe",
+        "affiliation": "Test Team",
+        "bib": "123",
+    }
 
     # Verify database operations were called
     assert mock_db_session.add.called
+    assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
+    assert mock_db_session.commit.call_count == 1
 
 
 def test_post_insert_multiple_athletes(
@@ -98,14 +102,29 @@ def test_post_insert_multiple_athletes(
     ]
     response = test_client.post("/athlete/", json=athlete_data)
 
-    # Verify response
+    # Verify exact response
     assert response.status_code == 201
     data = response.json()
     assert len(data) == 2
+    assert data[0] == {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "first_name": "John",
+        "last_name": "Doe",
+        "affiliation": None,
+        "bib": "123",
+    }
+    assert data[1] == {
+        "id": "00000001-0000-0000-0000-000000000000",
+        "first_name": "Jane",
+        "last_name": "Smith",
+        "affiliation": None,
+        "bib": "456",
+    }
 
     # Verify database add was called twice
     assert mock_db_session.add.call_count == 2
     assert mock_db_session.commit.called
+    assert mock_db_session.commit.call_count == 1
 
 
 def test_patch_update_athlete_by_id(
@@ -124,13 +143,20 @@ def test_patch_update_athlete_by_id(
     update_data = {"first_name": "Updated"}
     response = test_client.patch(f"/athlete/{athlete_id}", json=update_data)
 
-    # Verify response
+    # Verify exact response
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == athlete_id
+    assert data == {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "first_name": "John",  # Mock doesn't actually update, returns original
+        "last_name": "Doe",
+        "affiliation": "Test Team",
+        "bib": "123",
+    }
 
     # Verify database operations were called
     assert mock_db_session.execute.called
+    assert mock_db_session.execute.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
 
