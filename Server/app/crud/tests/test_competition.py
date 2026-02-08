@@ -251,8 +251,8 @@ def test_patch_update_competition_by_id(
 
     # Make request to update competition
     competition_id = str(mock_competition.id)
-    update_name = "Updated Competition"
-    response = test_client.patch(f"/competition/{competition_id}", json=update_name)
+    update_data = {"name": "Updated Competition"}
+    response = test_client.patch(f"/competition/{competition_id}", json=update_data)
 
     # Verify exact response
     assert response.status_code == 200
@@ -275,7 +275,7 @@ def test_patch_update_competition_not_found(
 
     # Make request to update non-existent competition
     competition_id = "99999999-9999-9999-9999-999999999999"
-    response = test_client.patch(f"/competition/{competition_id}", json="Updated Name")
+    response = test_client.patch(f"/competition/{competition_id}", json={"name": "Updated Name"})
 
     # Verify exact response
     assert response.status_code == 404
@@ -301,7 +301,7 @@ def test_patch_update_competition_with_filters(
     competition_id = str(mock_competition.id)
     response = test_client.patch(
         f"/competition/{competition_id}?name____str=Test Competition",
-        json="Updated Name"
+        json={"name": "Updated Name"}
     )
 
     # Verify exact response

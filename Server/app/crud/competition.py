@@ -9,6 +9,7 @@ from app.crud.schemas import (
     CompetitionCreate,
     CompetitionNested,
     CompetitionResponse,
+    CompetitionUpdate,
     EventResponse,
     PhaseNested,
 )
@@ -93,7 +94,7 @@ async def insert_many(
 @competition_router.patch("/{id}", response_model=CompetitionResponse)
 async def partial_update_one_by_primary_key(
     id: UUID,
-    name: str,  # Based on the OpenAPI spec, this is just a string, not an object
+    competition_update: CompetitionUpdate,
     db: Session = Depends(get_transaction_session),
     # Query parameters from the OpenAPI spec
     name____str: Optional[list[str]] = Query(None, alias="name____str"),
@@ -114,8 +115,9 @@ async def partial_update_one_by_primary_key(
     if not db_competition:
         raise HTTPException(status_code=404, detail="Competition not found")
 
-    # Update the name
-    db_competition.name = name
+    # Update the competition with provided fields
+    if competition_update.name is not None:
+        db_competition.name = competition_update.name
 
     db.commit()
     db.refresh(db_competition)
