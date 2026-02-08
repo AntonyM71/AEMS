@@ -110,20 +110,21 @@ def test_get_one_phase_with_event_id_filter(
 
     # Make request with filter
     phase_id = str(mock_phase.id)
-    response = test_client.get(
-        f"/phase/{phase_id}?event_id____list={str(mock_phase.event_id)}"
-    )
+    filter_event_id = str(mock_phase.event_id)
+    response = test_client.get(f"/phase/{phase_id}?event_id____list={filter_event_id}")
 
     # Verify response
     assert response.status_code == 200
     data = response.json()
-    assert data["event_id"] == str(mock_phase.event_id)
+    assert data["event_id"] == filter_event_id
 
-    # Verify query has event_id filter
+    # Verify query has event_id filter with correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "event_id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_event_id in query_str or filter_event_id.replace("-", "") in query_str
 
 
 def test_get_one_phase_with_number_of_runs_range(
@@ -227,13 +228,17 @@ def test_post_insert_many_phases(
     assert mock_db_session.add.called
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
+    assert mock_db_session.commit.call_count == 1
     
-    # Verify the add() was called with Phase object with correct attributes
+    # Verify the add() was called with Phase object with ALL correct attributes
     add_call_args = mock_db_session.add.call_args
     added_phase = add_call_args[0][0]
+    assert str(added_phase.event_id) == "22222222-2222-2222-2222-222222222222"
     assert added_phase.name == "New Phase"
     assert added_phase.number_of_runs == 3
+    assert added_phase.number_of_runs_for_score == 2
     assert added_phase.number_of_judges == 7
+    assert str(added_phase.scoresheet) == "33333333-3333-3333-3333-333333333333"
 
 
 def test_patch_update_phase_by_id(

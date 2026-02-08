@@ -88,22 +88,23 @@ def test_get_many_available_moves_with_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with id filter
-    response = test_client.get(
-        f"/availablemoves/?id____list={str(mock_available_moves.id)}"
-    )
+    filter_id = str(mock_available_moves.id)
+    response = test_client.get(f"/availablemoves/?id____list={filter_id}")
 
     # Verify response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_available_moves.id)
+    assert data[0]["id"] == filter_id
 
-    # Verify execute was called with ID filter in query
+    # Verify execute was called with ID filter with correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "WHERE" in query_str
     assert ".id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_id in query_str or filter_id.replace("-", "") in query_str
 
 
 def test_get_many_available_moves_with_sheet_id_filter(
@@ -118,21 +119,22 @@ def test_get_many_available_moves_with_sheet_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with sheet_id filter
-    response = test_client.get(
-        f"/availablemoves/?sheet_id____list={str(mock_available_moves.sheet_id)}"
-    )
+    filter_sheet_id = str(mock_available_moves.sheet_id)
+    response = test_client.get(f"/availablemoves/?sheet_id____list={filter_sheet_id}")
 
     # Verify response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["sheet_id"] == str(mock_available_moves.sheet_id)
+    assert data[0]["sheet_id"] == filter_sheet_id
 
-    # Verify execute was called with sheet_id filter
+    # Verify execute was called with sheet_id filter with correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "sheet_id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_sheet_id in query_str or filter_sheet_id.replace("-", "") in query_str
 
 
 def test_get_many_available_moves_with_fl_score_range(
