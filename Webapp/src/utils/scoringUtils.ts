@@ -1,4 +1,4 @@
-import { flatten, groupBy, partition, sum } from "lodash"
+import { flatten, groupBy, partition, sum, uniqBy } from "lodash"
 import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
 	directionType,
@@ -96,10 +96,7 @@ export const calculateMoveScore = (
 	const baseMove = getScoredMoveValues(scoredMove, availableMoves)
 
 	const moveBaseScore = getMoveBaseScore(scoredMove, availableMoves)
-	const deduplicatedScoredBonuses = scoredBonuses.filter(
-		(b, index, self) =>
-			index === self.findIndex((sb) => sb.bonusId === b.bonusId)
-	)
+	const deduplicatedScoredBonuses = uniqBy(scoredBonuses, "bonusId")
 	const scoredBonusValues = deduplicatedScoredBonuses.map((b) =>
 		getBonusScore(b, availableBonuses)
 	)
