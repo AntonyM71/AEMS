@@ -323,10 +323,16 @@ async def heat_pdf(
                     )
 
         # Prepare the filename and headers
-        heat_names = "_".join([h.name for h in heat_info_list])
-        filename = sanitize_filename(
-            f"{competition_metadata.name}_{heat_names}.pdf"
-        )
+        if len(heat_info_list) == 1:
+            # Single heat: use the heat name
+            filename = sanitize_filename(
+                f"{competition_metadata.name}_{heat_info_list[0].name}.pdf"
+            )
+        else:
+            # Multiple heats: indicate count to avoid overly long filenames
+            filename = sanitize_filename(
+                f"{competition_metadata.name}_{len(heat_info_list)}_Heats.pdf"
+            )
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
         # Return the file as a response

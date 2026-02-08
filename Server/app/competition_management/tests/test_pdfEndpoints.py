@@ -181,6 +181,61 @@ async def test_heat_pdf_not_found(
 
 
 @pytest.mark.asyncio
+async def test_heat_pdf_multiple_heats(
+    mock_db_session: Session, mock_competition: MagicMock
+) -> None:
+    """Test heat PDF with multiple heats uses count-based filename"""
+    # Create multiple heat IDs and mock heats
+    heat_ids = [str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())]
+    mock_heats = []
+    for i, heat_id in enumerate(heat_ids):
+        mock_heat = MagicMock(spec=Heat)
+        mock_heat.id = heat_id
+        mock_heat.name = f"Heat {i + 1}"
+        mock_heat.competition_id = mock_competition.id
+        mock_heats.append(mock_heat)
+
+    # Mock database queries
+    mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = mock_heats
+    mock_db_session.query.return_value.filter.return_value.one.return_value = (
+        mock_competition
+    )
+
+    # Mock heat info logic
+    with patch(
+        "app.competition_management.pdfEndpoints.get_heat_info_logic"
+    ) as mock_heat_info:
+        mock_heat_info.return_value = [
+            HeatInfoResponse(
+                athlete_heat_id=uuid.uuid4(),
+                heat_id=uuid.uuid4(),
+                athlete_id=uuid.uuid4(),
+                phase_id=uuid.uuid4(),
+                number_of_runs=3,
+                number_of_runs_for_score=2,
+                scoresheet=uuid.uuid4(),
+                first_name="John",
+                last_name="Doe",
+                event_name="Test Event",
+                bib="123",
+                last_phase_rank=1,
+            )
+        ]
+
+        response = await heat_pdf(heat_ids=heat_ids, db=mock_db_session)
+
+        assert response.status_code == 200
+        assert response.media_type == "application/pdf"
+        # With 3 heats, should use count-based filename
+        expected_filename = "Test_Competition_3_Heats.pdf"
+        assert (
+            response.headers["Content-Disposition"]
+            == f"attachment; filename={expected_filename}"
+        )
+
+
+
+@pytest.mark.asyncio
 async def test_heat_results_pdf_success(
     mock_db_session: Session, mock_competition: MagicMock, mock_heat: MagicMock
 ) -> None:
