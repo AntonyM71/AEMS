@@ -275,16 +275,25 @@ const AddHeat = ({
 				console.error("Error adding heat:", error)
 			}
 		} else {
-			HandlePostResponse(
-				await updateExistingHeat({
-					id: existingHeatData.id ?? "",
-					heatUpdate: {
-						name: heatName,
-						competition_id: competitionId
-					}
-				})
-			)
-			await refetch()
+			try {
+				if (!existingHeatData.id) {
+					throw new Error(
+						`Cannot update heat without ID. Heat data: ${JSON.stringify(existingHeatData)}`
+					)
+				}
+				HandlePostResponse(
+					await updateExistingHeat({
+						id: existingHeatData.id,
+						heatUpdate: {
+							name: heatName,
+							competition_id: competitionId
+						}
+					})
+				)
+				await refetch()
+			} catch (error) {
+				console.error("Error updating heat:", error)
+			}
 		}
 	}
 

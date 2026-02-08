@@ -337,16 +337,6 @@ const injectedRtkApi = api.injectEndpoints({
 				body: queryArg.heats
 			})
 		}),
-		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
-			PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse,
-			PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/heat/${queryArg.id}`,
-				method: "PATCH",
-				body: queryArg.heatUpdate
-			})
-		}),
 		getOneByPrimaryKeyHeatIdGet: build.query<
 			GetOneByPrimaryKeyHeatIdGetApiResponse,
 			GetOneByPrimaryKeyHeatIdGetApiArg
@@ -359,6 +349,16 @@ const injectedRtkApi = api.injectEndpoints({
 					name____list: queryArg.nameList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
+			})
+		}),
+		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse,
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg
+		>({
+			query: (queryArg) => ({
+				url: `/heat/${queryArg.id}`,
+				method: "PATCH",
+				body: queryArg.heatUpdate
 			})
 		}),
 		insertManyAthletePost: build.mutation<
@@ -798,12 +798,6 @@ export type InsertManyHeatPostApiResponse =
 export type InsertManyHeatPostApiArg = {
 	heats: HeatCreate[]
 }
-export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
-	/** status 200 Successful Response */ HeatResponse
-export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
-	id: string
-	heatUpdate: HeatUpdate
-}
 export type GetOneByPrimaryKeyHeatIdGetApiResponse =
 	/** status 200 Successful Response */ HeatResponse
 export type GetOneByPrimaryKeyHeatIdGetApiArg = {
@@ -812,6 +806,12 @@ export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	nameStr?: string[]
 	nameList?: string[]
 	joinForeignTable?: string[]
+}
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
+	/** status 200 Successful Response */ HeatResponse
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
+	id: string
+	heatUpdate: HeatUpdate
 }
 export type InsertManyAthletePostApiResponse =
 	/** status 201 Successful Response */ AthleteResponse[]
@@ -1275,8 +1275,8 @@ export const {
 	useInsertManyPhasePostMutation,
 	useGetManyHeatGetQuery,
 	useInsertManyHeatPostMutation,
-	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
+	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation,
 	useInsertManyAthletePostMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation,
 	useGetManyScoresheetGetQuery,
