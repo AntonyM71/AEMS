@@ -259,7 +259,7 @@ const AddPhase = ({
 		if (!existingPhaseData) {
 			HandlePostResponse(
 				await postNewPhase({
-					insert: [
+					phases: [
 						{
 							name: phaseName,
 							id: uuid4(),
@@ -277,7 +277,7 @@ const AddPhase = ({
 			HandlePostResponse(
 				await updateExistingPhase({
 					id: existingPhaseData.id ?? "",
-					bodyPartialUpdateOneByPrimaryKeyPhaseIdPatch: {
+					phaseUpdate: {
 						name: phaseName,
 						event_id: eventId,
 						number_of_runs: numberOfRuns,
