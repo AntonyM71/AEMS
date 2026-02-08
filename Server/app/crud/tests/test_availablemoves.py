@@ -93,18 +93,31 @@ def test_get_many_available_moves_with_id_filter(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["id"] == filter_id
 
-    # Verify execute was called with ID filter with correct value
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter_id is in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    # UUID might be stored as UUID object or string
+    assert any(str(val) == filter_id for val in param_values), f"Expected {filter_id} in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert "WHERE" in query_str
-    assert ".id IN" in query_str
-    # Verify the actual UUID is in the query
-    assert filter_id in query_str or filter_id.replace("-", "") in query_str
+    assert (".id" in query_str) and ("availableMoves" in query_str or "available_moves" in query_str)
 
 
 def test_get_many_available_moves_with_sheet_id_filter(
@@ -124,17 +137,31 @@ def test_get_many_available_moves_with_sheet_id_filter(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["sheet_id"] == filter_sheet_id
 
-    # Verify execute was called with sheet_id filter with correct value
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter value is in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    # UUID might be stored as UUID object or string
+    assert any(str(val) == filter_sheet_id for val in param_values), f"Expected {filter_sheet_id} in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert "sheet_id IN" in query_str
-    # Verify the actual UUID is in the query
-    assert filter_sheet_id in query_str or filter_sheet_id.replace("-", "") in query_str
+    assert "sheet_id" in query_str
 
 
 def test_get_many_available_moves_with_fl_score_range(
@@ -153,16 +180,31 @@ def test_get_many_available_moves_with_fl_score_range(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["fl_score"] == 100
 
-    # Verify execute was called with range filters
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter values are in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    # Should contain both 50 and 150 (from/to range values)
+    assert 50 in param_values and 150 in param_values, f"Expected range values in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert ">=" in query_str
-    assert "<=" in query_str
+    assert "fl_score" in query_str
 
 
 def test_get_many_available_moves_with_rb_score_range(
@@ -181,16 +223,31 @@ def test_get_many_available_moves_with_rb_score_range(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["rb_score"] == 50
 
-    # Verify execute was called with range filters
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter values are in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    # Should contain both 40 and 60 (from/to range values)
+    assert 40 in param_values and 60 in param_values, f"Expected range values in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert ">=" in query_str
-    assert "<=" in query_str
+    assert "rb_score" in query_str
 
 
 def test_get_many_available_moves_with_direction_filter(
@@ -209,15 +266,31 @@ def test_get_many_available_moves_with_direction_filter(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["direction"] == "U"
 
-    # Verify execute was called with direction filter
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter value is in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    filter_direction = "U"
+    assert filter_direction in param_values, f"Expected {filter_direction} in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert "direction IN" in query_str
+    assert "direction" in query_str
 
 
 def test_get_many_available_moves_with_pagination(

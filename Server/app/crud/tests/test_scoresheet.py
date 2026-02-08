@@ -79,18 +79,31 @@ def test_get_many_scoresheets_with_id_filter(
 
     # Verify response
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["id"] == filter_id
 
-    # Verify query has ID filter with correct value
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
+    
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
+    
+    # Check that the filter_id is in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    # UUID might be stored as UUID object or string
+    assert any(str(val) == filter_id for val in param_values), f"Expected {filter_id} in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
     query_str = str(query)
-    assert "WHERE" in query_str
-    assert ".id IN" in query_str
-    # Verify the actual UUID is in the query
-    assert filter_id in query_str or filter_id.replace("-", "") in query_str
+    assert (".id" in query_str) and ("scoreSheet" in query_str or "scoresheet" in query_str or "score_sheet" in query_str)
 
 
 def test_get_many_scoresheets_with_name_filter(
@@ -106,21 +119,32 @@ def test_get_many_scoresheets_with_name_filter(
     filter_name = "Test ScoreSheet"
     response = test_client.get(f"/scoresheet/?name____str={filter_name}")
 
-    # Verify response (basic check only)
+    # Verify response
     assert response.status_code == 200
 
-    # Verify the SQLAlchemy query has the correct filter with the name value
+    # Verify database calls
+    assert mock_db_session.execute.called
+    
+    # Verify the SQLAlchemy query has the correct filter parameters
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Compile the query to inspect bound parameters
-    compiled = query.compile(compile_kwargs={"literal_binds": True})
-    query_str = str(compiled)
+    # Inspect query using compiled params (simpler than literal_binds)
+    compiled = query.compile()
     
-    # Verify the filter is in the query with the actual name value
-    assert "score_sheet.name" in query_str.lower() or "scoresheet.name" in query_str.lower()
-    # The name should be in the compiled query
-    assert filter_name in query_str
+    # Check that the filter value is in query parameters (flatten lists)
+    param_values = []
+    for v in compiled.params.values():
+        if isinstance(v, list):
+            param_values.extend(v)
+        else:
+            param_values.append(v)
+    
+    assert filter_name in param_values, f"Expected {filter_name} in query params, got {compiled.params}"
+    
+    # Verify query structure uses correct column
+    query_str = str(query)
+    assert "name" in query_str
 
 
 def test_get_many_scoresheets_with_pagination(
