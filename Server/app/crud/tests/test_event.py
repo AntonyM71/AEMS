@@ -91,23 +91,15 @@ def test_get_many_events_with_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter_id is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
     
-    # UUID might be stored as UUID object or string
-    assert any(str(val) == filter_id for val in param_values), f"Expected {filter_id} in query params, got {compiled.params}"
-    
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert ("Event" in query_str and ".id" in query_str) or ("event" in query_str and ".id" in query_str)
+    # Verify the actual filter value is correct
+    filter_values = whereclause.right.value
+    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
 
 
 def test_get_many_events_with_competition_id_filter(
@@ -133,23 +125,15 @@ def test_get_many_events_with_competition_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter value is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".competition_id"), f"Expected filtering on .competition_id column, got {whereclause.left}"
     
-    # UUID might be stored as UUID object or string
-    assert any(str(val) == filter_competition_id for val in param_values), f"Expected {filter_competition_id} in query params, got {compiled.params}"
-    
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert "competition_id" in query_str
+    # Verify the actual filter value is correct
+    filter_values = whereclause.right.value
+    assert any(str(val) == filter_competition_id for val in filter_values), f"Expected {filter_competition_id} in filter values, got {filter_values}"
 
 
 def test_get_many_events_with_name_filter(
@@ -174,23 +158,16 @@ def test_get_many_events_with_name_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter value is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
     
+    # Verify the actual filter value is correct
     filter_name = "Test Event"
-    assert filter_name in param_values, f"Expected {filter_name} in query params, got {compiled.params}"
-    
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert "name" in query_str
+    filter_values = whereclause.right.value
+    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
 
 
 def test_get_many_events_with_pagination(
@@ -333,24 +310,23 @@ def test_get_one_event_with_competition_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter value is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
-    
+    # For get_one with filters, we have compound clauses (id AND competition_id)
+    # whereclause is a BooleanClauseList containing multiple filter clauses
     filter_competition_id = str(mock_event.competition_id)
-    # UUID might be stored as UUID object or string
-    assert any(str(val) == filter_competition_id for val in param_values), f"Expected {filter_competition_id} in query params, got {compiled.params}"
     
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert "competition_id" in query_str
+    # Find the competition_id filter in the compound clause
+    found_competition_id_filter = False
+    for clause in whereclause.clauses:
+        if str(clause.left).endswith(".competition_id"):
+            found_competition_id_filter = True
+            filter_values = clause.right.value
+            assert any(str(val) == filter_competition_id for val in filter_values), f"Expected {filter_competition_id} in filter values, got {filter_values}"
+            break
+    
+    assert found_competition_id_filter, "Expected to find competition_id filter in compound WHERE clause"
 
 
 def test_get_many_with_foreign_tree(

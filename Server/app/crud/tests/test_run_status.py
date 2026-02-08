@@ -105,24 +105,16 @@ def test_get_many_run_statuses_with_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using whereclause and compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter_id is in the query parameters
-    # Parameters might be nested in lists, so flatten and check
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
     
-    assert filter_id in param_values, f"Expected {filter_id} in query params, got {compiled.params}"
-    
-    # Also verify the query structure uses the correct column
-    query_str = str(query)
-    # Handle both quoted and unquoted, camelCase and snake_case
-    assert ("runStatus" in query_str and ".id" in query_str) or ("run_status" in query_str and ".id" in query_str)
+    # Verify the actual filter value is correct
+    # The right side contains the value(s) being filtered for
+    filter_values = whereclause.right.value
+    assert filter_id in filter_values, f"Expected {filter_id} in filter values, got {filter_values}"
 
 
 def test_get_many_run_statuses_with_heat_id_filter(
@@ -148,20 +140,15 @@ def test_get_many_run_statuses_with_heat_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Check query params contain the filter value
-    compiled = query.compile()
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    assert filter_heat_id in param_values, f"Expected {filter_heat_id} in query params, got {compiled.params}"
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".heat_id"), f"Expected filtering on .heat_id column, got {whereclause.left}"
     
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert ("runStatus" in query_str and ".heat_id" in query_str) or ("run_status" in query_str and ".heat_id" in query_str)
+    # Verify the actual filter value is correct
+    filter_values = whereclause.right.value
+    assert filter_heat_id in filter_values, f"Expected {filter_heat_id} in filter values, got {filter_values}"
 
 
 def test_get_many_run_statuses_with_run_number_range(

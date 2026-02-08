@@ -87,23 +87,15 @@ def test_get_many_scoresheets_with_id_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter_id is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
     
-    # UUID might be stored as UUID object or string
-    assert any(str(val) == filter_id for val in param_values), f"Expected {filter_id} in query params, got {compiled.params}"
-    
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert (".id" in query_str) and ("scoreSheet" in query_str or "scoresheet" in query_str or "score_sheet" in query_str)
+    # Verify the actual filter value is correct
+    filter_values = whereclause.right.value
+    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
 
 
 def test_get_many_scoresheets_with_name_filter(
@@ -129,22 +121,16 @@ def test_get_many_scoresheets_with_name_filter(
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect query using compiled params (simpler than literal_binds)
-    compiled = query.compile()
+    # Inspect the query's whereclause directly (no compilation needed)
+    whereclause = query.whereclause
     
-    # Check that the filter value is in query parameters (flatten lists)
-    param_values = []
-    for v in compiled.params.values():
-        if isinstance(v, list):
-            param_values.extend(v)
-        else:
-            param_values.append(v)
+    # Verify the correct column is being filtered
+    assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
     
-    assert filter_name in param_values, f"Expected {filter_name} in query params, got {compiled.params}"
-    
-    # Verify query structure uses correct column
-    query_str = str(query)
-    assert "name" in query_str
+    # Verify the actual filter value is correct
+    filter_name = "Test ScoreSheet"
+    filter_values = whereclause.right.value
+    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
 
 
 def test_get_many_scoresheets_with_pagination(
