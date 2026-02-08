@@ -1,10 +1,15 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { rest } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import HeatSelector from "../HeatSelector"
+
+interface HeatUpdateBody {
+	name?: string
+	competition_id?: string
+}
 
 describe("HeatSelector", () => {
 	// Temporarily commenting out other tests to focus on fixing the error test
@@ -236,6 +241,101 @@ describe("HeatSelector", () => {
 		})
 		await waitFor(() => {
 			expect(refetchCalled).toBe(true)
+		})
+	})
+
+	it("allows editing an existing heat name", async () => {
+		const user = userEvent.setup()
+		let patchRequestReceived = false
+
+		const mockHeats = [
+			{ id: "heat-1", name: "Heat 1", competition_id: "comp1" },
+			{ id: "heat-2", name: "Heat 2", competition_id: "comp1" }
+		]
+
+		// Mock the GET and PATCH endpoints
+		server.use(
+			rest.get("/api/heat", (_req, res, ctx) =>
+				res(ctx.json(mockHeats))
+			),
+			rest.get("/api/heat/:id", (req, res, ctx) =>
+				res(ctx.json(mockHeats.find((h) => h.id === req.params.id)))
+			),
+			rest.get("/api/competition", (_req, res, ctx) =>
+				res(
+					ctx.json([
+						{ id: "comp1", name: "Competition 1" },
+						{ id: "comp2", name: "Competition 2" }
+					])
+				)
+			),
+			rest.patch("/api/heat/:id", async (req, res, ctx) => {
+				const body = await req.json()
+				patchRequestReceived = true
+				expect(body).toMatchObject({
+					name: "Updated Heat 1"
+				})
+
+				return res(
+					ctx.json({
+						id: req.params.id,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+						name: body.name,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+						competition_id: body.competition_id || "comp1"
+					})
+				)
+			})
+		)
+
+		const store = setupStore({
+			competitions: {
+				selectedCompetition: "comp1",
+				selectedEvent: "",
+				selectedPhase: "",
+				selectedHeat: "heat-1",
+				numberOfRuns: 2
+			}
+		})
+
+		render(
+			<Provider store={store}>
+				<HeatSelector showDetailed={true} />
+			</Provider>
+		)
+
+		// Wait for component to load
+		await screen.findByText("Select a Heat")
+
+		// Click edit button
+		const editButton = screen.getByLabelText("edit heat")
+		await user.click(editButton)
+
+		// Wait for dialog to open and load heat data
+		const dialog = await screen.findByRole("dialog")
+		expect(dialog).toBeInTheDocument()
+		expect(
+			within(dialog).getByTestId("edit-heat-dialog-title")
+		).toHaveTextContent("Edit Heat")
+
+		// Verify existing heat data is loaded
+		const nameInput = within(dialog).getByRole("textbox", {
+			name: /new heat/i
+		})
+		expect(nameInput).toHaveValue("Heat 1")
+
+		// Edit heat name
+		await user.clear(nameInput)
+		await user.type(nameInput, "Updated Heat 1")
+
+		// Submit changes
+		const submitButton = within(dialog).getByTestId("add-heat-button")
+		expect(submitButton).toHaveTextContent("Update Heat")
+		await user.click(submitButton)
+
+		// Verify the PATCH request was made
+		await waitFor(() => {
+			expect(patchRequestReceived).toBe(true)
 		})
 	})
 })

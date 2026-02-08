@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,6 +9,7 @@ from app.crud.schemas import (
     CompetitionNested,
     HeatCreate,
     HeatResponse,
+    HeatUpdate,
 )
 from db.client import get_transaction_session
 from db.models import Heat
@@ -20,16 +20,16 @@ heat_router = APIRouter(prefix="/heat", tags=["heat"])
 @heat_router.get("/", response_model=list[HeatResponse])
 async def get_many(
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    competition_id____list: Optional[list[UUID]] = Query(
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    limit: Optional[int] = Query(None),
-    offset: Optional[int] = Query(None),
-    order_by_columns: Optional[list[str]] = Query(None),
-    join_foreign_table: Optional[list[str]] = Query(None),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
+    join_foreign_table: list[str] | None = Query(None),
 ) -> list[HeatResponse]:
     """Get many heats"""
     query = select(Heat)
@@ -102,12 +102,12 @@ async def get_many(
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    competition_id____list: Optional[list[UUID]] = Query(
+    competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    join_foreign_table: Optional[list[str]] = Query(None),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    join_foreign_table: list[str] | None = Query(None),
 ) -> HeatResponse:
     """Get one heat by primary key"""
     query = select(Heat).where(Heat.id == id)
@@ -149,6 +149,31 @@ async def get_one_by_primary_key(
             ]
 
     return HeatResponse(**response_data)
+
+
+@heat_router.patch("/{id}", response_model=HeatResponse)
+async def partial_update_one_by_primary_key(
+    id: UUID,
+    heat_update: HeatUpdate,
+    db: Session = Depends(get_transaction_session),
+) -> HeatResponse:
+    """Partial update one heat by primary key"""
+    query = select(Heat).where(Heat.id == id)
+
+    result = db.execute(query)
+    heat = result.scalar_one_or_none()
+
+    if not heat:
+        raise HTTPException(status_code=404, detail="Heat not found")
+
+    # Update only provided fields
+    update_data = heat_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(heat, field, value)
+
+    db.commit()
+    db.refresh(heat)
+    return HeatResponse.from_orm(heat)
 
 
 @heat_router.post("/", response_model=list[HeatResponse], status_code=201)
