@@ -83,17 +83,20 @@ def test_get_many_scoresheets_with_id_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
-    # Verify the correct column is being filtered
+    # Assert we're filtering on the correct column
     assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
     
-    # Verify the actual filter value is correct
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
     assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
 
@@ -117,17 +120,20 @@ def test_get_many_scoresheets_with_name_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
-    # Verify the correct column is being filtered
+    # Assert we're filtering on the correct column
     assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
     
-    # Verify the actual filter value is correct
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
     filter_name = "Test ScoreSheet"
     filter_values = whereclause.right.value
     assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"

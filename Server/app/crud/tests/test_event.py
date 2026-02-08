@@ -87,17 +87,20 @@ def test_get_many_events_with_id_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
-    # Verify the correct column is being filtered
+    # Assert we're filtering on the correct column
     assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
     
-    # Verify the actual filter value is correct
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
     assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
 
@@ -121,17 +124,20 @@ def test_get_many_events_with_competition_id_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
-    # Verify the correct column is being filtered
+    # Assert we're filtering on the correct column
     assert str(whereclause.left).endswith(".competition_id"), f"Expected filtering on .competition_id column, got {whereclause.left}"
     
-    # Verify the actual filter value is correct
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
     assert any(str(val) == filter_competition_id for val in filter_values), f"Expected {filter_competition_id} in filter values, got {filter_values}"
 
@@ -154,20 +160,22 @@ def test_get_many_events_with_name_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
-    # Verify the correct column is being filtered
+    # Assert we're filtering on the correct column
     assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
     
-    # Verify the actual filter value is correct
+    # Assert we're using the correct operator (eq for == filters)
+    assert whereclause.operator.__name__ == "eq", f"Expected eq operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
     filter_name = "Test Event"
-    filter_values = whereclause.right.value
-    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
+    assert whereclause.right.value == filter_name, f"Expected {filter_name} in filter value, got {whereclause.right.value}"
 
 
 def test_get_many_events_with_pagination(
@@ -306,11 +314,11 @@ def test_get_one_event_with_competition_id_filter(
     # Verify database calls
     assert mock_db_session.execute.called
     
-    # Verify the SQLAlchemy query has the correct filter parameters
+    # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     
-    # Inspect the query's whereclause directly (no compilation needed)
+    # Verify the whereclause properties without compiling
     whereclause = query.whereclause
     
     # For get_one with filters, we have compound clauses (id AND competition_id)
@@ -322,6 +330,9 @@ def test_get_one_event_with_competition_id_filter(
     for clause in whereclause.clauses:
         if str(clause.left).endswith(".competition_id"):
             found_competition_id_filter = True
+            # Assert we're using the correct operator (in_op for IN filters)
+            assert clause.operator.__name__ == "in_op", f"Expected in_op operator, got {clause.operator.__name__}"
+            # Assert the actual filter value matches what we sent in the request
             filter_values = clause.right.value
             assert any(str(val) == filter_competition_id for val in filter_values), f"Expected {filter_competition_id} in filter values, got {filter_values}"
             break

@@ -78,9 +78,8 @@ def test_get_many_available_bonuses_with_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with id filter
-    response = test_client.get(
-        f"/availablebonuses/?id____list={str(mock_available_bonuses.id)}"
-    )
+    filter_id = str(mock_available_bonuses.id)
+    response = test_client.get(f"/availablebonuses/?id____list={filter_id}")
 
     # Verify response
     assert response.status_code == 200
@@ -88,8 +87,22 @@ def test_get_many_available_bonuses_with_id_filter(
     assert len(data) == 1
     assert data[0]["id"] == str(mock_available_bonuses.id)
 
-    # Verify execute was called
-    assert mock_db_session.execute.called
+    # Assert on the query object's properties directly
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    
+    # Verify the whereclause properties without compiling
+    whereclause = query.whereclause
+    
+    # Assert we're filtering on the correct column
+    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
+    
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
+    filter_values = whereclause.right.value
+    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
 
 
 def test_get_many_available_bonuses_with_sheet_id_filter(
@@ -104,9 +117,8 @@ def test_get_many_available_bonuses_with_sheet_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with sheet_id filter
-    response = test_client.get(
-        f"/availablebonuses/?sheet_id____list={str(mock_available_bonuses.sheet_id)}"
-    )
+    filter_sheet_id = str(mock_available_bonuses.sheet_id)
+    response = test_client.get(f"/availablebonuses/?sheet_id____list={filter_sheet_id}")
 
     # Verify response
     assert response.status_code == 200
@@ -114,8 +126,22 @@ def test_get_many_available_bonuses_with_sheet_id_filter(
     assert len(data) == 1
     assert data[0]["sheet_id"] == str(mock_available_bonuses.sheet_id)
 
-    # Verify execute was called
-    assert mock_db_session.execute.called
+    # Assert on the query object's properties directly
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    
+    # Verify the whereclause properties without compiling
+    whereclause = query.whereclause
+    
+    # Assert we're filtering on the correct column
+    assert str(whereclause.left).endswith(".sheet_id"), f"Expected filtering on .sheet_id column, got {whereclause.left}"
+    
+    # Assert we're using the correct operator (in_op for IN filters)
+    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
+    
+    # Assert the actual filter value matches what we sent in the request
+    filter_values = whereclause.right.value
+    assert any(str(val) == filter_sheet_id for val in filter_values), f"Expected {filter_sheet_id} in filter values, got {filter_values}"
 
 
 def test_get_many_available_bonuses_with_score_range(
@@ -138,8 +164,38 @@ def test_get_many_available_bonuses_with_score_range(
     assert len(data) == 1
     assert data[0]["score"] == mock_available_bonuses.score
 
-    # Verify execute was called
-    assert mock_db_session.execute.called
+    # Assert on the query object's properties directly
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    
+    # Verify the whereclause properties without compiling
+    whereclause = query.whereclause
+    
+    # For range filters, we have compound clauses
+    # Find the score filter in the clause(s)
+    found_score_from = False
+    found_score_to = False
+    
+    # Check if it's a single clause or compound
+    if hasattr(whereclause, 'clauses'):
+        for clause in whereclause.clauses:
+            if str(clause.left).endswith(".score"):
+                # Check for >= (ge) operator for score____from
+                if clause.operator.__name__ == "ge":
+                    found_score_from = True
+                    # Assert the actual filter value matches what we sent in the request (5)
+                    assert clause.right.value == 5, f"Expected 5 for score____from, got {clause.right.value}"
+                # Check for <= (le) operator for score____to
+                elif clause.operator.__name__ == "le":
+                    found_score_to = True
+                    # Assert the actual filter value matches what we sent in the request (15)
+                    assert clause.right.value == 15, f"Expected 15 for score____to, got {clause.right.value}"
+    else:
+        if str(whereclause.left).endswith(".score"):
+            found_score_from = True
+    
+    assert found_score_from, "Expected to find score____from (>=) filter in WHERE clause"
+    assert found_score_to, "Expected to find score____to (<=) filter in WHERE clause"
 
 
 def test_get_many_available_bonuses_with_pagination(
