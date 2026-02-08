@@ -7,4 +7,8 @@ ENV PATH="/workspaces/AEMS/Server/.venv/bin:$PATH"
 # RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
 #    && rm -rf /tmp/pip-tmp
 # [Optional] Uncomment this section to install additional OS packages.
-RUN apt-get update
+# RUN set -e \
+# 	&& apt-get update \
+# 	&& apt-get install -y --no-install-recommends curl ca-certificates \
+# 	&& apt-get clean \
+# 	&& rm -rf /var/lib/apt/lists/*
