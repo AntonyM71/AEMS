@@ -91,9 +91,8 @@ def test_get_many_run_statuses_with_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with id filter
-    response = test_client.get(
-        f"/run_status/?id____list={str(mock_run_status.id)}"
-    )
+    filter_id = str(mock_run_status.id)
+    response = test_client.get(f"/run_status/?id____list={filter_id}")
 
     # Verify response
     assert response.status_code == 200
@@ -113,12 +112,14 @@ def test_get_many_run_statuses_with_id_filter(
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
     
-    # Verify the query contains the id filter
+    # Verify the query contains the id filter with the correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "WHERE" in query_str
     assert "runStatus.id IN" in query_str or "run_status.id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_id in query_str or filter_id.replace("-", "") in query_str
 
 
 def test_get_many_run_statuses_with_heat_id_filter(
@@ -131,9 +132,8 @@ def test_get_many_run_statuses_with_heat_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with heat_id filter
-    response = test_client.get(
-        f"/run_status/?heat_id____list={str(mock_run_status.heat_id)}"
-    )
+    filter_heat_id = str(mock_run_status.heat_id)
+    response = test_client.get(f"/run_status/?heat_id____list={filter_heat_id}")
 
     # Verify exact response
     assert response.status_code == 200
@@ -151,6 +151,15 @@ def test_get_many_run_statuses_with_heat_id_filter(
 
     # Verify execute was called
     assert mock_db_session.execute.called
+    
+    # Verify the query contains heat_id filter with correct value
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "WHERE" in query_str
+    assert "heat_id IN" in query_str
+    # Verify the actual heat_id UUID is in the query
+    assert filter_heat_id in query_str or filter_heat_id.replace("-", "") in query_str
 
 
 def test_get_many_run_statuses_with_run_number_range(

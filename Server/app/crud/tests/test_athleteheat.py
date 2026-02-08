@@ -73,6 +73,13 @@ def test_post_insert_many_athlete_heats(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
+    
+    # Verify the add() was called with AthleteHeat object with ALL correct attributes
+    add_call_args = mock_db_session.add.call_args
+    added_athlete_heat = add_call_args[0][0]
+    assert str(added_athlete_heat.athlete_id) == "22222222-2222-2222-2222-222222222222"
+    assert str(added_athlete_heat.heat_id) == "33333333-3333-3333-3333-333333333333"
+    assert str(added_athlete_heat.phase_id) == "44444444-4444-4444-4444-444444444444"
 
 
 def test_post_insert_multiple_athlete_heats(

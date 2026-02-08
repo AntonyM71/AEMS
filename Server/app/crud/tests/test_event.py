@@ -78,20 +78,23 @@ def test_get_many_events_with_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with id filter
-    response = test_client.get(f"/event/?id____list={str(mock_event.id)}")
+    filter_id = str(mock_event.id)
+    response = test_client.get(f"/event/?id____list={filter_id}")
 
     # Verify response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_event.id)
+    assert data[0]["id"] == filter_id
 
-    # Verify query has ID filter
+    # Verify query has ID filter with correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "WHERE" in query_str
     assert ".id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_id in query_str or filter_id.replace("-", "") in query_str
 
 
 def test_get_many_events_with_competition_id_filter(
@@ -104,21 +107,22 @@ def test_get_many_events_with_competition_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with competition_id filter
-    response = test_client.get(
-        f"/event/?competition_id____list={str(mock_event.competition_id)}"
-    )
+    filter_competition_id = str(mock_event.competition_id)
+    response = test_client.get(f"/event/?competition_id____list={filter_competition_id}")
 
     # Verify response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["competition_id"] == str(mock_event.competition_id)
+    assert data[0]["competition_id"] == filter_competition_id
 
-    # Verify query has competition_id filter
+    # Verify query has competition_id filter with correct value
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     query_str = str(query)
     assert "competition_id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_competition_id in query_str or filter_competition_id.replace("-", "") in query_str
 
 
 def test_get_many_events_with_name_filter(
@@ -372,8 +376,9 @@ def test_post_insert_many_events(
     assert mock_db_session.add.called
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
+    assert mock_db_session.commit.call_count == 1
     
-    # Verify the add() was called with Event object with correct attributes
+    # Verify the add() was called with Event object with ALL correct attributes
     add_call_args = mock_db_session.add.call_args
     added_event = add_call_args[0][0]
     assert added_event.name == "New Event"

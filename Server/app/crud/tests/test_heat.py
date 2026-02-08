@@ -74,16 +74,26 @@ def test_get_many_heats_with_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with id filter
-    response = test_client.get(f"/heat/?id____list={str(mock_heat.id)}")
+    filter_id = str(mock_heat.id)
+    response = test_client.get(f"/heat/?id____list={filter_id}")
 
     # Verify exact response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_heat.id)
+    assert data[0]["id"] == filter_id
 
     # Verify database calls
     assert mock_db_session.execute.called
+    
+    # Verify the query contains the id filter with the correct value
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "WHERE" in query_str
+    assert ".id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_id in query_str or filter_id.replace("-", "") in query_str
 
 
 def test_get_many_heats_with_competition_id_filter(
@@ -96,18 +106,25 @@ def test_get_many_heats_with_competition_id_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with competition_id filter
-    response = test_client.get(
-        f"/heat/?competition_id____list={str(mock_heat.competition_id)}"
-    )
+    filter_competition_id = str(mock_heat.competition_id)
+    response = test_client.get(f"/heat/?competition_id____list={filter_competition_id}")
 
     # Verify exact response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["competition_id"] == str(mock_heat.competition_id)
+    assert data[0]["competition_id"] == filter_competition_id
 
     # Verify database calls
     assert mock_db_session.execute.called
+    
+    # Verify the query contains competition_id filter with correct value
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "competition_id IN" in query_str
+    # Verify the actual UUID is in the query
+    assert filter_competition_id in query_str or filter_competition_id.replace("-", "") in query_str
 
 
 def test_get_many_heats_with_name_str_filter(
@@ -120,16 +137,25 @@ def test_get_many_heats_with_name_str_filter(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with name____str filter
-    response = test_client.get(f"/heat/?name____str={mock_heat.name}")
+    filter_name = mock_heat.name
+    response = test_client.get(f"/heat/?name____str={filter_name}")
 
     # Verify exact response
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["name"] == mock_heat.name
+    assert data[0]["name"] == filter_name
 
     # Verify database calls
     assert mock_db_session.execute.called
+    
+    # Verify the query contains name filter with correct value
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "name IN" in query_str
+    # Verify the actual name is in the query
+    assert filter_name in query_str
 
 
 def test_get_many_heats_with_name_list_filter(
@@ -349,3 +375,9 @@ def test_post_insert_many_heats(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
+    
+    # Verify the add() was called with Heat object with ALL correct attributes
+    add_call_args = mock_db_session.add.call_args
+    added_heat = add_call_args[0][0]
+    assert str(added_heat.competition_id) == "22222222-2222-2222-2222-222222222222"
+    assert added_heat.name == "New Heat"
