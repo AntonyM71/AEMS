@@ -371,11 +371,14 @@ export const AddAthletesToHeat = (props: {
 	const [lastPhaseRank, setLastPhaseRank] = useState<number | undefined>(
 		undefined
 	)
-	const { data, isSuccess } = useGetManyEventGetQuery({
-		competitionIdList: [selectedCompetition],
-		competitionIdListComparisonOperator: "Equal",
-		joinForeignTable: ["phase"]
-	})
+	const { data, isSuccess } = useGetManyEventGetQuery(
+		{
+			competitionIdList: [selectedCompetition],
+			competitionIdListComparisonOperator: "Equal",
+			joinForeignTable: ["phase"]
+		},
+		{ refetchOnMountOrArgChange: true }
+	)
 	const { data: heatData, isSuccess: heatIsSuccess } = useGetManyHeatGetQuery(
 		{
 			competitionIdList: [selectedCompetition]

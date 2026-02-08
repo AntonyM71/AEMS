@@ -58,7 +58,7 @@ const PhasesSelector = ({
 				eventPkId: selectedEvent,
 				joinForeignTable: ["event"]
 			},
-			{ skip: !selectedEvent }
+			{ skip: !selectedEvent, refetchOnMountOrArgChange: true }
 		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
