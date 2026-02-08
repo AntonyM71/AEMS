@@ -34,7 +34,8 @@ export const CompetitionSelector = ({
 	const dispatch = useDispatch()
 
 	const { data, isLoading, error, refetch } = useGetManyCompetitionGetQuery(
-		{}
+		{},
+		{ refetchOnMountOrArgChange: true }
 	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 

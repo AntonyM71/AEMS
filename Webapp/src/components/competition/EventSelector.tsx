@@ -47,7 +47,7 @@ const EventSelector = ({
 				competitionPkId: selectedCompetition,
 				joinForeignTable: ["competition"]
 			},
-			{ skip: !selectedCompetition }
+			{ skip: !selectedCompetition, refetchOnMountOrArgChange: true }
 		)
 
 	const onSelect = (event: SelectChangeEvent<string>) => {
