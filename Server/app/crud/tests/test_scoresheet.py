@@ -55,15 +55,17 @@ def test_get_many_scoresheets_no_filters(
     # Verify SQLAlchemy call
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
-    
-    # Verify query structure
+
+    # Verify query structure without relying on SQL stringification
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    query_str = str(query)
-    assert "SELECT" in query_str
-    assert "scoreSheet" in query_str or "score_sheet" in query_str
 
+    # Ensure the query selects from the ScoreSheet entity
+    column_entities = {desc.get("entity") for desc in getattr(query, "column_descriptions", [])}
+    assert ScoreSheet in column_entities
 
+    # For the no-filter case, there should be no WHERE clause
+    assert getattr(query, "whereclause", None) is None
 def test_get_many_scoresheets_with_id_filter(
     test_client: TestClient, mock_db_session: Session, mock_scoresheet: ScoreSheet
 ) -> None:
