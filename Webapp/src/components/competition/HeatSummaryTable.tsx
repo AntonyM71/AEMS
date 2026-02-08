@@ -29,7 +29,7 @@ import {
 	getSelectedHeat
 } from "../../redux/atoms/competitions"
 import {
-	useDeleteManyByQueryScoredmovesDeleteMutation,
+	useDeleteManyScoredmovesDeleteMutation,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyEventGetQuery,
 	useGetManyHeatGetQuery,
@@ -371,15 +371,17 @@ export const AddAthletesToHeat = (props: {
 	const [lastPhaseRank, setLastPhaseRank] = useState<number | undefined>(
 		undefined
 	)
-	const { data, isSuccess } = useGetManyEventGetQuery({
-		competitionIdList: [selectedCompetition],
-		competitionIdListComparisonOperator: "Equal",
-		joinForeignTable: ["phase"]
-	})
-	const { data: heatData, isSuccess: heatIsSuccess } = useGetManyHeatGetQuery(
+	const { data, isSuccess } = useGetManyEventGetQuery(
 		{
 			competitionIdList: [selectedCompetition],
-			competitionIdListComparisonOperator: "Equal"
+			competitionIdListComparisonOperator: "Equal",
+			joinForeignTable: ["phase"]
+		},
+		{ refetchOnMountOrArgChange: true }
+	)
+	const { data: heatData, isSuccess: heatIsSuccess } = useGetManyHeatGetQuery(
+		{
+			competitionIdList: [selectedCompetition]
 		}
 	)
 	const onSelectPhase = (event: SelectChangeEvent<string>) => {
@@ -395,7 +397,7 @@ export const AddAthletesToHeat = (props: {
 		usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation()
 	const [updateAthleteHeat] =
 		usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation()
-	const [deleteOldMoves] = useDeleteManyByQueryScoredmovesDeleteMutation()
+	const [deleteOldMoves] = useDeleteManyScoredmovesDeleteMutation()
 	// eslint-disable-next-line complexity
 	const handleNewPaddlerSubmit = async () => {
 		if (athleteFirstName && athleteLastName && bibNumber) {
@@ -405,7 +407,7 @@ export const AddAthletesToHeat = (props: {
 				HandlePostResponse(
 					await updateAthlete({
 						id: athleteId,
-						bodyPartialUpdateOneByPrimaryKeyAthleteIdPatch: {
+						athleteUpdate: {
 							first_name: athleteFirstName,
 							last_name: athleteLastName,
 							bib: bibNumber.toString(),
@@ -418,7 +420,7 @@ export const AddAthletesToHeat = (props: {
 				HandlePostResponse(
 					await updateAthleteHeat({
 						id: athleteHeatId,
-						bodyPartialUpdateOneByPrimaryKeyAthleteheatIdPatch: {
+						athleteHeatUpdate: {
 							heat_id: newHeat,
 							athlete_id: athleteId,
 							phase_id: selectedPhase,
@@ -434,16 +436,14 @@ export const AddAthletesToHeat = (props: {
 					HandlePostResponse(
 						await deleteOldMoves({
 							heatIdList: [selectedHeat],
-							heatIdListComparisonOperator: "Equal",
-							athleteIdList: [athleteId],
-							athleteIdListComparisonOperator: "Equal"
+							athleteIdList: [athleteId]
 						})
 					)
 				}
 			} else {
 				HandlePostResponse(
 					await makeAthlete({
-						insert: [
+						athletes: [
 							{
 								id: athleteId,
 								first_name: athleteFirstName,
@@ -457,7 +457,7 @@ export const AddAthletesToHeat = (props: {
 				)
 				HandlePostResponse(
 					await makeAthleteHeat({
-						insert: [
+						athleteHeats: [
 							{
 								id: props.athlete_heat_id ?? v4(),
 								heat_id: newHeat,
