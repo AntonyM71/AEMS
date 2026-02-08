@@ -113,6 +113,29 @@ describe("calculateSingleJudgeRunScore", () => {
 			highestMove: 15
 		})
 	})
+	it("should calculate the run score with multiple moves with the same bonus", () => {
+		const multipleMovesSameBonus = [
+			{ id: "1", moveId: "move1", direction: "F" as directionType },
+			{ id: "2", moveId: "move1", direction: "F" as directionType }
+		]
+
+		const multipleMovesSameBonusBonuses = [
+			{ id: "bonus1", moveId: "1", bonusId: "bonus1" },
+			{ id: "bonus2", moveId: "2", bonusId: "bonus1" }
+		]
+
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			multipleMovesSameBonus,
+			multipleMovesSameBonusBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+
+		expect(result).toEqual({
+			score: 15,
+			highestMove: 15
+		})
+	})
 	it("should return zero score and highest move when inputs are empty", () => {
 		const result: RunScoreInfo = calculateSingleJudgeRunScore(
 			[],
