@@ -48,6 +48,13 @@ describe("calculateSingleJudgeRunScore", () => {
 			sheet_id: "test_sheet",
 			move_id: "move1",
 			score: 5
+		},
+		{
+			id: "bonus2",
+			name: "Bonus 2",
+			sheet_id: "test_sheet",
+			move_id: "move1",
+			score: 3
 		}
 	]
 
@@ -134,6 +141,35 @@ describe("calculateSingleJudgeRunScore", () => {
 		expect(result).toEqual({
 			score: 15,
 			highestMove: 15
+		})
+	})
+	it("should calculate the run score when first move has multiple bonuses and second has only one of those bonuses", () => {
+		// This test matches the scenario from #287:
+		// First move: Loop with Air + Huge bonuses
+		// Second move: Loop with Air bonus only
+		// Expected: Air bonus counted once (deduplicated), Huge bonus counted once
+		// Score: move1 base (10) + Air (5) + Huge (3) = 18
+		const firstMoveMultipleBonusesSecondMoveSingleBonus = [
+			{ id: "1", moveId: "move1", direction: "F" as directionType },
+			{ id: "2", moveId: "move1", direction: "F" as directionType }
+		]
+
+		const firstMoveMultipleBonusesSecondMoveSingleBonusBonuses = [
+			{ id: "bonus1", moveId: "1", bonusId: "bonus1" }, // Air on first move
+			{ id: "bonus2", moveId: "1", bonusId: "bonus2" }, // Huge on first move
+			{ id: "bonus3", moveId: "2", bonusId: "bonus1" }  // Air on second move (duplicate)
+		]
+
+		const result: RunScoreInfo = calculateSingleJudgeRunScore(
+			firstMoveMultipleBonusesSecondMoveSingleBonus,
+			firstMoveMultipleBonusesSecondMoveSingleBonusBonuses,
+			mockAvailableMoves,
+			mockAvailableBonuses
+		)
+
+		expect(result).toEqual({
+			score: 18,
+			highestMove: 18
 		})
 	})
 	it("should return zero score and highest move when inputs are empty", () => {
