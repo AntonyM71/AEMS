@@ -76,6 +76,14 @@ def test_post_insert_many_athletes(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
+    
+    # Verify the add() was called with an Athlete object with correct attributes
+    add_call_args = mock_db_session.add.call_args
+    added_athlete = add_call_args[0][0]  # First positional argument
+    assert added_athlete.first_name == "John"
+    assert added_athlete.last_name == "Doe"
+    assert added_athlete.affiliation == "Test Team"
+    assert added_athlete.bib == "123"
 
 
 def test_post_insert_multiple_athletes(
@@ -125,6 +133,19 @@ def test_post_insert_multiple_athletes(
     assert mock_db_session.add.call_count == 2
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
+    
+    # Verify the add() calls were made with correct athlete data
+    first_call = mock_db_session.add.call_args_list[0]
+    first_athlete = first_call[0][0]
+    assert first_athlete.first_name == "John"
+    assert first_athlete.last_name == "Doe"
+    assert first_athlete.bib == "123"
+    
+    second_call = mock_db_session.add.call_args_list[1]
+    second_athlete = second_call[0][0]
+    assert second_athlete.first_name == "Jane"
+    assert second_athlete.last_name == "Smith"
+    assert second_athlete.bib == "456"
 
 
 def test_patch_update_athlete_by_id(
@@ -159,6 +180,16 @@ def test_patch_update_athlete_by_id(
     assert mock_db_session.execute.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
+    
+    # Verify the execute was called with a SELECT query for the athlete
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "SELECT" in query_str
+    assert "athlete" in query_str.lower()
+    assert "WHERE" in query_str
+    # Should filter by the ID
+    assert "athlete.id" in query_str.lower() or "athlete.id =" in query_str
 
 
 def test_patch_update_athlete_not_found(

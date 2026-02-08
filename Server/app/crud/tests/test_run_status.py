@@ -68,6 +68,17 @@ def test_get_many_run_statuses_no_filters(
     # Verify SQLAlchemy execute was called with correct query
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
+    
+    # Verify the query structure passed to execute
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]  # First positional argument
+    
+    # Convert query to string to inspect it
+    query_str = str(query)
+    assert "SELECT" in query_str
+    assert "runStatus" in query_str or "run_status" in query_str
+    # No WHERE clause should be present for no filters
+    assert "WHERE" not in query_str or query_str.count("WHERE") == 0
 
 
 def test_get_many_run_statuses_with_id_filter(
@@ -101,6 +112,13 @@ def test_get_many_run_statuses_with_id_filter(
     # Verify execute was called
     assert mock_db_session.execute.called
     assert mock_db_session.execute.call_count == 1
+    
+    # Verify the query contains the id filter
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "WHERE" in query_str
+    assert "runStatus.id IN" in query_str or "run_status.id IN" in query_str
 
 
 def test_get_many_run_statuses_with_heat_id_filter(
@@ -165,6 +183,15 @@ def test_get_many_run_statuses_with_run_number_range(
 
     # Verify execute was called
     assert mock_db_session.execute.called
+    
+    # Verify the query contains range filters (>= and <=)
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    query_str = str(query)
+    assert "WHERE" in query_str
+    # Should have both >= and <= conditions for run_number
+    assert "run_number >=" in query_str.lower() or ">=" in query_str
+    assert "run_number <=" in query_str.lower() or "<=" in query_str
 
 
 def test_get_many_run_statuses_with_pagination(
