@@ -23,7 +23,7 @@ def test_client(mock_db_session: MagicMock) -> Generator[TestClient, None, None]
     from main import app
     
     # Override the database dependency
-    def override_get_db():
+    def override_get_db():  # noqa: ANN202
         yield mock_db_session
     
     app.dependency_overrides[get_transaction_session] = override_get_db

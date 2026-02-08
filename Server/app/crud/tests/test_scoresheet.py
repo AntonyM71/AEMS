@@ -204,7 +204,7 @@ def test_post_insert_many_scoresheets(
 ) -> None:
     """Test POST /scoresheet/ to insert many scoresheets"""
     # Mock ID generation
-    def mock_add(scoresheet):
+    def mock_add(scoresheet):  # noqa: ANN202, ANN001
         scoresheet.id = UUID("22222222-2222-2222-2222-222222222222")
         return None
     

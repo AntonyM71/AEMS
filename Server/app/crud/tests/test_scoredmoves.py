@@ -3,9 +3,7 @@ Unit tests for scoredmoves CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
 from unittest.mock import MagicMock
-from uuid import UUID
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 

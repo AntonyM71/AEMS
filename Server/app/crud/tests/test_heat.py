@@ -319,7 +319,7 @@ def test_get_one_heat_with_filters(
     # Make request with additional filters
     heat_id = str(mock_heat.id)
     response = test_client.get(
-        f"/heat/{heat_id}?competition_id____list={str(mock_heat.competition_id)}"
+        f"/heat/{heat_id}?competition_id____list={mock_heat.competition_id!s}"
     )
 
     # Verify exact response
@@ -334,7 +334,7 @@ def test_post_insert_many_heats(
 ) -> None:
     """Test POST /heat/ to insert many heats"""
     # Create a function to add an ID when add() is called
-    def mock_add(heat):
+    def mock_add(heat):  # noqa: ANN202, ANN001
         heat.id = UUID("33333333-3333-3333-3333-333333333333")
         return None
     

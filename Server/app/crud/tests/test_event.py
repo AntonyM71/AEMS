@@ -288,7 +288,7 @@ def test_get_one_event_with_competition_id_filter(
     # Make request with filter
     event_id = str(mock_event.id)
     response = test_client.get(
-        f"/event/{event_id}?competition_id____list={str(mock_event.competition_id)}"
+        f"/event/{event_id}?competition_id____list={mock_event.competition_id!s}"
     )
 
     # Verify response
@@ -371,7 +371,7 @@ def test_post_insert_many_events(
 ) -> None:
     """Test POST /event/ to insert many events"""
     # Mock ID generation
-    def mock_add(event):
+    def mock_add(event):  # noqa: ANN202, ANN001
         event.id = UUID("33333333-3333-3333-3333-333333333333")
         return None
     

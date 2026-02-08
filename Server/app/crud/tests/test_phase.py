@@ -247,7 +247,7 @@ def test_post_insert_many_phases(
 ) -> None:
     """Test POST /phase/ to insert many phases"""
     # Mock ID generation
-    def mock_add(phase):
+    def mock_add(phase):  # noqa: ANN202, ANN001
         phase.id = UUID("44444444-4444-4444-4444-444444444444")
         return None
     

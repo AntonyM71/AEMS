@@ -210,7 +210,7 @@ def test_post_insert_many_competitions(
 ) -> None:
     """Test POST /competition/ to insert many competitions"""
     # Create a function to add an ID when add() is called
-    def mock_add(competition):
+    def mock_add(competition):  # noqa: ANN202, ANN001
         competition.id = UUID("22222222-2222-2222-2222-222222222222")
         return None
     

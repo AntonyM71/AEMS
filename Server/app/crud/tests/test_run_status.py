@@ -92,7 +92,7 @@ def test_get_many_run_statuses_with_id_filter(
 
     # Make request with id filter
     filter_id = UUID("12345678-1234-1234-1234-123456789012")
-    response = test_client.get(f"/run_status/?id____list={str(filter_id)}")
+    response = test_client.get(f"/run_status/?id____list={filter_id!s}")
 
     # Verify response (basic check only)
     assert response.status_code == 200
@@ -130,7 +130,7 @@ def test_get_many_run_statuses_with_heat_id_filter(
 
     # Make request with heat_id filter
     filter_heat_id = UUID("22345678-1234-1234-1234-123456789012")
-    response = test_client.get(f"/run_status/?heat_id____list={str(filter_heat_id)}")
+    response = test_client.get(f"/run_status/?heat_id____list={filter_heat_id!s}")
 
     # Verify response (basic check only)
     assert response.status_code == 200
@@ -271,7 +271,7 @@ def test_get_many_run_statuses_with_phase_id_filter(
 
     # Make request with phase_id filter
     response = test_client.get(
-        f"/run_status/?phase_id____list={str(mock_run_status.phase_id)}"
+        f"/run_status/?phase_id____list={mock_run_status.phase_id!s}"
     )
 
     # Verify exact response
@@ -295,7 +295,7 @@ def test_get_many_run_statuses_with_athlete_id_filter(
 
     # Make request with athlete_id filter
     response = test_client.get(
-        f"/run_status/?athlete_id____list={str(mock_run_status.athlete_id)}"
+        f"/run_status/?athlete_id____list={mock_run_status.athlete_id!s}"
     )
 
     # Verify exact response
@@ -385,8 +385,8 @@ def test_get_many_run_statuses_with_multiple_filters(
 
     # Make request with multiple filters
     response = test_client.get(
-        f"/run_status/?heat_id____list={str(mock_run_status.heat_id)}"
-        f"&phase_id____list={str(mock_run_status.phase_id)}"
+        f"/run_status/?heat_id____list={mock_run_status.heat_id!s}"
+        f"&phase_id____list={mock_run_status.phase_id!s}"
         "&locked____list=false"
     )
 

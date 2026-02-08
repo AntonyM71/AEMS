@@ -39,7 +39,7 @@ def test_post_insert_many_athletes(
 ) -> None:
     """Test POST /athlete/ to insert many athletes"""
     # Create a function to add an ID when add() is called
-    def mock_add(athlete):
+    def mock_add(athlete):  # noqa: ANN202, ANN001
         athlete.id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
         return None
     
@@ -85,7 +85,7 @@ def test_post_insert_multiple_athletes(
     """Test POST /athlete/ to insert multiple athletes"""
     # Create a counter for unique IDs
     counter = 0
-    def mock_add(athlete):
+    def mock_add(athlete):  # noqa: ANN202, ANN001
         nonlocal counter
         athlete.id = UUID(f"0000000{counter}-0000-0000-0000-000000000000")
         counter += 1
