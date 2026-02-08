@@ -1275,6 +1275,7 @@ export const {
 	useInsertManyPhasePostMutation,
 	useGetManyHeatGetQuery,
 	useInsertManyHeatPostMutation,
+	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
 	useInsertManyAthletePostMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation,
