@@ -34,8 +34,7 @@ const HeatCheckBoxes = () => {
 
 	const { data } = useGetManyHeatGetQuery(
 		{
-			competitionIdList: [selectedCompetition],
-			competitionIdListComparisonOperator: "Equal"
+			competitionIdList: [selectedCompetition]
 		},
 		{ skip: !selectedCompetition }
 	)

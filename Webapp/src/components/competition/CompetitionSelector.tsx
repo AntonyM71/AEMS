@@ -34,7 +34,8 @@ export const CompetitionSelector = ({
 	const dispatch = useDispatch()
 
 	const { data, isLoading, error, refetch } = useGetManyCompetitionGetQuery(
-		{}
+		{},
+		{ refetchOnMountOrArgChange: true }
 	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
@@ -135,7 +136,7 @@ const AddCompetition = () => {
 			if (competitionName) {
 				HandlePostResponse(
 					await postNewCompetition({
-						insert: [{ name: competitionName, id: uuid4() }]
+						competitions: [{ name: competitionName, id: uuid4() }]
 					})
 				)
 				setCompetitionName("") // Clear input after successful submission

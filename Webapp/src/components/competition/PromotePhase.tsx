@@ -55,8 +55,7 @@ export const PromotePhase = () => {
 	}
 	const { refetch: refetchHeats } = useGetManyHeatGetQuery(
 		{
-			competitionIdList: [selectedCompetition],
-			competitionIdListComparisonOperator: "Equal"
+			competitionIdList: [selectedCompetition]
 		},
 		{ skip: !selectedCompetition }
 	)
