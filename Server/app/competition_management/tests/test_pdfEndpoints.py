@@ -317,7 +317,7 @@ def test_sanitize_filename() -> None:
     # Test spaces are converted to underscores
     assert sanitize_filename("Test Competition Name") == "Test_Competition_Name"
     
-    # Test invalid characters are removed
+    # Test invalid characters are replaced with underscores
     assert sanitize_filename("Test<>Competition") == "Test__Competition"
     assert sanitize_filename('Test"File/Name') == "Test_File_Name"
     assert sanitize_filename("Test:File|Name") == "Test_File_Name"
