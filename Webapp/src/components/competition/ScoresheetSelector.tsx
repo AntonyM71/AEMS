@@ -17,7 +17,7 @@ export const SelectScoresheet = ({
 		data
 			?.filter((d) => !!d.id && !!d.name)
 
-			.map((d) => ({ value: d.id!, label: d.name! })) || []
+			.map((d) => ({ value: d.id, label: d.name })) || []
 	if (options) {
 		return (
 			<ScoresheetAutoComplete
