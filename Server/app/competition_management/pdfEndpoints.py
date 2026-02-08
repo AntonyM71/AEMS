@@ -1,7 +1,6 @@
 import logging
 import os
 import types
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +17,27 @@ from db.client import get_transaction_session
 from db.models import Competition, Event, Heat, Phase
 
 pdf_router = APIRouter(tags=["pdf generation"])
+
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize a filename by removing or replacing invalid characters.
+    
+    Args:
+        filename: The filename to sanitize
+        
+    Returns:
+        A sanitized filename safe for use across different operating systems
+    """
+    # First strip leading/trailing whitespace and dots
+    filename = filename.strip(". ")
+    # Replace spaces with underscores
+    filename = filename.replace(" ", "_")
+    # Remove or replace characters that are problematic in filenames
+    invalid_chars = '<>:"/\\|?*'
+    for char in invalid_chars:
+        filename = filename.replace(char, "_")
+    return filename
 
 
 def get_footer_text() -> str:
@@ -213,7 +233,9 @@ async def phase_pdf(
                 row.cell(athlete.reason if athlete.reason else "")
 
         # Prepare the filename and headers
-        filename = f"{phase_scores.phase_id!s}.pdf"
+        filename = sanitize_filename(
+            f"{competition_metadata.name}_{event_metadata.name}_{phase_metadata.name}.pdf"
+        )
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
         # Return the file as a response
@@ -301,7 +323,10 @@ async def heat_pdf(
                     )
 
         # Prepare the filename and headers
-        filename = f"heats{datetime.now().isoformat()}.pdf"
+        heat_names = "_".join([h.name for h in heat_info_list])
+        filename = sanitize_filename(
+            f"{competition_metadata.name}_{heat_names}.pdf"
+        )
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
         # Return the file as a response
@@ -389,7 +414,9 @@ async def heat_results_pdf(
                     )
                 pdf.set_font(style="")
         # Prepare the filename and headers
-        filename = f"heats{datetime.now().isoformat()}.pdf"
+        filename = sanitize_filename(
+            f"{competition.name}_{heat_info.name}_results.pdf"
+        )
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
         # Return the file as a response

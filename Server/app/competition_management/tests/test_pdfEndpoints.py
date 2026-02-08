@@ -9,6 +9,7 @@ from app.competition_management.pdfEndpoints import (
     heat_pdf,
     heat_results_pdf,
     phase_pdf,
+    sanitize_filename,
 )
 from app.scoring.customScoringEndpoints import HeatInfoResponse
 from app.scoring.scoring_logic import (
@@ -16,6 +17,7 @@ from app.scoring.scoring_logic import (
     RunScores,
 )
 from db.models import Competition, Event, Heat, Phase
+
 
 
 @pytest.fixture
@@ -89,9 +91,10 @@ async def test_phase_pdf_success(
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
+        expected_filename = "Test_Competition_Test_Event_Test_Phase.pdf"
         assert (
             response.headers["Content-Disposition"]
-            == f"attachment; filename={sample_phase_id}.pdf"
+            == f"attachment; filename={expected_filename}"
         )
 
 
@@ -115,9 +118,10 @@ async def test_heat_pdf_success(
 ) -> None:
     # Create a heat ID and mock heat with matching ID
     heat_id = str(uuid.uuid4())
-    mock_heat = MagicMock(
-        spec=Heat, id=heat_id, name="Test Heat", competition_id=mock_competition.id
-    )
+    mock_heat = MagicMock(spec=Heat)
+    mock_heat.id = heat_id
+    mock_heat.name = "Test Heat"
+    mock_heat.competition_id = mock_competition.id
 
     # Mock database queries
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = [
@@ -152,7 +156,11 @@ async def test_heat_pdf_success(
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
-        assert "attachment; filename=heats" in response.headers["Content-Disposition"]
+        expected_filename = "Test_Competition_Test_Heat.pdf"
+        assert (
+            response.headers["Content-Disposition"]
+            == f"attachment; filename={expected_filename}"
+        )
 
 
 @pytest.mark.asyncio
@@ -217,7 +225,9 @@ async def test_heat_results_pdf_success(
 
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
-        assert "attachment; filename=heats" in response.headers["Content-Disposition"]
+        # Heat names should be in the filename
+        assert "Test_Heat" in response.headers["Content-Disposition"]
+        assert "results.pdf" in response.headers["Content-Disposition"]
 
 
 @pytest.mark.asyncio
@@ -301,3 +311,24 @@ async def test_pdf_content_structure(
         assert response.status_code == 200
         assert response.media_type == "application/pdf"
         assert b"%PDF-" in pdf_content  # PDF header
+
+
+def test_sanitize_filename() -> None:
+    """Test filename sanitization with various inputs"""
+    # Test spaces are converted to underscores
+    assert sanitize_filename("Test Competition Name") == "Test_Competition_Name"
+    
+    # Test invalid characters are removed
+    assert sanitize_filename("Test<>Competition") == "Test__Competition"
+    assert sanitize_filename('Test"File/Name') == "Test_File_Name"
+    assert sanitize_filename("Test:File|Name") == "Test_File_Name"
+    
+    # Test multiple special characters
+    assert sanitize_filename("Test<>:/\\|?*File") == "Test________File"
+    
+    # Test leading/trailing dots and spaces are removed
+    assert sanitize_filename("  Test File  ") == "Test_File"
+    assert sanitize_filename("...Test File...") == "Test_File"
+    
+    # Test mixed characters
+    assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"
