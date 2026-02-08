@@ -79,6 +79,7 @@ dependencies = [
     "rich",
     "asgi-correlation-id",
     "openpyxl",
+    "requests",  # needed for TestClient with starlette 0.14.2
 
 
 ]
