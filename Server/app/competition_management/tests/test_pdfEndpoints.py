@@ -19,7 +19,6 @@ from app.scoring.scoring_logic import (
 from db.models import Competition, Event, Heat, Phase
 
 
-
 @pytest.fixture
 def sample_phase_id() -> str:
     return str(uuid.uuid4())
