@@ -96,7 +96,11 @@ export const calculateMoveScore = (
 	const baseMove = getScoredMoveValues(scoredMove, availableMoves)
 
 	const moveBaseScore = getMoveBaseScore(scoredMove, availableMoves)
-	const scoredBonusValues = scoredBonuses.map((b) =>
+	const deduplicatedScoredBonuses = scoredBonuses.filter(
+		(b, index, self) =>
+			index === self.findIndex((sb) => sb.bonusId === b.bonusId)
+	)
+	const scoredBonusValues = deduplicatedScoredBonuses.map((b) =>
 		getBonusScore(b, availableBonuses)
 	)
 
