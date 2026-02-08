@@ -15,15 +15,13 @@ jobs:
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
       - script: |
-          ruff check .
-        displayName: "Run Python Tests"
+          uv run ruff check .
+        displayName: "Run Python Linting"
         workingDirectory: $(Build.SourcesDirectory)/Server
-        continueOnError: true
       - script: |
           uv run python -m pytest --junitxml=pytest-results.xml
         displayName: "Run Python Tests"
         workingDirectory: $(Build.SourcesDirectory)/Server
-        continueOnError: true
 
       - task: PublishTestResults@2
         inputs:
@@ -31,6 +29,7 @@ jobs:
           testResultsFiles: "$(Build.SourcesDirectory)/Server/pytest-results.xml"
           failTaskOnFailedTests: true
         displayName: "Publish Python Test Results"
+        condition: succeededOrFailed()
 
   - job: NodeJS
     displayName: "Node.js Build & Test"
@@ -44,19 +43,16 @@ jobs:
           npm run tsc
         displayName: "Run TypeScript Compiler"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
-        continueOnError: true
 
       - script: |
-          npm run lint"
+          npm run lint
         displayName: "Run Node.js Lint"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
-        continueOnError: true
 
       - script: |
           npm test -- --reporters="jest-junit" --outputFile="junit.xml"
         displayName: "Run Node.js Tests"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
-        continueOnError: true
 
       - script: |
           npm run build
@@ -69,3 +65,4 @@ jobs:
           testResultsFiles: "$(Build.SourcesDirectory)/Webapp/junit.xml"
           failTaskOnFailedTests: true
         displayName: "Publish Node.js Test Results"
+        condition: succeededOrFailed()

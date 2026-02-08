@@ -13,25 +13,22 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
-from app.autogenEndpoints import (
-    crud_route_athlete,
-    crud_route_athleteheat,
-    crud_route_availablebonuses,
-    crud_route_availablemoves,
-    crud_route_competition,
-    crud_route_event,
-    crud_route_event_by_phase,
-    crud_route_heat,
-    crud_route_phase,
-    crud_route_run_status,
-    crud_route_scoredmoves,
-    crud_route_scoresheet,
-)
 from app.broadcastEndpoints import broadcast_router
 from app.competition_management.competition_management import (
     competition_management_router,
 )
 from app.competition_management.pdfEndpoints import pdf_router
+from app.crud.athlete import athlete_router
+from app.crud.athleteheat import athleteheat_router
+from app.crud.availablebonuses import availablebonuses_router
+from app.crud.availablemoves import availablemoves_router
+from app.crud.competition import competition_router
+from app.crud.event import event_router
+from app.crud.heat import heat_router
+from app.crud.phase import phase_router
+from app.crud.run_status import run_status_router
+from app.crud.scoredmoves import scoredmoves_router
+from app.crud.scoresheet import scoresheet_router as scoresheet_crud_router
 from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
@@ -57,18 +54,17 @@ app = FastAPI()
         scoresheet_router,
         pdf_router,
         broadcast_router,
-        crud_route_competition,
-        crud_route_event,
-        crud_route_event_by_phase,
-        crud_route_phase,
-        crud_route_heat,
-        crud_route_athlete,
-        crud_route_scoresheet,
-        crud_route_availablemoves,
-        crud_route_availablebonuses,
-        crud_route_scoredmoves,
-        crud_route_athleteheat,
-        crud_route_run_status,
+        competition_router,
+        event_router,
+        phase_router,
+        heat_router,
+        athlete_router,
+        scoresheet_crud_router,
+        availablemoves_router,
+        availablebonuses_router,
+        scoredmoves_router,
+        athleteheat_router,
+        run_status_router,
     ]
 ]
 

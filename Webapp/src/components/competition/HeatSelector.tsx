@@ -36,8 +36,7 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 
 	const { data, isLoading, isError, refetch } = useGetManyHeatGetQuery(
 		{
-			competitionIdList: [selectedCompetition],
-			competitionIdListComparisonOperator: "Equal"
+			competitionIdList: [selectedCompetition]
 		},
 		{
 			skip: !selectedCompetition,
@@ -163,12 +162,12 @@ const AddHeat = ({
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 
-		.map((d) => ({ value: d.id!, label: d.name! }))
+		.map((d) => ({ value: d.id, label: d.name }))
 
 	const submitNewHeat = async () => {
 		try {
 			const response = await postNewHeat({
-				insert: [
+				heats: [
 					{
 						name: heatName,
 						id: uuid4(),
