@@ -1,7 +1,6 @@
 import json
 import logging
 from math import inf
-from typing import Optional
 from uuid import UUID
 
 from fastapi import (
@@ -64,9 +63,9 @@ class HeatInfoResponse(BaseModel):
     scoresheet: UUID
     first_name: str
     last_name: str
-    affiliation: Optional[str]
+    affiliation: str | None
     bib: str
-    last_phase_rank: Optional[int]
+    last_phase_rank: int | None
     event_name: str
 
     class Config:
@@ -282,7 +281,7 @@ async def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: str,
-    judge_id: Optional[str] = None,
+    judge_id: str | None = None,
     db: Session = Depends(get_transaction_session),
 ) -> ScoredMovesAndBonusesResponse:
     query = (
@@ -510,7 +509,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     athletes_with_scores = [a for a in starting_athletes if a.ranking]
     athletes_without_scores = [a for a in starting_athletes if not a.ranking]
 
-    athletes_with_scores.sort(key=lambda x: (x.ranking or 999))
+    athletes_with_scores.sort(key=lambda x: x.ranking or 999)
     athletes_without_scores.sort(key=lambda x: int(x.bib_number))
     dns_athletes.sort(key=lambda x: int(x.bib_number))
 

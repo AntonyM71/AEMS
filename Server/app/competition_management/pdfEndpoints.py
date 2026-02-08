@@ -22,10 +22,10 @@ pdf_router = APIRouter(tags=["pdf generation"])
 def sanitize_filename(filename: str) -> str:
     """
     Sanitize a filename by removing or replacing invalid characters.
-    
+
     Args:
         filename: The filename to sanitize
-        
+
     Returns:
         A sanitized filename safe for use across different operating systems
     """
@@ -420,9 +420,7 @@ async def heat_results_pdf(
                     )
                 pdf.set_font(style="")
         # Prepare the filename and headers
-        filename = sanitize_filename(
-            f"{competition.name}_{heat_info.name}_results.pdf"
-        )
+        filename = sanitize_filename(f"{competition.name}_{heat_info.name}_results.pdf")
         headers = {"Content-Disposition": f"attachment; filename={filename}"}
 
         # Return the file as a response

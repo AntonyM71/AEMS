@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Extra
@@ -19,7 +19,7 @@ bonus_order = {"air": 0, "huge": 1, "clean": 2, "superclean": 3, "link": 4}
 class SeedMoveData(BaseModel):
     Move: str
     Value: int
-    ReverseValue: Optional[int]
+    ReverseValue: int | None
     Direction: Literal["LR", "FB", "S"]
 
     class Config:

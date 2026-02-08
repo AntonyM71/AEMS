@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -21,28 +20,28 @@ event_router = APIRouter(prefix="/event", tags=["event"])
 @event_router.get("/", response_model=list[EventResponse])
 async def get_many(
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    id____list_____comparison_operator: Optional[str] = Query(
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    id____list_____comparison_operator: str | None = Query(
         None, alias="id____list_____comparison_operator"
     ),
-    competition_id____list: Optional[list[UUID]] = Query(
+    competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    competition_id____list_____comparison_operator: Optional[str] = Query(
+    competition_id____list_____comparison_operator: str | None = Query(
         None, alias="competition_id____list_____comparison_operator"
     ),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    name____list_____comparison_operator: Optional[str] = Query(
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    name____list_____comparison_operator: str | None = Query(
         None, alias="name____list_____comparison_operator"
     ),
-    name____str: Optional[str] = Query(None, alias="name____str"),
-    name____str_____matching_pattern: Optional[str] = Query(
+    name____str: str | None = Query(None, alias="name____str"),
+    name____str_____matching_pattern: str | None = Query(
         None, alias="name____str_____matching_pattern"
     ),
-    limit: Optional[int] = Query(None),
-    offset: Optional[int] = Query(None),
-    order_by_columns: Optional[list[str]] = Query(None),
-    join_foreign_table: Optional[list[str]] = Query(None),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
+    join_foreign_table: list[str] | None = Query(None),
 ) -> list[EventResponse]:
     """Get many events"""
     query = select(Event)
@@ -124,12 +123,12 @@ async def get_many(
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    competition_id____list: Optional[list[UUID]] = Query(
+    competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    name____str: Optional[str] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
+    name____str: str | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    join_foreign_table: list[str] | None = Query(None, alias="join_foreign_table"),
 ) -> EventResponse:
     """Get one event by id with optional filtering and foreign keys"""
     query = select(Event).where(Event.id == id)
@@ -180,27 +179,27 @@ async def get_one_by_primary_key(
 @event_router.get("/get_many_with_foreign_tree/", response_model=list[EventResponse])
 async def get_many_with_foreign_tree(
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    id____list_____comparison_operator: Optional[str] = Query(
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    id____list_____comparison_operator: str | None = Query(
         None, alias="id____list_____comparison_operator"
     ),
-    competition_id____list: Optional[list[UUID]] = Query(
+    competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    competition_id____list_____comparison_operator: Optional[str] = Query(
+    competition_id____list_____comparison_operator: str | None = Query(
         None, alias="competition_id____list_____comparison_operator"
     ),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    name____list_____comparison_operator: Optional[str] = Query(
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    name____list_____comparison_operator: str | None = Query(
         None, alias="name____list_____comparison_operator"
     ),
-    name____str: Optional[str] = Query(None, alias="name____str"),
-    name____str_____matching_pattern: Optional[str] = Query(
+    name____str: str | None = Query(None, alias="name____str"),
+    name____str_____matching_pattern: str | None = Query(
         None, alias="name____str_____matching_pattern"
     ),
-    limit: Optional[int] = Query(None),
-    offset: Optional[int] = Query(None),
-    order_by_columns: Optional[list[str]] = Query(None),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
 ) -> list[EventResponse]:
     """Get many events with competition foreign key"""
     query = select(Event).options(selectinload(Event.competition))
@@ -288,32 +287,32 @@ async def insert_many(
 async def get_many_by_pk_from_phase(
     event_pk_id: UUID,
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    name____str: Optional[str] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
-    number_of_runs____list: Optional[list[int]] = Query(
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    name____str: str | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    number_of_runs____from: int | None = Query(None, alias="number_of_runs____from"),
+    number_of_runs____to: int | None = Query(None, alias="number_of_runs____to"),
+    number_of_runs____list: list[int] | None = Query(
         None, alias="number_of_runs____list"
     ),
-    number_of_runs_for_score____from: Optional[int] = Query(
+    number_of_runs_for_score____from: int | None = Query(
         None, alias="number_of_runs_for_score____from"
     ),
-    number_of_runs_for_score____to: Optional[int] = Query(
+    number_of_runs_for_score____to: int | None = Query(
         None, alias="number_of_runs_for_score____to"
     ),
-    number_of_runs_for_score____list: Optional[list[int]] = Query(
+    number_of_runs_for_score____list: list[int] | None = Query(
         None, alias="number_of_runs_for_score____list"
     ),
-    number_of_judges____from: Optional[int] = Query(
+    number_of_judges____from: int | None = Query(
         None, alias="number_of_judges____from"
     ),
-    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
-    number_of_judges____list: Optional[list[int]] = Query(
+    number_of_judges____to: int | None = Query(None, alias="number_of_judges____to"),
+    number_of_judges____list: list[int] | None = Query(
         None, alias="number_of_judges____list"
     ),
-    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
-    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
+    scoresheet____list: list[UUID] | None = Query(None, alias="scoresheet____list"),
+    join_foreign_table: list[str] | None = Query(None, alias="join_foreign_table"),
 ) -> list[PhaseResponse]:
     """Get all phases for a specific event"""
     query = select(Phase).where(Phase.event_id == event_pk_id)

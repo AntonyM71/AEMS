@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -16,32 +15,32 @@ phase_router = APIRouter(prefix="/phase", tags=["phase"])
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    event_id____list: Optional[list[UUID]] = Query(None, alias="event_id____list"),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    number_of_runs____from: Optional[int] = Query(None, alias="number_of_runs____from"),
-    number_of_runs____to: Optional[int] = Query(None, alias="number_of_runs____to"),
-    number_of_runs____list: Optional[list[int]] = Query(
+    event_id____list: list[UUID] | None = Query(None, alias="event_id____list"),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    number_of_runs____from: int | None = Query(None, alias="number_of_runs____from"),
+    number_of_runs____to: int | None = Query(None, alias="number_of_runs____to"),
+    number_of_runs____list: list[int] | None = Query(
         None, alias="number_of_runs____list"
     ),
-    number_of_runs_for_score____from: Optional[int] = Query(
+    number_of_runs_for_score____from: int | None = Query(
         None, alias="number_of_runs_for_score____from"
     ),
-    number_of_runs_for_score____to: Optional[int] = Query(
+    number_of_runs_for_score____to: int | None = Query(
         None, alias="number_of_runs_for_score____to"
     ),
-    number_of_runs_for_score____list: Optional[list[int]] = Query(
+    number_of_runs_for_score____list: list[int] | None = Query(
         None, alias="number_of_runs_for_score____list"
     ),
-    number_of_judges____from: Optional[int] = Query(
+    number_of_judges____from: int | None = Query(
         None, alias="number_of_judges____from"
     ),
-    number_of_judges____to: Optional[int] = Query(None, alias="number_of_judges____to"),
-    number_of_judges____list: Optional[list[int]] = Query(
+    number_of_judges____to: int | None = Query(None, alias="number_of_judges____to"),
+    number_of_judges____list: list[int] | None = Query(
         None, alias="number_of_judges____list"
     ),
-    scoresheet____list: Optional[list[UUID]] = Query(None, alias="scoresheet____list"),
-    join_foreign_table: Optional[list[str]] = Query(None, alias="join_foreign_table"),
+    scoresheet____list: list[UUID] | None = Query(None, alias="scoresheet____list"),
+    join_foreign_table: list[str] | None = Query(None, alias="join_foreign_table"),
 ) -> PhaseResponse:
     """Get one phase by primary key"""
     query = select(Phase).where(Phase.id == id)

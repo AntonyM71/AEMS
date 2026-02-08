@@ -2,6 +2,7 @@
 Unit tests for heat CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -74,23 +75,29 @@ def test_get_many_heats_with_id_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".id"), (
+        f"Expected filtering on .id column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert any(str(val) == filter_id for val in filter_values), f"Expected {filter_id} in filter values, got {filter_values}"
+    assert any(str(val) == filter_id for val in filter_values), (
+        f"Expected {filter_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_heats_with_competition_id_filter(
@@ -111,23 +118,29 @@ def test_get_many_heats_with_competition_id_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".competition_id"), f"Expected filtering on .competition_id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".competition_id"), (
+        f"Expected filtering on .competition_id column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert any(str(val) == filter_competition_id for val in filter_values), f"Expected {filter_competition_id} in filter values, got {filter_values}"
+    assert any(str(val) == filter_competition_id for val in filter_values), (
+        f"Expected {filter_competition_id} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_heats_with_name_str_filter(
@@ -148,23 +161,29 @@ def test_get_many_heats_with_name_str_filter(
 
     # Verify database calls
     assert mock_db_session.execute.called
-    
+
     # Assert on the query object's properties directly
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
-    
+
     # Verify the whereclause properties without compiling
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".name"), f"Expected filtering on .name column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".name"), (
+        f"Expected filtering on .name column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (in_op for IN filters)
-    assert whereclause.operator.__name__ == "in_op", f"Expected in_op operator, got {whereclause.operator.__name__}"
-    
+    assert whereclause.operator.__name__ == "in_op", (
+        f"Expected in_op operator, got {whereclause.operator.__name__}"
+    )
+
     # Assert the actual filter value matches what we sent in the request
     filter_values = whereclause.right.value
-    assert filter_name in filter_values, f"Expected {filter_name} in filter values, got {filter_values}"
+    assert filter_name in filter_values, (
+        f"Expected {filter_name} in filter values, got {filter_values}"
+    )
 
 
 def test_get_many_heats_with_name_list_filter(
@@ -333,11 +352,12 @@ def test_post_insert_many_heats(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
     """Test POST /heat/ to insert many heats"""
+
     # Create a function to add an ID when add() is called
     def mock_add(heat):  # noqa: ANN202, ANN001
         heat.id = UUID("33333333-3333-3333-3333-333333333333")
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -360,7 +380,7 @@ def test_post_insert_many_heats(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
-    
+
     # Verify the add() was called with Heat object with ALL correct attributes
     add_call_args = mock_db_session.add.call_args
     added_heat = add_call_args[0][0]

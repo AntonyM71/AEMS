@@ -3,7 +3,7 @@ import math
 import operator
 import random
 from io import BytesIO
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID, uuid4
 
 import pandas as pd
@@ -86,14 +86,14 @@ class NewPhaseInfo(BaseModel):
     phase_id: str
     new_phase_name: str
     number_of_paddlers: int
-    number_of_runs: Optional[int]
-    number_of_runs_for_score: Optional[int]
-    number_of_judges: Optional[int]
+    number_of_runs: int | None
+    number_of_runs_for_score: int | None
+    number_of_judges: int | None
 
 
 class AthleteIDandRank(BaseModel):
     athlete_id: UUID
-    ranking: Optional[int]
+    ranking: int | None
 
 
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)

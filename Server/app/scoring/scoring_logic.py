@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from itertools import groupby
-from typing import Literal, Optional
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -239,16 +239,16 @@ class AthleteScores(BaseModel):
     athlete_id: UUID
     run_scores: list[RunScores]
     highest_scoring_move: float
-    ranking: Optional[int]
-    reason: Optional[str]
-    total_score: Optional[float]
-    last_phase_rank: Optional[int]
+    ranking: int | None
+    reason: str | None
+    total_score: float | None
+    last_phase_rank: int | None
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
     first_name: str
     last_name: str
-    affiliation: Optional[str]
+    affiliation: str | None
     bib_number: int
 
 
@@ -313,7 +313,7 @@ def calculate_heat_scores(
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
     run_statuses: list[PydanticRunStatus],
-    scoring_runs: Optional[int] = None,
+    scoring_runs: int | None = None,
 ) -> list[AthleteScores]:
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
@@ -373,7 +373,7 @@ def calculate_heat_scores(
 
 class RankInfo(BaseModel):
     ranking: int
-    reason: Optional[str]
+    reason: str | None
 
 
 def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:
@@ -388,7 +388,7 @@ def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool
 
 def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
     sorted_athletes_scores = sorted(
-        athlete_scores, key=lambda x: (x.total_score or 0), reverse=True
+        athlete_scores, key=lambda x: x.total_score or 0, reverse=True
     )
     rank = 0
 

@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -14,11 +13,11 @@ class EventNested(BaseModel):
 
 
 class AthleteHeatCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     athlete_id: UUID
     heat_id: UUID
     phase_id: UUID
-    last_phase_rank: Optional[int] = None
+    last_phase_rank: int | None = None
 
 
 class AthleteHeatResponse(BaseModel):
@@ -32,28 +31,28 @@ class AthleteHeatResponse(BaseModel):
 
 
 class AthleteHeatUpdate(BaseModel):
-    athlete_id: Optional[UUID] = None
-    heat_id: Optional[UUID] = None
-    phase_id: Optional[UUID] = None
-    last_phase_rank: Optional[int] = None
+    athlete_id: UUID | None = None
+    heat_id: UUID | None = None
+    phase_id: UUID | None = None
+    last_phase_rank: int | None = None
 
 
 class CompetitionCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     name: str
 
 
 class CompetitionResponse(BaseModel):
     id: UUID
     name: str
-    event_foreign: Optional[list[EventNested]] = None
+    event_foreign: list[EventNested] | None = None
 
     class Config:
         orm_mode = True
 
 
 class CompetitionUpdate(BaseModel):
-    name: Optional[str] = None
+    name: str | None = None
 
 
 class CompetitionWithEvents(CompetitionResponse):
@@ -74,10 +73,10 @@ class PhaseNested(BaseModel):
 
 
 class AthleteCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     first_name: str
     last_name: str
-    affiliation: Optional[str] = None
+    affiliation: str | None = None
     bib: str
 
 
@@ -85,7 +84,7 @@ class AthleteResponse(BaseModel):
     id: UUID
     first_name: str
     last_name: str
-    affiliation: Optional[str] = None
+    affiliation: str | None = None
     bib: str
 
     class Config:
@@ -93,10 +92,10 @@ class AthleteResponse(BaseModel):
 
 
 class AthleteUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    affiliation: Optional[str] = None
-    bib: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    affiliation: str | None = None
+    bib: str | None = None
 
 
 class AvailableBonusesResponse(BaseModel):
@@ -105,7 +104,7 @@ class AvailableBonusesResponse(BaseModel):
     move_id: UUID
     name: str
     score: int  # Integer, not float - matches models.py
-    display_order: Optional[int] = None
+    display_order: int | None = None
 
     class Config:
         orm_mode = True
@@ -135,15 +134,15 @@ class EventResponse(BaseModel):
     id: UUID
     competition_id: UUID
     name: str
-    competition_foreign: Optional[list[CompetitionNested]] = None
-    phase_foreign: Optional[list[PhaseNested]] = None
+    competition_foreign: list[CompetitionNested] | None = None
+    phase_foreign: list[PhaseNested] | None = None
 
     class Config:
         orm_mode = True
 
 
 class EventCreateRequest(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     competition_id: UUID
     name: str
 
@@ -156,14 +155,14 @@ class PhaseResponse(BaseModel):
     number_of_runs_for_score: int
     number_of_judges: int
     scoresheet: UUID
-    event_foreign: Optional[list[EventNested]] = None
+    event_foreign: list[EventNested] | None = None
 
     class Config:
         orm_mode = True
 
 
 class HeatCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     competition_id: UUID
     name: str
 
@@ -181,20 +180,20 @@ class HeatResponse(BaseModel):
     id: UUID
     competition_id: UUID
     name: str
-    competition_foreign: Optional[list[CompetitionNested]] = None
-    athleteheat_foreign: Optional[list[AthleteHeatNested]] = None
+    competition_foreign: list[CompetitionNested] | None = None
+    athleteheat_foreign: list[AthleteHeatNested] | None = None
 
     class Config:
         orm_mode = True
 
 
 class HeatUpdate(BaseModel):
-    competition_id: Optional[UUID] = None
-    name: Optional[str] = None
+    competition_id: UUID | None = None
+    name: str | None = None
 
 
 class PhaseCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     event_id: UUID
     name: str
     number_of_runs: int = 3
@@ -204,17 +203,17 @@ class PhaseCreate(BaseModel):
 
 
 class PhaseUpdate(BaseModel):
-    event_id: Optional[UUID] = None
-    name: Optional[str] = None
-    number_of_runs: Optional[int] = None
-    number_of_runs_for_score: Optional[int] = None
-    number_of_judges: Optional[int] = None
-    scoresheet: Optional[UUID] = None
+    event_id: UUID | None = None
+    name: str | None = None
+    number_of_runs: int | None = None
+    number_of_runs_for_score: int | None = None
+    number_of_judges: int | None = None
+    scoresheet: UUID | None = None
 
 
 class RunStatusResponse(BaseModel):
     id: UUID
-    heat_id: Optional[UUID] = None
+    heat_id: UUID | None = None
     run_number: int
     phase_id: UUID
     athlete_id: UUID
@@ -226,7 +225,7 @@ class RunStatusResponse(BaseModel):
 
 
 class ScoreSheetCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     name: str
 
 

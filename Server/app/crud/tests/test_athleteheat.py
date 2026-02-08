@@ -2,6 +2,7 @@
 Unit tests for athleteheat CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -37,11 +38,12 @@ def test_post_insert_many_athlete_heats(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
     """Test POST /athleteheat/ to insert many athlete heats"""
+
     # Create a function to add an ID when add() is called
     def mock_add(athlete_heat):  # noqa: ANN202, ANN001
         athlete_heat.id = UUID("11111111-1111-1111-1111-111111111111")
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -65,7 +67,7 @@ def test_post_insert_many_athlete_heats(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
-    
+
     # Verify the add() was called with AthleteHeat object with ALL correct attributes
     add_call_args = mock_db_session.add.call_args
     added_athlete_heat = add_call_args[0][0]
@@ -80,12 +82,13 @@ def test_post_insert_multiple_athlete_heats(
     """Test POST /athleteheat/ to insert multiple athlete heats"""
     # Create a counter for unique IDs
     counter = 0
+
     def mock_add(athlete_heat):  # noqa: ANN202, ANN001
         nonlocal counter
         athlete_heat.id = UUID(f"1111111{counter}-1111-1111-1111-111111111111")
         counter += 1
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -180,7 +183,7 @@ def test_patch_update_athlete_heat_with_filters(
     update_data = {"phase_id": "55555555-5555-5555-5555-555555555555"}
     response = test_client.patch(
         f"/athleteheat/{athlete_heat_id}?heat_id____list={mock_athlete_heat.heat_id!s}",
-        json=update_data
+        json=update_data,
     )
 
     # Verify exact response

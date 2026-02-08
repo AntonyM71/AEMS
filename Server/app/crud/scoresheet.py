@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -15,12 +14,12 @@ scoresheet_router = APIRouter(prefix="/scoresheet", tags=["scoresheet"])
 @scoresheet_router.get("/", response_model=list[ScoreSheetResponse])
 async def get_many(
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    limit: Optional[int] = Query(None),
-    offset: Optional[int] = Query(None),
-    order_by_columns: Optional[list[str]] = Query(None),
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
 ) -> list[ScoreSheetResponse]:
     """Get many scoresheets"""
     query = select(ScoreSheet)

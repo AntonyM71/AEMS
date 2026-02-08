@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -39,14 +38,14 @@ async def partial_update_one_by_primary_key(
     id: UUID,
     athlete_update: AthleteUpdate,
     db: Session = Depends(get_transaction_session),
-    first_name____str: Optional[list[str]] = Query(None, alias="first_name____str"),
-    first_name____list: Optional[list[str]] = Query(None, alias="first_name____list"),
-    last_name____str: Optional[list[str]] = Query(None, alias="last_name____str"),
-    last_name____list: Optional[list[str]] = Query(None, alias="last_name____list"),
-    affiliation____str: Optional[list[str]] = Query(None, alias="affiliation____str"),
-    affiliation____list: Optional[list[str]] = Query(None, alias="affiliation____list"),
-    bib____str: Optional[list[str]] = Query(None, alias="bib____str"),
-    bib____list: Optional[list[str]] = Query(None, alias="bib____list"),
+    first_name____str: list[str] | None = Query(None, alias="first_name____str"),
+    first_name____list: list[str] | None = Query(None, alias="first_name____list"),
+    last_name____str: list[str] | None = Query(None, alias="last_name____str"),
+    last_name____list: list[str] | None = Query(None, alias="last_name____list"),
+    affiliation____str: list[str] | None = Query(None, alias="affiliation____str"),
+    affiliation____list: list[str] | None = Query(None, alias="affiliation____list"),
+    bib____str: list[str] | None = Query(None, alias="bib____str"),
+    bib____list: list[str] | None = Query(None, alias="bib____list"),
 ) -> AthleteResponse:
     """Partial update one athlete by primary key"""
     query = select(Athlete).where(Athlete.id == id)
