@@ -366,3 +366,63 @@ def test_post_insert_many_heats(
     added_heat = add_call_args[0][0]
     assert str(added_heat.competition_id) == "22222222-2222-2222-2222-222222222222"
     assert added_heat.name == "New Heat"
+
+
+def test_patch_update_heat_by_id(
+    test_client: TestClient, mock_db_session: Session, mock_heat: Heat
+) -> None:
+    """Test PATCH /heat/{id} to update a heat"""
+    # Mock the database query execution
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_heat
+    mock_db_session.execute.return_value = mock_result
+    mock_db_session.commit.return_value = None
+    mock_db_session.refresh.return_value = None
+
+    # Make request to update heat
+    heat_id = str(mock_heat.id)
+    update_data = {"name": "Updated Heat"}
+    response = test_client.patch(f"/heat/{heat_id}", json=update_data)
+
+    # Verify exact response
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == heat_id
+
+    # Verify database operations
+    assert mock_db_session.execute.called
+    assert mock_db_session.execute.call_count == 1
+    assert mock_db_session.commit.called
+    assert mock_db_session.refresh.called
+    
+    # Verify query filters by ID
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    whereclause = query.whereclause
+    
+    # Assert we're filtering on the correct column
+    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
+    
+    # Assert we're using the correct operator (eq for equality)
+    assert whereclause.operator.__name__ == "eq", f"Expected eq operator, got {whereclause.operator.__name__}"
+
+
+def test_patch_update_heat_not_found(
+    test_client: TestClient, mock_db_session: Session
+) -> None:
+    """Test PATCH /heat/{id} when heat doesn't exist"""
+    # Mock the database query to return None
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = None
+    mock_db_session.execute.return_value = mock_result
+
+    # Make request to update non-existent heat
+    heat_id = "99999999-9999-9999-9999-999999999999"
+    update_data = {"name": "Updated"}
+    response = test_client.patch(f"/heat/{heat_id}", json=update_data)
+
+    # Verify exact response
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == "Heat not found"
+
