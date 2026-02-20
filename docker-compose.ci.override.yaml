@@ -1,0 +1,36 @@
+# CI-only override for the production compose.
+# Adds missing healthchecks and speeds up intervals so
+# 'docker compose up --wait' can reliably wait for all services.
+services:
+  db:
+    healthcheck:
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  nginx:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      frontend:
+        condition: service_healthy
+      server:
+        condition: service_healthy
