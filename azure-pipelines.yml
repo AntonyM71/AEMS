@@ -76,7 +76,7 @@ jobs:
             -e POSTGRES_PASSWORD=postgres \
             -e POSTGRES_DB=postgres \
             -p 5432:5432 \
-            postgres:latest
+            postgres:16
           for i in $(seq 1 30); do
             docker exec postgres-e2e pg_isready -U postgres && break || sleep 2
           done
