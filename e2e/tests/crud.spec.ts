@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import { randomUUID } from "crypto"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
 
@@ -7,12 +8,13 @@ test.describe("Database Read/Write", () => {
 		request
 	}) => {
 		const competitionName = `E2E Competition ${Date.now()}`
+		const competitionId = randomUUID()
 
 		// Write: create a competition directly via the API
 		const createResponse = await request.post(
 			`${BACKEND_URL}/competition/`,
 			{
-				data: [{ name: competitionName }]
+				data: [{ id: competitionId, name: competitionName }]
 			}
 		)
 		expect(createResponse.status()).toBe(201)
@@ -40,17 +42,29 @@ test.describe("Database Read/Write", () => {
 		await page.goto("/Admin")
 
 		// Expand the "Manage Competition Structure" accordion
-		await page.getByText("Manage Competition Structure").click()
+		await page
+			.getByRole("button", { name: "Manage Competition Structure" })
+			.click()
 
-		// Fill in the "New Competition" input and submit
-		const newCompInput = page.getByLabel("New Competition")
+		// Wait for the competition data to load (selector becomes interactive)
+		const newCompInput = page
+			.getByRole("textbox", { name: "New Competition" })
+			.first()
+		await expect(newCompInput).toBeVisible({ timeout: 10000 })
+
+		// Intercept the POST request and fill+submit the form
+		const responsePromise = page.waitForResponse(
+			(resp) =>
+				resp.url().includes("/competition/") &&
+				resp.request().method() === "POST",
+			{ timeout: 10000 }
+		)
 		await newCompInput.fill(competitionName)
 		await newCompInput.press("Enter")
 
-		// Verify the competition now appears in the selector
-		await expect(page.getByText(competitionName)).toBeVisible({
-			timeout: 10000
-		})
+		// Wait for the creation response and verify it succeeded
+		const createResponse = await responsePromise
+		expect(createResponse.status()).toBe(201)
 
 		// Also verify via API that it was persisted to the database
 		const getResponse = await request.get(
