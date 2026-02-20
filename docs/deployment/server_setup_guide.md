@@ -114,6 +114,36 @@ With the server machine and network settings correctly configured, we can run th
 docker compose -f docker-compose.yaml up --build
 ```
 
+## Upgrading from an Earlier Version (PostgreSQL Migration)
+
+If you have previously run AEMS and are upgrading to a version that uses **PostgreSQL 18+**, you must perform a one-time data migration. PostgreSQL 18+ Docker images store data in a version-specific subdirectory and require the volume to be mounted at `/var/lib/postgresql` instead of `/var/lib/postgresql/data`.
+
+**When is this needed?**
+Run this migration if you have an existing AEMS installation and the containers fail to start with an error similar to:
+```
+Error: in 18+, these Docker images are configured to store database data in a
+       format which is compatible with "pg_ctlcluster" ...
+       Counter to that, there appears to be PostgreSQL data in:
+         /var/lib/postgresql/data
+```
+
+**How to migrate:**
+
+1. Make sure your old AEMS containers are **still running** (do not pull the new image yet):
+   ```bash
+   docker compose up db -d
+   ```
+
+2. Run the migration script from the repository root:
+   ```bash
+   chmod +x migrate_postgres.sh
+   ./migrate_postgres.sh
+   ```
+
+The script will automatically export your data, stop the containers, clear the old data directory, start fresh PostgreSQL with the new configuration, and restore your data.
+
+Your old data directory will be archived with a timestamp so you can recover it if needed.
+
 ## Setting Up the Timing Box (Raspberry Pi)
 
 To configure the timing box, you'll need to:
