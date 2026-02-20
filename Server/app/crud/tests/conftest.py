@@ -19,7 +19,7 @@ def mock_db_session() -> MagicMock:
 
 
 @pytest.fixture
-def test_client(mock_db_session: MagicMock) -> Generator[TestClient]:
+def test_client(mock_db_session: MagicMock) -> Generator[TestClient, None, None]:
     """Create a test client with mocked database session"""
     from main import app
 
