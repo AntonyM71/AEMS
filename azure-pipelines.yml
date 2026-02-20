@@ -66,3 +66,36 @@ jobs:
           failTaskOnFailedTests: true
         displayName: "Publish Node.js Test Results"
         condition: succeededOrFailed()
+
+  - job: E2ETests
+    displayName: "E2E Playwright Tests"
+    steps:
+      - script: |
+          docker compose -f docker-compose.e2e.yaml up -d --wait
+        displayName: "Start Services"
+        workingDirectory: $(Build.SourcesDirectory)
+
+      - script: |
+          npm ci
+          npx playwright install --with-deps chromium
+        displayName: "Install Playwright"
+        workingDirectory: $(Build.SourcesDirectory)/e2e
+
+      - script: |
+          npx playwright test
+        displayName: "Run E2E Tests"
+        workingDirectory: $(Build.SourcesDirectory)/e2e
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "$(Build.SourcesDirectory)/e2e/playwright-results.xml"
+          failTaskOnFailedTests: true
+        displayName: "Publish E2E Test Results"
+        condition: succeededOrFailed()
+
+      - script: |
+          docker compose -f docker-compose.e2e.yaml down
+        displayName: "Stop Services"
+        condition: always()
+        workingDirectory: $(Build.SourcesDirectory)
