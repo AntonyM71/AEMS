@@ -71,9 +71,54 @@ jobs:
     displayName: "E2E Playwright Tests"
     steps:
       - script: |
-          docker compose -f docker-compose.yaml -f docker-compose.ci.override.yaml up -d --wait
-        displayName: "Start Services"
-        workingDirectory: $(Build.SourcesDirectory)
+          docker run -d --name postgres-e2e \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=postgres \
+            -p 5432:5432 \
+            postgres:latest
+          for i in $(seq 1 30); do
+            docker exec postgres-e2e pg_isready -U postgres && break || sleep 2
+          done
+        displayName: "Start PostgreSQL"
+
+      - script: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv
+          uv sync
+        displayName: "Setup Python Environment"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/alembic upgrade head
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/python -m scripts.seed_scoresheets
+        displayName: "Setup Database"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:app \
+            --host 0.0.0.0 --port 8000 --log-level warning &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/health && break || sleep 2
+          done
+        displayName: "Start Backend"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          npm ci
+        displayName: "Install Frontend Dependencies"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
+
+      - script: |
+          NEXT_PUBLIC_API_URL_DEV=http://localhost:8000/ npm start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && break || sleep 3
+          done
+        displayName: "Start Frontend"
+        workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
           npm ci
@@ -82,7 +127,7 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
       - script: |
-          npx playwright test
+          FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 npx playwright test
         displayName: "Run E2E Tests"
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
@@ -95,7 +140,6 @@ jobs:
         condition: succeededOrFailed()
 
       - script: |
-          docker compose -f docker-compose.yaml -f docker-compose.ci.override.yaml down
+          docker stop postgres-e2e && docker rm postgres-e2e
         displayName: "Stop Services"
         condition: always()
-        workingDirectory: $(Build.SourcesDirectory)

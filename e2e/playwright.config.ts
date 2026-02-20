@@ -5,7 +5,7 @@ export default defineConfig({
 	timeout: 30000,
 	retries: 1,
 	use: {
-		baseURL: process.env.FRONTEND_URL || "http://localhost:81",
+		baseURL: process.env.FRONTEND_URL || "http://localhost:3000",
 		trace: "on-first-retry"
 	},
 	projects: [
