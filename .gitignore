@@ -1,4 +1,8 @@
 node_modules
+e2e/node_modules
+e2e/playwright-results.xml
+e2e/test-results/
+e2e/playwright-report/
 Server/db/__pycache__
 *.db
 Server/alembic/__pycache__
