@@ -1,0 +1,12 @@
+{
+	"name": "aems-e2e",
+	"version": "1.0.0",
+	"description": "End-to-end Playwright tests for AEMS",
+	"scripts": {
+		"test": "playwright test",
+		"test:report": "playwright show-report"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.49.1"
+	}
+}
