@@ -216,10 +216,10 @@ describe("ScoresheetMoves", () => {
 			http.get("/api/availablebonuses", () =>
 				HttpResponse.json(mockBonuses)
 				),
-			http.post("/api/addUpdateScoresheet/:id", async (req, res, ctx) => {
+			http.post("/api/addUpdateScoresheet/:id", async ({ request }) => {
 				updateCalled = true
 
-				const body = await req.json()
+				const body = await request.json()
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				expect(body.addUpdateScoresheetRequest.moves).toEqual(mockMoves)
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
