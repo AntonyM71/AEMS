@@ -1220,7 +1220,7 @@ class TestAthleteScoreCalculation:
                 run_scores=[
                     RunScores(
                         did_not_start=False,
-                        locked=False,
+                        locked=True,
                         run_number=1,
                         judge_scores=[
                             JudgeScores(
@@ -1235,7 +1235,7 @@ class TestAthleteScoreCalculation:
                     ),
                     RunScores(
                         did_not_start=False,
-                        locked=True,
+                        locked=False,
                         run_number=2,
                         judge_scores=[
                             JudgeScores(
@@ -1341,7 +1341,7 @@ class TestAthleteScoreCalculation:
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
                     RunScores(
-                        did_not_start=False,
+                        did_not_start=True,
                         locked=False,
                         run_number=1,
                         judge_scores=[
@@ -1352,11 +1352,11 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=8.33,
-                        highest_scoring_move=25.0,
+                        mean_run_score=0,
+                        highest_scoring_move=0,
                     ),
                     RunScores(
-                        did_not_start=True,
+                        did_not_start=False,
                         locked=False,
                         run_number=2,
                         judge_scores=[
@@ -1367,12 +1367,12 @@ class TestAthleteScoreCalculation:
                                 ),
                             )
                         ],
-                        mean_run_score=0,
-                        highest_scoring_move=0,
+                        mean_run_score=6.67,
+                        highest_scoring_move=20.0,
                     ),
                 ],
-                highest_scoring_move=25.0,
-                total_score=8.33,
+                highest_scoring_move=20.0,
+                total_score=6.67,
             )
         ]
         got = calculate_heat_scores(

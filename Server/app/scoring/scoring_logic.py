@@ -318,11 +318,11 @@ def calculate_heat_scores(
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
         runs: list[RunScores] = []
-        for i, run in enumerate(athlete.run_moves):
+        for run in athlete.run_moves:
             matching_run_statuses = [
                 rs
                 for rs in run_statuses
-                if rs.athlete_id == athlete.athlete_id and rs.run_number == i
+                if rs.athlete_id == athlete.athlete_id and rs.run_number == run.run
             ]
             run_status = (
                 matching_run_statuses[0] if len(matching_run_statuses) > 0 else None
