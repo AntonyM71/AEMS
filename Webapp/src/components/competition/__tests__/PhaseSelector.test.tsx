@@ -7,7 +7,7 @@ import {
 	within
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { toast } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -84,35 +84,33 @@ describe("PhaseSelector", () => {
 
 		// Set up MSW handlers for the API endpoints
 		server.use(
-			rest.get("/api/event/:eventPkId/phase", (_req, res, ctx) =>
-				res(ctx.json(mockPhases))
+			http.get("/api/event/:eventPkId/phase", () =>
+				HttpResponse.json(mockPhases)
 			),
-			rest.get("/api/phase", (_req, res, ctx) =>
-				res(ctx.json(mockPhases))
+			http.get("/api/phase", () =>
+				HttpResponse.json(mockPhases)
 			),
-			rest.get("/api/phase/:id", (req, res, ctx) =>
-				res(ctx.json(mockPhases.find((p) => p.id === req.params.id)))
+			http.get("/api/phase/:id", ({ params }) =>
+				HttpResponse.json(mockPhases.find((p) => p.id === params.id))
 			),
-			rest.get("/api/scoresheet", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{ id: "scoresheet-1", name: "Scoresheet 1" },
-						{ id: "scoresheet-2", name: "Scoresheet 2" }
-					])
-				)
+			http.get("/api/scoresheet", () =>
+				HttpResponse.json([
+					{ id: "scoresheet-1", name: "Scoresheet 1" },
+					{ id: "scoresheet-2", name: "Scoresheet 2" }
+				])
 			),
-			rest.post("/api/phase", async (req, res, ctx) => {
-				const rawBody = await req.json()
+			http.post("/api/phase", async ({ request }) => {
+				const rawBody = await request.json()
 				const body = rawBody as PhasePostBody[]
 				const firstPhase = body[0]
 
-				return res(ctx.json([{ id: "new-phase-id", ...firstPhase }]))
+				return HttpResponse.json([{ id: "new-phase-id", ...firstPhase }])
 			}),
-			rest.patch("/api/phase/:id", async (req, res, ctx) => {
-				const rawBody = await req.json()
+			http.patch("/api/phase/:id", async ({ params, request }) => {
+				const rawBody = await request.json()
 				const body = rawBody as PhasePatchBody
 
-				return res(ctx.json({ id: req.params.id, ...body }))
+				return HttpResponse.json({ id: params.id, ...body })
 			})
 		)
 	})
@@ -177,10 +175,10 @@ describe("PhaseSelector", () => {
 
 	it("should show no phases message when event has no phases", async () => {
 		server.use(
-			rest.get("/api/event/:eventPkId/phase", (_req, res, ctx) =>
-				res(ctx.json(null))
+			http.get("/api/event/:eventPkId/phase", () =>
+				HttpResponse.json(null)
 			),
-			rest.get("/api/phase", (_req, res, ctx) => res(ctx.json(null)))
+			http.get("/api/phase", () => HttpResponse.json(null))
 		)
 
 		render(
@@ -377,17 +375,15 @@ describe("PhaseSelector", () => {
 		const mockRefetch = jest.fn().mockResolvedValue(undefined)
 		const mockRefetchPhaseInfo = jest.fn().mockResolvedValue(undefined)
 		server.use(
-			rest.get("/api/phase/:id", async (req, res, ctx) => {
+			http.get("/api/phase/:id", async ({ params }) => {
 				await mockRefetchPhaseInfo()
 
-				return res(
-					ctx.json(mockPhases.find((p) => p.id === req.params.id))
-				)
+				return HttpResponse.json(mockPhases.find((p) => p.id === params.id))
 			}),
-			rest.get("/api/event/:eventPkId/phase", async (_req, res, ctx) => {
+			http.get("/api/event/:eventPkId/phase", async () => {
 				await mockRefetch()
 
-				return res(ctx.json(mockPhases))
+				return HttpResponse.json(mockPhases)
 			})
 		)
 

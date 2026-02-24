@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse, delay } from "msw"
 import { Toaster, toast } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -65,9 +65,10 @@ describe("CompetitionSelector", () => {
 	it("shows loading state", () => {
 		// Use MSW to delay the response to show loading state
 		server.use(
-			rest.get("/api/competition", (req, res, ctx) =>
-				res(ctx.delay(100), ctx.json([]))
-			)
+			http.get("/api/competition", async () => {
+				await delay(100)
+				return HttpResponse.json([])
+			})
 		)
 
 		render(
@@ -88,8 +89,8 @@ describe("CompetitionSelector", () => {
 
 		// Use MSW to return mock data
 		server.use(
-			rest.get("/api/competition", (req, res, ctx) =>
-				res(ctx.json(mockCompetitions))
+			http.get("/api/competition", () =>
+				HttpResponse.json(mockCompetitions)
 			)
 		)
 
@@ -120,8 +121,8 @@ describe("CompetitionSelector", () => {
 
 		// Use MSW to return mock data
 		server.use(
-			rest.get("/api/competition", (req, res, ctx) =>
-				res(ctx.json(mockCompetitions))
+			http.get("/api/competition", () =>
+				HttpResponse.json(mockCompetitions)
 			)
 		)
 
@@ -154,8 +155,8 @@ describe("CompetitionSelector", () => {
 		const mockCompetitions = [{ id: "1", name: "Competition 1" }]
 
 		server.use(
-			rest.get("/api/competition", (req, res, ctx) =>
-				res(ctx.json(mockCompetitions))
+			http.get("/api/competition", () =>
+				HttpResponse.json(mockCompetitions)
 			)
 		)
 
@@ -173,7 +174,7 @@ describe("CompetitionSelector", () => {
 
 	it("shows 'No Competitions' state when data is empty", async () => {
 		server.use(
-			rest.get("/api/competition", (req, res, ctx) => res(ctx.json([])))
+			http.get("/api/competition", () => HttpResponse.json([]))
 		)
 
 		render(
@@ -201,8 +202,8 @@ describe("CompetitionSelector", () => {
 	describe("AddCompetition", () => {
 		it("shows error toast when submitting empty competition name", async () => {
 			server.use(
-				rest.get("/api/competition", (req, res, ctx) =>
-					res(ctx.json([]))
+				http.get("/api/competition", () =>
+					HttpResponse.json([])
 				)
 			)
 
@@ -234,30 +235,28 @@ describe("CompetitionSelector", () => {
 			const mockCompetitions = [{ id: "1", name: "Existing Competition" }]
 
 			server.use(
-				rest.get("/api/competition", (req, res, ctx) => {
+				http.get("/api/competition", () => {
 					if (!refetchCalled) {
 						refetchCalled = true
 
-						return res(ctx.json(mockCompetitions))
+						return HttpResponse.json(mockCompetitions)
 					}
 
-					return res(
-						ctx.json([
-							...mockCompetitions,
-							{ id: "2", name: "Test Competition" }
-						])
-					)
+					return HttpResponse.json([
+						...mockCompetitions,
+						{ id: "2", name: "Test Competition" }
+					])
 				}),
-				rest.post("/api/competition", async (req, res, ctx) => {
+				http.post("/api/competition", async ({ request }) => {
 					postCalled = true
-					const data = await req.json()
+					const data = await request.json()
 					if (!isCompetitionArray(data)) {
 						throw new Error("Invalid competition data")
 					}
 					expect(data[0].name).toBe("Test Competition")
 					expect(data[0].id).toBeTruthy()
 
-					return res(ctx.json(data))
+					return HttpResponse.json(data)
 				})
 			)
 

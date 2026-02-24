@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import {
@@ -86,8 +86,8 @@ describe("EventSelector", () => {
 
 	it("shows no events message when competition has no events", async () => {
 		server.use(
-			rest.get("/api/competition/:id/event", (req, res, ctx) =>
-				res(ctx.json([]))
+			http.get("/api/competition/:id/event", () =>
+				HttpResponse.json([])
 			)
 		)
 

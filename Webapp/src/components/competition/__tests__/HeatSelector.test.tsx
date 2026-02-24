@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse, delay } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
@@ -29,9 +29,10 @@ describe("HeatSelector", () => {
 	it("shows loading skeleton when loading heats", async () => {
 		// Override the default handler to delay response
 		server.use(
-			rest.get("/api/heat", (req, res, ctx) =>
-				res(ctx.delay(100), ctx.json([]))
-			)
+			http.get("/api/heat", async () => {
+				await delay(100)
+				return HttpResponse.json([])
+			})
 		)
 		const store = setupStore({
 			competitions: {
@@ -56,14 +57,12 @@ describe("HeatSelector", () => {
 		const user = userEvent.setup()
 		// Override handlers to return empty heat list and competition data
 		server.use(
-			rest.get("/api/heat", (_req, res, ctx) => res(ctx.json(null))),
-			rest.get("/api/competition", (_req, res, ctx) =>
-				res(
-					ctx.json([
+			http.get("/api/heat", () => HttpResponse.json(null)),
+			http.get("/api/competition", () =>
+				HttpResponse.json([
 						{ id: "comp1", name: "Competition 1" },
 						{ id: "comp2", name: "Competition 2" }
 					])
-				)
 			)
 		)
 		const store = setupStore({
@@ -110,13 +109,11 @@ describe("HeatSelector", () => {
 		const user = userEvent.setup()
 		// Mock the heat data
 		server.use(
-			rest.get("/api/heat", (_req, res, ctx) =>
-				res(
-					ctx.json([
+			http.get("/api/heat", () =>
+				HttpResponse.json([
 						{ id: "heat-1", name: "Heat 1" },
 						{ id: "heat-2", name: "Heat 2" }
 					])
-				)
 			)
 		)
 		const store = setupStore({
@@ -170,23 +167,21 @@ describe("HeatSelector", () => {
 		let refetchCalled = false
 		// Mock the GET and POST endpoints
 		server.use(
-			rest.get("/api/heat", (_req, res, ctx) => {
+			http.get("/api/heat", () => {
 				refetchCalled = true
 
-				return res(ctx.json(null))
+				return HttpResponse.json(null)
 			}),
-			rest.get("/api/competition", (_req, res, ctx) =>
-				res(
-					ctx.json([
+			http.get("/api/competition", () =>
+				HttpResponse.json([
 						{ id: "comp1", name: "Competition 1" },
 						{ id: "comp2", name: "Competition 2" }
 					])
-				)
 			),
-			rest.post("/api/heat", async (_req, res, ctx) => {
-				const body = await _req.json()
+			http.post("/api/heat", async ({ request }) => {
+				const body = await request.json()
 				if (!Array.isArray(body) || !body.length) {
-					return res(ctx.status(400))
+					return new HttpResponse(null, { status: 400 })
 				}
 				postRequestReceived = true
 				expect(body[0]).toMatchObject({
@@ -195,7 +190,7 @@ describe("HeatSelector", () => {
 					competition_id: "comp1"
 				})
 
-				return res(ctx.json(body))
+				return HttpResponse.json(body)
 			})
 		)
 		const store = setupStore({

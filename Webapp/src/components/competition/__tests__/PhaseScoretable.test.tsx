@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
@@ -115,17 +115,16 @@ describe("PhaseScoreTable", () => {
 		server.resetHandlers()
 		// Add default handlers with logging
 		server.use(
-			rest.get("/api/phase/:id", async (req, res, ctx) =>
-				res(ctx.json(mockPhaseData))
+			http.get("/api/phase/:id", async () =>
+				HttpResponse.json(mockPhaseData)
 			),
-			rest.get("/api/getPhaseScores/:phaseId", async (req, res, ctx) =>
-				res(ctx.json(mockPhaseScores))
+			http.get("/api/getPhaseScores/:phaseId", async () =>
+				HttpResponse.json(mockPhaseScores)
 			),
-			rest.get("/api/phase_pdf/:phaseId", (req, res, ctx) =>
-				res(
-					ctx.set("Content-Type", "application/pdf"),
-					ctx.body("mock pdf content")
-				)
+			http.get("/api/phase_pdf/:phaseId", () =>
+				new HttpResponse("mock pdf content", {
+					headers: { "Content-Type": "application/pdf" }
+				})
 			)
 		)
 	})
@@ -167,8 +166,8 @@ describe("PhaseScoreTable", () => {
 	it("should handle empty athlete list", async () => {
 		// Override the mock to return empty scores
 		server.use(
-			rest.get("/api/getPhaseScores/:phaseId", (req, res, ctx) =>
-				res(ctx.json({ scores: [] }))
+			http.get("/api/getPhaseScores/:phaseId", () =>
+				HttpResponse.json({ scores: [] })
 			)
 		)
 

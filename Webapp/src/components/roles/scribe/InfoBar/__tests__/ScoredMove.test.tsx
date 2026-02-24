@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
 import { server } from "../../../../../mocks/server"
 import { renderWithProviders } from "../../../../../testUtils"
@@ -41,8 +41,8 @@ describe("ScoredMove", () => {
 	beforeEach(() => {
 		// Default handler returns the move
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.json(mockMoveResponse))
+			http.get("/api/availablemoves", () =>
+				HttpResponse.json(mockMoveResponse)
 			)
 		)
 	})

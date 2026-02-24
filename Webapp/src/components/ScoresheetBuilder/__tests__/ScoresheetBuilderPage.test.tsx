@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
@@ -43,16 +43,14 @@ describe("ScoresheetBuilderPage", () => {
 	it("renders ScoresheetMoves when a scoresheet is selected", async () => {
 		// Mock the scoresheets API response
 		server.use(
-			rest.get("/api/scoresheet", (req, res, ctx) =>
-				res(
-					ctx.json([
+			http.get("/api/scoresheet", () =>
+				HttpResponse.json([
 						{
 							id: "test-id",
 							name: "Test Scoresheet"
 						}
 					])
 				)
-			)
 		)
 
 		render(
@@ -90,13 +88,13 @@ describe("ScoresheetBuilderPage", () => {
 		let isCreated = false
 
 		server.use(
-			rest.get("/api/scoresheet", (req, res, ctx) =>
-				res(ctx.json(isCreated ? [mockScoresheet] : []))
+			http.get("/api/scoresheet", () =>
+				HttpResponse.json(isCreated ? [mockScoresheet] : [])
 			),
-			rest.post("/api/scoresheet", async (req, res, ctx) => {
+			http.post("/api/scoresheet", async () => {
 				isCreated = true
 
-				return res(ctx.json({ success: true }))
+				return HttpResponse.json({ success: true })
 			})
 		)
 
