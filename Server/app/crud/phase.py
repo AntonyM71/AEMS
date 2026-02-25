@@ -102,7 +102,7 @@ async def get_one_by_primary_key(
 
     # Add foreign relationships if requested
     if join_foreign_table and "event" in join_foreign_table and phase.event:
-        phase_dict["event_foreign"] = [EventNested.from_orm(phase.event)]
+        phase_dict["event_foreign"] = [EventNested.model_validate(phase.event)]
 
     return PhaseResponse(**phase_dict)
 
@@ -126,13 +126,13 @@ async def partial_update_one_by_primary_key(
         raise HTTPException(status_code=404, detail="Phase not found")
 
     # Update only provided fields
-    update_data = phase_update.dict(exclude_unset=True)
+    update_data = phase_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(phase, field, value)
 
     db.commit()
     db.refresh(phase)
-    return PhaseResponse.from_orm(phase)
+    return PhaseResponse.model_validate(phase)
 
 
 @phase_router.post("/", response_model=list[PhaseResponse], status_code=201)
@@ -144,7 +144,7 @@ async def insert_many(
     db_phases = []
 
     for phase_data in phases:
-        db_phase = Phase(**phase_data.dict(exclude_none=True))
+        db_phase = Phase(**phase_data.model_dump(exclude_none=True))
         db.add(db_phase)
         db_phases.append(db_phase)
 
@@ -154,4 +154,4 @@ async def insert_many(
     for phase in db_phases:
         db.refresh(phase)
 
-    return [PhaseResponse.from_orm(phase) for phase in db_phases]
+    return [PhaseResponse.model_validate(phase) for phase in db_phases]

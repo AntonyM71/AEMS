@@ -2,7 +2,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from db.client import get_transaction_session
@@ -19,8 +19,7 @@ class PydanticAvailableMoves(BaseModel):
     rb_score: int
     direction: Literal["LR", "FB", "S"]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PydanticAvailableBonuses(BaseModel):
@@ -29,18 +28,16 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
-    display_order: int | None
+    display_order: int | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AddUpdateScoresheetRequest(BaseModel):
     moves: list[PydanticAvailableMoves] = []
     bonuses: list[PydanticAvailableBonuses] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @scoresheet_router.post("/addUpdateScoresheet/{scoresheet_id}")
@@ -58,10 +55,10 @@ async def add_update_scoresheet(
         ).delete()
 
         db.bulk_save_objects(
-            [AvailableMoves(**move.dict()) for move in scoresheet.moves]
+            [AvailableMoves(**move.model_dump()) for move in scoresheet.moves]
         )
         db.bulk_save_objects(
-            [AvailableBonuses(**bonus.dict()) for bonus in scoresheet.bonuses]
+            [AvailableBonuses(**bonus.model_dump()) for bonus in scoresheet.bonuses]
         )
 
         db.commit()

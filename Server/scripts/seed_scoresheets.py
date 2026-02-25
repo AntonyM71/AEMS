@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from db.client import transaction_session_context_manager
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
@@ -22,9 +22,7 @@ class SeedMoveData(BaseModel):
     ReverseValue: int | None
     Direction: Literal["LR", "FB", "S"]
 
-    class Config:
-        orm_mode = True
-        extra = Extra.allow
+    model_config = ConfigDict(from_attributes=True, extra='allow')
 
 
 for file in scoresheet_files:
@@ -65,18 +63,14 @@ for file in scoresheet_files:
                         ]
                     )
 
-                    bonus_names = [
-                        field
-                        for field in pydantic_move.__dict__.keys()
-                        if field not in SeedMoveData.__fields__.keys()
-                    ]
+                    bonus_names = list(pydantic_move.__pydantic_extra__.keys()) if pydantic_move.__pydantic_extra__ else []
                     bonuses = [
                         AvailableBonuses(
                             id=uuid4(),
                             sheet_id=scoresheet_id,
                             move_id=move_id,
                             name=bonus_name,
-                            score=pydantic_move.dict()[bonus_name],
+                            score=pydantic_move.model_dump()[bonus_name],
                             display_order=bonus_order.get(bonus_name.lower(), None),
                         )
                         for bonus_name in bonus_names

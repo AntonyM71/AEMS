@@ -65,7 +65,7 @@ async def get_many(
     result = db.execute(query)
     competitions = result.scalars().all()
 
-    return [CompetitionResponse.from_orm(comp) for comp in competitions]
+    return [CompetitionResponse.model_validate(comp) for comp in competitions]
 
 
 @competition_router.post("/", response_model=list[CompetitionResponse], status_code=201)
@@ -77,7 +77,7 @@ async def insert_many(
     db_competitions = []
 
     for comp_data in competitions:
-        db_competition = Competition(**comp_data.dict(exclude_none=True))
+        db_competition = Competition(**comp_data.model_dump(exclude_none=True))
         db.add(db_competition)
         db_competitions.append(db_competition)
 
@@ -87,7 +87,7 @@ async def insert_many(
     for comp in db_competitions:
         db.refresh(comp)
 
-    return [CompetitionResponse.from_orm(comp) for comp in db_competitions]
+    return [CompetitionResponse.model_validate(comp) for comp in db_competitions]
 
 
 @competition_router.patch("/{id}", response_model=CompetitionResponse)
@@ -120,7 +120,7 @@ async def partial_update_one_by_primary_key(
 
     db.commit()
     db.refresh(db_competition)
-    return CompetitionResponse.from_orm(db_competition)
+    return CompetitionResponse.model_validate(db_competition)
 
 
 @competition_router.get(
@@ -165,14 +165,14 @@ async def get_many_by_pk_from_event(
         if join_foreign_table:
             if "competition" in join_foreign_table:
                 response_data["competition_foreign"] = (
-                    [CompetitionNested.from_orm(event.competition)]
+                    [CompetitionNested.model_validate(event.competition)]
                     if event.competition
                     else []
                 )
             if "phase" in join_foreign_table:
                 response_data["phase_foreign"] = (
                     [
-                        PhaseNested.from_orm(phase)
+                        PhaseNested.model_validate(phase)
                         for phase in getattr(event, "phases", [])
                     ]
                     if hasattr(event, "phases")
