@@ -55,7 +55,6 @@ describe("HeatSummaryTable", () => {
 							phase_id: "1"
 						}
 					])
-				)
 			),
 			// Mock for PDF downloads
 			http.get("/api/heat_results_pdf", () =>
@@ -253,7 +252,6 @@ describe("HeatAthleteTable", () => {
 							phase_id: "1"
 						}
 					])
-				)
 			)
 		)
 	})

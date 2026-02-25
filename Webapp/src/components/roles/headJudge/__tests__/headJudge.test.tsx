@@ -9,6 +9,17 @@ import { scoringReducer } from "../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../redux/services/aemsApi"
 import HeadJudge from "../headJudge"
 
+jest.mock("../WebSocketConnections", () => {
+	const createSocket = () => ({} as WebSocket)
+
+	return {
+		connectWebRunStatusSocket: jest.fn(createSocket),
+		connectTimerSocket: jest.fn(createSocket),
+		connectCurrentScoreStatusSocket: jest.fn(createSocket),
+		connectBroadcastControlSocket: jest.fn(createSocket)
+	}
+})
+
 const createTestStore = () =>
 	configureStore({
 		reducer: {

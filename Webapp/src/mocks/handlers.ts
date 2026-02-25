@@ -71,7 +71,7 @@ export const handlers = [
 	}),
 	// Existing handlers
 	http.get("/api/availablemoves", ({ request }) => {
-		const url = new URL(request.url)
+		const url = new URL(request.url, "http://localhost")
 		const idList = url.searchParams.get("idList")?.split(",")
 		const idListComparisonOperator = url.searchParams.get(
 			"idListComparisonOperator"
@@ -96,7 +96,7 @@ export const handlers = [
 		return HttpResponse.json([])
 	}),
 	http.get("/api/availablebonuses", ({ request }) => {
-		const url = new URL(request.url)
+		const url = new URL(request.url, "http://localhost")
 		const moveIdList = url.searchParams.get("moveIdList")?.split(",")
 		const moveIdListComparisonOperator = url.searchParams.get(
 			"moveIdListComparisonOperator"
@@ -146,7 +146,7 @@ export const handlers = [
 		])
 	}),
 	http.get("/api/event", ({ request }) => {
-		const url = new URL(request.url)
+		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList[]")
 		const competitionIdListComparisonOperator = url.searchParams.get(
 			"competitionIdListComparisonOperator"
@@ -180,7 +180,7 @@ export const handlers = [
 		return HttpResponse.json(body)
 	}),
 	http.get("/api/heat", ({ request }) => {
-		const url = new URL(request.url)
+		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList")
 		const competitionIdListComparisonOperator = url.searchParams.get(
 			"competitionIdListComparisonOperator"
