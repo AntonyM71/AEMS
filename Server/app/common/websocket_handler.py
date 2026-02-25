@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 from collections.abc import Awaitable, Callable
-from typing import Optional
 
 from broadcaster import Broadcast
 from fastapi import WebSocket, WebSocketDisconnect
@@ -19,14 +18,14 @@ def get_broadcast() -> Broadcast:
 
 
 async def ws_receiver(
-    websocket: WebSocket, channel: str, side_effect: Optional[Callable[[str], None]]
+    websocket: WebSocket, channel: str, side_effect: Callable[[str], None] | None
 ) -> None:
     async for message in websocket.iter_text():
         await publisher(message=message, channel=channel, side_effect=side_effect)
 
 
 async def publisher(
-    message: str, channel: str, side_effect: Optional[Callable[[str], None]] = None
+    message: str, channel: str, side_effect: Callable[[str], None] | None = None
 ) -> None:
     async with get_broadcast() as broadcast:
         await broadcast.publish(channel=channel, message=message)
@@ -37,7 +36,7 @@ async def publisher(
 async def ws_sender(
     websocket: WebSocket,
     channel: str,
-    fetch_data_with_message: Optional[Callable[[str], Awaitable[str]]] = None,
+    fetch_data_with_message: Callable[[str], Awaitable[str]] | None = None,
 ) -> None:
     async with get_broadcast() as broadcast:
         logger = logging.getLogger("app.common.websocket_handler")

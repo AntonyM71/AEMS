@@ -1,5 +1,5 @@
 #
-FROM python:3.10
+FROM python:3.13
 
 ENV LOG_JSON_FORMAT true
 ENV DD_TRACE_ENABLED true

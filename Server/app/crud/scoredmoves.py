@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -14,8 +13,8 @@ scoredmoves_router = APIRouter(prefix="/scoredmoves", tags=["scoredmoves"])
 @scoredmoves_router.delete("/", response_model=dict)
 async def delete_many(
     db: Session = Depends(get_transaction_session),
-    heat_id____list: Optional[list[UUID]] = Query(None, alias="heat_id____list"),
-    athlete_id____list: Optional[list[UUID]] = Query(None, alias="athlete_id____list"),
+    heat_id____list: list[UUID] | None = Query(None, alias="heat_id____list"),
+    athlete_id____list: list[UUID] | None = Query(None, alias="athlete_id____list"),
 ) -> dict:
     """Delete many scored moves by heat_id and athlete_id"""
     # Require at least one filter to prevent accidental mass deletion

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.10-bullseye
+FROM mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
 
 ENV PYTHONUNBUFFERED 1
 ENV PATH="/workspaces/AEMS/Server/.venv/bin:$PATH"
