@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { fireEvent, render, screen } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
 import { competitionsReducer } from "../../../../redux/atoms/competitions"
@@ -40,8 +40,8 @@ describe("InfoBar", () => {
 
 		// Mock the bonuses API endpoint
 		server.use(
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.json([]))
+			http.get("/api/availablebonuses", () =>
+				HttpResponse.json([])
 			)
 		)
 	})

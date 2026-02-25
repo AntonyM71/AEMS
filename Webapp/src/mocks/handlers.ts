@@ -1,85 +1,79 @@
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 
 export const handlers = [
-	rest.get("/api/phase/:id", (req, res, ctx) =>
-		res(
-			ctx.json({
-				id: req.params.id,
-				name: "Test Phase",
-				number_of_runs: 2
-			})
-		)
+	http.get("/api/phase/:id", ({ params }) =>
+		HttpResponse.json({
+			id: params.id,
+			name: "Test Phase",
+			number_of_runs: 2
+		})
 	),
-	rest.get("/api/getPhaseScores/:phaseId", (req, res, ctx) =>
-		res(
-			ctx.json({
-				scores: [
-					{
-						bib_number: "123",
-						first_name: "John",
-						last_name: "Doe",
-						ranking: 1,
-						total_score: 85.5,
-						run_scores: [
-							{
-								locked: true,
-								did_not_start: false,
-								mean_run_score: 85.5,
-								judge_scores: [
-									{
-										judge_id: "1",
-										score_info: { score: 85 }
-									},
-									{
-										judge_id: "2",
-										score_info: { score: 86 }
-									}
-								]
-							},
-							{
-								locked: true,
-								did_not_start: false,
-								mean_run_score: 85.5,
-								judge_scores: [
-									{
-										judge_id: "1",
-										score_info: { score: 85 }
-									},
-									{
-										judge_id: "2",
-										score_info: { score: 86 }
-									}
-								]
-							}
-						]
-					}
-				]
-			})
-		)
+	http.get("/api/getPhaseScores/:phaseId", () =>
+		HttpResponse.json({
+			scores: [
+				{
+					bib_number: "123",
+					first_name: "John",
+					last_name: "Doe",
+					ranking: 1,
+					total_score: 85.5,
+					run_scores: [
+						{
+							locked: true,
+							did_not_start: false,
+							mean_run_score: 85.5,
+							judge_scores: [
+								{
+									judge_id: "1",
+									score_info: { score: 85 }
+								},
+								{
+									judge_id: "2",
+									score_info: { score: 86 }
+								}
+							]
+						},
+						{
+							locked: true,
+							did_not_start: false,
+							mean_run_score: 85.5,
+							judge_scores: [
+								{
+									judge_id: "1",
+									score_info: { score: 85 }
+								},
+								{
+									judge_id: "2",
+									score_info: { score: 86 }
+								}
+							]
+						}
+					]
+				}
+			]
+		})
 	),
-	rest.get("/api/phase_pdf/:phaseId", (req, res, ctx) =>
-		res(
-			ctx.set("Content-Type", "application/pdf"),
-			ctx.body("mock pdf content")
-		)
+	http.get("/api/phase_pdf/:phaseId", () =>
+		new HttpResponse("mock pdf content", {
+			headers: { "Content-Type": "application/pdf" }
+		})
 	),
-	rest.get("/api/scoresheet", (req, res, ctx) =>
-		res(
-			ctx.json([
-				{ id: "1", name: "Scoresheet 1" },
-				{ id: "2", name: "Scoresheet 2" }
-			])
-		)
+	http.get("/api/scoresheet", () =>
+		HttpResponse.json([
+			{ id: "1", name: "Scoresheet 1" },
+			{ id: "2", name: "Scoresheet 2" }
+		])
 	),
-	rest.post("/api/scoresheet", async (req, res, ctx) => {
-		const body = await req.json()
+	http.post("/api/scoresheet", async ({ request }) => {
+		const body = await request.json()
 
-		return res(ctx.json(body))
+		return HttpResponse.json(body)
 	}),
 	// Existing handlers
-	rest.get("/api/availablemoves", (req, res, ctx) => {
-		const idList = req.url.searchParams.get("idList")?.split(",")
-		const idListComparisonOperator = req.url.searchParams.get(
+	http.get("/api/availablemoves", ({ request }) => {
+		const url = new URL(request.url, "http://localhost")
+		const idList = url.searchParams.get("idList")?.split(",")
+		const idListComparisonOperator = url.searchParams.get(
 			"idListComparisonOperator"
 		)
 
@@ -87,25 +81,24 @@ export const handlers = [
 			idListComparisonOperator === "Equal" &&
 			idList?.includes("test-move-1")
 		) {
-			return res(
-				ctx.json([
-					{
-						id: "test-move-1",
-						name: "Test Move",
-						fl_score: 10,
-						rb_score: 20,
-						direction: "LR",
-						sheet_id: "test-id"
-					}
-				])
-			)
+			return HttpResponse.json([
+				{
+					id: "test-move-1",
+					name: "Test Move",
+					fl_score: 10,
+					rb_score: 20,
+					direction: "LR",
+					sheet_id: "test-id"
+				}
+			])
 		}
 
-		return res(ctx.json([]))
+		return HttpResponse.json([])
 	}),
-	rest.get("/api/availablebonuses", (req, res, ctx) => {
-		const moveIdList = req.url.searchParams.get("moveIdList")?.split(",")
-		const moveIdListComparisonOperator = req.url.searchParams.get(
+	http.get("/api/availablebonuses", ({ request }) => {
+		const url = new URL(request.url, "http://localhost")
+		const moveIdList = url.searchParams.get("moveIdList")?.split(",")
+		const moveIdListComparisonOperator = url.searchParams.get(
 			"moveIdListComparisonOperator"
 		)
 
@@ -113,120 +106,111 @@ export const handlers = [
 			moveIdListComparisonOperator === "Equal" &&
 			moveIdList?.includes("test-move-1")
 		) {
-			return res(
-				ctx.json([
-					{
-						id: "available-bonus-1",
-						move_id: "test-move-1",
-						name: "Test Bonus",
-						score: 5
-					}
-				])
-			)
-		}
-
-		return res(ctx.json([]))
-	}),
-	rest.get("/api/competition", (req, res, ctx) =>
-		res(
-			ctx.json([
-				{ id: "1", name: "Competition 1" },
-				{ id: "2", name: "Competition 2" }
-			])
-		)
-	),
-	rest.post("/api/competition", async (req, res, ctx) => {
-		const body = await req.json()
-
-		return res(ctx.json(body))
-	}),
-	rest.get("/api/competition/:competitionPkId/event", (req, res, ctx) => {
-		const { competitionPkId } = req.params
-
-		return res(
-			ctx.json([
+			return HttpResponse.json([
 				{
-					id: "event-1",
-					name: "Event 1",
-					competition_id: competitionPkId
-				},
-				{
-					id: "event-2",
-					name: "Event 2",
-					competition_id: competitionPkId
+					id: "available-bonus-1",
+					move_id: "test-move-1",
+					name: "Test Bonus",
+					score: 5
 				}
 			])
-		)
+		}
+
+		return HttpResponse.json([])
 	}),
-	rest.get("/api/event", (req, res, ctx) => {
-		const params = req.url.searchParams
-		const competitionIdList = params.get("competitionIdList[]")
-		const competitionIdListComparisonOperator = params.get(
+	http.get("/api/competition", () =>
+		HttpResponse.json([
+			{ id: "1", name: "Competition 1" },
+			{ id: "2", name: "Competition 2" }
+		])
+	),
+	http.post("/api/competition", async ({ request }) => {
+		const body = await request.json()
+
+		return HttpResponse.json(body)
+	}),
+	http.get("/api/competition/:competitionPkId/event", ({ params }) => {
+		const { competitionPkId } = params
+
+		return HttpResponse.json([
+			{
+				id: "event-1",
+				name: "Event 1",
+				competition_id: competitionPkId
+			},
+			{
+				id: "event-2",
+				name: "Event 2",
+				competition_id: competitionPkId
+			}
+		])
+	}),
+	http.get("/api/event", ({ request }) => {
+		const url = new URL(request.url, "http://localhost")
+		const competitionIdList = url.searchParams.get("competitionIdList[]")
+		const competitionIdListComparisonOperator = url.searchParams.get(
 			"competitionIdListComparisonOperator"
 		)
-		const joinForeignTable = params.get("joinForeignTable[]")
+		const joinForeignTable = url.searchParams.get("joinForeignTable[]")
 
 		if (
 			competitionIdList === "1" &&
 			competitionIdListComparisonOperator === "Equal" &&
 			joinForeignTable === "phase"
 		) {
-			return res(
-				ctx.json([
-					{
-						id: "1",
-						name: "Test Event",
-						phase_foreign: [
-							{
-								id: "1",
-								name: "Test Phase"
-							}
-						]
-					}
-				])
-			)
+			return HttpResponse.json([
+				{
+					id: "1",
+					name: "Test Event",
+					phase_foreign: [
+						{
+							id: "1",
+							name: "Test Phase"
+						}
+					]
+				}
+			])
 		}
 
-		return res(ctx.status(404))
+		return new HttpResponse(null, { status: 404 })
 	}),
-	rest.post("/api/event", async (req, res, ctx) => {
-		const body = await req.json()
+	http.post("/api/event", async ({ request }) => {
+		const body = await request.json()
 
-		return res(ctx.json(body))
+		return HttpResponse.json(body)
 	}),
-	rest.get("/api/heat", (req, res, ctx) => {
-		const competitionIdList = req.url.searchParams.get("competitionIdList")
-		const competitionIdListComparisonOperator = req.url.searchParams.get(
+	http.get("/api/heat", ({ request }) => {
+		const url = new URL(request.url, "http://localhost")
+		const competitionIdList = url.searchParams.get("competitionIdList")
+		const competitionIdListComparisonOperator = url.searchParams.get(
 			"competitionIdListComparisonOperator"
 		)
 
 		if (!competitionIdList || !competitionIdListComparisonOperator) {
-			return res(ctx.json([]))
+			return HttpResponse.json([])
 		}
 
 		// For test cases that expect no heats
 		if (competitionIdList === "comp1") {
-			return res(ctx.json(null))
+			return HttpResponse.json(null)
 		}
 
 		// For test cases that expect heats
 		if (competitionIdList === "1") {
-			return res(
-				ctx.json([
-					{
-						id: "heat-1",
-						name: "Heat 1",
-						competition_id: competitionIdList,
-						number_of_runs: 2
-					},
-					{
-						id: "heat-2",
-						name: "Heat 2",
-						competition_id: competitionIdList,
-						number_of_runs: 2
-					}
-				])
-			)
+			return HttpResponse.json([
+				{
+					id: "heat-1",
+					name: "Heat 1",
+					competition_id: competitionIdList,
+					number_of_runs: 2
+				},
+				{
+					id: "heat-2",
+					name: "Heat 2",
+					competition_id: competitionIdList,
+					number_of_runs: 2
+				}
+			])
 		}
 
 		// For test cases that expect errors
@@ -234,82 +218,76 @@ export const handlers = [
 			competitionIdList?.includes("2") &&
 			competitionIdListComparisonOperator === "Equal"
 		) {
-			return res(
-				ctx.status(500),
-				ctx.json({ message: "Internal server error" })
+			return HttpResponse.json(
+				{ message: "Internal server error" },
+				{ status: 500 }
 			)
 		}
 
-		return res(ctx.json([]))
+		return HttpResponse.json([])
 	}),
-	rest.post("/api/heat", async (req, res, ctx) => {
-		const body = await req.json()
+	http.post("/api/heat", async ({ request }) => {
+		const body = await request.json()
 
-		return res(ctx.json(body))
+		return HttpResponse.json(body)
 	}),
-	rest.get("/api/heat/:id", (req, res, ctx) => {
-		const { id } = req.params
+	http.get("/api/heat/:id", ({ params }) => {
+		const { id } = params
 
-		return res(
-			ctx.json({
-				id,
-				name: "Test Heat",
-				competition_id: "1",
-				number_of_runs: 2
-			})
-		)
+		return HttpResponse.json({
+			id,
+			name: "Test Heat",
+			competition_id: "1",
+			number_of_runs: 2
+		})
 	}),
-	rest.get("/api/getHeatScores/:heatId", (req, res, ctx) => {
-		const { heatId } = req.params
-
-		return res(
-			ctx.json({
-				scores: [
-					{
-						bib_number: "123",
-						first_name: "John",
-						last_name: "Doe",
-						run_scores: [
-							{
-								locked: true,
-								did_not_start: false,
-								mean_run_score: 85.5,
-								judge_scores: [
-									{
-										judge_id: "1",
-										score_info: { score: 85 }
-									},
-									{
-										judge_id: "2",
-										score_info: { score: 86 }
-									}
-								]
-							},
-							{
-								locked: true,
-								did_not_start: true,
-								mean_run_score: 0,
-								judge_scores: [
-									{
-										judge_id: "1",
-										score_info: { score: 0 }
-									},
-									{
-										judge_id: "2",
-										score_info: { score: 0 }
-									}
-								]
-							}
-						]
-					}
-				]
-			})
-		)
-	}),
-	rest.post(
+	http.get("/api/getHeatScores/:heatId", () =>
+		HttpResponse.json({
+			scores: [
+				{
+					bib_number: "123",
+					first_name: "John",
+					last_name: "Doe",
+					run_scores: [
+						{
+							locked: true,
+							did_not_start: false,
+							mean_run_score: 85.5,
+							judge_scores: [
+								{
+									judge_id: "1",
+									score_info: { score: 85 }
+								},
+								{
+									judge_id: "2",
+									score_info: { score: 86 }
+								}
+							]
+						},
+						{
+							locked: true,
+							did_not_start: true,
+							mean_run_score: 0,
+							judge_scores: [
+								{
+									judge_id: "1",
+									score_info: { score: 0 }
+								},
+								{
+									judge_id: "2",
+									score_info: { score: 0 }
+								}
+							]
+						}
+					]
+				}
+			]
+		})
+	),
+	http.post(
 		"/api/addUpdateScoresheet/:scoresheetId",
-		async (req, res, ctx) => {
-			const { scoresheetId } = req.params
+		async ({ params, request }) => {
+			const { scoresheetId } = params
 			interface RequestBody {
 				addUpdateScoresheetRequest: {
 					moves: {
@@ -330,7 +308,7 @@ export const handlers = [
 				}
 			}
 
-			const rawBody: unknown = await req.json()
+			const rawBody: unknown = await request.json()
 			const body = rawBody as RequestBody
 
 			if (
@@ -339,19 +317,17 @@ export const handlers = [
 				!body?.addUpdateScoresheetRequest?.bonuses ||
 				!Array.isArray(body.addUpdateScoresheetRequest.bonuses)
 			) {
-				return res(
-					ctx.status(400),
-					ctx.json({ message: "Invalid request format" })
+				return HttpResponse.json(
+					{ message: "Invalid request format" },
+					{ status: 400 }
 				)
 			}
 
-			return res(
-				ctx.json({
-					success: true,
-					scoresheetId,
-					...body.addUpdateScoresheetRequest
-				})
-			)
+			return HttpResponse.json({
+				success: true,
+				scoresheetId,
+				...body.addUpdateScoresheetRequest
+			})
 		}
 	)
 ]

@@ -1,6 +1,8 @@
 // Optional: configure or set up a testing framework before each test.
 // If you delete this file, remove `setupFilesAfterEnv` from `jest.config.js`
 
+process.env.NEXT_PUBLIC_API_URL_DEV = "http://localhost/api/"
+
 // Used for __tests__/testing-library.js
 // Learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom"
@@ -8,6 +10,26 @@ import "@testing-library/jest-dom/extend-expect"
 
 // Fetch polyfill for tests
 import "whatwg-fetch"
+
+class MockWebSocket {
+	static CONNECTING = 0
+	static OPEN = 1
+	static CLOSING = 2
+	static CLOSED = 3
+	readyState = MockWebSocket.OPEN
+	onopen = null
+	onmessage = null
+	onclose = null
+	onerror = null
+	send() {}
+	close() {
+		this.readyState = MockWebSocket.CLOSED
+	}
+	addEventListener() {}
+	removeEventListener() {}
+}
+
+global.WebSocket = MockWebSocket
 
 // Mock react-hot-toast
 const mockToast = {

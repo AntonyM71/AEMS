@@ -6,7 +6,16 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
 	testEnvironment: "jsdom",
+	setupFiles: ["<rootDir>/jest.polyfills.js"],
 	moduleNameMapper: {
+		"^msw/node$": "<rootDir>/node_modules/msw/lib/node/index.js",
+		"^@mswjs/interceptors/ClientRequest$":
+			"<rootDir>/node_modules/@mswjs/interceptors/lib/node/interceptors/ClientRequest/index.cjs",
+		"^@mswjs/interceptors/XMLHttpRequest$":
+			"<rootDir>/node_modules/@mswjs/interceptors/lib/node/interceptors/XMLHttpRequest/index.cjs",
+		"^@mswjs/interceptors/fetch$":
+			"<rootDir>/node_modules/@mswjs/interceptors/lib/node/interceptors/fetch/index.cjs",
+		"^until-async$": "<rootDir>/__mocks__/until-async.js",
 		"^@/components/(.*)$": "<rootDir>/src/components/$1",
 		"^@/pages/(.*)$": "<rootDir>/src/pages/$1"
 	},

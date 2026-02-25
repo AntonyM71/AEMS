@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse, delay } from "msw"
 import { Toaster, toast } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -73,12 +73,14 @@ describe("ScoresheetMoves", () => {
 	it("shows loading state when data is being fetched", async () => {
 		// Use MSW to delay the responses
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.delay(100), ctx.json([]))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.delay(100), ctx.json([]))
-			)
+			http.get("/api/availablemoves", async () => {
+					await delay(100)
+					return HttpResponse.json([])
+				}),
+			http.get("/api/availablebonuses", async () => {
+					await delay(100)
+					return HttpResponse.json([])
+				})
 		)
 
 		render(
@@ -97,12 +99,14 @@ describe("ScoresheetMoves", () => {
 	it("shows empty state with just header and add move when no moves exist", async () => {
 		// Use MSW to return empty arrays
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.delay(10), ctx.json([]))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.delay(10), ctx.json([]))
-			)
+			http.get("/api/availablemoves", async () => {
+					await delay(10)
+					return HttpResponse.json([])
+				}),
+			http.get("/api/availablebonuses", async () => {
+					await delay(10)
+					return HttpResponse.json([])
+				})
 		)
 
 		render(
@@ -145,12 +149,14 @@ describe("ScoresheetMoves", () => {
 
 	it("displays existing moves and bonuses", async () => {
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.delay(10), ctx.json(mockMoves))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.delay(10), ctx.json(mockBonuses))
-			)
+			http.get("/api/availablemoves", async () => {
+					await delay(10)
+					return HttpResponse.json(mockMoves)
+				}),
+			http.get("/api/availablebonuses", async () => {
+					await delay(10)
+					return HttpResponse.json(mockBonuses)
+				})
 		)
 
 		render(
@@ -204,16 +210,16 @@ describe("ScoresheetMoves", () => {
 		let updateCalled = false
 
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.json(mockMoves))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.json(mockBonuses))
-			),
-			rest.post("/api/addUpdateScoresheet/:id", async (req, res, ctx) => {
+			http.get("/api/availablemoves", () =>
+				HttpResponse.json(mockMoves)
+				),
+			http.get("/api/availablebonuses", () =>
+				HttpResponse.json(mockBonuses)
+				),
+			http.post("/api/addUpdateScoresheet/:id", async ({ request }) => {
 				updateCalled = true
 
-				const body = await req.json()
+				const body = await request.json()
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				expect(body.addUpdateScoresheetRequest.moves).toEqual(mockMoves)
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -221,7 +227,7 @@ describe("ScoresheetMoves", () => {
 					mockBonuses
 				)
 
-				return res(ctx.json({ success: true }))
+				return HttpResponse.json({ success: true })
 			})
 		)
 
@@ -251,12 +257,12 @@ describe("ScoresheetMoves", () => {
 
 	it("deletes a bonus type from all moves", async () => {
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.json(mockMoves))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.json(mockBonuses))
-			)
+			http.get("/api/availablemoves", () =>
+				HttpResponse.json(mockMoves)
+				),
+			http.get("/api/availablebonuses", () =>
+				HttpResponse.json(mockBonuses)
+				)
 		)
 
 		render(
@@ -297,12 +303,12 @@ describe("ScoresheetMoves", () => {
 
 	it("adds a new bonus type to all moves", async () => {
 		server.use(
-			rest.get("/api/availablemoves", (req, res, ctx) =>
-				res(ctx.json(mockMoves))
-			),
-			rest.get("/api/availablebonuses", (req, res, ctx) =>
-				res(ctx.json(mockBonuses))
-			)
+			http.get("/api/availablemoves", () =>
+				HttpResponse.json(mockMoves)
+				),
+			http.get("/api/availablebonuses", () =>
+				HttpResponse.json(mockBonuses)
+				)
 		)
 
 		render(

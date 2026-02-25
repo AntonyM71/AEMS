@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
@@ -37,26 +37,22 @@ describe("JudgingPage", () => {
 
 		// Set up MSW handlers for the API endpoints
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId/phase", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							number_of_judges: 3
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId/phase", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						number_of_judges: 3
+					}
+				])
 			),
-			rest.get("/api/getHeatInfo/:heatId", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "athlete-1",
-							name: "Athlete 1"
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						id: "athlete-1",
+						name: "Athlete 1"
+					}
+				])
 			)
 		)
 	})
@@ -104,19 +100,17 @@ describe("JudgingPage", () => {
 
 		// Mock API to return empty athlete list
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (_req, res, ctx) =>
-				res(ctx.json([]))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([])
 			),
-			rest.get("/api/getHeatInfo/:heatId/phase", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							number_of_judges: 3
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId/phase", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						number_of_judges: 3
+					}
+				])
 			)
 		)
 
@@ -167,26 +161,22 @@ describe("JudgingPage", () => {
 
 		// Mock API to return empty athlete list
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "athlete-1",
-							name: "Athlete 1"
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						id: "athlete-1",
+						name: "Athlete 1"
+					}
+				])
 			),
-			rest.get("/api/getHeatInfo/:heatId/phase", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							number_of_judges: 3
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId/phase", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						number_of_judges: 3
+					}
+				])
 			)
 		)
 

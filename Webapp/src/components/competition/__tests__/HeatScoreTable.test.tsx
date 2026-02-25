@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
@@ -32,24 +32,19 @@ describe("HeatScoreTable", () => {
 		// Add handlers for the APIs used by HeatScoreTable
 		server.use(
 			// Handler for getting heat details
-			rest.get("/api/heat/:id", (req, res, ctx) => {
-				const { id } = req.params
+			http.get("/api/heat/:id", ({ params }) => {
+				const { id } = params
 
-				return res(
-					ctx.json({
-						id,
-						name: "Test Heat",
-						competition_id: "1",
-						number_of_runs: 2
-					})
-				)
+				return HttpResponse.json({
+					id,
+					name: "Test Heat",
+					competition_id: "1",
+					number_of_runs: 2
+				})
 			}),
 			// Handler for getting heat scores
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) => {
-				const { heatId } = req.params
-
-				return res(
-					ctx.json({
+			http.get("/api/getHeatScores/:heatId", () => {
+				return HttpResponse.json({
 						scores: [
 							{
 								bib_number: "123",
@@ -90,7 +85,6 @@ describe("HeatScoreTable", () => {
 							}
 						]
 					})
-				)
 			})
 		)
 	})
@@ -268,9 +262,8 @@ describe("HeatScoreTable", () => {
 	it("applies correct styling for locked and unlocked scores", async () => {
 		// Modify the mock to include both locked and unlocked scores
 		server.use(
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json({
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
 						scores: [
 							{
 								bib_number: "123",
@@ -303,7 +296,6 @@ describe("HeatScoreTable", () => {
 							}
 						]
 					})
-				)
 			)
 		)
 
@@ -347,12 +339,10 @@ describe("HeatScoreTable", () => {
 	it("shows no athletes message when heat has no scores", async () => {
 		// Modify the mock to return empty scores array
 		server.use(
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json({
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
 						scores: []
 					})
-				)
 			)
 		)
 

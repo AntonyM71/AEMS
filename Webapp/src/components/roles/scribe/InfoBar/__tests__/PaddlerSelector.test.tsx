@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { server } from "../../../../../mocks/server"
 import { aemsApi } from "../../../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../../../testUtils"
@@ -29,8 +29,8 @@ describe("PaddlerSelector", () => {
 
 		// Mock the API response
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([mockPaddlerInfo]))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([mockPaddlerInfo])
 			)
 		)
 
@@ -62,8 +62,8 @@ describe("PaddlerSelector", () => {
 
 		// Mock the API response with multiple paddlers
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json(mockPaddlers))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json(mockPaddlers)
 			)
 		)
 
@@ -149,8 +149,8 @@ describe("PaddlerSelector", () => {
 
 		// Mock the API response with multiple paddlers
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json(mockPaddlers))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json(mockPaddlers)
 			)
 		)
 
