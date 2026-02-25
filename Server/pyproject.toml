@@ -63,7 +63,7 @@ dependencies = [
     "python-multipart",
     "pydantic<=1.10.23",
     "SQLAlchemy<=1.4.54",
-    "starlette==0.14.2",
+    "starlette==0.49.1",
     "fpdf2",
     # Dev
     "ruff>=0.15.0,<1.0",  # Upgraded from 0.9.6
