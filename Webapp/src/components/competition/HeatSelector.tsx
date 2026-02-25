@@ -1,8 +1,10 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
+import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
+import IconButton from "@mui/material/IconButton"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Paper from "@mui/material/Paper"
@@ -10,6 +12,9 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
+import EditNoteIcon from "@mui/icons-material/EditNote"
 import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
@@ -22,12 +27,16 @@ import { updatePaddler, updateRun } from "../../redux/atoms/scoring"
 import {
 	useGetManyCompetitionGetQuery,
 	useGetManyHeatGetQuery,
-	useInsertManyHeatPostMutation
+	useGetOneByPrimaryKeyHeatIdGetQuery,
+	useInsertManyHeatPostMutation,
+	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { RefreshButton } from "./RefreshIconButton"
 
 const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
+	const [open, setOpen] = useState<boolean>(false)
+	const handleClose = () => setOpen(false)
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const setSelectedHeat = (newHeat: string) =>
@@ -90,6 +99,12 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 	} else {
 		return (
 			<Paper sx={{ padding: "1em" }}>
+				<EditHeatDialog
+					refetch={refetch}
+					open={open}
+					handleClose={handleClose}
+					selectedHeat={selectedHeat}
+				/>
 				<Grid container spacing={2}>
 					{showDetailed ? (
 						<Grid size={12}>
@@ -116,6 +131,18 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 								}}
 								startAdornment={
 									<RefreshButton refetch={refetch} />
+								}
+								endAdornment={
+									showDetailed && selectedHeat ? (
+										<IconButton
+											aria-label="edit heat"
+											onClick={() => setOpen(true)}
+										>
+											<Tooltip title="Edit Selected Heat">
+												<EditNoteIcon />
+											</Tooltip>
+										</IconButton>
+									) : undefined
 								}
 							>
 								{data.map((heat) =>
@@ -147,16 +174,77 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 	}
 }
 
-const AddHeat = ({
-	refetch
+const EditHeatDialog = ({
+	open,
+	handleClose,
+	refetch,
+	selectedHeat
 }: {
-	refetch: ReturnType<typeof useGetManyHeatGetQuery>["refetch"]
+	open: boolean
+	handleClose: () => void
+	refetch: () => Promise<any>
+	selectedHeat: string
 }) => {
-	const [heatName, setHeatName] = useState<string>("")
+	const {
+		data,
+		isSuccess,
+		refetch: refetchHeatInfo
+	} = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{
+			id: selectedHeat
+		},
+		{ skip: !selectedHeat }
+	)
+	const refetchHeatListAndHeatInfo = async () => {
+		await refetch()
+		await refetchHeatInfo()
+	}
+
+	return (
+		<Dialog onClose={handleClose} open={open}>
+			{isSuccess ? (
+				<div
+					style={{
+						padding: "1em"
+					}}
+				>
+					<Typography
+						variant="h5"
+						data-testid="edit-heat-dialog-title"
+					>
+						Edit Heat
+					</Typography>
+
+					<AddHeat
+						refetch={refetchHeatListAndHeatInfo}
+						existingHeatData={data}
+					/>
+				</div>
+			) : (
+				<Skeleton />
+			)}
+		</Dialog>
+	)
+}
+
+// eslint-disable-next-line complexity
+const AddHeat = ({
+	refetch,
+	existingHeatData
+}: {
+	refetch: () => Promise<any>
+	existingHeatData?: ExistingHeatData
+}) => {
+	const [heatName, setHeatName] = useState<string>(
+		existingHeatData?.name ?? ""
+	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const [competitionId, setCompetitionId] =
-		useState<string>(selectedCompetition)
+	const [competitionId, setCompetitionId] = useState<string>(
+		existingHeatData?.competition_id ?? selectedCompetition
+	)
 	const [postNewHeat] = useInsertManyHeatPostMutation()
+	const [updateExistingHeat] =
+		usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation()
 	const { data } = useGetManyCompetitionGetQuery({})
 
 	const options: CompetitionOptions[] | undefined = data
@@ -165,26 +253,43 @@ const AddHeat = ({
 		.map((d) => ({ value: d.id, label: d.name }))
 
 	const submitNewHeat = async () => {
-		try {
-			const response = await postNewHeat({
-				heats: [
-					{
-						name: heatName,
-						id: uuid4(),
-						competition_id: competitionId
-					}
-				]
-			})
+		if (!existingHeatData) {
+			try {
+				const response = await postNewHeat({
+					heats: [
+						{
+							name: heatName,
+							id: uuid4(),
+							competition_id: competitionId
+						}
+					]
+				})
 
-			if ("error" in response) {
-				throw new Error("Failed to add heat")
+				if ("error" in response) {
+					throw new Error("Failed to add heat")
+				}
+
+				HandlePostResponse(response)
+				setHeatName("")
+				await refetch()
+			} catch (error) {
+				console.error("Error adding heat:", error)
 			}
-
-			HandlePostResponse(response)
-			setHeatName("")
-			await refetch()
-		} catch (error) {
-			console.error("Error adding heat:", error)
+		} else {
+			try {
+				HandlePostResponse(
+					await updateExistingHeat({
+						id: existingHeatData.id,
+						heatUpdate: {
+							name: heatName,
+							competition_id: competitionId
+						}
+					})
+				)
+				await refetch()
+			} catch (error) {
+				console.error("Error updating heat:", error)
+			}
 		}
 	}
 
@@ -193,9 +298,11 @@ const AddHeat = ({
 			<Grid size={12}>
 				<Divider sx={{ margin: "0.5em" }} />
 			</Grid>
-			<Grid size={12}>
-				<h4>Add New Heat</h4>
-			</Grid>
+			{!existingHeatData && (
+				<Grid size={12}>
+					<h4>Add New Heat</h4>
+				</Grid>
+			)}
 			<Grid size={12}>
 				<TextField
 					error={!heatName}
@@ -247,7 +354,7 @@ const AddHeat = ({
 					disabled={!heatName}
 					data-testid="add-heat-button"
 				>
-					Add Heat
+					{existingHeatData ? "Update Heat" : "Add Heat"}
 				</Button>
 			</Grid>
 		</Grid>
@@ -259,4 +366,10 @@ export default HeatSelector
 interface CompetitionOptions {
 	value: string
 	label: string
+}
+
+interface ExistingHeatData {
+	id: string
+	competition_id: string
+	name: string
 }
