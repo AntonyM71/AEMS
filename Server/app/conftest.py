@@ -11,7 +11,7 @@ patch("db.client.sessionmaker").start()
 
 
 @pytest.fixture(autouse=True)
-def mock_db_session() -> Generator[Session, None, None]:
+def mock_db_session() -> Generator[Session]:
     """Mock database session for all tests"""
     with patch("db.client.get_transaction_session") as mock_get_session:
         # Create a mock session

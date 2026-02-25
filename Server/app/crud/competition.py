@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -22,13 +21,13 @@ competition_router = APIRouter(prefix="/competition", tags=["competition"])
 @competition_router.get("/", response_model=list[CompetitionResponse])
 async def get_many(
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    limit: Optional[int] = Query(None),
-    offset: Optional[int] = Query(None),
-    order_by_columns: Optional[list[str]] = Query(None),
-    join_foreign_table: Optional[list[str]] = Query(None),
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
+    join_foreign_table: list[str] | None = Query(None),
 ) -> list[CompetitionResponse]:
     """Get many competitions"""
     query = select(Competition)
@@ -97,8 +96,8 @@ async def partial_update_one_by_primary_key(
     competition_update: CompetitionUpdate,
     db: Session = Depends(get_transaction_session),
     # Query parameters from the OpenAPI spec
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
 ) -> CompetitionResponse:
     """Partial update one competition by primary key"""
     query = select(Competition).where(Competition.id == id)
@@ -130,10 +129,10 @@ async def partial_update_one_by_primary_key(
 async def get_many_by_pk_from_event(
     competition__pk__id: UUID,
     db: Session = Depends(get_transaction_session),
-    id____list: Optional[list[UUID]] = Query(None, alias="id____list"),
-    name____str: Optional[list[str]] = Query(None, alias="name____str"),
-    name____list: Optional[list[str]] = Query(None, alias="name____list"),
-    join_foreign_table: Optional[list[str]] = Query(None),
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    name____str: list[str] | None = Query(None, alias="name____str"),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    join_foreign_table: list[str] | None = Query(None),
 ) -> list[EventResponse]:
     """Get many events by competition primary key"""
     query = select(Event).where(Event.competition_id == competition__pk__id)

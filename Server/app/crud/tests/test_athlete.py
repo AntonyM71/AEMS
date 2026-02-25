@@ -2,6 +2,7 @@
 Unit tests for athlete CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import UUID
@@ -38,11 +39,12 @@ def test_post_insert_many_athletes(
     test_client: TestClient, mock_db_session: Session, mock_athlete: Athlete
 ) -> None:
     """Test POST /athlete/ to insert many athletes"""
+
     # Create a function to add an ID when add() is called
     def mock_add(athlete):  # noqa: ANN202, ANN001
         athlete.id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -66,11 +68,11 @@ def test_post_insert_many_athletes(
     assert mock_db_session.add.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
-    
+
     # Verify the add() was called with Athlete object with ALL attributes matching the request
     add_call_args = mock_db_session.add.call_args
     added_athlete = add_call_args[0][0]  # First positional argument
-    
+
     # Assert the SQLAlchemy model instance has the exact values from the request
     assert isinstance(added_athlete, Athlete), "Should be an Athlete model instance"
     assert added_athlete.first_name == request_data["first_name"]
@@ -85,12 +87,13 @@ def test_post_insert_multiple_athletes(
     """Test POST /athlete/ to insert multiple athletes"""
     # Create a counter for unique IDs
     counter = 0
+
     def mock_add(athlete):  # noqa: ANN202, ANN001
         nonlocal counter
         athlete.id = UUID(f"0000000{counter}-0000-0000-0000-000000000000")
         counter += 1
         return None
-    
+
     # Mock the database operations
     mock_db_session.add.side_effect = mock_add
     mock_db_session.commit.return_value = None
@@ -110,7 +113,7 @@ def test_post_insert_multiple_athletes(
     assert mock_db_session.add.call_count == 2
     assert mock_db_session.commit.called
     assert mock_db_session.commit.call_count == 1
-    
+
     # Verify the add() calls were made with Athlete instances matching request data
     first_call = mock_db_session.add.call_args_list[0]
     first_athlete = first_call[0][0]
@@ -118,7 +121,7 @@ def test_post_insert_multiple_athletes(
     assert first_athlete.first_name == request_data[0]["first_name"]
     assert first_athlete.last_name == request_data[0]["last_name"]
     assert first_athlete.bib == request_data[0]["bib"]
-    
+
     second_call = mock_db_session.add.call_args_list[1]
     second_athlete = second_call[0][0]
     assert isinstance(second_athlete, Athlete)
@@ -151,12 +154,12 @@ def test_patch_update_athlete_by_id(
     assert mock_db_session.execute.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
-    
+
     # Verify the execute was called with a SELECT query filtering by ID
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     whereclause = query.whereclause
-    
+
     # Should filter by the ID
     assert whereclause is not None
     assert str(whereclause.left).endswith(".id")

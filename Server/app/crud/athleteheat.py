@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -41,9 +40,9 @@ async def partial_update_one_by_primary_key(
     id: UUID,
     athlete_heat_update: AthleteHeatUpdate,
     db: Session = Depends(get_transaction_session),
-    athlete_id____list: Optional[list[UUID]] = Query(None, alias="athlete_id____list"),
-    heat_id____list: Optional[list[UUID]] = Query(None, alias="heat_id____list"),
-    phase_id____list: Optional[list[UUID]] = Query(None, alias="phase_id____list"),
+    athlete_id____list: list[UUID] | None = Query(None, alias="athlete_id____list"),
+    heat_id____list: list[UUID] | None = Query(None, alias="heat_id____list"),
+    phase_id____list: list[UUID] | None = Query(None, alias="phase_id____list"),
 ) -> AthleteHeatResponse:
     """Partial update one athlete heat by primary key"""
     query = select(AthleteHeat).where(AthleteHeat.id == id)

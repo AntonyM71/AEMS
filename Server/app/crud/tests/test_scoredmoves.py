@@ -2,6 +2,7 @@
 Unit tests for scoredmoves CRUD endpoints.
 Tests use FastAPI TestClient and mock SQLAlchemy calls.
 """
+
 from unittest.mock import MagicMock
 
 from fastapi.testclient import TestClient
@@ -122,7 +123,10 @@ def test_delete_many_scored_moves_no_filters_error(
     # Verify exact error response
     assert response.status_code == 400
     data = response.json()
-    assert data["detail"] == "At least one filter (heat_id____list or athlete_id____list) must be provided"
+    assert (
+        data["detail"]
+        == "At least one filter (heat_id____list or athlete_id____list) must be provided"
+    )
 
     # Verify database operations were NOT called
     assert not mock_db_session.execute.called
