@@ -43,7 +43,7 @@ class PydanticScoredMoveWithBonus(BaseModel):
     id: UUID
     move_id: UUID
     heat_id: UUID
-    run_number: str
+    run_number: int
     phase_id: UUID
     judge_id: str
     athlete_id: UUID
@@ -236,16 +236,16 @@ class AthleteScores(BaseModel):
     athlete_id: UUID
     run_scores: list[RunScores]
     highest_scoring_move: float
-    ranking: int | None
-    reason: str | None
-    total_score: float | None
-    last_phase_rank: int | None
+    ranking: int | None = None
+    reason: str | None = None
+    total_score: float | None = None
+    last_phase_rank: int | None = None
 
 
 class AthleteScoresWithAthleteInfo(AthleteScores):
     first_name: str
     last_name: str
-    affiliation: str | None
+    affiliation: str | None = None
     bib_number: int
 
 
@@ -369,7 +369,7 @@ def calculate_heat_scores(
 
 class RankInfo(BaseModel):
     ranking: int
-    reason: str | None
+    reason: str | None = None
 
 
 def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:

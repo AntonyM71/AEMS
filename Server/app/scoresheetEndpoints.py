@@ -28,7 +28,7 @@ class PydanticAvailableBonuses(BaseModel):
     move_id: UUID
     name: str
     score: int
-    display_order: int | None
+    display_order: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

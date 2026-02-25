@@ -63,9 +63,9 @@ class HeatInfoResponse(BaseModel):
     scoresheet: UUID
     first_name: str
     last_name: str
-    affiliation: str | None
+    affiliation: str | None = None
     bib: str
-    last_phase_rank: int | None
+    last_phase_rank: int | None = None
     event_name: str
 
     model_config = ConfigDict(from_attributes=True)

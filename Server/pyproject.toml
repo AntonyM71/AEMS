@@ -50,7 +50,6 @@ indent-style = "space"
 dependencies = [
     "anyio",
     "broadcaster[postgres]",
-    "sqlalchemy",
     "alembic>=1.18.0,<2.0",  # Upgraded from 1.14.1
     "psycopg2",
     "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0
@@ -61,9 +60,8 @@ dependencies = [
     "pandas[performance]",
     "uvicorn[standard]>=0.40.0,<1.0",  # Upgraded from 0.19.0
     "python-multipart",
-    "pydantic<=1.10.23",
-    "SQLAlchemy<=1.4.54",
-    "starlette==0.14.2",
+    "pydantic>=2.0,<3.0",
+    "SQLAlchemy>=2.0,<3.0",
     "fpdf2",
     # Dev
     "ruff>=0.15.0,<1.0",  # Upgraded from 0.9.6
@@ -72,15 +70,11 @@ dependencies = [
     "pytest-cov>=6.0.0,<7.0",
     "pytest-asyncio>=1.0.0,<2.0",  # Upgraded from 0.25.3
     "sqlalchemy_utils",
-    "sqlalchemy[mypy]",    # remove when we upgrade to 2.0
-    "pydantic-sqlalchemy",
     "structlog",
     "rich",
     "asgi-correlation-id",
     "openpyxl",
-    "requests",  # needed for TestClient with starlette 0.14.2
-
-
+    "httpx",  # needed for TestClient with modern starlette
 ]
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"
