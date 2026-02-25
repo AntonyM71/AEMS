@@ -63,11 +63,7 @@ for file in scoresheet_files:
                         ]
                     )
 
-                    bonus_names = [
-                        field
-                        for field in pydantic_move.__dict__.keys()
-                        if field not in SeedMoveData.__fields__.keys()
-                    ]
+                    bonus_names = list(pydantic_move.__pydantic_extra__.keys()) if pydantic_move.__pydantic_extra__ else []
                     bonuses = [
                         AvailableBonuses(
                             id=uuid4(),
