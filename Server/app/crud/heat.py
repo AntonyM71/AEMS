@@ -86,11 +86,11 @@ async def get_many(
         if join_foreign_table:
             if "competition" in join_foreign_table and heat.competition:
                 response_data["competition_foreign"] = [
-                    CompetitionNested.from_orm(heat.competition)
+                    CompetitionNested.model_validate(heat.competition)
                 ]
             if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
                 response_data["athleteheat_foreign"] = [
-                    AthleteHeatNested.from_orm(ah) for ah in heat.athletes
+                    AthleteHeatNested.model_validate(ah) for ah in heat.athletes
                 ]
         heat_responses.append(HeatResponse(**response_data))
 
@@ -140,11 +140,11 @@ async def get_one_by_primary_key(
     if join_foreign_table:
         if "competition" in join_foreign_table and heat.competition:
             response_data["competition_foreign"] = [
-                CompetitionNested.from_orm(heat.competition)
+                CompetitionNested.model_validate(heat.competition)
             ]
         if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
             response_data["athleteheat_foreign"] = [
-                AthleteHeatNested.from_orm(ah) for ah in heat.athletes
+                AthleteHeatNested.model_validate(ah) for ah in heat.athletes
             ]
 
     return HeatResponse(**response_data)
@@ -159,7 +159,7 @@ async def insert_many(
     db_heats = []
 
     for heat_data in heats:
-        db_heat = Heat(**heat_data.dict(exclude_none=True))
+        db_heat = Heat(**heat_data.model_dump(exclude_none=True))
         db.add(db_heat)
         db_heats.append(db_heat)
 
@@ -169,4 +169,4 @@ async def insert_many(
     for heat in db_heats:
         db.refresh(heat)
 
-    return [HeatResponse.from_orm(heat) for heat in db_heats]
+    return [HeatResponse.model_validate(heat) for heat in db_heats]

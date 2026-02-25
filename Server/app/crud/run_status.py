@@ -107,4 +107,4 @@ async def get_many(
     result = db.execute(query)
     run_statuses = result.scalars().all()
 
-    return [RunStatusResponse.from_orm(status) for status in run_statuses]
+    return [RunStatusResponse.model_validate(status) for status in run_statuses]

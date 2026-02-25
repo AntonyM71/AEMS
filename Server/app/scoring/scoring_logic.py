@@ -3,7 +3,7 @@ from itertools import groupby
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 def all_equal(iterable: list) -> bool:
@@ -27,8 +27,7 @@ class AddUpdateScoredMovesRequest(BaseModel):
     moves: list[PydanticScoredMoves] = []
     bonuses: list[PydanticScoredBonuses] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MixedUpScoresheetExceptionError(Exception):
@@ -62,8 +61,7 @@ class PydanticScoredMovesResponse(BaseModel):
     athlete_id: UUID
     direction: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PydanticScoredBonusesResponse(BaseModel):
@@ -72,8 +70,7 @@ class PydanticScoredBonusesResponse(BaseModel):
     bonus_id: UUID
     judge_id: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AvailableMoves(BaseModel):
@@ -177,7 +174,7 @@ def calculate_individual_move_scores(
         )
         scored_move_scores.append(
             PydanticScoredMoveWithBonus(
-                **move.dict(),
+                **move.model_dump(),
                 total_score_with_bonuses=this_scored_move_score + bonus_total,
             )
         )
@@ -304,8 +301,7 @@ class PydanticRunStatus(BaseModel):
     locked: bool
     did_not_start: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 def calculate_heat_scores(
