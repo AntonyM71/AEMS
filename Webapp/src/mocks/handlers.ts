@@ -73,7 +73,7 @@ export const handlers = [
 	}),
 	// Existing handlers
 	http.get("/api/availablemoves", ({ request }) => {
-		const url = new URL(request.url, "http://localhost")
+		const url = new URL(request.url)
 		const idList = url.searchParams.get("idList")?.split(",")
 		const idListComparisonOperator = url.searchParams.get(
 			"idListComparisonOperator"
