@@ -351,6 +351,16 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
+		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse,
+			PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg
+		>({
+			query: (queryArg) => ({
+				url: `/heat/${queryArg.id}`,
+				method: "PATCH",
+				body: queryArg.heatUpdate
+			})
+		}),
 		insertManyAthletePost: build.mutation<
 			InsertManyAthletePostApiResponse,
 			InsertManyAthletePostApiArg
@@ -797,6 +807,12 @@ export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	nameList?: string[]
 	joinForeignTable?: string[]
 }
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
+	/** status 200 Successful Response */ HeatResponse
+export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiArg = {
+	id: string
+	heatUpdate: HeatUpdate
+}
 export type InsertManyAthletePostApiResponse =
 	/** status 201 Successful Response */ AthleteResponse[]
 export type InsertManyAthletePostApiArg = {
@@ -1156,6 +1172,10 @@ export type HeatCreate = {
 	competition_id: string
 	name: string
 }
+export type HeatUpdate = {
+	competition_id?: string
+	name?: string
+}
 export type AthleteResponse = {
 	id: string
 	first_name: string
@@ -1256,6 +1276,7 @@ export const {
 	useGetManyHeatGetQuery,
 	useInsertManyHeatPostMutation,
 	useGetOneByPrimaryKeyHeatIdGetQuery,
+	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation,
 	useInsertManyAthletePostMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation,
 	useGetManyScoresheetGetQuery,
