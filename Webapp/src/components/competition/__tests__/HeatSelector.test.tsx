@@ -263,7 +263,7 @@ describe("HeatSelector", () => {
 				])
 			),
 			http.patch("/api/heat/:id", async ({ params, request }) => {
-				const body = await request.json()
+				const body = (await request.json()) as Record<string, any>
 				patchRequestReceived = true
 				expect(body).toMatchObject({
 					name: "Updated Heat 1"
@@ -271,9 +271,7 @@ describe("HeatSelector", () => {
 
 				return HttpResponse.json({
 					id: params.id,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					name: body.name,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 					competition_id: body.competition_id || "comp1"
 				})
 			})

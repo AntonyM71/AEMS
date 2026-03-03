@@ -43,8 +43,7 @@ describe("HeatScoreTable", () => {
 				})
 			}),
 			// Handler for getting heat scores
-			http.get("/api/getHeatScores/:heatId", () => {
-				return HttpResponse.json({
+			http.get("/api/getHeatScores/:heatId", () => HttpResponse.json({
 						scores: [
 							{
 								bib_number: "123",
@@ -84,8 +83,7 @@ describe("HeatScoreTable", () => {
 								]
 							}
 						]
-					})
-			})
+					}))
 		)
 	})
 
