@@ -217,7 +217,7 @@ async def update_athlete_score(
                 judge_id=judge_id,
                 phase_id=phase_id,
             )
-            await publisher(message=websocket_message.json(), channel="current_scores")
+            await publisher(message=websocket_message.model_dump_json(), channel="current_scores")
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -266,7 +266,7 @@ async def get_moves_from_server(message: str) -> str:
             run_number=metadata.run_number,
             phase_id=metadata.phase_id,
             judge_id=metadata.judge_id,
-        ).json()
+        ).model_dump_json()
 
 
 @scoring_router.get(

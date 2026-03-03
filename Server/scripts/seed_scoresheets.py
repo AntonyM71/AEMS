@@ -19,7 +19,7 @@ bonus_order = {"air": 0, "huge": 1, "clean": 2, "superclean": 3, "link": 4}
 class SeedMoveData(BaseModel):
     Move: str
     Value: int
-    ReverseValue: int | None
+    ReverseValue: int | None = None
     Direction: Literal["LR", "FB", "S"]
 
     model_config = ConfigDict(from_attributes=True, extra='allow')
