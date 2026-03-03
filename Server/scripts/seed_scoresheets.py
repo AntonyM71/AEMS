@@ -22,7 +22,7 @@ class SeedMoveData(BaseModel):
     ReverseValue: int | None = None
     Direction: Literal["LR", "FB", "S"]
 
-    model_config = ConfigDict(from_attributes=True, extra='allow')
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 for file in scoresheet_files:
