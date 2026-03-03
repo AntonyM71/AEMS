@@ -3,9 +3,7 @@ import { FlatCompat } from "@eslint/eslintrc"
 import js from "@eslint/js"
 import typescriptEslint from "@typescript-eslint/eslint-plugin"
 import _import from "eslint-plugin-import"
-import jestDom from "eslint-plugin-jest-dom"
 import preferArrow from "eslint-plugin-prefer-arrow"
-import testingLibrary from "eslint-plugin-testing-library"
 import globals from "globals"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -37,9 +35,7 @@ export default [
 		plugins: {
 			"@typescript-eslint": typescriptEslint,
 			"prefer-arrow": preferArrow,
-			import: fixupPluginRules(_import),
-			"testing-library": testingLibrary,
-			"jest-dom": jestDom
+			import: fixupPluginRules(_import)
 		},
 
 		languageOptions: {
