@@ -20,7 +20,7 @@ async def insert_many(
     db_athletes = []
 
     for athlete_data in athletes:
-        db_athlete = Athlete(**athlete_data.dict(exclude_none=True))
+        db_athlete = Athlete(**athlete_data.model_dump(exclude_none=True))
         db.add(db_athlete)
         db_athletes.append(db_athlete)
 
@@ -30,7 +30,7 @@ async def insert_many(
     for athlete in db_athletes:
         db.refresh(athlete)
 
-    return [AthleteResponse.from_orm(athlete) for athlete in db_athletes]
+    return [AthleteResponse.model_validate(athlete) for athlete in db_athletes]
 
 
 @athlete_router.patch("/{id}", response_model=AthleteResponse)
@@ -75,10 +75,10 @@ async def partial_update_one_by_primary_key(
         raise HTTPException(status_code=404, detail="Athlete not found")
 
     # Update only provided fields
-    update_data = athlete_update.dict(exclude_unset=True)
+    update_data = athlete_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_athlete, field, value)
 
     db.commit()
     db.refresh(db_athlete)
-    return AthleteResponse.from_orm(db_athlete)
+    return AthleteResponse.model_validate(db_athlete)

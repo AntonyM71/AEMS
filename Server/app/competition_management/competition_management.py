@@ -86,19 +86,19 @@ class NewPhaseInfo(BaseModel):
     phase_id: str
     new_phase_name: str
     number_of_paddlers: int
-    number_of_runs: int | None
-    number_of_runs_for_score: int | None
-    number_of_judges: int | None
+    number_of_runs: int | None = None
+    number_of_runs_for_score: int | None = None
+    number_of_judges: int | None = None
 
 
 class AthleteIDandRank(BaseModel):
     athlete_id: UUID
-    ranking: int | None
+    ranking: int | None = None
 
 
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)
 async def promote_phase(
-    request_body: Annotated[NewPhaseInfo, Body(embed=True, default=None)],
+    request_body: Annotated[NewPhaseInfo, Body(embed=True)] = None,
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     with db.begin():

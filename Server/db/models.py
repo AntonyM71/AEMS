@@ -3,8 +3,7 @@ import uuid
 import sqlalchemy
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 
 metadata = sqlalchemy.MetaData(
     naming_convention={

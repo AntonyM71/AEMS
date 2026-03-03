@@ -123,4 +123,4 @@ async def get_many(
     result = db.execute(query)
     available_moves = result.scalars().all()
 
-    return [AvailableMovesResponse.from_orm(move) for move in available_moves]
+    return [AvailableMovesResponse.model_validate(move) for move in available_moves]

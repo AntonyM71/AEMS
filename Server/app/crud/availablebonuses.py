@@ -125,4 +125,4 @@ async def get_many(
     result = db.execute(query)
     available_bonuses = result.scalars().all()
 
-    return [AvailableBonusesResponse.from_orm(bonus) for bonus in available_bonuses]
+    return [AvailableBonusesResponse.model_validate(bonus) for bonus in available_bonuses]

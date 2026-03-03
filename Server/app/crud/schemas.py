@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class EventNested(BaseModel):
@@ -8,8 +8,7 @@ class EventNested(BaseModel):
     competition_id: UUID
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AthleteHeatCreate(BaseModel):
@@ -26,8 +25,7 @@ class AthleteHeatResponse(BaseModel):
     heat_id: UUID
     phase_id: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AthleteHeatUpdate(BaseModel):
@@ -47,8 +45,7 @@ class CompetitionResponse(BaseModel):
     name: str
     event_foreign: list[EventNested] | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CompetitionUpdate(BaseModel):
@@ -68,8 +65,7 @@ class PhaseNested(BaseModel):
     number_of_judges: int
     scoresheet: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AthleteCreate(BaseModel):
@@ -87,8 +83,7 @@ class AthleteResponse(BaseModel):
     affiliation: str | None = None
     bib: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AthleteUpdate(BaseModel):
@@ -106,8 +101,7 @@ class AvailableBonusesResponse(BaseModel):
     score: int  # Integer, not float - matches models.py
     display_order: int | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AvailableMovesResponse(BaseModel):
@@ -118,16 +112,14 @@ class AvailableMovesResponse(BaseModel):
     rb_score: int  # Added missing field
     direction: str  # Added missing field
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CompetitionNested(BaseModel):
     id: UUID
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EventResponse(BaseModel):
@@ -137,8 +129,7 @@ class EventResponse(BaseModel):
     competition_foreign: list[CompetitionNested] | None = None
     phase_foreign: list[PhaseNested] | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EventCreateRequest(BaseModel):
@@ -157,8 +148,7 @@ class PhaseResponse(BaseModel):
     scoresheet: UUID
     event_foreign: list[EventNested] | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HeatCreate(BaseModel):
@@ -172,8 +162,7 @@ class AthleteHeatNested(BaseModel):
     athlete_id: UUID
     heat_id: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HeatResponse(BaseModel):
@@ -183,8 +172,7 @@ class HeatResponse(BaseModel):
     competition_foreign: list[CompetitionNested] | None = None
     athleteheat_foreign: list[AthleteHeatNested] | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HeatUpdate(BaseModel):
@@ -220,8 +208,7 @@ class RunStatusResponse(BaseModel):
     locked: bool
     did_not_start: bool
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ScoreSheetCreate(BaseModel):
@@ -233,5 +220,4 @@ class ScoreSheetResponse(BaseModel):
     id: UUID
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

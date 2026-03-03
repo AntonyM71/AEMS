@@ -52,7 +52,7 @@ async def get_many(
     result = db.execute(query)
     scoresheets = result.scalars().all()
 
-    return [ScoreSheetResponse.from_orm(scoresheet) for scoresheet in scoresheets]
+    return [ScoreSheetResponse.model_validate(scoresheet) for scoresheet in scoresheets]
 
 
 @scoresheet_router.post("/", response_model=list[ScoreSheetResponse], status_code=201)
@@ -64,7 +64,7 @@ async def insert_many(
     db_scoresheets = []
 
     for scoresheet_data in scoresheets:
-        db_scoresheet = ScoreSheet(**scoresheet_data.dict(exclude_none=True))
+        db_scoresheet = ScoreSheet(**scoresheet_data.model_dump(exclude_none=True))
         db.add(db_scoresheet)
         db_scoresheets.append(db_scoresheet)
 
@@ -74,4 +74,4 @@ async def insert_many(
     for scoresheet in db_scoresheets:
         db.refresh(scoresheet)
 
-    return [ScoreSheetResponse.from_orm(scoresheet) for scoresheet in db_scoresheets]
+    return [ScoreSheetResponse.model_validate(scoresheet) for scoresheet in db_scoresheets]
