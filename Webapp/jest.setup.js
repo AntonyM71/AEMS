@@ -30,6 +30,10 @@ class MockWebSocket {
 }
 
 global.WebSocket = MockWebSocket
+globalThis.WebSocket = MockWebSocket
+if (typeof window !== "undefined") {
+	window.WebSocket = MockWebSocket
+}
 
 // Mock react-hot-toast
 const mockToast = {

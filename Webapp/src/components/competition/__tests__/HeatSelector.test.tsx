@@ -250,36 +250,32 @@ describe("HeatSelector", () => {
 
 		// Mock the GET and PATCH endpoints
 		server.use(
-			rest.get("/api/heat", (_req, res, ctx) =>
-				res(ctx.json(mockHeats))
+			http.get("/api/heat", () =>
+				HttpResponse.json(mockHeats)
 			),
-			rest.get("/api/heat/:id", (req, res, ctx) =>
-				res(ctx.json(mockHeats.find((h) => h.id === req.params.id)))
+			http.get("/api/heat/:id", ({ params }) =>
+				HttpResponse.json(mockHeats.find((h) => h.id === params.id))
 			),
-			rest.get("/api/competition", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{ id: "comp1", name: "Competition 1" },
-						{ id: "comp2", name: "Competition 2" }
-					])
-				)
+			http.get("/api/competition", () =>
+				HttpResponse.json([
+					{ id: "comp1", name: "Competition 1" },
+					{ id: "comp2", name: "Competition 2" }
+				])
 			),
-			rest.patch("/api/heat/:id", async (req, res, ctx) => {
-				const body = await req.json()
+			http.patch("/api/heat/:id", async ({ params, request }) => {
+				const body = await request.json()
 				patchRequestReceived = true
 				expect(body).toMatchObject({
 					name: "Updated Heat 1"
 				})
 
-				return res(
-					ctx.json({
-						id: req.params.id,
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-						name: body.name,
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-						competition_id: body.competition_id || "comp1"
-					})
-				)
+				return HttpResponse.json({
+					id: params.id,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					name: body.name,
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					competition_id: body.competition_id || "comp1"
+				})
 			})
 		)
 
