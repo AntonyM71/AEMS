@@ -262,7 +262,7 @@ describe("HeatSelector", () => {
 				])
 			),
 			http.patch("/api/heat/:id", async ({ params, request }) => {
-				const body = (await request.json()) as Record<string, any>
+				const body = (await request.json()) as HeatUpdateBody
 				patchRequestReceived = true
 				expect(body).toMatchObject({
 					name: "Updated Heat 1"
