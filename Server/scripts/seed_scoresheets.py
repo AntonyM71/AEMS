@@ -63,17 +63,17 @@ for file in scoresheet_files:
                         ]
                     )
 
-                    bonus_names = list(pydantic_move.__pydantic_extra__.keys()) if pydantic_move.__pydantic_extra__ else []
+                    extra_fields = pydantic_move.model_extra or {}
                     bonuses = [
                         AvailableBonuses(
                             id=uuid4(),
                             sheet_id=scoresheet_id,
                             move_id=move_id,
                             name=bonus_name,
-                            score=pydantic_move.model_dump()[bonus_name],
+                            score=score,
                             display_order=bonus_order.get(bonus_name.lower(), None),
                         )
-                        for bonus_name in bonus_names
+                        for bonus_name, score in extra_fields.items()
                     ]
 
                     db.bulk_save_objects(bonuses)

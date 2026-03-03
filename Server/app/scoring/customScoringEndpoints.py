@@ -236,7 +236,7 @@ class UpdatedRideMetaData(BaseModel):
     heat_id: str
     athlete_id: str
     run_number: int
-    judge_id: int
+    judge_id: str
     phase_id: str
 
 
@@ -254,8 +254,8 @@ async def get_moves_from_server(message: str) -> str:
         scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
             athlete_id=metadata.athlete_id,
-            run_number=str(metadata.run_number),
-            judge_id=str(metadata.judge_id),
+            run_number=metadata.run_number,
+            judge_id=metadata.judge_id,
             db=db,
         )
 
@@ -277,7 +277,7 @@ async def get_moves_from_server(message: str) -> str:
 async def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
-    run_number: str,
+    run_number: int,
     judge_id: str | None = None,
     db: Session = Depends(get_transaction_session),
 ) -> ScoredMovesAndBonusesResponse:
