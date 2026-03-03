@@ -40,9 +40,7 @@ describe("InfoBar", () => {
 
 		// Mock the bonuses API endpoint
 		server.use(
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json([])
-			)
+			http.get("/api/availablebonuses", () => HttpResponse.json([]))
 		)
 	})
 

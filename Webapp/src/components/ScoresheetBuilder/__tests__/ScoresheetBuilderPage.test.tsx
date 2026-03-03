@@ -45,12 +45,12 @@ describe("ScoresheetBuilderPage", () => {
 		server.use(
 			http.get("/api/scoresheet", () =>
 				HttpResponse.json([
-						{
-							id: "test-id",
-							name: "Test Scoresheet"
-						}
-					])
-				)
+					{
+						id: "test-id",
+						name: "Test Scoresheet"
+					}
+				])
+			)
 		)
 
 		render(
@@ -91,7 +91,7 @@ describe("ScoresheetBuilderPage", () => {
 			http.get("/api/scoresheet", () =>
 				HttpResponse.json(isCreated ? [mockScoresheet] : [])
 			),
-			http.post("/api/scoresheet", async () => {
+			http.post("/api/scoresheet", () => {
 				isCreated = true
 
 				return HttpResponse.json({ success: true })
@@ -112,7 +112,7 @@ describe("ScoresheetBuilderPage", () => {
 		await user.type(textField, "Test Scoresheet{enter}")
 
 		// Wait for the scoresheet to be created and loaded
-		await screen.findByRole("combobox")
+		await screen.findByRole("combobox", { name: "Scoresheet" })
 
 		// Wait for ScoresheetMoves to be rendered
 		await screen.findByLabelText("Add New Bonus")

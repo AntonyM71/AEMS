@@ -61,97 +61,95 @@ describe("HeadJudge", () => {
 		server.use(
 			http.get("/api/run_status", () =>
 				HttpResponse.json({
+					id: "status-1",
+					heat_id: "heat-1",
+					run_number: 1,
+					phase_id: "phase-1",
+					athlete_id: "athlete-1",
+					locked: false,
+					did_not_start: true
+				})
+			),
+			http.get("/api/getManyCompetitions", () =>
+				HttpResponse.json([
+					{
+						id: "comp-1",
+						name: "Competition 1"
+					}
+				])
+			),
+			http.get("/api/getManyPhases", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						heat_id: "heat-1"
+					}
+				])
+			),
+			http.get("/api/getManyEvents", () =>
+				HttpResponse.json([
+					{
+						id: "event-1",
+						name: "Event 1",
+						competition_id: "comp-1"
+					}
+				])
+			),
+			http.get("/api/getManyHeats", () =>
+				HttpResponse.json([
+					{
+						id: "heat-1",
+						name: "Heat 1",
+						event_id: "event-1"
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId/phase", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						number_of_judges: 3
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						athlete_id: "athlete-1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: "123",
+						scoresheet: "sheet-1",
+						phase_id: "phase-1"
+					}
+				])
+			),
+			http.get("/api/getManyRunStatus", () =>
+				HttpResponse.json([
+					{
 						id: "status-1",
 						heat_id: "heat-1",
 						run_number: 1,
 						phase_id: "phase-1",
 						athlete_id: "athlete-1",
 						locked: false,
-						did_not_start: true
-					})
-			),
-			http.get("/api/getManyCompetitions", () =>
-				HttpResponse.json([
-						{
-							id: "comp-1",
-							name: "Competition 1"
-						}
-					])
-			),
-			http.get("/api/getManyPhases", () =>
-				HttpResponse.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							heat_id: "heat-1"
-						}
-					])
-			),
-			http.get("/api/getManyEvents", () =>
-				HttpResponse.json([
-						{
-							id: "event-1",
-							name: "Event 1",
-							competition_id: "comp-1"
-						}
-					])
-			),
-			http.get("/api/getManyHeats", () =>
-				HttpResponse.json([
-						{
-							id: "heat-1",
-							name: "Heat 1",
-							event_id: "event-1"
-						}
-					])
-			),
-			http.get("/api/getHeatInfo/:heatId/phase", () =>
-				HttpResponse.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							number_of_judges: 3
-						}
-					])
-			),
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([
-						{
-							athlete_id: "athlete-1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: "123",
-							scoresheet: "sheet-1",
-							phase_id: "phase-1"
-						}
-					])
-			),
-			http.get("/api/getManyRunStatus", () =>
-				HttpResponse.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: false,
-							did_not_start: false
-						}
-					])
+						did_not_start: false
+					}
+				])
 			),
 			http.get("/api/getManyAvailablebonuses", () =>
 				HttpResponse.json([])
 			),
-			http.get("/api/getManyAvailablemoves", () =>
-				HttpResponse.json([])
-			),
+			http.get("/api/getManyAvailablemoves", () => HttpResponse.json([])),
 			http.get(
 				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber/:judgeId",
 				() =>
 					HttpResponse.json({
-							moves: [],
-							bonuses: []
-						})
+						moves: [],
+						bonuses: []
+					})
 			)
 		)
 	})
@@ -206,16 +204,16 @@ describe("HeadJudge", () => {
 		server.use(
 			http.get("/api/getManyRunStatus", () =>
 				HttpResponse.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: false,
-							did_not_start: true
-						}
-					])
+					{
+						id: "status-1",
+						heat_id: "heat-1",
+						run_number: 1,
+						phase_id: "phase-1",
+						athlete_id: "athlete-1",
+						locked: false,
+						did_not_start: true
+					}
+				])
 			)
 		)
 
@@ -281,16 +279,16 @@ describe("HeadJudge", () => {
 		server.use(
 			http.get("/api/getManyRunStatus", () =>
 				HttpResponse.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: true,
-							did_not_start: false
-						}
-					])
+					{
+						id: "status-1",
+						heat_id: "heat-1",
+						run_number: 1,
+						phase_id: "phase-1",
+						athlete_id: "athlete-1",
+						locked: true,
+						did_not_start: false
+					}
+				])
 			)
 		)
 

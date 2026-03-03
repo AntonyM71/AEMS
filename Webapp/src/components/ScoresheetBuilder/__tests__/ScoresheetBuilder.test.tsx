@@ -74,15 +74,15 @@ describe("ScoresheetMoves", () => {
 		// Use MSW to delay the responses
 		server.use(
 			http.get("/api/availablemoves", async () => {
-					await delay(100)
+				await delay(100)
 
-					return HttpResponse.json([])
-				}),
+				return HttpResponse.json([])
+			}),
 			http.get("/api/availablebonuses", async () => {
-					await delay(100)
+				await delay(100)
 
-					return HttpResponse.json([])
-				})
+				return HttpResponse.json([])
+			})
 		)
 
 		render(
@@ -102,15 +102,15 @@ describe("ScoresheetMoves", () => {
 		// Use MSW to return empty arrays
 		server.use(
 			http.get("/api/availablemoves", async () => {
-					await delay(10)
+				await delay(10)
 
-					return HttpResponse.json([])
-				}),
+				return HttpResponse.json([])
+			}),
 			http.get("/api/availablebonuses", async () => {
-					await delay(10)
+				await delay(10)
 
-					return HttpResponse.json([])
-				})
+				return HttpResponse.json([])
+			})
 		)
 
 		render(
@@ -154,15 +154,15 @@ describe("ScoresheetMoves", () => {
 	it("displays existing moves and bonuses", async () => {
 		server.use(
 			http.get("/api/availablemoves", async () => {
-					await delay(10)
+				await delay(10)
 
-					return HttpResponse.json(mockMoves)
-				}),
+				return HttpResponse.json(mockMoves)
+			}),
 			http.get("/api/availablebonuses", async () => {
-					await delay(10)
+				await delay(10)
 
-					return HttpResponse.json(mockBonuses)
-				})
+				return HttpResponse.json(mockBonuses)
+			})
 		)
 
 		render(
@@ -216,12 +216,10 @@ describe("ScoresheetMoves", () => {
 		let updateCalled = false
 
 		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(mockMoves)
-				),
+			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
 			http.get("/api/availablebonuses", () =>
 				HttpResponse.json(mockBonuses)
-				),
+			),
 			http.post("/api/addUpdateScoresheet/:id", async ({ request }) => {
 				updateCalled = true
 
@@ -263,12 +261,10 @@ describe("ScoresheetMoves", () => {
 
 	it("deletes a bonus type from all moves", async () => {
 		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(mockMoves)
-				),
+			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
 			http.get("/api/availablebonuses", () =>
 				HttpResponse.json(mockBonuses)
-				)
+			)
 		)
 
 		render(
@@ -309,12 +305,10 @@ describe("ScoresheetMoves", () => {
 
 	it("adds a new bonus type to all moves", async () => {
 		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(mockMoves)
-				),
+			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
 			http.get("/api/availablebonuses", () =>
 				HttpResponse.json(mockBonuses)
-				)
+			)
 		)
 
 		render(

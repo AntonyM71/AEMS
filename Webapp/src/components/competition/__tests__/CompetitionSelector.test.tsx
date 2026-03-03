@@ -174,9 +174,7 @@ describe("CompetitionSelector", () => {
 	})
 
 	it("shows 'No Competitions' state when data is empty", async () => {
-		server.use(
-			http.get("/api/competition", () => HttpResponse.json([]))
-		)
+		server.use(http.get("/api/competition", () => HttpResponse.json([])))
 
 		render(
 			<Provider store={store}>
@@ -203,9 +201,7 @@ describe("CompetitionSelector", () => {
 	describe("AddCompetition", () => {
 		it("shows error toast when submitting empty competition name", async () => {
 			server.use(
-				http.get("/api/competition", () =>
-					HttpResponse.json([])
-				)
+				http.get("/api/competition", () => HttpResponse.json([]))
 			)
 
 			render(

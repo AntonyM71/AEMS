@@ -53,10 +53,12 @@ export const handlers = [
 			]
 		})
 	),
-	http.get("/api/phase_pdf/:phaseId", () =>
-		new HttpResponse("mock pdf content", {
-			headers: { "Content-Type": "application/pdf" }
-		})
+	http.get(
+		"/api/phase_pdf/:phaseId",
+		() =>
+			new HttpResponse("mock pdf content", {
+				headers: { "Content-Type": "application/pdf" }
+			})
 	),
 	http.get("/api/scoresheet", () =>
 		HttpResponse.json([

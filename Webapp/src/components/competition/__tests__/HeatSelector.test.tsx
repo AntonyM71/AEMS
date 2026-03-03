@@ -66,9 +66,9 @@ describe("HeatSelector", () => {
 			http.get("/api/heat", () => HttpResponse.json(null)),
 			http.get("/api/competition", () =>
 				HttpResponse.json([
-						{ id: "comp1", name: "Competition 1" },
-						{ id: "comp2", name: "Competition 2" }
-					])
+					{ id: "comp1", name: "Competition 1" },
+					{ id: "comp2", name: "Competition 2" }
+				])
 			)
 		)
 		const store = setupStore({
@@ -117,9 +117,9 @@ describe("HeatSelector", () => {
 		server.use(
 			http.get("/api/heat", () =>
 				HttpResponse.json([
-						{ id: "heat-1", name: "Heat 1" },
-						{ id: "heat-2", name: "Heat 2" }
-					])
+					{ id: "heat-1", name: "Heat 1" },
+					{ id: "heat-2", name: "Heat 2" }
+				])
 			)
 		)
 		const store = setupStore({
@@ -180,9 +180,9 @@ describe("HeatSelector", () => {
 			}),
 			http.get("/api/competition", () =>
 				HttpResponse.json([
-						{ id: "comp1", name: "Competition 1" },
-						{ id: "comp2", name: "Competition 2" }
-					])
+					{ id: "comp1", name: "Competition 1" },
+					{ id: "comp2", name: "Competition 2" }
+				])
 			),
 			http.post("/api/heat", async ({ request }) => {
 				const body = await request.json()
@@ -251,9 +251,7 @@ describe("HeatSelector", () => {
 
 		// Mock the GET and PATCH endpoints
 		server.use(
-			http.get("/api/heat", () =>
-				HttpResponse.json(mockHeats)
-			),
+			http.get("/api/heat", () => HttpResponse.json(mockHeats)),
 			http.get("/api/heat/:id", ({ params }) =>
 				HttpResponse.json(mockHeats.find((h) => h.id === params.id))
 			),

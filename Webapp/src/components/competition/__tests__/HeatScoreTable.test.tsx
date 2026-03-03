@@ -43,47 +43,49 @@ describe("HeatScoreTable", () => {
 				})
 			}),
 			// Handler for getting heat scores
-			http.get("/api/getHeatScores/:heatId", () => HttpResponse.json({
-						scores: [
-							{
-								bib_number: "123",
-								first_name: "John",
-								last_name: "Doe",
-								run_scores: [
-									{
-										locked: true,
-										did_not_start: false,
-										mean_run_score: 85.5,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 85 }
-											},
-											{
-												judge_id: "2",
-												score_info: { score: 86 }
-											}
-										]
-									},
-									{
-										locked: true,
-										did_not_start: true,
-										mean_run_score: 0,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 0 }
-											},
-											{
-												judge_id: "2",
-												score_info: { score: 0 }
-											}
-										]
-									}
-								]
-							}
-						]
-					}))
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
+					scores: [
+						{
+							bib_number: "123",
+							first_name: "John",
+							last_name: "Doe",
+							run_scores: [
+								{
+									locked: true,
+									did_not_start: false,
+									mean_run_score: 85.5,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 85 }
+										},
+										{
+											judge_id: "2",
+											score_info: { score: 86 }
+										}
+									]
+								},
+								{
+									locked: true,
+									did_not_start: true,
+									mean_run_score: 0,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 0 }
+										},
+										{
+											judge_id: "2",
+											score_info: { score: 0 }
+										}
+									]
+								}
+							]
+						}
+					]
+				})
+			)
 		)
 	})
 
@@ -262,38 +264,38 @@ describe("HeatScoreTable", () => {
 		server.use(
 			http.get("/api/getHeatScores/:heatId", () =>
 				HttpResponse.json({
-						scores: [
-							{
-								bib_number: "123",
-								first_name: "John",
-								last_name: "Doe",
-								run_scores: [
-									{
-										locked: true,
-										did_not_start: false,
-										mean_run_score: 85.5,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 85 }
-											}
-										]
-									},
-									{
-										locked: false,
-										did_not_start: false,
-										mean_run_score: 90.0,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 90 }
-											}
-										]
-									}
-								]
-							}
-						]
-					})
+					scores: [
+						{
+							bib_number: "123",
+							first_name: "John",
+							last_name: "Doe",
+							run_scores: [
+								{
+									locked: true,
+									did_not_start: false,
+									mean_run_score: 85.5,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 85 }
+										}
+									]
+								},
+								{
+									locked: false,
+									did_not_start: false,
+									mean_run_score: 90.0,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 90 }
+										}
+									]
+								}
+							]
+						}
+					]
+				})
 			)
 		)
 
@@ -339,8 +341,8 @@ describe("HeatScoreTable", () => {
 		server.use(
 			http.get("/api/getHeatScores/:heatId", () =>
 				HttpResponse.json({
-						scores: []
-					})
+					scores: []
+				})
 			)
 		)
 

@@ -86,9 +86,7 @@ describe("EventSelector", () => {
 
 	it("shows no events message when competition has no events", async () => {
 		server.use(
-			http.get("/api/competition/:id/event", () =>
-				HttpResponse.json([])
-			)
+			http.get("/api/competition/:id/event", () => HttpResponse.json([]))
 		)
 
 		store.dispatch(updateSelectedCompetition("1"))

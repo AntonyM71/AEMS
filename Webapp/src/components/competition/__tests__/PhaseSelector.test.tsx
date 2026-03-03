@@ -87,9 +87,7 @@ describe("PhaseSelector", () => {
 			http.get("/api/event/:eventPkId/phase", () =>
 				HttpResponse.json(mockPhases)
 			),
-			http.get("/api/phase", () =>
-				HttpResponse.json(mockPhases)
-			),
+			http.get("/api/phase", () => HttpResponse.json(mockPhases)),
 			http.get("/api/phase/:id", ({ params }) =>
 				HttpResponse.json(mockPhases.find((p) => p.id === params.id))
 			),
@@ -104,7 +102,9 @@ describe("PhaseSelector", () => {
 				const body = rawBody as PhasePostBody[]
 				const firstPhase = body[0]
 
-				return HttpResponse.json([{ id: "new-phase-id", ...firstPhase }])
+				return HttpResponse.json([
+					{ id: "new-phase-id", ...firstPhase }
+				])
 			}),
 			http.patch("/api/phase/:id", async ({ params, request }) => {
 				const rawBody = await request.json()
@@ -378,7 +378,9 @@ describe("PhaseSelector", () => {
 			http.get("/api/phase/:id", async ({ params }) => {
 				await mockRefetchPhaseInfo()
 
-				return HttpResponse.json(mockPhases.find((p) => p.id === params.id))
+				return HttpResponse.json(
+					mockPhases.find((p) => p.id === params.id)
+				)
 			}),
 			http.get("/api/event/:eventPkId/phase", async () => {
 				await mockRefetch()

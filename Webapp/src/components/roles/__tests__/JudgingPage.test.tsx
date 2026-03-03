@@ -100,9 +100,7 @@ describe("JudgingPage", () => {
 
 		// Mock API to return empty athlete list
 		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([])
-			),
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
 			http.get("/api/getHeatInfo/:heatId/phase", () =>
 				HttpResponse.json([
 					{

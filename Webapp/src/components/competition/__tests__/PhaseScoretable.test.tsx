@@ -115,16 +115,16 @@ describe("PhaseScoreTable", () => {
 		server.resetHandlers()
 		// Add default handlers with logging
 		server.use(
-			http.get("/api/phase/:id", async () =>
-				HttpResponse.json(mockPhaseData)
-			),
-			http.get("/api/getPhaseScores/:phaseId", async () =>
+			http.get("/api/phase/:id", () => HttpResponse.json(mockPhaseData)),
+			http.get("/api/getPhaseScores/:phaseId", () =>
 				HttpResponse.json(mockPhaseScores)
 			),
-			http.get("/api/phase_pdf/:phaseId", () =>
-				new HttpResponse("mock pdf content", {
-					headers: { "Content-Type": "application/pdf" }
-				})
+			http.get(
+				"/api/phase_pdf/:phaseId",
+				() =>
+					new HttpResponse("mock pdf content", {
+						headers: { "Content-Type": "application/pdf" }
+					})
 			)
 		)
 	})

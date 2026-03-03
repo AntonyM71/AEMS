@@ -20,17 +20,17 @@ describe("HeatSummaryTable", () => {
 			// Mock for event API
 			http.get("/api/event", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
 			// Mock for getting heat details
 			http.get("/api/heat/:id", ({ params }) => {
@@ -45,23 +45,31 @@ describe("HeatSummaryTable", () => {
 			// Mock for getting heat info (athletes)
 			http.get("/api/getHeatInfo/:heatId", () =>
 				HttpResponse.json([
-						{
-							athlete_heat_id: "1",
-							athlete_id: "1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: 123,
-							event_name: "Freestyle",
-							phase_id: "1"
-						}
-					])
+					{
+						athlete_heat_id: "1",
+						athlete_id: "1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: 123,
+						event_name: "Freestyle",
+						phase_id: "1"
+					}
+				])
 			),
 			// Mock for PDF downloads
-			http.get("/api/heat_results_pdf", () =>
-				new HttpResponse(new Blob(["test"], { type: "application/pdf" }))
+			http.get(
+				"/api/heat_results_pdf",
+				() =>
+					new HttpResponse(
+						new Blob(["test"], { type: "application/pdf" })
+					)
 			),
-			http.get("/api/heat_pdf", () =>
-				new HttpResponse(new Blob(["test"], { type: "application/pdf" }))
+			http.get(
+				"/api/heat_pdf",
+				() =>
+					new HttpResponse(
+						new Blob(["test"], { type: "application/pdf" })
+					)
 			)
 		)
 	})
@@ -242,16 +250,16 @@ describe("HeatAthleteTable", () => {
 		server.use(
 			http.get("/api/getHeatInfo/:heatId", () =>
 				HttpResponse.json([
-						{
-							athlete_heat_id: "1",
-							athlete_id: "1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: 123,
-							event_name: "Freestyle",
-							phase_id: "1"
-						}
-					])
+					{
+						athlete_heat_id: "1",
+						athlete_id: "1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: 123,
+						event_name: "Freestyle",
+						phase_id: "1"
+					}
+				])
 			)
 		)
 	})
@@ -297,25 +305,25 @@ describe("HeatAthleteTable", () => {
 		server.use(
 			http.get("/api/event", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
 			http.get("/api/heat", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						}
-					])
+					{
+						id: "1",
+						name: "Test Heat"
+					}
+				])
 			)
 		)
 
@@ -356,33 +364,31 @@ describe("HeatAthleteTable", () => {
 		server.use(
 			http.get("/api/heat", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						},
-						{
-							id: "2",
-							name: "Another Heat"
-						}
-					])
+					{
+						id: "1",
+						name: "Test Heat"
+					},
+					{
+						id: "2",
+						name: "Another Heat"
+					}
+				])
 			),
 			http.get("/api/event", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([])
-			),
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
 			http.patch("/api/athlete/:id", () =>
 				HttpResponse.json({ data: [{ id: "1" }] })
 			),
@@ -462,29 +468,27 @@ describe("AddAthletesToHeat", () => {
 		server.use(
 			http.get("/api/event", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
 			http.get("/api/heat", () =>
 				HttpResponse.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						}
-					])
+					{
+						id: "1",
+						name: "Test Heat"
+					}
+				])
 			),
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([])
-			),
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
 			http.post("/api/athlete", () =>
 				HttpResponse.json({ message: "Success" })
 			),
