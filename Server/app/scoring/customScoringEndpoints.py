@@ -134,7 +134,7 @@ async def get_heat_phases(
 ) -> list[PhaseResponse]:
     heat_info = db.query(AthleteHeat).where(AthleteHeat.heat_id == heat_id).all()
 
-    phases = set([h.__dict__["phase_id"] for h in heat_info])
+    phases = {h.phase_id for h in heat_info}
     phase_info = db.query(Phase).where(Phase.id.in_(list(phases))).all()
     return TypeAdapter(list[PhaseResponse]).validate_python(phase_info)
 
