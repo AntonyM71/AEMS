@@ -67,6 +67,7 @@ describe("CompetitionSelector", () => {
 		server.use(
 			http.get("/api/competition", async () => {
 				await delay(100)
+
 				return HttpResponse.json([])
 			})
 		)

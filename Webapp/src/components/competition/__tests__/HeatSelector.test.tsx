@@ -36,6 +36,7 @@ describe("HeatSelector", () => {
 		server.use(
 			http.get("/api/heat", async () => {
 				await delay(100)
+
 				return HttpResponse.json([])
 			})
 		)

@@ -75,10 +75,12 @@ describe("ScoresheetMoves", () => {
 		server.use(
 			http.get("/api/availablemoves", async () => {
 					await delay(100)
+
 					return HttpResponse.json([])
 				}),
 			http.get("/api/availablebonuses", async () => {
 					await delay(100)
+
 					return HttpResponse.json([])
 				})
 		)
@@ -101,10 +103,12 @@ describe("ScoresheetMoves", () => {
 		server.use(
 			http.get("/api/availablemoves", async () => {
 					await delay(10)
+
 					return HttpResponse.json([])
 				}),
 			http.get("/api/availablebonuses", async () => {
 					await delay(10)
+
 					return HttpResponse.json([])
 				})
 		)
@@ -151,10 +155,12 @@ describe("ScoresheetMoves", () => {
 		server.use(
 			http.get("/api/availablemoves", async () => {
 					await delay(10)
+
 					return HttpResponse.json(mockMoves)
 				}),
 			http.get("/api/availablebonuses", async () => {
 					await delay(10)
+
 					return HttpResponse.json(mockBonuses)
 				})
 		)
