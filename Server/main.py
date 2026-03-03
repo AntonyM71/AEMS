@@ -8,7 +8,7 @@ import uvicorn
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -38,7 +38,7 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = parse_obj_as(bool, os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(os.getenv("LOG_JSON_FORMAT", default=False))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 

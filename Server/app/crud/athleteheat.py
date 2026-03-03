@@ -20,7 +20,7 @@ async def insert_many(
     db_athlete_heats = []
 
     for athlete_heat_data in athlete_heats:
-        db_athlete_heat = AthleteHeat(**athlete_heat_data.dict(exclude_none=True))
+        db_athlete_heat = AthleteHeat(**athlete_heat_data.model_dump(exclude_none=True))
         db.add(db_athlete_heat)
         db_athlete_heats.append(db_athlete_heat)
 
@@ -31,7 +31,7 @@ async def insert_many(
         db.refresh(athlete_heat)
 
     return [
-        AthleteHeatResponse.from_orm(athlete_heat) for athlete_heat in db_athlete_heats
+        AthleteHeatResponse.model_validate(athlete_heat) for athlete_heat in db_athlete_heats
     ]
 
 
@@ -62,10 +62,10 @@ async def partial_update_one_by_primary_key(
         raise HTTPException(status_code=404, detail="Athlete heat not found")
 
     # Update only provided fields
-    update_data = athlete_heat_update.dict(exclude_unset=True)
+    update_data = athlete_heat_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_athlete_heat, field, value)
 
     db.commit()
     db.refresh(db_athlete_heat)
-    return AthleteHeatResponse.from_orm(db_athlete_heat)
+    return AthleteHeatResponse.model_validate(db_athlete_heat)

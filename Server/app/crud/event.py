@@ -107,11 +107,11 @@ async def get_many(
         if join_foreign_table:
             if "competition" in join_foreign_table and event.competition:
                 event_dict["competition_foreign"] = [
-                    CompetitionNested.from_orm(event.competition)
+                    CompetitionNested.model_validate(event.competition)
                 ]
             if "phase" in join_foreign_table and event.phases:
                 event_dict["phase_foreign"] = [
-                    PhaseNested.from_orm(p) for p in event.phases
+                    PhaseNested.model_validate(p) for p in event.phases
                 ]
 
         response_data.append(EventResponse(**event_dict))
@@ -166,11 +166,11 @@ async def get_one_by_primary_key(
     if join_foreign_table:
         if "phase" in join_foreign_table and event.phases:
             event_dict["phase_foreign"] = [
-                PhaseNested.from_orm(p) for p in event.phases
+                PhaseNested.model_validate(p) for p in event.phases
             ]
         if "competition" in join_foreign_table and event.competition:
             event_dict["competition_foreign"] = [
-                CompetitionNested.from_orm(event.competition)
+                CompetitionNested.model_validate(event.competition)
             ]
 
     return EventResponse(**event_dict)
@@ -252,7 +252,7 @@ async def get_many_with_foreign_tree(
             "id": event.id,
             "competition_id": event.competition_id,
             "name": event.name,
-            "competition_foreign": [CompetitionNested.from_orm(event.competition)]
+            "competition_foreign": [CompetitionNested.model_validate(event.competition)]
             if event.competition
             else None,
         }
@@ -270,7 +270,7 @@ async def insert_many(
     db_events = []
 
     for event_data in events:
-        db_event = Event(**event_data.dict(exclude_none=True))
+        db_event = Event(**event_data.model_dump(exclude_none=True))
         db.add(db_event)
         db_events.append(db_event)
 
@@ -280,7 +280,7 @@ async def insert_many(
     for event in db_events:
         db.refresh(event)
 
-    return [EventResponse.from_orm(event) for event in db_events]
+    return [EventResponse.model_validate(event) for event in db_events]
 
 
 @event_router.get("/{event_pk_id}/phase", response_model=list[PhaseResponse])
