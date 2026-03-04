@@ -198,7 +198,9 @@ export default ({
 	}, [maxJudges, phaseData])
 
 	useEffect(() => {
-		if (!streamMoveData) {return}
+		if (!streamMoveData) {
+			return
+		}
 		const judgeNumbers = new Array(maxJudges)
 			.fill(null)
 			.map((_, i) => String(i + 1))
