@@ -59,16 +59,18 @@ describe("HeadJudge", () => {
 
 		// Set up MSW handlers for the API endpoints
 		server.use(
-			http.get("/api/run_status", () =>
-				HttpResponse.json({
-					id: "status-1",
-					heat_id: "heat-1",
-					run_number: 1,
-					phase_id: "phase-1",
-					athlete_id: "athlete-1",
-					locked: false,
-					did_not_start: true
-				})
+			http.get("/api/run_status/", () =>
+				HttpResponse.json([
+					{
+						id: "status-1",
+						heat_id: "heat-1",
+						run_number: 1,
+						phase_id: "phase-1",
+						athlete_id: "athlete-1",
+						locked: false,
+						did_not_start: false
+					}
+				])
 			),
 			http.get("/api/getManyCompetitions", () =>
 				HttpResponse.json([
@@ -126,25 +128,12 @@ describe("HeadJudge", () => {
 					}
 				])
 			),
-			http.get("/api/getManyRunStatus", () =>
-				HttpResponse.json([
-					{
-						id: "status-1",
-						heat_id: "heat-1",
-						run_number: 1,
-						phase_id: "phase-1",
-						athlete_id: "athlete-1",
-						locked: false,
-						did_not_start: false
-					}
-				])
-			),
 			http.get("/api/getManyAvailablebonuses", () =>
 				HttpResponse.json([])
 			),
 			http.get("/api/getManyAvailablemoves", () => HttpResponse.json([])),
 			http.get(
-				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber/:judgeId",
+				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
 				() =>
 					HttpResponse.json({
 						moves: [],
@@ -202,7 +191,7 @@ describe("HeadJudge", () => {
 
 		// Mock run status as DNS before rendering
 		server.use(
-			http.get("/api/getManyRunStatus", () =>
+			http.get("/api/run_status/", () =>
 				HttpResponse.json([
 					{
 						id: "status-1",
@@ -277,7 +266,7 @@ describe("HeadJudge", () => {
 
 		// Mock run status as locked
 		server.use(
-			http.get("/api/getManyRunStatus", () =>
+			http.get("/api/run_status/", () =>
 				HttpResponse.json([
 					{
 						id: "status-1",

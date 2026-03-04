@@ -2,13 +2,8 @@ import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Typography from "@mui/material/Typography"
-import { useEffect, useRef } from "react"
-import { useSelector } from "react-redux"
-import { getSelectedHeat } from "../../../redux/atoms/competitions"
-import { getSelectedRun } from "../../../redux/atoms/scoring"
 import {
 	ScoredMovesAndBonusesResponse,
-	useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
@@ -18,8 +13,6 @@ import {
 	convertListToScoredBonusType,
 	convertListToScoredMovesType
 } from "../scribe/Interfaces"
-import { ScoredMovesAndBonusesWithMetadata } from "./RunStatus"
-import { connectCurrentScoreStatusSocket } from "./WebSocketConnections"
 
 interface JudgeCardProps {
 	judge: number
@@ -34,9 +27,6 @@ export const JudgeCard = ({
 	currentScore,
 	moveAndBonusData
 }: JudgeCardProps) => {
-	const selectedRun = useSelector(getSelectedRun)
-	const selectedHeat = useSelector(getSelectedHeat)
-
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
 		{
 			sheetIdListComparisonOperator: "Equal",
@@ -92,106 +82,4 @@ export const JudgeCard = ({
 	}
 
 	return <Skeleton />
-}
-
-export const WebsocketMoveSubscriberUpdater = ({
-	selectedHeat,
-	selectedRun,
-
-	selectedAthleteId,
-	updateJudgeData
-}: {
-	selectedHeat: string
-	selectedRun: number
-
-	selectedAthleteId: string
-	updateJudgeData: (
-		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean,
-		judgesToUpdate: string[]
-	) => void
-}) => {
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		if (socketRef.current === null) {
-			socketRef.current = connectCurrentScoreStatusSocket()
-		}
-		socketRef.current.onmessage = (event) => {
-			const jsonData = JSON.parse(
-				event.data as string
-			) as ScoredMovesAndBonusesWithMetadata
-
-			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id === selectedAthleteId &&
-				jsonData?.heat_id === selectedHeat
-			) {
-				updateJudgeData(jsonData.movesAndBonuses, false, [
-					String(jsonData.judge_id)
-				])
-			}
-		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
-
-	useEffect(() => {
-		connectWebSocket()
-	}, [selectedHeat, selectedRun, selectedAthleteId, updateJudgeData])
-
-	return <></>
-}
-
-export const HTTPMoveSubscriberUpdater = ({
-	selectedHeat,
-	selectedRun,
-
-	selectedAthleteId,
-	updateJudgeData
-}: {
-	selectedHeat: string
-	selectedRun: number
-
-	selectedAthleteId: string
-	updateJudgeData: (
-		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean,
-		judgesToUpdate: string[]
-	) => void
-}) => {
-	const { data: moveAndBonusHttpData, isUninitialized } =
-		useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
-			{
-				runNumber: selectedRun.toString(),
-				athleteId: selectedAthleteId,
-				heatId: selectedHeat
-			},
-			{
-				skip: !selectedAthleteId,
-				refetchOnMountOrArgChange: true
-			}
-		)
-
-	useEffect(() => {
-		if (!isUninitialized && moveAndBonusHttpData) {
-			const judgesToUpdate = Array.from(
-				new Set([
-					...(moveAndBonusHttpData.moves?.map((m) => m.judge_id) ??
-						[]),
-					...(moveAndBonusHttpData.bonuses?.map((b) => b.judge_id) ??
-						[])
-				])
-			)
-			updateJudgeData(moveAndBonusHttpData, true, judgesToUpdate)
-		}
-	}, [moveAndBonusHttpData, isUninitialized])
-
-	return <></>
 }

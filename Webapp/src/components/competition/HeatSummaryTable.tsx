@@ -179,7 +179,7 @@ export const HeatSummaryTable = ({
 	return <h4>Something went wrong</h4>
 }
 
-// eslint-disable-next-line complexity
+
 export const HeatAthleteTable = ({
 	showAdmin = false
 }: {
@@ -328,7 +328,7 @@ export const EditAthleteDialog = ({
 	</Dialog>
 )
 
-// eslint-disable-next-line complexity
+
 export const AddAthletesToHeat = (props: {
 	athlete_id?: string
 	first_name?: string

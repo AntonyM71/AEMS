@@ -227,7 +227,7 @@ const EditHeatDialog = ({
 	)
 }
 
-// eslint-disable-next-line complexity
+
 const AddHeat = ({
 	refetch,
 	existingHeatData
