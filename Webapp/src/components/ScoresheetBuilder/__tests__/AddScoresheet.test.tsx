@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -44,10 +44,10 @@ describe("AddScoresheet", () => {
 
 		// Mock successful POST response
 		server.use(
-			rest.post("/api/scoresheet", async (req, res, ctx) => {
-				const body = await req.json()
+			http.post("/api/scoresheet", async ({ request }) => {
+				const body = await request.json()
 
-				return res(ctx.json(body))
+				return HttpResponse.json(body)
 			})
 		)
 

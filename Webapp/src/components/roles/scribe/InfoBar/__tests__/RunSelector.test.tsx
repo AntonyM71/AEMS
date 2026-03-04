@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../../../mocks/server"
 import { competitionsReducer } from "../../../../../redux/atoms/competitions"
@@ -55,8 +55,8 @@ describe("RunSelector", () => {
 		}
 
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([mockPaddlerInfo]))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([mockPaddlerInfo])
 			)
 		)
 
@@ -82,8 +82,8 @@ describe("RunSelector", () => {
 		}
 
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([mockPaddlerInfo]))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([mockPaddlerInfo])
 			)
 		)
 
@@ -126,8 +126,8 @@ describe("RunSelector", () => {
 		}
 
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([mockPaddlerInfo]))
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([mockPaddlerInfo])
 			)
 		)
 

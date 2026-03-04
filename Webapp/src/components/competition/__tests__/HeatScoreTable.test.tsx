@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
@@ -32,66 +32,60 @@ describe("HeatScoreTable", () => {
 		// Add handlers for the APIs used by HeatScoreTable
 		server.use(
 			// Handler for getting heat details
-			rest.get("/api/heat/:id", (req, res, ctx) => {
-				const { id } = req.params
+			http.get("/api/heat/:id", ({ params }) => {
+				const { id } = params
 
-				return res(
-					ctx.json({
-						id,
-						name: "Test Heat",
-						competition_id: "1",
-						number_of_runs: 2
-					})
-				)
+				return HttpResponse.json({
+					id,
+					name: "Test Heat",
+					competition_id: "1",
+					number_of_runs: 2
+				})
 			}),
 			// Handler for getting heat scores
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) => {
-				const { heatId } = req.params
-
-				return res(
-					ctx.json({
-						scores: [
-							{
-								bib_number: "123",
-								first_name: "John",
-								last_name: "Doe",
-								run_scores: [
-									{
-										locked: true,
-										did_not_start: false,
-										mean_run_score: 85.5,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 85 }
-											},
-											{
-												judge_id: "2",
-												score_info: { score: 86 }
-											}
-										]
-									},
-									{
-										locked: true,
-										did_not_start: true,
-										mean_run_score: 0,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 0 }
-											},
-											{
-												judge_id: "2",
-												score_info: { score: 0 }
-											}
-										]
-									}
-								]
-							}
-						]
-					})
-				)
-			})
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
+					scores: [
+						{
+							bib_number: "123",
+							first_name: "John",
+							last_name: "Doe",
+							run_scores: [
+								{
+									locked: true,
+									did_not_start: false,
+									mean_run_score: 85.5,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 85 }
+										},
+										{
+											judge_id: "2",
+											score_info: { score: 86 }
+										}
+									]
+								},
+								{
+									locked: true,
+									did_not_start: true,
+									mean_run_score: 0,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 0 }
+										},
+										{
+											judge_id: "2",
+											score_info: { score: 0 }
+										}
+									]
+								}
+							]
+						}
+					]
+				})
+			)
 		)
 	})
 
@@ -268,42 +262,40 @@ describe("HeatScoreTable", () => {
 	it("applies correct styling for locked and unlocked scores", async () => {
 		// Modify the mock to include both locked and unlocked scores
 		server.use(
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json({
-						scores: [
-							{
-								bib_number: "123",
-								first_name: "John",
-								last_name: "Doe",
-								run_scores: [
-									{
-										locked: true,
-										did_not_start: false,
-										mean_run_score: 85.5,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 85 }
-											}
-										]
-									},
-									{
-										locked: false,
-										did_not_start: false,
-										mean_run_score: 90.0,
-										judge_scores: [
-											{
-												judge_id: "1",
-												score_info: { score: 90 }
-											}
-										]
-									}
-								]
-							}
-						]
-					})
-				)
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
+					scores: [
+						{
+							bib_number: "123",
+							first_name: "John",
+							last_name: "Doe",
+							run_scores: [
+								{
+									locked: true,
+									did_not_start: false,
+									mean_run_score: 85.5,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 85 }
+										}
+									]
+								},
+								{
+									locked: false,
+									did_not_start: false,
+									mean_run_score: 90.0,
+									judge_scores: [
+										{
+											judge_id: "1",
+											score_info: { score: 90 }
+										}
+									]
+								}
+							]
+						}
+					]
+				})
 			)
 		)
 
@@ -347,12 +339,10 @@ describe("HeatScoreTable", () => {
 	it("shows no athletes message when heat has no scores", async () => {
 		// Modify the mock to return empty scores array
 		server.use(
-			rest.get("/api/getHeatScores/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json({
-						scores: []
-					})
-				)
+			http.get("/api/getHeatScores/:heatId", () =>
+				HttpResponse.json({
+					scores: []
+				})
 			)
 		)
 

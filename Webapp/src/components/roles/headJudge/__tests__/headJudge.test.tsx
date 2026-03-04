@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { render, screen, waitFor } from "@testing-library/react"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
@@ -8,6 +8,17 @@ import { competitionsReducer } from "../../../../redux/atoms/competitions"
 import { scoringReducer } from "../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../redux/services/aemsApi"
 import HeadJudge from "../headJudge"
+
+jest.mock("../WebSocketConnections", () => {
+	const createSocket = () => ({} as WebSocket)
+
+	return {
+		connectWebRunStatusSocket: jest.fn(createSocket),
+		connectTimerSocket: jest.fn(createSocket),
+		connectCurrentScoreStatusSocket: jest.fn(createSocket),
+		connectBroadcastControlSocket: jest.fn(createSocket)
+	}
+})
 
 const createTestStore = () =>
 	configureStore({
@@ -48,117 +59,97 @@ describe("HeadJudge", () => {
 
 		// Set up MSW handlers for the API endpoints
 		server.use(
-			rest.get("/api/run_status", (_req, res, ctx) =>
-				res(
-					ctx.json({
+			http.get("/api/run_status", () =>
+				HttpResponse.json({
+					id: "status-1",
+					heat_id: "heat-1",
+					run_number: 1,
+					phase_id: "phase-1",
+					athlete_id: "athlete-1",
+					locked: false,
+					did_not_start: true
+				})
+			),
+			http.get("/api/getManyCompetitions", () =>
+				HttpResponse.json([
+					{
+						id: "comp-1",
+						name: "Competition 1"
+					}
+				])
+			),
+			http.get("/api/getManyPhases", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						heat_id: "heat-1"
+					}
+				])
+			),
+			http.get("/api/getManyEvents", () =>
+				HttpResponse.json([
+					{
+						id: "event-1",
+						name: "Event 1",
+						competition_id: "comp-1"
+					}
+				])
+			),
+			http.get("/api/getManyHeats", () =>
+				HttpResponse.json([
+					{
+						id: "heat-1",
+						name: "Heat 1",
+						event_id: "event-1"
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId/phase", () =>
+				HttpResponse.json([
+					{
+						id: "phase-1",
+						name: "Phase 1",
+						number_of_judges: 3
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						athlete_id: "athlete-1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: "123",
+						scoresheet: "sheet-1",
+						phase_id: "phase-1"
+					}
+				])
+			),
+			http.get("/api/getManyRunStatus", () =>
+				HttpResponse.json([
+					{
 						id: "status-1",
 						heat_id: "heat-1",
 						run_number: 1,
 						phase_id: "phase-1",
 						athlete_id: "athlete-1",
 						locked: false,
-						did_not_start: true
-					})
-				)
+						did_not_start: false
+					}
+				])
 			),
-			rest.get("/api/getManyCompetitions", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "comp-1",
-							name: "Competition 1"
-						}
-					])
-				)
+			http.get("/api/getManyAvailablebonuses", () =>
+				HttpResponse.json([])
 			),
-			rest.get("/api/getManyPhases", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							heat_id: "heat-1"
-						}
-					])
-				)
-			),
-			rest.get("/api/getManyEvents", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "event-1",
-							name: "Event 1",
-							competition_id: "comp-1"
-						}
-					])
-				)
-			),
-			rest.get("/api/getManyHeats", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "heat-1",
-							name: "Heat 1",
-							event_id: "event-1"
-						}
-					])
-				)
-			),
-			rest.get("/api/getHeatInfo/:heatId/phase", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "phase-1",
-							name: "Phase 1",
-							number_of_judges: 3
-						}
-					])
-				)
-			),
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							athlete_id: "athlete-1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: "123",
-							scoresheet: "sheet-1",
-							phase_id: "phase-1"
-						}
-					])
-				)
-			),
-			rest.get("/api/getManyRunStatus", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: false,
-							did_not_start: false
-						}
-					])
-				)
-			),
-			rest.get("/api/getManyAvailablebonuses", (_req, res, ctx) =>
-				res(ctx.json([]))
-			),
-			rest.get("/api/getManyAvailablemoves", (_req, res, ctx) =>
-				res(ctx.json([]))
-			),
-			rest.get(
+			http.get("/api/getManyAvailablemoves", () => HttpResponse.json([])),
+			http.get(
 				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber/:judgeId",
-				(_req, res, ctx) =>
-					res(
-						ctx.json({
-							moves: [],
-							bonuses: []
-						})
-					)
+				() =>
+					HttpResponse.json({
+						moves: [],
+						bonuses: []
+					})
 			)
 		)
 	})
@@ -211,20 +202,18 @@ describe("HeadJudge", () => {
 
 		// Mock run status as DNS before rendering
 		server.use(
-			rest.get("/api/getManyRunStatus", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: false,
-							did_not_start: true
-						}
-					])
-				)
+			http.get("/api/getManyRunStatus", () =>
+				HttpResponse.json([
+					{
+						id: "status-1",
+						heat_id: "heat-1",
+						run_number: 1,
+						phase_id: "phase-1",
+						athlete_id: "athlete-1",
+						locked: false,
+						did_not_start: true
+					}
+				])
 			)
 		)
 
@@ -288,20 +277,18 @@ describe("HeadJudge", () => {
 
 		// Mock run status as locked
 		server.use(
-			rest.get("/api/getManyRunStatus", (_req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "status-1",
-							heat_id: "heat-1",
-							run_number: 1,
-							phase_id: "phase-1",
-							athlete_id: "athlete-1",
-							locked: true,
-							did_not_start: false
-						}
-					])
-				)
+			http.get("/api/getManyRunStatus", () =>
+				HttpResponse.json([
+					{
+						id: "status-1",
+						heat_id: "heat-1",
+						run_number: 1,
+						phase_id: "phase-1",
+						athlete_id: "athlete-1",
+						locked: true,
+						did_not_start: false
+					}
+				])
 			)
 		)
 

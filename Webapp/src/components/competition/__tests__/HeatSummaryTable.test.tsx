@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 import { toast } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -18,56 +18,58 @@ describe("HeatSummaryTable", () => {
 		global.URL.createObjectURL = jest.fn(() => "mock-url")
 		server.use(
 			// Mock for event API
-			rest.get("/api/event", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
-				)
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
 			// Mock for getting heat details
-			rest.get("/api/heat/:id", (req, res, ctx) => {
-				const { id } = req.params
+			http.get("/api/heat/:id", ({ params }) => {
+				const { id } = params
 
-				return res(
-					ctx.json({
-						id,
-						name: "Test Heat",
-						competition_id: "1"
-					})
-				)
+				return HttpResponse.json({
+					id,
+					name: "Test Heat",
+					competition_id: "1"
+				})
 			}),
 			// Mock for getting heat info (athletes)
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							athlete_heat_id: "1",
-							athlete_id: "1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: 123,
-							event_name: "Freestyle",
-							phase_id: "1"
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						athlete_heat_id: "1",
+						athlete_id: "1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: 123,
+						event_name: "Freestyle",
+						phase_id: "1"
+					}
+				])
 			),
 			// Mock for PDF downloads
-			rest.get("/api/heat_results_pdf", (req, res, ctx) =>
-				res(ctx.body(new Blob(["test"], { type: "application/pdf" })))
+			http.get(
+				"/api/heat_results_pdf",
+				() =>
+					new HttpResponse(
+						new Blob(["test"], { type: "application/pdf" })
+					)
 			),
-			rest.get("/api/heat_pdf", (req, res, ctx) =>
-				res(ctx.body(new Blob(["test"], { type: "application/pdf" })))
+			http.get(
+				"/api/heat_pdf",
+				() =>
+					new HttpResponse(
+						new Blob(["test"], { type: "application/pdf" })
+					)
 			)
 		)
 	})
@@ -246,20 +248,18 @@ describe("HeatSummaryTable", () => {
 describe("HeatAthleteTable", () => {
 	beforeEach(() => {
 		server.use(
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							athlete_heat_id: "1",
-							athlete_id: "1",
-							first_name: "John",
-							last_name: "Doe",
-							bib: 123,
-							event_name: "Freestyle",
-							phase_id: "1"
-						}
-					])
-				)
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						athlete_heat_id: "1",
+						athlete_id: "1",
+						first_name: "John",
+						last_name: "Doe",
+						bib: 123,
+						event_name: "Freestyle",
+						phase_id: "1"
+					}
+				])
 			)
 		)
 	})
@@ -303,31 +303,27 @@ describe("HeatAthleteTable", () => {
 	it("edit dialog shows athlete info correctly", async () => {
 		// Mock event and heat data for the dialog
 		server.use(
-			rest.get("/api/event", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
-				)
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
-			rest.get("/api/heat", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						}
-					])
-				)
+			http.get("/api/heat", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Heat"
+					}
+				])
 			)
 		)
 
@@ -366,47 +362,41 @@ describe("HeatAthleteTable", () => {
 	it.skip("shows warning and deletes moves when moving athlete to different heat", async () => {
 		// Mock endpoints
 		server.use(
-			rest.get("/api/heat", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						},
-						{
-							id: "2",
-							name: "Another Heat"
-						}
-					])
-				)
+			http.get("/api/heat", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Heat"
+					},
+					{
+						id: "2",
+						name: "Another Heat"
+					}
+				])
 			),
-			rest.get("/api/event", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
-				)
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([]))
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
+			http.patch("/api/athlete/:id", () =>
+				HttpResponse.json({ data: [{ id: "1" }] })
 			),
-			rest.patch("/api/athlete/:id", (req, res, ctx) =>
-				res(ctx.json({ data: [{ id: "1" }] }))
+			http.patch("/api/athleteheat/:id", () =>
+				HttpResponse.json({ data: [{ id: "1" }] })
 			),
-			rest.patch("/api/athleteheat/:id", (req, res, ctx) =>
-				res(ctx.json({ data: [{ id: "1" }] }))
-			),
-			rest.delete("/api/scoredmoves", (req, res, ctx) =>
-				res(ctx.json({ message: "Success" }))
+			http.delete("/api/scoredmoves", () =>
+				HttpResponse.json({ message: "Success" })
 			)
 		)
 
@@ -476,40 +466,34 @@ describe("HeatAthleteTable", () => {
 describe("AddAthletesToHeat", () => {
 	beforeEach(() => {
 		server.use(
-			rest.get("/api/event", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Event",
-							phase_foreign: [
-								{
-									id: "1",
-									name: "Test Phase"
-								}
-							]
-						}
-					])
-				)
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase"
+							}
+						]
+					}
+				])
 			),
-			rest.get("/api/heat", (req, res, ctx) =>
-				res(
-					ctx.json([
-						{
-							id: "1",
-							name: "Test Heat"
-						}
-					])
-				)
+			http.get("/api/heat", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Heat"
+					}
+				])
 			),
-			rest.get("/api/getHeatInfo/:heatId", (req, res, ctx) =>
-				res(ctx.json([]))
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
+			http.post("/api/athlete", () =>
+				HttpResponse.json({ message: "Success" })
 			),
-			rest.post("/api/athlete", (req, res, ctx) =>
-				res(ctx.json({ message: "Success" }))
-			),
-			rest.post("/api/athleteheat", (req, res, ctx) =>
-				res(ctx.json({ message: "Success" }))
+			http.post("/api/athleteheat", () =>
+				HttpResponse.json({ message: "Success" })
 			)
 		)
 	})
@@ -610,11 +594,11 @@ describe("AddAthletesToHeat", () => {
 	it("creates a new athlete successfully", async () => {
 		// Mock mutation endpoints
 		server.use(
-			rest.post("/api/athlete", (req, res, ctx) =>
-				res(ctx.json({ data: [{ id: "1" }] }))
+			http.post("/api/athlete", () =>
+				HttpResponse.json({ data: [{ id: "1" }] })
 			),
-			rest.post("/api/athleteheat", (req, res, ctx) =>
-				res(ctx.json({ data: [{ id: "1" }] }))
+			http.post("/api/athleteheat", () =>
+				HttpResponse.json({ data: [{ id: "1" }] })
 			)
 		)
 		const store = setupStore({
