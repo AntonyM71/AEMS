@@ -2,14 +2,13 @@ import asyncio
 import json
 import os
 import random
-from typing import Any
 
 import websockets
 
 WS_SERVER_URL = os.environ.get("WS_SERVER_URL", "ws://localhost:8001/timer")
 
 
-async def send_messages(websocket: Any) -> None:
+async def send_messages(websocket: websockets.WebSocketClientProtocol) -> None:
     while True:
         message = {
             "status": "running",
@@ -20,7 +19,7 @@ async def send_messages(websocket: Any) -> None:
         await asyncio.sleep(1)
 
 
-async def receive_messages(websocket: Any) -> None:
+async def receive_messages(websocket: websockets.WebSocketClientProtocol) -> None:
     while True:
         try:
             response = await websocket.recv()

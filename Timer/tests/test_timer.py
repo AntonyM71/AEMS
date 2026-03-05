@@ -107,10 +107,11 @@ class TestGetShortStatus:
             ("cancelled", "CAN"),
         ],
     )
-    def test_known_statuses(self, status: str, expected: str) -> None:
-        assert timer.get_short_status(status) == expected  # type: ignore[arg-type]
+    def test_known_statuses(self, status: timer.StatusLiteral, expected: str) -> None:
+        assert timer.get_short_status(status) == expected
 
     def test_unknown_status_returns_unk(self) -> None:
+        # Intentionally passing an invalid status to test the fallback "UNK" path.
         assert timer.get_short_status("bogus") == "UNK"  # type: ignore[arg-type]
 
 
@@ -221,8 +222,11 @@ class TestSendTimerUpdate:
 
     def test_status_queued_correctly(self) -> None:
         timer.ENABLE_WEBSOCKET = True
-        for status in ("started", "running", "finished", "cancelled"):
-            timer.send_timer_update(status, 5)  # type: ignore[arg-type]
+        statuses: tuple[timer.StatusLiteral, ...] = (
+            "started", "running", "finished", "cancelled"
+        )
+        for status in statuses:
+            timer.send_timer_update(status, 5)
             item = timer.message_queue.get_nowait()
             assert item.status == status
 
