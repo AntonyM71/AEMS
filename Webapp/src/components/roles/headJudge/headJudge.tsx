@@ -128,23 +128,22 @@ export default ({
 	)
 
 	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current = connectWebRunStatusSocket()
-		socketRef.current.onclose = () => {
-			if (changeRunStatus) {
+	useEffect(() => {
+		if (!changeRunStatus) {
+			return
+		}
+		const connectWebSocket = () => {
+			socketRef.current = connectWebRunStatusSocket()
+			socketRef.current.onclose = () => {
 				setTimeout(connectWebSocket, 1000)
 			}
-		}
-		socketRef.current.onerror = () => {
-			if (socketRef?.current) {
-				socketRef.current.close()
+			socketRef.current.onerror = () => {
+				if (socketRef?.current) {
+					socketRef.current.close()
+				}
 			}
 		}
-	}
-	useEffect(() => {
-		if (changeRunStatus) {
-			connectWebSocket()
-		}
+		connectWebSocket()
 		return () => {
 			socketRef.current?.close()
 		}
