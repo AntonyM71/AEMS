@@ -130,31 +130,25 @@ export default ({
 	const socketRef = useRef<WebSocket | null>(null)
 	const connectWebSocket = () => {
 		socketRef.current = connectWebRunStatusSocket()
-	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
-		socketRef.current.onmessage = (event) => {
-			const jsonData = JSON.parse(event.data as string) as RunStatus
-
-			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id === selectedAthlete?.id &&
-				jsonData?.heat_id === selectedHeat
-			) {
-				setRunStatus(jsonData)
-			}
-		}
 		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
+			if (changeRunStatus) {
+				setTimeout(connectWebSocket, 1000)
+			}
 		}
 		socketRef.current.onerror = () => {
 			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
+				socketRef.current.close()
 			}
 		}
 	}
+	useEffect(() => {
+		if (changeRunStatus) {
+			connectWebSocket()
+		}
+		return () => {
+			socketRef.current?.close()
+		}
+	}, [changeRunStatus])
 
 	useEffect(() => {
 		if (httpRunStatus.data) {
@@ -225,7 +219,7 @@ export default ({
 		})
 		setAllJudgeScores(newScores)
 		setAllJudgeMoveAndBonusData(newData)
-	}, [streamMoveData])
+	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
 	if (!selectedHeat) {
 		return (

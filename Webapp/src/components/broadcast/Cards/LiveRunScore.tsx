@@ -106,7 +106,7 @@ export const SubscribedFinalScore = ({
 			)
 		})
 		setAllJudgeScores(newScores)
-	}, [streamMoveData])
+	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
 	return (
 		<FinalScore

@@ -10,7 +10,7 @@ import { aemsApi } from "../../../../redux/services/aemsApi"
 import HeadJudge from "../headJudge"
 
 jest.mock("../WebSocketConnections", () => {
-	const createSocket = () => ({} as WebSocket)
+	const createSocket = () => ({ close: jest.fn() } as unknown as WebSocket)
 
 	return {
 		connectWebRunStatusSocket: jest.fn(createSocket),
