@@ -9,7 +9,9 @@ const createMockSocket = () => {
 	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
 	const socket = {
 		on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
-			if (!handlers[event]) handlers[event] = []
+			if (!handlers[event]) {
+				handlers[event] = []
+			}
 			handlers[event].push(handler)
 		}),
 		off: jest.fn(),

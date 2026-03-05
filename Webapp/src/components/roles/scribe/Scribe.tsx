@@ -86,7 +86,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			socketRef.current?.disconnect()
 			socketRef.current = null
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 	useEffect(() => {
 		if (httpRunStatus.data) {

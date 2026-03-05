@@ -133,6 +133,7 @@ export default ({
 			return
 		}
 		socketRef.current = connectWebRunStatusSocket()
+
 		return () => {
 			socketRef.current?.disconnect()
 			socketRef.current = null
