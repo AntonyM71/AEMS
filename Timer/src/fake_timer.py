@@ -1,39 +1,27 @@
-import asyncio
-import json
 import os
 import random
+import time
 
-import websockets
+import socketio
 
-WS_SERVER_URL = os.environ.get("WS_SERVER_URL", "ws://localhost:8001/timer")
-
-
-async def send_messages(websocket):
-    while True:
-        message = {
-            "status": "running",
-            "time_remaining": random.randint(0, 60)
-        }
-        await websocket.send(json.dumps(message))
-        print("Sent:", message)
-        await asyncio.sleep(1)
+SIO_SERVER_URL = os.environ.get("SOCKETIO_URL", "http://localhost:8000")
+SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
 
 
-async def receive_messages(websocket):
-    while True:
-        try:
-            response = await websocket.recv()
-            print("Received:", response)
-        except websockets.ConnectionClosed:
-            print("Connection closed by server.")
-            break
+def main() -> None:
+    with socketio.SimpleClient() as sio:
+        sio.connect(SIO_SERVER_URL, namespace="/timer", socketio_path=SIO_PATH)
+        print(f"Connected to {SIO_SERVER_URL}/timer")
 
+        while True:
+            message = {
+                "status": "running",
+                "time_remaining": random.randint(0, 60),
+            }
+            sio.emit("timer", message)
+            print("Sent:", message)
+            time.sleep(1)
 
-async def main():
-    async with websockets.connect(WS_SERVER_URL) as websocket:
-        send_task = asyncio.create_task(send_messages(websocket))
-        receive_task = asyncio.create_task(receive_messages(websocket))
-        await asyncio.gather(send_task, receive_task)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

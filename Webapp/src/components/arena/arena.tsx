@@ -4,6 +4,7 @@ import Grid2 from "@mui/material/Grid2"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect, useRef } from "react"
 import { useDispatch } from "react-redux"
+import { Socket } from "socket.io-client"
 import {
 	updateSelectedCompetition,
 	updateSelectedEvent,
@@ -28,31 +29,21 @@ const Arena = () => {
 	const [overlayControlState, setOverlayControlState] = React.useState(
 		defaultOverlayControllerState
 	)
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current ??= connectBroadcastControlSocket()
-		socketRef.current.onmessage = (event) => {
-			const jsonData = JSON.parse(
-				event.data as string
-			) as OverlayControlState
-
-			setOverlayControlState(() => ({
-				...jsonData
-			}))
-		}
-		socketRef.current.onclose = () => {
-			console.warn("WebSocket closed. Reconnecting...")
-
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
+	const socketRef = useRef<Socket | null>(null)
+	useEffect(() => {
+		socketRef.current = connectBroadcastControlSocket()
+		socketRef.current.on(
+			"broadcast_control",
+			(jsonData: OverlayControlState) => {
+				setOverlayControlState(() => ({ ...jsonData }))
 			}
+		)
+
+		return () => {
+			socketRef.current?.disconnect()
+			socketRef.current = null
 		}
-	}
+	}, [])
 	const dispatch = useDispatch()
 	const setSelectedCompetition = (newCompetition: string) =>
 		dispatch(updateSelectedCompetition(newCompetition))
@@ -92,9 +83,6 @@ const Arena = () => {
 			setSelectedRun(overlayControlState.selectedRun)
 		}
 	}, [overlayControlState.selectedRun])
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
 
 	return (
 		<ThemeProvider theme={darkTheme}>

@@ -4,7 +4,13 @@ import HeadJudge from "../pages/HeadJudge"
 import { setupStore } from "../redux/store"
 
 jest.mock("../components/roles/headJudge/WebSocketConnections", () => {
-	const createSocket = () => ({ close: jest.fn() } as unknown as WebSocket)
+	const createSocket = () => ({
+		on: jest.fn(),
+		off: jest.fn(),
+		emit: jest.fn(),
+		disconnect: jest.fn(),
+		connected: true
+	})
 
 	return {
 		connectWebRunStatusSocket: jest.fn(createSocket),

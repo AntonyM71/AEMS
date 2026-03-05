@@ -1,3 +1,4 @@
+import { Socket } from "socket.io-client"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
@@ -23,38 +24,23 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				_,
 				{ updateCachedData, cacheEntryRemoved }
 			) {
-				const wsRef: { current: WebSocket | null } = {
+				const socketRef: { current: Socket | null } = {
 					current: null
 				}
-				let stopped = false
-				const connect = () => {
-					if (stopped) {
-						return
-					}
-					wsRef.current = connectTimerSocket()
-					wsRef.current.onmessage = (event) => {
-						const jsonData = JSON.parse(
-							event.data as string
-						) as { time_remaining: number }
-						if (jsonData?.time_remaining !== undefined) {
+				socketRef.current = connectTimerSocket()
+				socketRef.current.on(
+					"timer",
+					(data: { time_remaining: number }) => {
+						if (data?.time_remaining !== undefined) {
 							updateCachedData(
-								() => jsonData.time_remaining
+								() => data.time_remaining
 							)
 						}
 					}
-					wsRef.current.onclose = () => {
-						if (!stopped) {
-							setTimeout(connect, 1000)
-						}
-					}
-					wsRef.current.onerror = () => {
-						wsRef.current?.close()
-					}
-				}
-				connect()
+				)
 				await cacheEntryRemoved
-				stopped = true
-				wsRef.current?.close()
+				socketRef.current?.disconnect()
+				socketRef.current = null
 			}
 		}),
 
@@ -78,45 +64,30 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				{ heatId, athleteId, runNumber },
 				{ updateCachedData, cacheDataLoaded, cacheEntryRemoved }
 			) {
-				const wsRef: { current: WebSocket | null } = {
+				const socketRef: { current: Socket | null } = {
 					current: null
-				}
-				let stopped = false
-				const connect = () => {
-					if (stopped) {
-						return
-					}
-					wsRef.current = connectWebRunStatusSocket()
-					wsRef.current.onmessage = (event) => {
-						const jsonData = JSON.parse(
-							event.data as string
-						) as RunStatus
-						if (
-							jsonData?.run_number === runNumber &&
-							jsonData?.athlete_id === athleteId &&
-							jsonData?.heat_id === heatId
-						) {
-							updateCachedData(() => jsonData)
-						}
-					}
-					wsRef.current.onclose = () => {
-						if (!stopped) {
-							setTimeout(connect, 1000)
-						}
-					}
-					wsRef.current.onerror = () => {
-						wsRef.current?.close()
-					}
 				}
 				try {
 					await cacheDataLoaded
-					connect()
+					socketRef.current = connectWebRunStatusSocket()
+					socketRef.current.on(
+						"run_status",
+						(data: RunStatus) => {
+							if (
+								data?.run_number === runNumber &&
+								data?.athlete_id === athleteId &&
+								data?.heat_id === heatId
+							) {
+								updateCachedData(() => data)
+							}
+						}
+					)
 				} catch {
 					// no-op if cacheEntryRemoved resolves before cacheDataLoaded
 				}
 				await cacheEntryRemoved
-				stopped = true
-				wsRef.current?.close()
+				socketRef.current?.disconnect()
+				socketRef.current = null
 			}
 		}),
 
@@ -131,61 +102,50 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				{ heatId, athleteId, runNumber },
 				{ updateCachedData, cacheDataLoaded, cacheEntryRemoved }
 			) {
-				const wsRef: { current: WebSocket | null } = {
+				const socketRef: { current: Socket | null } = {
 					current: null
-				}
-				let stopped = false
-				const connect = () => {
-					if (stopped) {
-						return
-					}
-					wsRef.current = connectCurrentScoreStatusSocket()
-					wsRef.current.onmessage = (event) => {
-						const jsonData = JSON.parse(
-							event.data as string
-						) as ScoredMovesAndBonusesWithMetadata
-						if (
-							jsonData?.run_number === runNumber &&
-							jsonData?.athlete_id === athleteId &&
-							jsonData?.heat_id === heatId
-						) {
-							const judgeIdStr = String(jsonData.judge_id)
-							updateCachedData((draft) => {
-								draft.moves = [
-									...(draft.moves?.filter(
-										(m) => m.judge_id !== judgeIdStr
-									) ?? []),
-									...(jsonData.movesAndBonuses.moves ??
-										[])
-								]
-								draft.bonuses = [
-									...(draft.bonuses?.filter(
-										(b) => b.judge_id !== judgeIdStr
-									) ?? []),
-									...(jsonData.movesAndBonuses.bonuses ??
-										[])
-								]
-							})
-						}
-					}
-					wsRef.current.onclose = () => {
-						if (!stopped) {
-							setTimeout(connect, 1000)
-						}
-					}
-					wsRef.current.onerror = () => {
-						wsRef.current?.close()
-					}
 				}
 				try {
 					await cacheDataLoaded
-					connect()
+					socketRef.current = connectCurrentScoreStatusSocket()
+					socketRef.current.on(
+						"current_scores",
+						(data: ScoredMovesAndBonusesWithMetadata) => {
+							if (
+								data?.run_number === runNumber &&
+								data?.athlete_id === athleteId &&
+								data?.heat_id === heatId
+							) {
+								const judgeIdStr = String(data.judge_id)
+								updateCachedData((draft) => {
+									draft.moves = [
+										...(draft.moves?.filter(
+											(m) =>
+												m.judge_id !==
+												judgeIdStr
+										) ?? []),
+										...(data.movesAndBonuses
+											.moves ?? [])
+									]
+									draft.bonuses = [
+										...(draft.bonuses?.filter(
+											(b) =>
+												b.judge_id !==
+												judgeIdStr
+										) ?? []),
+										...(data.movesAndBonuses
+											.bonuses ?? [])
+									]
+								})
+							}
+						}
+					)
 				} catch {
 					// no-op if cacheEntryRemoved resolves before cacheDataLoaded
 				}
 				await cacheEntryRemoved
-				stopped = true
-				wsRef.current?.close()
+				socketRef.current?.disconnect()
+				socketRef.current = null
 			}
 		}),
 
@@ -195,35 +155,19 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				_,
 				{ updateCachedData, cacheEntryRemoved }
 			) {
-				const wsRef: { current: WebSocket | null } = {
+				const socketRef: { current: Socket | null } = {
 					current: null
 				}
-				let stopped = false
-				const connect = () => {
-					if (stopped) {
-						return
+				socketRef.current = connectBroadcastControlSocket()
+				socketRef.current.on(
+					"broadcast_control",
+					(data: OverlayControlState) => {
+						updateCachedData(() => data)
 					}
-					wsRef.current = connectBroadcastControlSocket()
-					wsRef.current.onmessage = (event) => {
-						const jsonData = JSON.parse(
-							event.data as string
-						) as OverlayControlState
-						updateCachedData(() => jsonData)
-					}
-					wsRef.current.onclose = () => {
-						if (!stopped) {
-							setTimeout(connect, 1000)
-						}
-					}
-					wsRef.current.onerror = (error) => {
-						console.error("WebSocket error:", error)
-						wsRef.current?.close()
-					}
-				}
-				connect()
+				)
 				await cacheEntryRemoved
-				stopped = true
-				wsRef.current?.close()
+				socketRef.current?.disconnect()
+				socketRef.current = null
 			}
 		})
 	}),

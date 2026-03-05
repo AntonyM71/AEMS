@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography"
 import React, { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
+import { Socket } from "socket.io-client"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
@@ -81,21 +82,7 @@ const OverlayController: React.FC = () => {
 	useEffect(() => {
 		setOverlayControlState({ ...overlayControlState, selectedRun })
 	}, [selectedRun])
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectBroadcastControlSocket()
-		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
+	const socketRef = useRef<Socket | null>(null)
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,
@@ -103,15 +90,17 @@ const OverlayController: React.FC = () => {
 		}))
 	}
 	useEffect(() => {
-		connectWebSocket()
+		socketRef.current = connectBroadcastControlSocket()
+
+		return () => {
+			socketRef.current?.disconnect()
+			socketRef.current = null
+		}
 	}, [])
 
 	useEffect(() => {
-		if (
-			socketRef.current &&
-			socketRef.current.readyState === WebSocket.OPEN
-		) {
-			socketRef.current?.send(JSON.stringify(overlayControlState))
+		if (socketRef.current?.connected) {
+			socketRef.current.emit("broadcast_control", overlayControlState)
 		}
 	}, [overlayControlState])
 

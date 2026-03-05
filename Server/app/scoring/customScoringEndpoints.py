@@ -7,20 +7,13 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    WebSocket,
-    WebSocketDisconnect,
     status,
 )
-from fastapi.concurrency import run_until_first_complete
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 from sqlalchemy.orm import Session
 
-from app.common.websocket_handler import (
-    publisher,
-    ws_receiver,
-    ws_sender,
-)
+from app.common.socket_manager import sio
 from app.scoresheetEndpoints import (
     PydanticAvailableBonuses,
     PydanticAvailableMoves,
@@ -217,7 +210,14 @@ async def update_athlete_score(
                 judge_id=judge_id,
                 phase_id=phase_id,
             )
-            await publisher(message=websocket_message.model_dump_json(), channel="current_scores")
+            scored_data = await get_moves_from_server(
+                websocket_message.model_dump_json()
+            )
+            await sio.emit(
+                "current_scores",
+                json.loads(scored_data),
+                namespace="/current_scores",
+            )
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -524,44 +524,31 @@ class RunStatusSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-@scoring_router.websocket("/current_scores")
-async def current_score_websocket(websocket: WebSocket) -> None:
-    await websocket.accept()
-
-    try:
-        await ws_sender(
-            websocket=websocket,
-            channel="current_scores",
-            fetch_data_with_message=get_moves_from_server,
-        )
-
-    except WebSocketDisconnect as e:
-        if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Current Score Websocket")
-
-        await websocket.close()
+@sio.on("connect", namespace="/current_scores")
+async def on_current_scores_connect(sid: str, environ: dict) -> None:
+    logging.info("Socket.IO /current_scores: client connected: %s", sid)
 
 
-@scoring_router.websocket("/run_status")
-async def runstatus_websocket(websocket: WebSocket) -> None:
-    await websocket.accept()
-    try:
-        await run_until_first_complete(
-            (
-                ws_receiver,
-                {
-                    "websocket": websocket,
-                    "side_effect": copy_message_to_db,
-                    "channel": "run_status",
-                },
-            ),
-            (ws_sender, {"websocket": websocket, "channel": "run_status"}),
-        )
-    except WebSocketDisconnect as e:
-        if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Current Score Websocket")
+@sio.on("disconnect", namespace="/current_scores")
+async def on_current_scores_disconnect(sid: str) -> None:
+    logging.info("Socket.IO /current_scores: client disconnected: %s", sid)
 
-        await websocket.close()
+
+@sio.on("run_status", namespace="/run_status")
+async def on_run_status(sid: str, data: dict) -> None:
+    logging.info("Socket.IO /run_status: received message from %s", sid)
+    copy_message_to_db(json.dumps(data))
+    await sio.emit("run_status", data, namespace="/run_status")
+
+
+@sio.on("connect", namespace="/run_status")
+async def on_run_status_connect(sid: str, environ: dict) -> None:
+    logging.info("Socket.IO /run_status: client connected: %s", sid)
+
+
+@sio.on("disconnect", namespace="/run_status")
+async def on_run_status_disconnect(sid: str) -> None:
+    logging.info("Socket.IO /run_status: client disconnected: %s", sid)
 
 
 def copy_message_to_db(data: str) -> None:

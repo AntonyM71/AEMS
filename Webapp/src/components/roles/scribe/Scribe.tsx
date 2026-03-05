@@ -2,6 +2,7 @@ import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
 import { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { Socket } from "socket.io-client"
 import {
 	getSelectedHeat,
 	updateNumberOfRuns
@@ -67,18 +68,10 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	)
 
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current = connectWebRunStatusSocket()
-	}
+	const socketRef = useRef<Socket | null>(null)
 	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
-		socketRef.current.onmessage = (event) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			const jsonData = JSON.parse(event.data) as RunStatus
-
+		socketRef.current = connectWebRunStatusSocket()
+		socketRef.current.on("run_status", (jsonData: RunStatus) => {
 			if (
 				jsonData?.run_number === selectedRun &&
 				jsonData?.athlete_id ===
@@ -87,17 +80,14 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			) {
 				setRunStatus(jsonData)
 			}
+		})
+
+		return () => {
+			socketRef.current?.disconnect()
+			socketRef.current = null
 		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 	useEffect(() => {
 		if (httpRunStatus.data) {
 			setRunStatus(httpRunStatus.data[0] as RunStatus)
