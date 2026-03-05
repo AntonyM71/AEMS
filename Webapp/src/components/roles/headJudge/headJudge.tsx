@@ -225,7 +225,7 @@ export default ({
 		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
 			if (!socketRef.current) {
 				toast.error(
-					"Websocket Connection not ready, please try again in a few seconds"
+					"Socket.IO Connection not ready, please try again in a few seconds"
 				)
 			}
 		if (runStatus) {

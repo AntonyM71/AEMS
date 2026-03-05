@@ -210,12 +210,10 @@ async def update_athlete_score(
                 judge_id=judge_id,
                 phase_id=phase_id,
             )
-            scored_data = await get_moves_from_server(
-                websocket_message.model_dump_json()
-            )
+            scored_data = await get_moves_from_server(websocket_message)
             await sio.emit(
                 "current_scores",
-                json.loads(scored_data),
+                scored_data,
                 namespace="/current_scores",
             )
     except Exception as e:
@@ -244,12 +242,11 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
     movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
 
 
-async def get_moves_from_server(message: str) -> str:
+async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
     """
-    Receives a message, parses metadata, and returns scored moves and bonuses.
+    Receives metadata for a scored ride and returns scored moves and bonuses as a dict.
     Uses a transaction session context manager to ensure consistent session management.
     """
-    metadata = UpdatedRideMetaData(**json.loads(message))
     with transaction_session_context_manager() as db:
         scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
@@ -266,7 +263,7 @@ async def get_moves_from_server(message: str) -> str:
             run_number=metadata.run_number,
             phase_id=metadata.phase_id,
             judge_id=metadata.judge_id,
-        ).model_dump_json()
+        ).model_dump()
 
 
 @scoring_router.get(

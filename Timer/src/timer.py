@@ -15,7 +15,6 @@ from custom_logging import setup_logging
 
 from tm1637 import TM1637Decimal
 
-
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -95,8 +94,9 @@ socketio_thread = None
 message_queue: queue.Queue = queue.Queue()  # Thread-safe queue for Socket.IO messages
 socketio_running = True  # Flag to control the Socket.IO thread
 
-# Server configuration - change this to match your server address
-# For Socket.IO, the URL is the HTTP base URL (not ws://)
+# Server configuration - change this to match your server address.
+# In production, port 81 is the nginx reverse proxy that serves the full stack.
+# In development, use http://localhost:8000 (the uvicorn server directly).
 SIO_SERVER_URL = os.environ.get(
     "SOCKETIO_URL", "http://192.168.0.28:81")
 SIO_PATH = os.environ.get("SOCKETIO_PATH", "/api/socket.io/")
