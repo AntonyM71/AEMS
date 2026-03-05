@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import React from "react"
+import { renderWithProviders } from "../../../../testUtils"
 import LiveTimer from "../LiveTimer"
 import * as WebSocketConnections from "../WebSocketConnections"
 
@@ -50,47 +51,11 @@ describe("LiveTimer Component", () => {
 	})
 
 	it("renders the initial timer with value of 0", () => {
-		render(<LiveTimer />)
+		renderWithProviders(<LiveTimer />)
 
 		// Check if the component renders correctly
 		expect(screen.getByText("Timer:")).toBeInTheDocument()
 		expect(screen.getByText("0")).toBeInTheDocument()
-	})
-
-	it("processes and displays timer messages from WebSocket", () => {
-		// Set up a state mock
-		const setStateMock = jest.fn()
-		jest.spyOn(React, "useState").mockImplementationOnce(() => [
-			0,
-			setStateMock
-		])
-
-		// Render component to establish connection
-		render(<LiveTimer />)
-
-		// Create a mock message event
-		const mockMessageEvent = {
-			data: JSON.stringify({
-				time_remaining: 42,
-				status: "running"
-			})
-		}
-
-		// Simulate the LiveTimer component's behavior
-		// Imitate what happens in the component when websocket message is received
-		const jsonData = JSON.parse(mockMessageEvent.data) as {
-			time_remaining: number
-			status: string
-		}
-
-		// Call setState with the time_remaining value (simulating onmessage behavior)
-		setStateMock(jsonData.time_remaining)
-
-		// Verify our state setter was called with correct time value
-		expect(setStateMock).toHaveBeenCalledWith(42)
-
-		// Clean up mocks
-		jest.restoreAllMocks()
 	})
 
 	it("establishes a WebSocket connection when mounted", () => {
@@ -102,7 +67,7 @@ describe("LiveTimer Component", () => {
 		connectTimerMock.mockClear()
 
 		// Render the component
-		render(<LiveTimer />)
+		renderWithProviders(<LiveTimer />)
 
 		// Check that the connection function was called once
 		expect(connectTimerMock).toHaveBeenCalledTimes(1)
@@ -120,7 +85,7 @@ describe("LiveTimer Component", () => {
 		mockSocket.close = closeSpy
 
 		// Render the component
-		const { unmount } = render(<LiveTimer />)
+		renderWithProviders(<LiveTimer />)
 
 		// Get a reference to the socket to manually trigger error
 		const socketRef = { current: mockSocket }
@@ -150,7 +115,7 @@ describe("LiveTimer Component", () => {
 		})
 
 		// Render component (this will call connectTimerSocket once)
-		render(<LiveTimer />)
+		renderWithProviders(<LiveTimer />)
 
 		// Verify first connection
 		expect(connectTimerMock).toHaveBeenCalledTimes(1)

@@ -19,9 +19,12 @@ import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
 	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery,
-	useGetManyRunStatusGetQuery
+	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
+import {
+	useAthleteMovesAndBonusesStreamQuery,
+	useRunStatusStreamQuery
+} from "../../../redux/services/streamingApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
 import { HeatScoreTable } from "../../competition/HeatScoreTable"
 import { HeatSummaryTable } from "../../competition/HeatSummaryTable"
@@ -36,16 +39,12 @@ import {
 	movesType
 } from "../scribe/Interfaces"
 import { FinalScore } from "./FinalScore"
-import {
-	HTTPMoveSubscriberUpdater,
-	JudgeCard,
-	WebsocketMoveSubscriberUpdater
-} from "./JudgeCard"
+import { JudgeCard } from "./JudgeCard"
 import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
 import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
-// eslint-disable-next-line complexity
+
 export default ({
 	changeRunStatus = true,
 	showLiveTimer = false
@@ -94,70 +93,14 @@ export default ({
 		},
 		{ skip: !selectedAthlete?.scoresheet }
 	)
-	const updateJudgeData = (
-		movesAndBonuses: ScoredMovesAndBonusesResponse,
-		clear: boolean = false,
-		judgesToUpdate: string[] = []
-	) => {
-		const judgeInfo: Record<
-			string,
-			{ score: number; movesAndBonuses: ScoredMovesAndBonusesResponse }
-		> = {}
-		if (clear) {
-			setAllJudgeScores((prevScores) =>
-				Object.fromEntries(
-					Object.keys(prevScores).map((jid) => [jid, 0])
-				)
-			)
-			setAllJudgeMoveAndBonusData((prevData) =>
-				Object.fromEntries(
-					Object.keys(prevData).map((jid) => [
-						jid,
-						{ moves: [], bonuses: [] }
-					])
-				)
-			)
-		}
-
-		judgesToUpdate.forEach((jid: string) => {
-			const filteredMovesAndBonuses: ScoredMovesAndBonusesResponse = {
-				moves:
-					movesAndBonuses.moves?.filter((m) => m.judge_id === jid) ??
-					[],
-				bonuses:
-					movesAndBonuses.bonuses?.filter(
-						(b) => b.judge_id === jid
-					) ?? []
-			}
-
-			const score = calculateMoveAndBonusScore(
-				filteredMovesAndBonuses,
-				(availableMoves.data ?? []) as movesType[],
-				(availableBonuses.data ?? []) as AvailableBonusType[]
-			)
-
-			judgeInfo[jid] = { score, movesAndBonuses: filteredMovesAndBonuses }
-		})
-
-		setAllJudgeScores((prevScores) => ({
-			...prevScores,
-			...Object.fromEntries(
-				Object.entries(judgeInfo).map(([jid, value]) => [
-					jid,
-					value.score
-				])
-			)
-		}))
-		setAllJudgeMoveAndBonusData((prevData) => ({
-			...prevData,
-			...Object.fromEntries(
-				Object.entries(judgeInfo).map(([jid, value]) => [
-					jid,
-					value.movesAndBonuses
-				])
-			)
-		}))
-	}
+	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
+		{
+			heatId: selectedHeat,
+			athleteId: selectedAthlete?.id ?? "",
+			runNumber: selectedRun
+		},
+		{ skip: !selectedHeat || !selectedAthlete?.id }
+	)
 
 	useEffect(() => {
 		if (athleteData) {
@@ -173,50 +116,42 @@ export default ({
 		}
 	}, [currentPaddlerIndex, athleteData, selectedHeat])
 
-	const httpRunStatus = useGetManyRunStatusGetQuery(
+	const httpRunStatus = useRunStatusStreamQuery(
 		{
-			heatIdList: [selectedHeat],
-			athleteIdList: [selectedAthlete?.id ?? ""],
-			runNumberList: [selectedRun]
+			heatId: selectedHeat,
+			athleteId: selectedAthlete?.id ?? "",
+			runNumber: selectedRun
 		},
 		{
-			skip: !selectedHeat || !selectedAthlete?.id,
-			refetchOnMountOrArgChange: true
+			skip: !selectedHeat || !selectedAthlete?.id
 		}
 	)
 
 	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current = connectWebRunStatusSocket()
-	}
 	useEffect(() => {
+		if (!changeRunStatus) {
+			return
+		}
+		const connectWebSocket = () => {
+			socketRef.current = connectWebRunStatusSocket()
+			socketRef.current.onclose = () => {
+				setTimeout(connectWebSocket, 1000)
+			}
+			socketRef.current.onerror = () => {
+				if (socketRef?.current) {
+					socketRef.current.close()
+				}
+			}
+		}
 		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
-		socketRef.current.onmessage = (event) => {
-			const jsonData = JSON.parse(event.data as string) as RunStatus
-
-			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id === selectedAthlete?.id &&
-				jsonData?.heat_id === selectedHeat
-			) {
-				setRunStatus(jsonData)
-			}
+		return () => {
+			socketRef.current?.close()
 		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = () => {
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
+	}, [changeRunStatus])
 
 	useEffect(() => {
 		if (httpRunStatus.data) {
-			setRunStatus(httpRunStatus.data[0] as RunStatus)
+			setRunStatus(httpRunStatus.data)
 		} else {
 			setRunStatus(undefined)
 		}
@@ -254,6 +189,36 @@ export default ({
 		})
 		setAllJudgeMoveAndBonusData(initialMovesAndBonuses)
 	}, [maxJudges, phaseData])
+
+	useEffect(() => {
+		if (!streamMoveData) {
+			return
+		}
+		const judgeNumbers = new Array(maxJudges)
+			.fill(null)
+			.map((_, i) => String(i + 1))
+		const newScores: Record<string, number> = {}
+		const newData: Record<string, ScoredMovesAndBonusesResponse> = {}
+		judgeNumbers.forEach((jid) => {
+			const filteredData: ScoredMovesAndBonusesResponse = {
+				moves:
+					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
+					[],
+				bonuses:
+					streamMoveData.bonuses?.filter(
+						(b) => b.judge_id === jid
+					) ?? []
+			}
+			newScores[jid] = calculateMoveAndBonusScore(
+				filteredData,
+				(availableMoves.data ?? []) as movesType[],
+				(availableBonuses.data ?? []) as AvailableBonusType[]
+			)
+			newData[jid] = filteredData
+		})
+		setAllJudgeScores(newScores)
+		setAllJudgeMoveAndBonusData(newData)
+	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
 	if (!selectedHeat) {
 		return (
@@ -471,18 +436,6 @@ export default ({
 					<Grid size={12}>
 						<Divider />
 					</Grid>
-					<WebsocketMoveSubscriberUpdater
-						selectedHeat={selectedHeat}
-						selectedRun={selectedRun}
-						selectedAthleteId={selectedAthlete.id}
-						updateJudgeData={updateJudgeData}
-					/>
-					<HTTPMoveSubscriberUpdater
-						selectedHeat={selectedHeat}
-						selectedRun={selectedRun}
-						selectedAthleteId={selectedAthlete.id}
-						updateJudgeData={updateJudgeData}
-					/>
 					{judgeNumberArray.map((jn) => (
 						<Grid key={jn} size={Math.floor(12 / maxJudges)}>
 							<JudgeCard

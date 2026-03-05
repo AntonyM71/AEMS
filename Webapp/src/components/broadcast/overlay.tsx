@@ -1,10 +1,9 @@
 import Grid from "@mui/material/Grid2"
 import Stack from "@mui/material/Stack"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { useDispatch } from "react-redux"
 import TransitionGroup from "react-transition-group/TransitionGroup"
-import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
 
 import {
 	updateSelectedCompetition,
@@ -13,11 +12,9 @@ import {
 	updateSelectedPhase
 } from "../../redux/atoms/competitions"
 import { updateRun } from "../../redux/atoms/scoring"
+import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 
-import {
-	defaultOverlayControllerState,
-	OverlayControlState
-} from "../Interfaces"
+import { defaultOverlayControllerState } from "../Interfaces"
 import AthleteInfoCard from "./Cards/AthleteInfoCard"
 import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
@@ -33,36 +30,8 @@ interface OverlayProps extends React.FC {
 }
 
 const Overlay: OverlayProps = () => {
-	const [overlayControlState, setOverlayControlState] = React.useState(
-		defaultOverlayControllerState
-	)
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectBroadcastControlSocket()
-		}
-		socketRef.current.onmessage = (event) => {
-			const jsonData = JSON.parse(
-				event.data as string
-			) as OverlayControlState
-
-			setOverlayControlState(() => ({
-				...jsonData
-			}))
-		}
-		socketRef.current.onclose = () => {
-			console.warn("WebSocket closed. Reconnecting...")
-
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
+	const { data: overlayControlState = defaultOverlayControllerState } =
+		useBroadcastControlStreamQuery()
 	const dispatch = useDispatch()
 	const setSelectedCompetition = (newCompetition: string) =>
 		dispatch(updateSelectedCompetition(newCompetition))
@@ -102,9 +71,6 @@ const Overlay: OverlayProps = () => {
 			setSelectedRun(overlayControlState.selectedRun)
 		}
 	}, [overlayControlState.selectedRun])
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
 
 	return (
 		<ThemeProvider theme={lightTheme}>

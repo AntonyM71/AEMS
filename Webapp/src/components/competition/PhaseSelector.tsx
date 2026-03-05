@@ -37,7 +37,7 @@ import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { RefreshButton } from "./RefreshIconButton"
 import { SelectScoresheet } from "./ScoresheetSelector"
 
-// eslint-disable-next-line complexity
+
 const PhasesSelector = ({
 	showDetailed = false
 }: {
@@ -217,7 +217,7 @@ const EditPhaseDialog = ({
 	)
 }
 
-// eslint-disable-next-line complexity
+
 const AddPhase = ({
 	refetch,
 	existingPhaseData
