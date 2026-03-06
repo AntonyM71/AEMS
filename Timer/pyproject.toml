@@ -30,8 +30,9 @@ line-length = 88
 extend-exclude = ["src/tm1637.py"]
 [tool.ruff.lint.flake8-bugbear]
 [tool.pytest.ini_options]
-addopts = ["--cov=.", "--cov-report=term-missing"]
-pythonpath = ["."]
+addopts = ["--cov=src", "--cov-report=term-missing"]
+pythonpath = ["src"]
+testpaths = ["tests"]
 [tool.coverage.run]
 omit = ["*/tests/*"]
 
@@ -44,6 +45,7 @@ indent-style = "space"
 [project]
 dependencies = [
     "RPi.GPIO",
+    "websockets",
     # Dev
     "ruff",
 
@@ -56,4 +58,4 @@ dependencies = [
 name = "aems_timer"
 description = "backend functions and database conntroller for the AEMS system"
 version = "0.1.0"
-requires-python = ">3.10.0"
+requires-python = ">=3.13,<3.14"

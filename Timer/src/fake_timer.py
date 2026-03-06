@@ -8,7 +8,7 @@ import websockets
 WS_SERVER_URL = os.environ.get("WS_SERVER_URL", "ws://localhost:8001/timer")
 
 
-async def send_messages(websocket):
+async def send_messages(websocket: websockets.WebSocketClientProtocol) -> None:
     while True:
         message = {
             "status": "running",
@@ -19,7 +19,7 @@ async def send_messages(websocket):
         await asyncio.sleep(1)
 
 
-async def receive_messages(websocket):
+async def receive_messages(websocket: websockets.WebSocketClientProtocol) -> None:
     while True:
         try:
             response = await websocket.recv()
@@ -29,7 +29,7 @@ async def receive_messages(websocket):
             break
 
 
-async def main():
+async def main() -> None:
     async with websockets.connect(WS_SERVER_URL) as websocket:
         send_task = asyncio.create_task(send_messages(websocket))
         receive_task = asyncio.create_task(receive_messages(websocket))
