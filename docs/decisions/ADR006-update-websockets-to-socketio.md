@@ -37,7 +37,7 @@ Use SSE for read-only streams and keep WebSocket only for bidirectional channels
 
 ## Decision:
 
-Migrate all real-time connections to Socket.IO using `python-socketio[asyncio]` on the server and timer, and `socket.io-client` on the browser.
+Migrate all real-time connections to Socket.IO using `python-socketio` on the server and timer, and `socket.io-client` on the browser.
 
 Each logical data channel becomes a Socket.IO namespace:
 
@@ -87,7 +87,7 @@ Replacing the `broadcaster` pub/sub library with direct Socket.IO namespace emis
 
 ## Implementation:
 
-1. Add `python-socketio[asyncio]` to `Server/pyproject.toml` and `Timer/pyproject.toml`; remove `broadcaster[postgres]` from `Server/pyproject.toml`.
+1. Add `python-socketio` to `Server/pyproject.toml` and `Timer/pyproject.toml`; remove `broadcaster[postgres]` from `Server/pyproject.toml`.
 2. Create `Server/app/common/socket_manager.py` with a singleton `AsyncServer` instance.
 3. Register Socket.IO event handlers for each namespace in `broadcastEndpoints.py` and `customScoringEndpoints.py`, replacing the FastAPI WebSocket route handlers.
 4. Wrap the FastAPI ASGI app with `socketio.ASGIApp` in `main.py` so that `/socket.io/` traffic is handled by Socket.IO and all other requests pass through to FastAPI.
