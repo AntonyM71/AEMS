@@ -263,7 +263,7 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
             run_number=metadata.run_number,
             phase_id=metadata.phase_id,
             judge_id=metadata.judge_id,
-        ).model_dump()
+        ).model_dump(mode="json")
 
 
 @scoring_router.get(
