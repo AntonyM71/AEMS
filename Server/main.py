@@ -40,7 +40,9 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(
+    os.getenv("LOG_JSON_FORMAT", default=False)
+)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 
@@ -146,6 +148,7 @@ async def health_check(db: Session = Depends(get_transaction_session)) -> dict:
         return {"status": "unhealthy"}
     # Ensure a default return value in case of unexpected issues
     return {"status": "unknown"}
+
 
 app.add_middleware(
     CORSMiddleware,

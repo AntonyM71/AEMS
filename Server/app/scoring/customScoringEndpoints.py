@@ -287,12 +287,16 @@ async def get_athlete_moves_and_bonuses(
     if judge_id is not None and judge_id.strip():
         query = query.filter(ScoredMoves.judge_id == judge_id)
     moves = query.all()
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
 
     move_ids = [m.id for m in pydantic_moves]
 
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     return ScoredMovesAndBonusesResponse.model_validate(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
@@ -320,7 +324,9 @@ async def get_heat_scores(
 ) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes = db.query(Athlete).filter(
@@ -339,7 +345,9 @@ async def get_heat_scores(
     )
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
@@ -360,15 +368,18 @@ async def get_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=[
             AvailableMoves(**move.model_dump())
-            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(scoresheet_available_moves
+            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(
+                scoresheet_available_moves
             )
         ],
         available_bonuses=[
             AvailableBonuses(**bonus.model_dump())
-            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(scoresheet_available_bonuses
+            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(
+                scoresheet_available_bonuses
             )
         ],
-        run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(run_statuses if run_statuses else []
+        run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(
+            run_statuses if run_statuses else []
         ),
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
@@ -413,7 +424,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
         raise ValueError(msg)
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes: list[Athlete] = (
@@ -433,7 +446,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     )
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves,
@@ -441,7 +456,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         number_of_runs=phase.number_of_runs,
     )
     athlete_moves_with_judges = [
-        AthleteMovesWithJudgeInfo(**a.model_dump(), number_of_judges=phase.number_of_judges)
+        AthleteMovesWithJudgeInfo(
+            **a.model_dump(), number_of_judges=phase.number_of_judges
+        )
         for a in athlete_moves_list
     ]
 
@@ -449,12 +466,14 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=[
             AvailableMoves(**move.model_dump())
-            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(scoresheet_available_moves
+            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(
+                scoresheet_available_moves
             )
         ],
         available_bonuses=[
             AvailableBonuses(**bonus.model_dump())
-            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(scoresheet_available_bonuses
+            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(
+                scoresheet_available_bonuses
             )
         ],
         run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(run_statuses),
