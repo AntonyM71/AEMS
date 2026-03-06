@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 from dataclasses import asdict, dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 import RPi.GPIO as GPIO
 import socketio
@@ -202,7 +202,7 @@ def start_socketio_thread() -> None:
         socketio_thread.start()
 
 
-def send_timer_update(status: StatusLiteral, time_remaining: Optional[float] = None) -> None:
+def send_timer_update(status: StatusLiteral, time_remaining: float | None = None) -> None:
     """
     Queue a timer status update to be sent by the Socket.IO thread.
     Non-blocking and safe to call from the timer thread.
