@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 from dataclasses import asdict, dataclass
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import RPi.GPIO as GPIO
 import websockets
@@ -16,8 +16,6 @@ sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 from custom_logging import setup_logging
 
 from tm1637 import TM1637Decimal
-
-
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
@@ -239,7 +237,7 @@ def start_websocket_thread() -> None:
         websocket_thread.start()
 
 
-def send_timer_update(status: StatusLiteral, time_remaining: Optional[float] = None) -> None:
+def send_timer_update(status: StatusLiteral, time_remaining: float | None = None) -> None:
     """
     Queue a timer status update to be sent by the WebSocket thread.
     Non-blocking and safe to call from the timer thread.
