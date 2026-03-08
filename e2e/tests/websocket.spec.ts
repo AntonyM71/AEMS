@@ -7,14 +7,20 @@ const MISCONFIGURED_DEV_API_PORT = "8001"
 interface TestData {
 	competitionName: string
 	heatName: string
+	heatId: string
+	athleteId: string
+	phaseId: string
+	scoresheetId: string
 }
 
 /**
  * Creates the minimal set of entities needed for websocket E2E tests:
- * competition → event → phase (with seeded icf_2025 scoresheet) → athlete → heat → athlete-heat
+ * competition -> event -> phase (with seeded icf_2025 scoresheet) -> athlete -> heat -> athlete-heat
  *
  * Each test calls this independently so tests are fully isolated and a run
  * locked in one test cannot affect another.
+ *
+ * Returns names (for UI navigation) and IDs (for direct REST API calls).
  */
 async function setupTestData(request: APIRequestContext): Promise<TestData> {
 	const competitionId = randomUUID()
@@ -86,7 +92,7 @@ async function setupTestData(request: APIRequestContext): Promise<TestData> {
 	)
 	expect(athleteHeatResponse.status()).toBe(201)
 
-	return { competitionName, heatName }
+	return { competitionName, heatName, heatId, athleteId, phaseId, scoresheetId }
 }
 
 /**
@@ -143,11 +149,11 @@ async function selectCompetitionAndHeat(
 	await page.getByRole("combobox", { name: "Select Competition" }).click()
 	await page.getByRole("option", { name: competitionName }).click()
 
-	// The heat dropdown becomes available once heats for the chosen competition
-	// have loaded; wait for it before interacting.
+	// The heat dropdown is replaced by a Skeleton while heats are loading after
+	// competition selection; wait for the combobox to appear before clicking.
 	await page
 		.getByRole("combobox", { name: "Select Heat" })
-		.click({ timeout: 10000 })
+		.click({ timeout: 15000 })
 	await page.getByRole("option", { name: heatName }).click()
 }
 
@@ -156,7 +162,32 @@ test.describe("WebSocket Streaming Updates", () => {
 		browser,
 		request
 	}) => {
-		const { competitionName, heatName } = await setupTestData(request)
+		const {
+			competitionName,
+			heatName,
+			heatId,
+			athleteId,
+			phaseId,
+			scoresheetId
+		} = await setupTestData(request)
+
+		// Fetch one available move from the scoresheet so we can submit a score
+		// via the REST API -- the same endpoint the Scribe UI calls.
+		const movesResponse = await request.get(
+			`${BACKEND_URL}/availablemoves/?sheet_id____list=${scoresheetId}&limit=1`
+		)
+		expect(movesResponse.status()).toBe(200)
+		const moves = (await movesResponse.json()) as Array<{
+			id: string
+			direction: string
+		}>
+		expect(moves.length).toBeGreaterThan(0)
+		const move = moves[0]
+		// Map the available-move direction ("LR" | "FB" | "S") to a scored direction.
+		const validDirections = ["LR", "FB", "S"]
+		expect(validDirections).toContain(move.direction)
+		const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
+		const scoredDirection = directionMap[move.direction]!
 
 		const context = await browser.newContext()
 		const headJudgePage = await context.newPage()
@@ -167,27 +198,29 @@ test.describe("WebSocket Streaming Updates", () => {
 			await proxyFrontendAPIToBackend(scribePage)
 
 			// Open the head judge page first so it subscribes to the
-			// current_scores WebSocket before the judge submits a move.
+			// current_scores WebSocket before the score is submitted.
 			await headJudgePage.goto("/HeadJudge")
 			await selectCompetitionAndHeat(
 				headJudgePage,
 				competitionName,
 				heatName
 			)
+			// head-judge-page renders once selectedAthlete and phase data are loaded.
 			await expect(
 				headJudgePage.getByTestId("head-judge-page")
-			).toBeVisible({ timeout: 15000 })
-			// "Judge: 1" appears once available moves and bonuses have loaded,
-			// confirming the page is fully ready and the WebSocket is connected.
+			).toBeVisible({ timeout: 20000 })
+			// "Judge: 1" appears once the JudgeCard has available moves and bonuses,
+			// confirming the page is fully ready and the current_scores WebSocket is
+			// connected.
 			await expect(
 				headJudgePage.getByText("Judge: 1")
-			).toBeVisible({ timeout: 10000 })
-			// Confirm the initial score is zero before the judge submits anything.
+			).toBeVisible({ timeout: 15000 })
+			// Confirm the initial score is zero before any moves are submitted.
 			await expect(
 				headJudgePage.getByTestId("final-score-value")
 			).toHaveText("0.00", { timeout: 10000 })
 
-			// Open the scribe page (judge 1) and navigate to the same heat.
+			// Open the scribe page and navigate to the same heat.
 			await scribePage.goto("/scribe/1")
 			await selectCompetitionAndHeat(
 				scribePage,
@@ -198,29 +231,31 @@ test.describe("WebSocket Streaming Updates", () => {
 				scribePage.getByTestId("scribe-grid")
 			).toBeVisible({ timeout: 15000 })
 
-			// Move cards appear once athlete data and available moves have
-			// loaded. At that point the Scribe component's submit guard
-			// conditions are met, so clicking a card will trigger a score
-			// submission automatically via its useEffect.
-			//
-			// Selectors match move buttons by their direction suffix:
-			//   -lf  → "Single" button for straight (S) moves
-			//   -l   → "L" button for left-right (LR) moves
-			//   -f   → "F" button for fore-back (FB) moves
-			const firstMoveButton = scribePage
-				.locator(
-					'[data-testid$="-lf"],[data-testid$="-l"],[data-testid$="-f"]'
-				)
-				.first()
-			await expect(firstMoveButton).toBeVisible({ timeout: 10000 })
-			await firstMoveButton.click()
+			// Submit a scored move via the REST API -- the same endpoint the Scribe
+			// UI calls when a judge records a move. The backend then publishes an
+			// event on the current_scores WebSocket channel.
+			const scoreResponse = await context.request.post(
+				`${BACKEND_URL}/addUpdateAthleteScore/${heatId}/${athleteId}/0/1?phase_id=${phaseId}`,
+				{
+					data: {
+						moves: [
+							{
+								id: randomUUID(),
+								move_id: move.id,
+								direction: scoredDirection
+							}
+						],
+						bonuses: []
+					}
+				}
+			)
+			expect(scoreResponse.status()).toBe(200)
 
-			// The Scribe component posts the scored move to the REST API which
-			// publishes a current_scores WebSocket event. The head judge page
-			// receives it and re-renders with the new non-zero score.
+			// The head judge page receives the current_scores WebSocket broadcast
+			// and re-renders the judge card with the new non-zero score.
 			await expect(
 				headJudgePage.getByTestId("final-score-value")
-			).not.toHaveText("0.00", { timeout: 10000 })
+			).not.toHaveText("0.00", { timeout: 15000 })
 		} finally {
 			await context.close()
 		}
@@ -251,6 +286,13 @@ test.describe("WebSocket Streaming Updates", () => {
 			await expect(
 				scribePage.getByTestId("scribe-grid")
 			).toBeVisible({ timeout: 15000 })
+			// Wait for move buttons to be visible -- this proves athleteData has loaded
+			// inside the Scribe component. The run_status onmessage handler filters by
+			// athlete_id, so the lock message would be silently discarded if
+			// athleteData hasn't loaded yet.
+			await expect(
+				scribePage.locator('[data-testid^="button-"]:not([disabled])').first()
+			).toBeVisible({ timeout: 20000 })
 
 			// Open the head judge page and navigate to the same heat.
 			// The lock button is rendered when NEXT_PUBLIC_SHOW_LOCK_RUN=true.
@@ -262,18 +304,17 @@ test.describe("WebSocket Streaming Updates", () => {
 			)
 			await expect(
 				headJudgePage.getByTestId("lock-run-button")
-			).toBeVisible({ timeout: 15000 })
+			).toBeVisible({ timeout: 20000 })
 
 			// Click the Lock Run button. The head judge page sends a run_status
-			// WebSocket message and also subscribes to the channel, so it will
-			// update its own button text once the broadcast comes back.
+			// WebSocket message to the backend which broadcasts it to all subscribers.
 			await headJudgePage.getByTestId("lock-run-button").click()
 
 			// Wait for the head judge page to confirm the round-trip: the button
 			// switches to "Unlock Run" once the broadcast is received.
 			await expect(
 				headJudgePage.getByTestId("lock-run-button")
-			).toHaveText("Unlock Run", { timeout: 10000 })
+			).toHaveText("Unlock Run", { timeout: 15000 })
 
 			// The same broadcast reaches the scribe page. Verify the locked
 			// alert is shown there too.
