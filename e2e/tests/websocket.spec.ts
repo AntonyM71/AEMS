@@ -84,10 +84,11 @@ async function setupTestData(request: APIRequestContext): Promise<TestData> {
 	})
 	expect(heatResponse.status()).toBe(201)
 
+	const athleteHeatId = randomUUID()
 	const athleteHeatResponse = await request.post(
 		`${BACKEND_URL}/athleteheat/`,
 		{
-			data: [{ athlete_id: athleteId, heat_id: heatId, phase_id: phaseId }]
+			data: [{ id: athleteHeatId, athlete_id: athleteId, heat_id: heatId, phase_id: phaseId }]
 		}
 	)
 	expect(athleteHeatResponse.status()).toBe(201)
