@@ -46,6 +46,7 @@ indent-style = "space"
 dependencies = [
     "python-socketio",
     "RPi.GPIO",
+    "websockets",
     # Dev
     "ruff",
 

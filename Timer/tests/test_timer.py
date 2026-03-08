@@ -110,7 +110,8 @@ class TestGetShortStatus:
 
     def test_unknown_status_returns_unk(self) -> None:
         # Intentionally passing an invalid status to test the fallback "UNK" path.
-        assert timer.get_short_status("bogus") == "UNK"  # type: ignore[arg-type]
+        assert timer.get_short_status(
+            "bogus") == "UNK"  # type: ignore[arg-type]
 
 
 # ===========================================================================
@@ -368,7 +369,8 @@ class TestProcessMessageQueueSync:
 
         timer.process_message_queue_sync(sio_client)
 
-        sio_client.emit.assert_called_once_with("timer", {"status": "running", "time_remaining": 25})
+        sio_client.emit.assert_called_once_with(
+            "timer", {"status": "running", "time_remaining": 25})
 
     def test_does_nothing_when_queue_is_empty(self) -> None:
         sio_client = MagicMock()

@@ -1,3 +1,5 @@
+from tm1637 import TM1637Decimal
+from custom_logging import setup_logging
 import logging
 import os
 import queue
@@ -11,9 +13,7 @@ import RPi.GPIO as GPIO
 import socketio
 
 sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
-from custom_logging import setup_logging
 
-from tm1637 import TM1637Decimal
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
@@ -91,7 +91,8 @@ ENABLE_WEBSOCKET = os.environ.get("ENABLE_WEBSOCKET", "true").lower() not in (
 timer_thread = None
 timer_running = False
 socketio_thread = None
-message_queue: queue.Queue = queue.Queue()  # Thread-safe queue for Socket.IO messages
+# Thread-safe queue for Socket.IO messages
+message_queue: queue.Queue = queue.Queue()
 socketio_running = True  # Flag to control the Socket.IO thread
 
 # Server configuration - change this to match your server address.
@@ -342,7 +343,6 @@ def start_timer() -> None:
         return
 
     timer_running = True
-
 
     # Start timer thread
     timer_thread = threading.Thread(target=timer_task)
