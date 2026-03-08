@@ -113,7 +113,7 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
       - script: |
-          NEXT_PUBLIC_API_URL_DEV=http://localhost:8000/ npm start &
+          NEXT_PUBLIC_API_URL_DEV=http://localhost:8000/ NEXT_PUBLIC_SHOW_LOCK_RUN=true npm start &
           for i in $(seq 1 30); do
             curl -sf http://localhost:3000 > /dev/null && break || sleep 3
           done
