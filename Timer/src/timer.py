@@ -1,5 +1,3 @@
-from tm1637 import TM1637Decimal
-from custom_logging import setup_logging
 import logging
 import os
 import queue
@@ -13,7 +11,9 @@ import RPi.GPIO as GPIO
 import socketio
 
 sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
+from custom_logging import setup_logging
 
+from tm1637 import TM1637Decimal
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
 # GPIO setup
