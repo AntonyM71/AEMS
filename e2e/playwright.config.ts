@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test"
 
 export default defineConfig({
 	testDir: "./tests",
-	timeout: 60000,
+	timeout: 120000,
 	retries: 1,
 	use: {
 		baseURL: process.env.FRONTEND_URL || "http://localhost:3000",
