@@ -136,18 +136,20 @@ const proxyFrontendAPIToBackend = async (page: Page) => {
  * Selects a competition then a heat via the MUI Select dropdowns present on
  * both the head-judge and scribe pages before a heat is chosen.
  *
- * Uses `getByRole("combobox", { name: "..." })` rather than `getByLabel`
- * because MUI Select renders its clickable target as a div with role="combobox"
- * and aria-labelledby pointing to the InputLabel, which is what Playwright
- * matches against the accessible name. `getByLabel` can resolve to the
- * hidden inner input instead of the visible combobox.
+ * The competition combobox does not have an aria-label or aria-labelledby
+ * attribute (MUI FormControl without explicit labelId), so we use `.first()`
+ * to target it — it is the only combobox visible before a competition is
+ * chosen.  The heat combobox uses `inputProps={{ "aria-label": "Select Heat" }}`
+ * in HeatSelector.tsx so it can be matched by accessible name.
  */
 async function selectCompetitionAndHeat(
 	page: Page,
 	competitionName: string,
 	heatName: string
 ) {
-	await page.getByRole("combobox", { name: "Select Competition" }).click()
+	// Competition selector has no aria-label; it is the only combobox before
+	// a competition is picked.
+	await page.getByRole("combobox").first().click()
 	await page.getByRole("option", { name: competitionName }).click()
 
 	// The heat dropdown is replaced by a Skeleton while heats are loading after
