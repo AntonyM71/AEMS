@@ -1,10 +1,9 @@
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
 import Typography from "@mui/material/Typography"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
-import { Socket } from "socket.io-client"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
@@ -16,12 +15,12 @@ import {
 	getSelectedRun
 } from "../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../redux/services/aemsApi"
+import { useEmitBroadcastControlMutation } from "../../redux/services/streamingApi"
 import { SelectorDisplay } from "../competition/MainSelector"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../Interfaces"
-import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
 import { AthleteInfo } from "../roles/scribe/InfoBar"
 import { PaddlerSelector } from "../roles/scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../roles/scribe/InfoBar/Runselector"
@@ -82,27 +81,17 @@ const OverlayController: React.FC = () => {
 	useEffect(() => {
 		setOverlayControlState({ ...overlayControlState, selectedRun })
 	}, [selectedRun])
-	const socketRef = useRef<Socket | null>(null)
+	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,
 			[key]: !prevState[key]
 		}))
 	}
-	useEffect(() => {
-		socketRef.current = connectBroadcastControlSocket()
-
-		return () => {
-			socketRef.current?.disconnect()
-			socketRef.current = null
-		}
-	}, [])
 
 	useEffect(() => {
-		if (socketRef.current?.connected) {
-			socketRef.current.emit("broadcast_control", overlayControlState)
-		}
-	}, [overlayControlState])
+		void emitBroadcastControl(overlayControlState)
+	}, [overlayControlState, emitBroadcastControl])
 
 	const updateOverlayControlState = (
 		newState: Partial<OverlayControlState>

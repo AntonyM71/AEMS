@@ -2,9 +2,8 @@ import CssBaseline from "@mui/material/CssBaseline"
 import GlobalStyles from "@mui/material/GlobalStyles"
 import Grid2 from "@mui/material/Grid2"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { useDispatch } from "react-redux"
-import { Socket } from "socket.io-client"
 import {
 	updateSelectedCompetition,
 	updateSelectedEvent,
@@ -12,6 +11,7 @@ import {
 	updateSelectedPhase
 } from "../../redux/atoms/competitions"
 import { updateRun } from "../../redux/atoms/scoring"
+import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 import { AthleteInfo } from "../broadcast/Cards/AthleteInfoCard"
 import { EventTitleModal } from "../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../broadcast/Cards/HeatSummaryTable"
@@ -19,31 +19,13 @@ import { SubscribedFinalScore } from "../broadcast/Cards/LiveRunScore"
 import { PhaseScoreTable } from "../broadcast/Cards/PhaseResultsTable"
 import { RunDetails } from "../broadcast/Cards/RunCard"
 import {
-	defaultOverlayControllerState,
-	OverlayControlState
+	defaultOverlayControllerState
 } from "../Interfaces"
-import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
 import { darkTheme } from "./arenaTheme"
 import LiveTimerArena from "./liveTimerArena"
 const Arena = () => {
-	const [overlayControlState, setOverlayControlState] = React.useState(
-		defaultOverlayControllerState
-	)
-	const socketRef = useRef<Socket | null>(null)
-	useEffect(() => {
-		socketRef.current = connectBroadcastControlSocket()
-		socketRef.current.on(
-			"broadcast_control",
-			(jsonData: OverlayControlState) => {
-				setOverlayControlState(() => ({ ...jsonData }))
-			}
-		)
-
-		return () => {
-			socketRef.current?.disconnect()
-			socketRef.current = null
-		}
-	}, [])
+	const { data: overlayControlState = defaultOverlayControllerState } =
+		useBroadcastControlStreamQuery()
 	const dispatch = useDispatch()
 	const setSelectedCompetition = (newCompetition: string) =>
 		dispatch(updateSelectedCompetition(newCompetition))

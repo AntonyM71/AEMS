@@ -1,8 +1,7 @@
 import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
-import { useEffect, useRef, useState } from "react"
+import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Socket } from "socket.io-client"
 import {
 	getSelectedHeat,
 	updateNumberOfRuns
@@ -20,11 +19,9 @@ import {
 	useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyAvailablemovesGetQuery,
-	useGetManyRunStatusGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { RunStatus } from "../headJudge/RunStatus"
-import { connectWebRunStatusSocket } from "../headJudge/WebSocketConnections"
+import { useRunStatusStreamQuery } from "../../../redux/services/streamingApi"
 import { InfoBar } from "./InfoBar"
 import {
 	directionType,
@@ -43,7 +40,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const selectedRun = useSelector(getSelectedRun)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const setNumberOfRuns = (n: number) => dispatch(updateNumberOfRuns(n))
-	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
 
 	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
@@ -52,60 +48,20 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		{ skip: !selectedHeat }
 	)
 
-	const httpRunStatus = useGetManyRunStatusGetQuery(
-		{
-			heatIdList: [selectedHeat],
-			athleteIdList: [
-				athleteData?.[currentPaddlerIndex]?.athlete_id ?? ""
-			],
-			runNumberList: [selectedRun]
-		},
-		{
-			skip:
-				!selectedHeat ||
-				!athleteData?.[currentPaddlerIndex]?.athlete_id,
-			refetchOnMountOrArgChange: true
-		}
-	)
+	const currentAthleteId =
+		athleteData?.[currentPaddlerIndex]?.athlete_id ?? ""
 
-	// Use a ref to hold the latest filter state so the Socket.IO handler always
-	// sees current values without needing to reconnect on every state change.
-	const filterRef = useRef({ selectedRun, selectedHeat, athleteData, currentPaddlerIndex })
-	useEffect(() => {
-		filterRef.current = { selectedRun, selectedHeat, athleteData, currentPaddlerIndex }
-	}, [selectedRun, selectedHeat, athleteData, currentPaddlerIndex])
-
-	const socketRef = useRef<Socket | null>(null)
-	useEffect(() => {
-		socketRef.current = connectWebRunStatusSocket()
-		socketRef.current.on("run_status", (jsonData: RunStatus) => {
-			const {
-				selectedRun: currentRun,
-				selectedHeat: currentHeat,
-				athleteData: currentAthletes,
-				currentPaddlerIndex: currentIdx
-			} = filterRef.current
-			if (
-				jsonData?.run_number === currentRun &&
-				jsonData?.athlete_id === currentAthletes?.[currentIdx]?.athlete_id &&
-				jsonData?.heat_id === currentHeat
-			) {
-				setRunStatus(jsonData)
+	const { data: runStatus, isFetching: isRunStatusFetching } =
+		useRunStatusStreamQuery(
+			{
+				heatId: selectedHeat,
+				athleteId: currentAthleteId,
+				runNumber: selectedRun
+			},
+			{
+				skip: !selectedHeat || !currentAthleteId
 			}
-		})
-
-		return () => {
-			socketRef.current?.disconnect()
-			socketRef.current = null
-		}
-	}, [])
-	useEffect(() => {
-		if (httpRunStatus.data) {
-			setRunStatus(httpRunStatus.data[0] as RunStatus)
-		} else {
-			setRunStatus(undefined)
-		}
-	}, [httpRunStatus])
+		)
 	const setScoredMovesAndBonuses = (
 		movesList: scoredMovesType[],
 		bonusList: scoredBonusType[]
@@ -167,7 +123,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		if (
 			!isMoveAndBonusFetching &&
 			!athletes.isFetching &&
-			!httpRunStatus.isFetching &&
+			!isRunStatusFetching &&
 			!runStatus?.locked
 		) {
 			submitScores()

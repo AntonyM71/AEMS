@@ -169,6 +169,81 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				socketRef.current?.disconnect()
 				socketRef.current = null
 			}
+		}),
+
+		emitRunStatus: build.mutation<void, RunStatus>({
+			queryFn: async (runStatusData) => {
+				try {
+					await new Promise<void>((resolve, reject) => {
+						const socket = connectWebRunStatusSocket()
+						function doEmit() {
+							socket.off("connect_error", onConnectError)
+							socket.emit("run_status", runStatusData)
+							socket.disconnect()
+							resolve()
+						}
+						function onConnectError(err: Error) {
+							socket.off("connect", doEmit)
+							socket.disconnect()
+							reject(err)
+						}
+						if (socket.connected) {
+							doEmit()
+						} else {
+							socket.once("connect", doEmit)
+							socket.once("connect_error", onConnectError)
+						}
+					})
+
+					return { data: undefined }
+				} catch (error) {
+					return {
+						error: {
+							status: "CUSTOM_ERROR" as const,
+							error: String(error)
+						}
+					}
+				}
+			}
+		}),
+
+		emitBroadcastControl: build.mutation<void, OverlayControlState>({
+			queryFn: async (overlayControlState) => {
+				try {
+					await new Promise<void>((resolve, reject) => {
+						const socket = connectBroadcastControlSocket()
+						function doEmit() {
+							socket.off("connect_error", onConnectError)
+							socket.emit(
+								"broadcast_control",
+								overlayControlState
+							)
+							socket.disconnect()
+							resolve()
+						}
+						function onConnectError(err: Error) {
+							socket.off("connect", doEmit)
+							socket.disconnect()
+							reject(err)
+						}
+						if (socket.connected) {
+							doEmit()
+						} else {
+							socket.once("connect", doEmit)
+							socket.once("connect_error", onConnectError)
+						}
+					})
+
+					return { data: undefined }
+				} catch (error) {
+					return {
+						error: {
+							status: "CUSTOM_ERROR" as const,
+							error: String(error)
+						}
+					}
+				}
+			}
 		})
 	}),
 	overrideExisting: false
@@ -178,5 +253,7 @@ export const {
 	useTimerStreamQuery,
 	useRunStatusStreamQuery,
 	useAthleteMovesAndBonusesStreamQuery,
-	useBroadcastControlStreamQuery
+	useBroadcastControlStreamQuery,
+	useEmitRunStatusMutation,
+	useEmitBroadcastControlMutation
 } = streamingApi

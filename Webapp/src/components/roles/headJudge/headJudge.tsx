@@ -5,10 +5,9 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
-import { Socket } from "socket.io-client"
 import { v4 } from "uuid"
 import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import {
@@ -24,6 +23,7 @@ import {
 } from "../../../redux/services/aemsApi"
 import {
 	useAthleteMovesAndBonusesStreamQuery,
+	useEmitRunStatusMutation,
 	useRunStatusStreamQuery
 } from "../../../redux/services/streamingApi"
 import { calculateSingleJudgeRunScore } from "../../../utils/scoringUtils"
@@ -43,7 +43,6 @@ import { FinalScore } from "./FinalScore"
 import { JudgeCard } from "./JudgeCard"
 import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
-import { connectWebRunStatusSocket } from "./WebSocketConnections"
 
 export default ({
 	changeRunStatus = true,
@@ -127,18 +126,7 @@ export default ({
 		}
 	)
 
-	const socketRef = useRef<Socket | null>(null)
-	useEffect(() => {
-		if (!changeRunStatus) {
-			return
-		}
-		socketRef.current = connectWebRunStatusSocket()
-
-		return () => {
-			socketRef.current?.disconnect()
-			socketRef.current = null
-		}
-	}, [changeRunStatus])
+	const [emitRunStatus] = useEmitRunStatusMutation()
 
 	useEffect(() => {
 		if (httpRunStatus.data) {
@@ -224,35 +212,31 @@ export default ({
 	if (selectedAthlete && !isPhaseDataLoading) {
 		// eslint-disable-next-line complexity
 		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
-			if (!socketRef.current) {
-				toast.error(
-					"Socket.IO Connection not ready, please try again in a few seconds"
-				)
+			if (runStatus) {
+				void emitRunStatus({
+					id: runStatus.id ?? v4(),
+					run_number: selectedRun,
+					phase_id:
+						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					heat_id: selectedHeat,
+					athlete_id: selectedAthlete.id,
+					locked: locked ?? runStatus.locked ?? false,
+					did_not_start:
+						did_not_start ?? runStatus.did_not_start ?? false
+				})
+			} else {
+				void emitRunStatus({
+					id: v4(),
+					run_number: selectedRun,
+					phase_id:
+						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					heat_id: selectedHeat,
+					athlete_id: selectedAthlete.id,
+					locked: locked ?? false,
+					did_not_start: did_not_start ?? false
+				})
 			}
-		if (runStatus) {
-			socketRef.current?.emit("run_status", {
-				id: runStatus.id ?? v4(),
-				run_number: selectedRun,
-				phase_id: athleteData?.[currentPaddlerIndex].phase_id,
-				heat_id: selectedHeat,
-				athlete_id: selectedAthlete.id,
-				locked: locked ?? runStatus.locked ?? false,
-				did_not_start:
-					did_not_start ?? runStatus.did_not_start ?? false
-			})
-		} else {
-			socketRef.current?.emit("run_status", {
-				id: v4(),
-				run_number: selectedRun,
-				phase_id:
-					athleteData?.[currentPaddlerIndex].phase_id ?? "",
-				heat_id: selectedHeat,
-				athlete_id: selectedAthlete.id,
-				locked: locked ?? false,
-				did_not_start: did_not_start ?? false
-			})
 		}
-	}
 
 		return (
 			<div data-testid="head-judge-page">
