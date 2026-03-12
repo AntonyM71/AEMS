@@ -182,7 +182,10 @@ test.describe("WebSocket Streaming Updates", () => {
 		expect(movesResponse.status()).toBe(200)
 		const moves = (await movesResponse.json()) as Array<{
 			id: string
+			name: string
 			direction: string
+			fl_score: number
+			rb_score: number
 		}>
 		expect(moves.length).toBeGreaterThan(0)
 		const move = moves[0]
@@ -191,6 +194,11 @@ test.describe("WebSocket Streaming Updates", () => {
 		expect(validDirections).toContain(move.direction)
 		const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
 		const scoredDirection = directionMap[move.direction]!
+		// Calculate the expected final score: fl_score for F/L/S, rb_score for R/B.
+		const expectedScore = ["F", "L", "S"].includes(scoredDirection)
+			? move.fl_score
+			: move.rb_score
+		const expectedScoreText = expectedScore.toFixed(2)
 
 		const context = await browser.newContext()
 		const headJudgePage = await context.newPage()
@@ -243,10 +251,16 @@ test.describe("WebSocket Streaming Updates", () => {
 			expect(scoreResponse.status()).toBe(200)
 
 			// UPDATE CHECK: The head judge page receives the current_scores WebSocket
-			// broadcast and updates the score from "0.00" to a non-zero value.
+			// broadcast and updates the score from "0.00" to the expected value.
 			await expect(
 				headJudgePage.getByTestId("final-score-value")
-			).not.toHaveText("0.00", { timeout: 20000 })
+			).toHaveText(expectedScoreText, { timeout: 20000 })
+
+			// The submitted move name also appears in a scored move card on the
+			// head judge page (rendered by the JudgeCard → ScoredMove component).
+			await expect(
+				headJudgePage.getByText(move.name)
+			).toBeVisible({ timeout: 10000 })
 		} finally {
 			await context.close()
 		}
