@@ -228,31 +228,33 @@ export default ({
 				toast.error(
 					"Socket.IO Connection not ready, please try again in a few seconds"
 				)
+
+				return
 			}
-		if (runStatus) {
-			socketRef.current?.emit("run_status", {
-				id: runStatus.id ?? v4(),
-				run_number: selectedRun,
-				phase_id: athleteData?.[currentPaddlerIndex].phase_id,
-				heat_id: selectedHeat,
-				athlete_id: selectedAthlete.id,
-				locked: locked ?? runStatus.locked ?? false,
-				did_not_start:
-					did_not_start ?? runStatus.did_not_start ?? false
-			})
-		} else {
-			socketRef.current?.emit("run_status", {
-				id: v4(),
-				run_number: selectedRun,
-				phase_id:
-					athleteData?.[currentPaddlerIndex].phase_id ?? "",
-				heat_id: selectedHeat,
-				athlete_id: selectedAthlete.id,
-				locked: locked ?? false,
-				did_not_start: did_not_start ?? false
-			})
+			if (runStatus) {
+				socketRef.current.emit("run_status", {
+					id: runStatus.id ?? v4(),
+					run_number: selectedRun,
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id,
+					heat_id: selectedHeat,
+					athlete_id: selectedAthlete.id,
+					locked: locked ?? runStatus.locked ?? false,
+					did_not_start:
+						did_not_start ?? runStatus.did_not_start ?? false
+				})
+			} else {
+				socketRef.current.emit("run_status", {
+					id: v4(),
+					run_number: selectedRun,
+					phase_id:
+						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					heat_id: selectedHeat,
+					athlete_id: selectedAthlete.id,
+					locked: locked ?? false,
+					did_not_start: did_not_start ?? false
+				})
+			}
 		}
-	}
 
 		return (
 			<div data-testid="head-judge-page">

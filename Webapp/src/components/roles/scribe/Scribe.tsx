@@ -68,15 +68,27 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	)
 
+	// Use a ref to hold the latest filter state so the Socket.IO handler always
+	// sees current values without needing to reconnect on every state change.
+	const filterRef = useRef({ selectedRun, selectedHeat, athleteData, currentPaddlerIndex })
+	useEffect(() => {
+		filterRef.current = { selectedRun, selectedHeat, athleteData, currentPaddlerIndex }
+	}, [selectedRun, selectedHeat, athleteData, currentPaddlerIndex])
+
 	const socketRef = useRef<Socket | null>(null)
 	useEffect(() => {
 		socketRef.current = connectWebRunStatusSocket()
 		socketRef.current.on("run_status", (jsonData: RunStatus) => {
+			const {
+				selectedRun: currentRun,
+				selectedHeat: currentHeat,
+				athleteData: currentAthletes,
+				currentPaddlerIndex: currentIdx
+			} = filterRef.current
 			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id ===
-					athleteData?.[currentPaddlerIndex]?.athlete_id &&
-				jsonData?.heat_id === selectedHeat
+				jsonData?.run_number === currentRun &&
+				jsonData?.athlete_id === currentAthletes?.[currentIdx]?.athlete_id &&
+				jsonData?.heat_id === currentHeat
 			) {
 				setRunStatus(jsonData)
 			}
