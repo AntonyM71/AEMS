@@ -17,6 +17,7 @@ class MockSocket {
 		mockEmit(...args)
 	}
 	public disconnect = (...args: unknown[]) => {
+		this.connected = false
 		mockDisconnect(...args)
 	}
 }
@@ -53,13 +54,15 @@ describe("OverlayController Socket.IO interactions", () => {
 		expect(JSON.stringify(payload)).toContain("showImageCard")
 	})
 
-	it("disconnects Socket.IO on component unmount", () => {
+	it("disconnects Socket.IO on component unmount", async () => {
 		const { unmount } = render(
 			<Provider store={store}>
 				<OverlayController />
 			</Provider>
 		)
 		unmount()
-		expect(mockDisconnect).toHaveBeenCalled()
+		await waitFor(() => {
+			expect(mockDisconnect).toHaveBeenCalled()
+		})
 	})
 })

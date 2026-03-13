@@ -15,7 +15,10 @@ import {
 	getSelectedRun
 } from "../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../redux/services/aemsApi"
-import { useEmitBroadcastControlMutation } from "../../redux/services/streamingApi"
+import {
+	useEmitBroadcastControlMutation,
+	useBroadcastControlStreamQuery
+} from "../../redux/services/streamingApi"
 import { SelectorDisplay } from "../competition/MainSelector"
 import {
 	defaultOverlayControllerState,
@@ -82,6 +85,9 @@ const OverlayController: React.FC = () => {
 		setOverlayControlState({ ...overlayControlState, selectedRun })
 	}, [selectedRun])
 	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
+	// Subscribe to the broadcast control stream to maintain a persistent socket
+	// connection. The emitBroadcastControl mutation reuses this socket.
+	useBroadcastControlStreamQuery()
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,

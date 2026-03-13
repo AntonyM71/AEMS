@@ -16,6 +16,17 @@ import {
 import { ScoredMovesAndBonusesResponse } from "./aemsApi"
 import { emptySplitApi } from "./emptyApi"
 
+// Registry of active sockets maintained by streaming queries.
+// Mutations check this registry first so they can reuse an existing connection
+// rather than creating a short-lived socket for every emit call.
+const emitSockets: {
+	run_status: Socket | null
+	broadcast_control: Socket | null
+} = {
+	run_status: null,
+	broadcast_control: null
+}
+
 export const streamingApi = emptySplitApi.injectEndpoints({
 	endpoints: (build) => ({
 		timerStream: build.query<number, void>({
@@ -70,6 +81,10 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				try {
 					await cacheDataLoaded
 					socketRef.current = connectWebRunStatusSocket()
+					// Register for reuse by emitRunStatus mutation.
+					// Last-created stream wins; the check below prevents a
+					// later-closing stream from clearing a newer registration.
+					emitSockets.run_status = socketRef.current
 					socketRef.current.on(
 						"run_status",
 						(data: RunStatus) => {
@@ -86,6 +101,9 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					// no-op if cacheEntryRemoved resolves before cacheDataLoaded
 				}
 				await cacheEntryRemoved
+				if (emitSockets.run_status === socketRef.current) {
+					emitSockets.run_status = null
+				}
 				socketRef.current?.disconnect()
 				socketRef.current = null
 			}
@@ -151,6 +169,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 
 		broadcastControlStream: build.query<OverlayControlState, void>({
 			queryFn: () => ({ data: defaultOverlayControllerState }),
+			keepUnusedDataFor: 0,
 			async onCacheEntryAdded(
 				_,
 				{ updateCachedData, cacheEntryRemoved }
@@ -159,6 +178,8 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					current: null
 				}
 				socketRef.current = connectBroadcastControlSocket()
+				// Register for reuse by emitBroadcastControl mutation.
+				emitSockets.broadcast_control = socketRef.current
 				socketRef.current.on(
 					"broadcast_control",
 					(data: OverlayControlState) => {
@@ -166,6 +187,9 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					}
 				)
 				await cacheEntryRemoved
+				if (emitSockets.broadcast_control === socketRef.current) {
+					emitSockets.broadcast_control = null
+				}
 				socketRef.current?.disconnect()
 				socketRef.current = null
 			}
@@ -173,6 +197,15 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 
 		emitRunStatus: build.mutation<void, RunStatus>({
 			queryFn: async (runStatusData) => {
+				// Reuse the socket from an active runStatusStream if available.
+				const activeSocket = emitSockets.run_status
+				if (activeSocket?.connected) {
+					activeSocket.emit("run_status", runStatusData)
+
+					return { data: undefined }
+				}
+
+				// Fallback: open a temporary socket for this emit only.
 				try {
 					await new Promise<void>((resolve, reject) => {
 						const socket = connectWebRunStatusSocket()
@@ -209,6 +242,18 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 
 		emitBroadcastControl: build.mutation<void, OverlayControlState>({
 			queryFn: async (overlayControlState) => {
+				// Reuse the socket from an active broadcastControlStream if available.
+				const activeSocket = emitSockets.broadcast_control
+				if (activeSocket?.connected) {
+					activeSocket.emit(
+						"broadcast_control",
+						overlayControlState
+					)
+
+					return { data: undefined }
+				}
+
+				// Fallback: open a temporary socket for this emit only.
 				try {
 					await new Promise<void>((resolve, reject) => {
 						const socket = connectBroadcastControlSocket()
