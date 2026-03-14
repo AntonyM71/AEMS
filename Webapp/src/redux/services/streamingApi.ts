@@ -208,14 +208,14 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 			}
 		}),
 
-		emitRunStatus: build.mutation<void, RunStatus>({
+		emitRunStatus: build.mutation<null, RunStatus>({
 			queryFn: async (runStatusData) => {
 				// Reuse the socket from an active runStatusStream if available.
 				const activeSocket = emitSockets.run_status
 				if (activeSocket?.connected) {
 					activeSocket.emit("run_status", runStatusData)
 
-					return { data: undefined }
+					return { data: null }
 				}
 
 				// Fallback: open a temporary socket for this emit only.
@@ -241,7 +241,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 						}
 					})
 
-					return { data: undefined }
+					return { data: null }
 				} catch (error) {
 					return {
 						error: {
@@ -253,7 +253,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 			}
 		}),
 
-		emitBroadcastControl: build.mutation<void, OverlayControlState>({
+		emitBroadcastControl: build.mutation<null, OverlayControlState>({
 			queryFn: async (overlayControlState) => {
 				// Reuse the socket from an active broadcastControlStream if available.
 				const activeSocket = emitSockets.broadcast_control
@@ -263,7 +263,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 						overlayControlState
 					)
 
-					return { data: undefined }
+					return { data: null }
 				}
 
 				// Fallback: open a temporary socket for this emit only.
@@ -292,7 +292,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 						}
 					})
 
-					return { data: undefined }
+					return { data: null }
 				} catch (error) {
 					return {
 						error: {
