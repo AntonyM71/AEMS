@@ -9,6 +9,9 @@ from fpdf import FPDF
 from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
+    HeatInfoResponse,
+    HeatScoresResponse,
+    PhaseScoresResponse,
     calculate_phase_scores,
     get_heat_info_logic,
     get_heat_scores,
@@ -17,6 +20,40 @@ from db.client import get_transaction_session
 from db.models import Competition, Event, Heat, Phase
 
 pdf_router = APIRouter(tags=["pdf generation"])
+
+font_directory = Path("./fonts/")
+
+
+class HelveticaNeuePDF(FPDF):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.add_fonts()
+
+    def add_fonts(self) -> None:
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            self.add_font(
+                "helvetica-neue",
+                style="",
+                fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="B",
+                fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="I",
+                fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix(),
+            )
+            self.add_font(
+                "helvetica-neue",
+                style="BI",
+                fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix(),
+            )
+            self.set_font(family="helvetica-neue", style="", size=12)
+        else:
+            self.set_font(family="Helvetica", style="", size=12)
 
 
 def sanitize_filename(filename: str) -> str:
@@ -161,6 +198,219 @@ def setup_pdf_footer(
     return pdf
 
 
+def create_pdf_response(pdf: FPDF, filename: str) -> Response:
+    """
+    Create a FastAPI Response containing a PDF file as an attachment.
+
+    Args:
+        pdf: The FPDF object to render
+        filename: The name for the downloaded file (will be sanitized)
+
+    Returns:
+        A Response with the PDF content and appropriate headers
+    """
+    safe_filename = sanitize_filename(filename)
+    headers = {"Content-Disposition": f"attachment; filename={safe_filename}"}
+    return Response(
+        content=bytes(pdf.output()), media_type="application/pdf", headers=headers
+    )
+
+
+def build_phase_pdf_content(
+    pdf: FPDF,
+    phase_metadata: Phase,
+    phase_scores: PhaseScoresResponse,
+) -> None:
+    """
+    Populate a PDF with a phase scores table.
+
+    Adds a page and renders a table of athlete scores for the given phase.
+
+    Args:
+        pdf: The FPDF object (header/footer must already be configured)
+        phase_metadata: Phase model instance with run configuration
+        phase_scores: Calculated scores for all athletes in the phase
+    """
+    pdf.add_page()
+
+    with pdf.table(
+        col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
+    ) as table:
+        header = table.row()
+        header.cell("Rank")
+        header.cell("First Name")
+        header.cell("Last Name")
+        header.cell("Bib")
+        header.cell("Affiliation")
+
+        for i in range(phase_metadata.number_of_runs):
+            header.cell(f"Run {i + 1}")
+        header.cell("Total Score")
+        header.cell("Notes")
+
+        for athlete in phase_scores.scores:
+            row = table.row()
+            row.cell(str(athlete.ranking) if athlete.ranking else "-")
+
+            row.cell(athlete.first_name)
+            row.cell(athlete.last_name)
+            row.cell(str(athlete.bib_number))
+            row.cell(athlete.affiliation or "")
+            runs_confirmed = []
+            for i in range(phase_metadata.number_of_runs):
+                runs_confirmed.append(
+                    True
+                    if i < len(athlete.run_scores) and athlete.run_scores[i].locked
+                    else False
+                )
+                pdf.set_font(
+                    style="B"
+                    if i < len(athlete.run_scores) and athlete.run_scores[i].locked
+                    else "I"
+                )
+                row.cell(
+                    "0"
+                    if i >= len(athlete.run_scores)
+                    else "DNS"
+                    if athlete.run_scores[i].did_not_start
+                    else str(athlete.run_scores[i].mean_run_score)
+                )
+            pdf.set_font(style="B" if all(runs_confirmed) else "I")
+
+            row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+            pdf.set_font("")
+            row.cell(athlete.reason if athlete.reason else "")
+
+
+def build_heat_pdf_page(
+    pdf: FPDF,
+    heat_info: Heat,
+    competition_metadata: Competition,
+    heat_athlete_info: list[HeatInfoResponse],
+) -> None:
+    """
+    Add a single heat draw page to the PDF.
+
+    Args:
+        pdf: The FPDF object to write into
+        heat_info: Heat model instance
+        competition_metadata: Competition model instance
+        heat_athlete_info: List of athlete info for the heat
+    """
+    pdf.add_page()
+    pdf.set_font(size=24)
+    pdf.cell(
+        0,
+        10,
+        text=f"Competition: {competition_metadata.name}",
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    pdf.set_font(size=20)
+    pdf.cell(
+        0,
+        10,
+        text=f"Heat: {heat_info.name}",
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    pdf.set_font(size=12)
+
+    with pdf.table(col_widths=(3, 3, 3, 1, 3, 3)) as table:
+        header = table.row()
+        header.cell("First Name")
+        header.cell("Last Name")
+        header.cell("Event Name")
+        header.cell("Bib")
+        header.cell("Affiliation")
+
+        header.cell("Previous Round Rank")
+
+        for athlete in heat_athlete_info:
+            row = table.row()
+
+            row.cell(athlete.first_name)
+            row.cell(athlete.last_name)
+            row.cell(athlete.event_name)
+            row.cell(str(athlete.bib))
+            row.cell(athlete.affiliation or "")
+            row.cell(str(athlete.last_phase_rank) if athlete.last_phase_rank else "")
+
+
+def build_heat_results_pdf_content(
+    pdf: FPDF,
+    competition: Competition,
+    heat_info: Heat,
+    heat_scores: HeatScoresResponse,
+    max_runs: int,
+) -> None:
+    """
+    Populate a PDF with heat results scores table.
+
+    Adds a page with competition/heat headings and a table of run scores.
+
+    Args:
+        pdf: The FPDF object (footer must already be configured)
+        competition: Competition model instance
+        heat_info: Heat model instance
+        heat_scores: Calculated scores for all athletes in the heat
+        max_runs: Maximum number of runs across all athletes
+    """
+    pdf.add_page()
+    pdf.set_font(size=24)
+    pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font(size=20)
+    pdf.cell(
+        0,
+        10,
+        text=f"{competition.name}",
+        align="L",
+        new_x="LMARGIN",
+    )
+
+    pdf.cell(
+        0,
+        10,
+        text=f"Heat: {heat_info.name}",
+        align="R",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    pdf.set_font(size=12)
+
+    with pdf.table(col_widths=(3, 3, 1, 3, *([2] * max_runs))) as table:
+        header = table.row()
+        header.cell("First Name")
+        header.cell("Last Name")
+        header.cell("Bib")
+        header.cell("Affiliation")
+
+        for i in range(max_runs):
+            header.cell(f"Run: {i + 1}")
+
+        for athlete in heat_scores.scores:
+            row = table.row()
+
+            row.cell(athlete.first_name)
+            row.cell(athlete.last_name)
+            row.cell(str(athlete.bib_number))
+            row.cell(athlete.affiliation or "")
+
+            for i in range(max_runs):
+                if i < len(athlete.run_scores):
+                    pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
+                row.cell(
+                    ""
+                    if i >= len(athlete.run_scores)
+                    else "DNS"
+                    if athlete.run_scores[i].did_not_start
+                    else str(athlete.run_scores[i].mean_run_score)
+                )
+            pdf.set_font(style="")
+
+
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
 async def phase_pdf(
     phase_id: str,
@@ -178,70 +428,13 @@ async def phase_pdf(
             .one()
         )
 
-        # Create a sample PDF file
         pdf = HelveticaNeuePDF(orientation="L", format="A4")
         phase_pdf_header(pdf, competition_metadata, event_metadata, phase_metadata)
         setup_pdf_footer(pdf, text=None, include_page_numbers=True)
-        pdf.add_page()
+        build_phase_pdf_content(pdf, phase_metadata, phase_scores)
 
-        with pdf.table(
-            col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
-        ) as table:
-            header = table.row()
-            header.cell("Rank")
-            header.cell("First Name")
-            header.cell("Last Name")
-            header.cell("Bib")
-            header.cell("Affiliation")
-
-            for i in range(phase_metadata.number_of_runs):
-                header.cell(f"Run {i + 1}")
-            header.cell("Total Score")
-            header.cell("Notes")
-
-            for athlete in phase_scores.scores:
-                row = table.row()
-                row.cell(str(athlete.ranking) if athlete.ranking else "-")
-
-                row.cell(athlete.first_name)
-                row.cell(athlete.last_name)
-                row.cell(str(athlete.bib_number))
-                row.cell(athlete.affiliation or "")
-                runs_confirmed = []
-                for i in range(phase_metadata.number_of_runs):
-                    runs_confirmed.append(
-                        True
-                        if i < len(athlete.run_scores) and athlete.run_scores[i].locked
-                        else False
-                    )
-                    pdf.set_font(
-                        style="B"
-                        if i < len(athlete.run_scores) and athlete.run_scores[i].locked
-                        else "I"
-                    )
-                    row.cell(
-                        "0"
-                        if i >= len(athlete.run_scores)
-                        else "DNS"
-                        if athlete.run_scores[i].did_not_start
-                        else str(athlete.run_scores[i].mean_run_score)
-                    )
-                pdf.set_font(style="B" if all(runs_confirmed) else "I")
-
-                row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
-                pdf.set_font("")
-                row.cell(athlete.reason if athlete.reason else "")
-
-        # Prepare the filename and headers
-        filename = sanitize_filename(
-            f"{competition_metadata.name}_{event_metadata.name}_{phase_metadata.name}.pdf"
-        )
-        headers = {"Content-Disposition": f"attachment; filename={filename}"}
-
-        # Return the file as a response
-        return Response(
-            content=bytes(pdf.output()), media_type="application/pdf", headers=headers
-        )
+        filename = f"{competition_metadata.name}_{event_metadata.name}_{phase_metadata.name}.pdf"
+        return create_pdf_response(pdf, filename)
 
     except Exception as e:
         logging.exception("Error Creating PDF")
@@ -256,8 +449,6 @@ async def heat_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
-        setup_pdf_footer(pdf, None, include_page_numbers=True)
         if not heat_ids:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -270,75 +461,27 @@ async def heat_pdf(
                 status_code=404,
                 content="Could not find any heat Info corresponding to provided IDs",
             )
+
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        setup_pdf_footer(pdf, None, include_page_numbers=True)
+
+        competition_metadata = (
+            db.query(Competition)
+            .filter(Competition.id == heat_info_list[0].competition_id)
+            .one()
+        )
         for heat_info in heat_info_list:
             heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
+            build_heat_pdf_page(pdf, heat_info, competition_metadata, heat_athlete_info)
 
-            competition_metadata = (
-                db.query(Competition)
-                .filter(Competition.id == heat_info.competition_id)
-                .one()
-            )
-
-            pdf.add_page()
-            pdf.set_font(size=24)
-            pdf.cell(
-                0,
-                10,
-                text=f"Competition: {competition_metadata.name}",
-                align="C",
-                new_x="LMARGIN",
-                new_y="NEXT",
-            )
-            pdf.set_font(size=20)
-            pdf.cell(
-                0,
-                10,
-                text=f"Heat: {heat_info.name}",
-                align="C",
-                new_x="LMARGIN",
-                new_y="NEXT",
-            )
-            pdf.set_font(size=12)
-
-            with pdf.table(col_widths=(3, 3, 3, 1, 3, 3)) as table:
-                header = table.row()
-                header.cell("First Name")
-                header.cell("Last Name")
-                header.cell("Event Name")
-                header.cell("Bib")
-                header.cell("Affiliation")
-
-                header.cell("Previous Round Rank")
-
-                for athlete in heat_athlete_info:
-                    row = table.row()
-
-                    row.cell(athlete.first_name)
-                    row.cell(athlete.last_name)
-                    row.cell(athlete.event_name)
-                    row.cell(str(athlete.bib))
-                    row.cell(athlete.affiliation or "")
-                    row.cell(
-                        str(athlete.last_phase_rank) if athlete.last_phase_rank else ""
-                    )
-
-        # Prepare the filename and headers
         if len(heat_info_list) == 1:
             # Single heat: use the heat name
-            filename = sanitize_filename(
-                f"{competition_metadata.name}_{heat_info_list[0].name}.pdf"
-            )
+            filename = f"{competition_metadata.name}_{heat_info_list[0].name}.pdf"
         else:
             # Multiple heats: indicate count to avoid overly long filenames
-            filename = sanitize_filename(
-                f"{competition_metadata.name}_{len(heat_info_list)}_Heats.pdf"
-            )
-        headers = {"Content-Disposition": f"attachment; filename={filename}"}
+            filename = f"{competition_metadata.name}_{len(heat_info_list)}_Heats.pdf"
 
-        # Return the file as a response
-        return Response(
-            content=bytes(pdf.output()), media_type="application/pdf", headers=headers
-        )
+        return create_pdf_response(pdf, filename)
 
     except Exception as e:
         raise HTTPException(
@@ -352,8 +495,6 @@ async def heat_results_pdf(
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     try:
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
-        setup_pdf_footer(pdf, None, include_page_numbers=True)
         if not heat_id:
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
@@ -368,103 +509,18 @@ async def heat_results_pdf(
             .filter(Competition.id == heat_info.competition_id)
             .one()
         )
-        pdf.add_page()
-        pdf.set_font(size=24)
-        pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
-        pdf.set_font(size=20)
-        pdf.cell(
-            0,
-            10,
-            text=f"{competition.name}",
-            align="L",
-            new_x="LMARGIN",
+
+        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        setup_pdf_footer(pdf, None, include_page_numbers=True)
+        build_heat_results_pdf_content(
+            pdf, competition, heat_info, heat_scores, max_runs
         )
 
-        pdf.cell(
-            0,
-            10,
-            text=f"Heat: {heat_info.name}",
-            align="R",
-            new_x="LMARGIN",
-            new_y="NEXT",
-        )
-        pdf.set_font(size=12)
-
-        with pdf.table(col_widths=(3, 3, 1, 3, *([2] * max_runs))) as table:
-            header = table.row()
-            header.cell("First Name")
-            header.cell("Last Name")
-            header.cell("Bib")
-            header.cell("Affiliation")
-
-            for i in range(max_runs):
-                header.cell(f"Run: {i + 1}")
-
-            for athlete in heat_scores.scores:
-                row = table.row()
-
-                row.cell(athlete.first_name)
-                row.cell(athlete.last_name)
-                row.cell(str(athlete.bib_number))
-                row.cell(athlete.affiliation or "")
-
-                for i in range(max_runs):
-                    if i < len(athlete.run_scores):
-                        pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
-                    row.cell(
-                        ""
-                        if i >= len(athlete.run_scores)
-                        else "DNS"
-                        if athlete.run_scores[i].did_not_start
-                        else str(athlete.run_scores[i].mean_run_score)
-                    )
-                pdf.set_font(style="")
-        # Prepare the filename and headers
-        filename = sanitize_filename(f"{competition.name}_{heat_info.name}_results.pdf")
-        headers = {"Content-Disposition": f"attachment; filename={filename}"}
-
-        # Return the file as a response
-        return Response(
-            content=bytes(pdf.output()), media_type="application/pdf", headers=headers
-        )
+        filename = f"{competition.name}_{heat_info.name}_results.pdf"
+        return create_pdf_response(pdf, filename)
 
     except Exception as e:
         logging.exception("Error Creating PDF")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from e
-
-
-font_directory = Path("./fonts/")
-
-
-class HelveticaNeuePDF(FPDF):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.add_fonts()
-
-    def add_fonts(self) -> None:
-        if "PYTEST_CURRENT_TEST" not in os.environ:
-            self.add_font(
-                "helvetica-neue",
-                style="",
-                fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="B",
-                fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="I",
-                fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="BI",
-                fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix(),
-            )
-            self.set_font(family="helvetica-neue", style="", size=12)
-        else:
-            self.set_font(family="Helvetica", style="", size=12)

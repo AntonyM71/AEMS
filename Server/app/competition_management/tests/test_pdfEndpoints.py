@@ -6,12 +6,24 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.competition_management.pdfEndpoints import (
+    HelveticaNeuePDF,
+    build_heat_pdf_page,
+    build_heat_results_pdf_content,
+    build_phase_pdf_content,
+    create_pdf_response,
+    get_footer_text,
     heat_pdf,
     heat_results_pdf,
     phase_pdf,
+    phase_pdf_header,
     sanitize_filename,
+    setup_pdf_footer,
 )
-from app.scoring.customScoringEndpoints import HeatInfoResponse
+from app.scoring.customScoringEndpoints import (
+    HeatInfoResponse,
+    HeatScoresResponse,
+    PhaseScoresResponse,
+)
 from app.scoring.scoring_logic import (
     AthleteScoresWithAthleteInfo,
     RunScores,
@@ -385,3 +397,256 @@ def test_sanitize_filename() -> None:
 
     # Test mixed characters
     assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"
+
+
+def test_get_footer_text() -> None:
+    """Test footer text content"""
+    footer = get_footer_text()
+    assert "Athlete Event Management System" in footer
+    assert "kayak.freestyle.app@gmail.com" in footer
+
+
+def test_setup_pdf_footer_custom_text() -> None:
+    """Test setup_pdf_footer with custom text"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    result = setup_pdf_footer(pdf, text="Custom Footer Text")
+    assert result is pdf  # Returns the same PDF instance
+    # The footer should be callable via the bound method
+    assert callable(pdf.footer)
+
+
+def test_setup_pdf_footer_default_text() -> None:
+    """Test setup_pdf_footer uses default footer text when none provided"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    result = setup_pdf_footer(pdf)
+    assert result is pdf
+
+
+def test_setup_pdf_footer_no_page_numbers() -> None:
+    """Test setup_pdf_footer without page numbers"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    result = setup_pdf_footer(pdf, include_page_numbers=False)
+    assert result is pdf
+
+
+def test_phase_pdf_header() -> None:
+    """Test phase_pdf_header configures header on the PDF"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+
+    mock_competition = MagicMock(spec=Competition)
+    mock_competition.name = "Test Competition"
+    mock_event = MagicMock(spec=Event)
+    mock_event.name = "Test Event"
+    mock_phase = MagicMock(spec=Phase)
+    mock_phase.name = "Test Phase"
+    mock_phase.number_of_runs = 3
+    mock_phase.number_of_runs_for_score = 2
+
+    phase_pdf_header(pdf, mock_competition, mock_event, mock_phase)
+
+    # After setting the header, it should be callable
+    assert callable(pdf.header)
+
+
+def test_create_pdf_response() -> None:
+    """Test create_pdf_response returns a valid PDF response"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+    pdf.add_page()
+
+    response = create_pdf_response(pdf, "Test File Name.pdf")
+
+    assert response.status_code == 200
+    assert response.media_type == "application/pdf"
+    assert b"%PDF-" in response.body
+    # Filename should be sanitized (spaces to underscores)
+    assert "Test_File_Name.pdf" in response.headers["Content-Disposition"]
+
+
+def test_create_pdf_response_sanitizes_filename() -> None:
+    """Test that create_pdf_response sanitizes special characters in filename"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+    pdf.add_page()
+
+    response = create_pdf_response(pdf, "File<Name>:Test.pdf")
+
+    assert "File_Name__Test.pdf" in response.headers["Content-Disposition"]
+
+
+def test_build_phase_pdf_content(
+    mock_phase: MagicMock,
+) -> None:
+    """Test build_phase_pdf_content populates the PDF"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+
+    phase_scores = PhaseScoresResponse(
+        phase_id=str(uuid.uuid4()),
+        scores=[
+            AthleteScoresWithAthleteInfo(
+                athlete_id=uuid.uuid4(),
+                first_name="John",
+                last_name="Doe",
+                bib_number=42,
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[],
+                        mean_run_score=90.0,
+                        highest_scoring_move=90.0,
+                        locked=True,
+                        did_not_start=False,
+                    )
+                ],
+                highest_scoring_move=90.0,
+                total_score=90.0,
+                ranking=1,
+                reason=None,
+                last_phase_rank=None,
+            )
+        ],
+    )
+
+    build_phase_pdf_content(pdf, mock_phase, phase_scores)
+
+    pdf_bytes = bytes(pdf.output())
+    assert b"%PDF-" in pdf_bytes
+
+
+def test_build_phase_pdf_content_dns_run(
+    mock_phase: MagicMock,
+) -> None:
+    """Test build_phase_pdf_content handles DNS runs"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+
+    phase_scores = PhaseScoresResponse(
+        phase_id=str(uuid.uuid4()),
+        scores=[
+            AthleteScoresWithAthleteInfo(
+                athlete_id=uuid.uuid4(),
+                first_name="Jane",
+                last_name="Smith",
+                bib_number=7,
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[],
+                        mean_run_score=0.0,
+                        highest_scoring_move=0.0,
+                        locked=False,
+                        did_not_start=True,
+                    )
+                ],
+                highest_scoring_move=0.0,
+                total_score=None,
+                ranking=None,
+                reason="DNS",
+                last_phase_rank=None,
+            )
+        ],
+    )
+
+    build_phase_pdf_content(pdf, mock_phase, phase_scores)
+
+    pdf_bytes = bytes(pdf.output())
+    assert b"%PDF-" in pdf_bytes
+
+
+def test_build_heat_pdf_page() -> None:
+    """Test build_heat_pdf_page adds a page to the PDF"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+
+    mock_heat = MagicMock(spec=Heat)
+    mock_heat.id = uuid.uuid4()
+    mock_heat.name = "Heat A"
+    mock_heat.competition_id = uuid.uuid4()
+
+    mock_competition = MagicMock(spec=Competition)
+    mock_competition.name = "Test Competition"
+
+    athletes = [
+        HeatInfoResponse(
+            athlete_heat_id=uuid.uuid4(),
+            heat_id=uuid.uuid4(),
+            athlete_id=uuid.uuid4(),
+            phase_id=uuid.uuid4(),
+            number_of_runs=3,
+            number_of_runs_for_score=2,
+            scoresheet=uuid.uuid4(),
+            first_name="Alice",
+            last_name="Jones",
+            event_name="Freestyle",
+            bib="5",
+            last_phase_rank=2,
+            affiliation="Team A",
+        )
+    ]
+
+    build_heat_pdf_page(pdf, mock_heat, mock_competition, athletes)
+
+    pdf_bytes = bytes(pdf.output())
+    assert b"%PDF-" in pdf_bytes
+
+
+def test_build_heat_results_pdf_content() -> None:
+    """Test build_heat_results_pdf_content adds results to PDF"""
+    pdf = HelveticaNeuePDF(orientation="L", format="A4")
+    setup_pdf_footer(pdf)
+
+    mock_heat = MagicMock(spec=Heat)
+    mock_heat.id = uuid.uuid4()
+    mock_heat.name = "Final Heat"
+
+    mock_competition = MagicMock(spec=Competition)
+    mock_competition.name = "Test Competition"
+
+    heat_scores = HeatScoresResponse(
+        heat_id=str(uuid.uuid4()),
+        scores=[
+            AthleteScoresWithAthleteInfo(
+                athlete_id=uuid.uuid4(),
+                first_name="Bob",
+                last_name="Brown",
+                bib_number=10,
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[],
+                        mean_run_score=75.0,
+                        highest_scoring_move=75.0,
+                        locked=True,
+                        did_not_start=False,
+                    )
+                ],
+                highest_scoring_move=75.0,
+                total_score=75.0,
+                ranking=1,
+                reason=None,
+                last_phase_rank=None,
+            )
+        ],
+    )
+
+    build_heat_results_pdf_content(pdf, mock_competition, mock_heat, heat_scores, 1)
+
+    pdf_bytes = bytes(pdf.output())
+    assert b"%PDF-" in pdf_bytes
+
+
+@pytest.mark.asyncio
+async def test_heat_pdf_exception(
+    mock_db_session: Session,
+) -> None:
+    """Test heat_pdf raises HTTPException when an unexpected error occurs"""
+    heat_id = str(uuid.uuid4())
+    mock_db_session.query.return_value.where.return_value.order_by.return_value.all.side_effect = Exception(
+        "Database error"
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await heat_pdf(heat_ids=[heat_id], db=mock_db_session)
+
+    assert exc_info.value.status_code == 500
