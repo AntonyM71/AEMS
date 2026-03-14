@@ -16,8 +16,7 @@ const resolveDefaultGraphicsOrigin = () => {
 			const gatewayIp = execSync(
 				"ip route show default | awk '{print $3}' | head -n1",
 				{ encoding: "utf8" }
-			)
-				.trim()
+			).trim()
 
 			if (gatewayIp) {
 				return `http://${gatewayIp}:82`
@@ -39,8 +38,7 @@ module.exports = {
 		}
 
 		const graphicsOrigin =
-			process.env.GRAPHICS_SERVER_ORIGIN ||
-			resolveDefaultGraphicsOrigin()
+			process.env.GRAPHICS_SERVER_ORIGIN || resolveDefaultGraphicsOrigin()
 
 		return [
 			{
