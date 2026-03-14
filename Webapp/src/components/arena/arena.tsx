@@ -107,10 +107,7 @@ const Arena = () => {
 				overlayControlState={overlayControlState}
 				size={100}
 			/>
-			<EventTitleModal
-				overlayControlState={overlayControlState}
-				size={100}
-			/>
+			<EventTitleModal isVisible={overlayControlState.showEventTitle} />
 			<GlobalStyles
 				styles={{
 					body: { backgroundColor: "#181818", height: "100%" }

@@ -1,9 +1,6 @@
 import Box from "@mui/material/Box"
-import Divider from "@mui/material/Divider"
-import Grid2 from "@mui/material/Grid2"
-import Paper from "@mui/material/Paper"
-import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
+import dynamic from "next/dynamic"
 import { useSelector } from "react-redux"
 import {
 	getSelectedCompetition,
@@ -15,25 +12,22 @@ import {
 	useGetOneByPrimaryKeyEventIdGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
-import { OverlayControlState } from "../../Interfaces"
-import PixiFrameSequenceOverlay from "../PixiFrameSequenceOverlay"
 
-export const EventTitleModal = ({
-	overlayControlState,
-	size = 70
-}: {
-	overlayControlState: OverlayControlState
-	size?: number
-}) => (
+const PixiFrameSequenceOverlay = dynamic(
+	() => import("../PixiFrameSequenceOverlay"),
+	{ ssr: false }
+)
+
+export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
 	<PixiFrameSequenceOverlay
 		configName="eventTitle"
-		isVisible={overlayControlState.showEventTitle}
+		isVisible={isVisible}
 		style={{
-			position: "absolute",
-			top: `${(100 - size) / 2}%`,
-			left: `${(100 - size) / 2}%`,
-			width: `${size}%`,
-			height: `${size}%`
+			position: "fixed",
+			inset: 0,
+			width: "100vw",
+			height: "100vh",
+			zIndex: 1400
 		}}
 	>
 		<EventTitle />
@@ -69,45 +63,88 @@ export const EventTitle = () => {
 	return (
 		<Box
 			sx={{
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				height: "100%"
-				// width: "100%"
+				position: "relative",
+				width: "100%",
+				height: "100%",
+				pointerEvents: "none"
 			}}
 		>
-			<Paper sx={{ padding: "2em", justify: "center", width: "100%" }}>
-				<Stack spacing={2}>
-					<Grid2 container spacing={4} direction="column">
-						<Grid2>
-							<Typography variant="h1">
-								{competitionData?.[0].name}
-							</Typography>
-						</Grid2>
-						<Grid2>
-							<Divider />
-						</Grid2>
-						<Grid2>
-							<Grid2 container spacing={2} alignItems="center">
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Event : ${eventData?.name}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Phase : ${phaseData?.name}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Runs : ${phaseData?.number_of_runs}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">
-										{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
-									</Typography>
-								</Grid2>
-							</Grid2>
-						</Grid2>
-					</Grid2>
-				</Stack>
-			</Paper>
+			<Box
+				sx={{
+					position: "absolute",
+					left: "27%",
+					top: "53%",
+					display: "flex",
+					flexDirection: "column",
+					gap: "0.35rem",
+					maxWidth: "72%"
+				}}
+			>
+				<Typography
+					variant="h2"
+					sx={{
+						color: "#ffffff"
+					}}
+				>
+					{competitionData?.[0].name}
+				</Typography>
+				<Box
+					sx={{
+						display: "flex",
+						gap: "0.7rem",
+						flexWrap: "wrap",
+						paddingTop: "0.5em"
+					}}
+				>
+					<Typography
+						variant="h5"
+						sx={{
+							textTransform: "uppercase",
+							color: "#ffffff"
+						}}
+					>
+						{`Event : ${eventData?.name}`}
+					</Typography>
+					<Typography
+						variant="h5"
+						sx={{
+							textTransform: "uppercase",
+							color: "#ffffff"
+						}}
+					>
+						{`Phase : ${phaseData?.name}`}
+					</Typography>
+				</Box>
+			</Box>
+
+			<Box
+				sx={{
+					position: "absolute",
+					left: "43%",
+					top: "76%",
+					display: "flex",
+					gap: "0.75rem",
+					flexWrap: "wrap",
+					maxWidth: "60%"
+				}}
+			>
+				<Typography
+					variant="h5"
+					sx={{
+						textTransform: "uppercase"
+					}}
+				>
+					{`Runs : ${phaseData?.number_of_runs}`}
+				</Typography>
+				<Typography
+					variant="h5"
+					sx={{
+						textTransform: "uppercase"
+					}}
+				>
+					{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
+				</Typography>
+			</Box>
 		</Box>
 	)
 }

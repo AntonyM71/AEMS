@@ -1,9 +1,6 @@
-import Grid from "@mui/material/Grid2"
-import Stack from "@mui/material/Stack"
 import ThemeProvider from "@mui/material/styles/ThemeProvider"
 import React, { useEffect } from "react"
 import { useDispatch } from "react-redux"
-import TransitionGroup from "react-transition-group/TransitionGroup"
 
 import {
 	updateSelectedCompetition,
@@ -15,14 +12,7 @@ import { updateRun } from "../../redux/atoms/scoring"
 import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 
 import { defaultOverlayControllerState } from "../Interfaces"
-import AthleteInfoCard from "./Cards/AthleteInfoCard"
 import { EventTitleModal } from "./Cards/EventTitle"
-import { HeatSummaryTable } from "./Cards/HeatSummaryTable"
-import { SlidingImageCard } from "./Cards/ICFLogo"
-import { LiveRunScoreSpace } from "./Cards/LiveRunScore"
-import { LiveTimerSpace } from "./Cards/LiveTimer"
-import { PhaseScoreTable } from "./Cards/PhaseResultsTable"
-import RunCard from "./Cards/RunCard"
 import { lightTheme } from "./overlayTheme"
 
 interface OverlayProps extends React.FC {
@@ -76,50 +66,15 @@ const Overlay: OverlayProps = () => {
 		<ThemeProvider theme={lightTheme}>
 			<div
 				style={{
-					display: "grid",
-					gridTemplateRows: "15% auto 15%",
 					height: "100vh",
 					overflow: "clip"
 				}}
 			>
-				<header style={{ padding: "1rem" }}>
-					{" "}
-					<Grid container spacing={2} alignItems="stretch">
-						<SlidingImageCard
-							overlayControlState={overlayControlState}
-						/>
-					</Grid>
-				</header>
-				<main style={{ padding: "1rem" }}>
-					<HeatSummaryTable
-						overlayControlState={overlayControlState}
-					/>
-					<PhaseScoreTable
-						overlayControlState={overlayControlState}
-					/>
-					<EventTitleModal
-						overlayControlState={overlayControlState}
-					/>
-				</main>
-				<footer style={{ padding: "1rem" }}>
-					<TransitionGroup
-						component={Stack}
-						direction="row"
-						spacing={2}
-					>
-						<AthleteInfoCard
-							overlayControlState={overlayControlState}
-						/>
-						<LiveRunScoreSpace
-							overlayControlState={overlayControlState}
-						/>
-						<RunCard overlayControlState={overlayControlState} />
-
-						<LiveTimerSpace
-							overlayControlState={overlayControlState}
-						/>
-					</TransitionGroup>
-				</footer>
+				{/* Non-Pixi overlay cards are intentionally disabled while we migrate
+				to always-mounted Pixi-driven visibility control. */}
+				<EventTitleModal
+					isVisible={overlayControlState.showEventTitle}
+				/>
 			</div>
 		</ThemeProvider>
 	)

@@ -97,6 +97,9 @@ const resolveAbsoluteAssetUrl = (
 	configResponseUrl: string
 ): string => new URL(urlOrPath, configResponseUrl).toString()
 
+const SEQUENCE_FADE_MS = 180
+const CONTENT_FADE_MS = 320
+
 const PixiFrameSequenceOverlay = ({
 	configName,
 	configEndpointBase = "/componentInfo",
@@ -448,7 +451,6 @@ const PixiFrameSequenceOverlay = ({
 		}
 	}, [
 		isAppReady,
-		isVisible,
 		resolvedFrameUrls,
 		resolvedHoldImage,
 		setPlaybackPhase,
@@ -486,7 +488,7 @@ const PixiFrameSequenceOverlay = ({
 
 		const safeFps = resolvedFps > 0 ? resolvedFps : 30
 		const frameDuration = 1000 / safeFps
-		const intervalId = window.setInterval(() => {
+		const intervalId = globalThis.setInterval(() => {
 			const textures = texturesRef.current
 			if (textures.length === 0) {
 				return
@@ -532,7 +534,7 @@ const PixiFrameSequenceOverlay = ({
 		}, frameDuration)
 
 		return () => {
-			window.clearInterval(intervalId)
+			globalThis.clearInterval(intervalId)
 		}
 	}, [
 		finishPlayback,
@@ -545,6 +547,9 @@ const PixiFrameSequenceOverlay = ({
 	])
 
 	const shouldRenderSequence = isVisible || phase !== "done"
+	const isAnimationActive =
+		phase === "loading" || phase === "intro" || phase === "outro"
+	const shouldShowChildren = isVisible && !isAnimationActive
 
 	return (
 		<div
@@ -563,21 +568,25 @@ const PixiFrameSequenceOverlay = ({
 					position: "absolute",
 					inset: 0,
 					opacity: shouldRenderSequence ? 1 : 0,
+					transition: `opacity ${SEQUENCE_FADE_MS}ms ease-in-out`,
+					willChange: "opacity",
 					pointerEvents: "none"
 				}}
 			/>
-			{shouldRenderSequence ? (
-				<div
-					style={{
-						position: "relative",
-						zIndex: 1,
-						width: "100%",
-						height: "100%"
-					}}
-				>
-					{children}
-				</div>
-			) : null}
+			<div
+				style={{
+					position: "relative",
+					zIndex: 1,
+					width: "100%",
+					height: "100%",
+					opacity: shouldShowChildren ? 1 : 0,
+					transition: `opacity ${CONTENT_FADE_MS}ms ease-in-out`,
+					willChange: "opacity",
+					pointerEvents: "none"
+				}}
+			>
+				{children}
+			</div>
 		</div>
 	)
 }
