@@ -4,7 +4,7 @@
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/node:1": {"version": "24"},
     "ghcr.io/va-h/devcontainers-features/uv:1": {}
   },
 
