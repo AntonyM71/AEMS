@@ -27,6 +27,10 @@ const emitSockets: {
 	broadcast_control: null
 }
 
+// Track all active run_status sockets so we can reuse any live connection and
+// only clear the registry when the last subscriber disconnects.
+const runStatusSockets = new Set<Socket>()
+
 export const streamingApi = emptySplitApi.injectEndpoints({
 	endpoints: (build) => ({
 		timerStream: build.query<number, void>({
@@ -82,9 +86,12 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					await cacheDataLoaded
 					socketRef.current = connectWebRunStatusSocket()
 					// Register for reuse by emitRunStatus mutation.
-					// Last-created stream wins; the check below prevents a
-					// later-closing stream from clearing a newer registration.
-					emitSockets.run_status = socketRef.current
+					// Track all active sockets and prefer the most recently
+					// created one, but keep any live socket available for reuse.
+					if (socketRef.current) {
+						runStatusSockets.add(socketRef.current)
+						emitSockets.run_status = socketRef.current
+					}
 					socketRef.current.on(
 						"run_status",
 						(data: RunStatus) => {
@@ -101,9 +108,15 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					// no-op if cacheEntryRemoved resolves before cacheDataLoaded
 				}
 				await cacheEntryRemoved
-				if (emitSockets.run_status === socketRef.current) {
-					emitSockets.run_status = null
+				if (socketRef.current) {
+					runStatusSockets.delete(socketRef.current)
 				}
+				// Pick any remaining active socket for reuse, or clear if none remain.
+				const nextSocket =
+					runStatusSockets.size > 0
+						? runStatusSockets.values().next().value ?? null
+						: null
+				emitSockets.run_status = nextSocket
 				socketRef.current?.disconnect()
 				socketRef.current = null
 			}
