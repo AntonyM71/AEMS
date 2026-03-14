@@ -98,9 +98,11 @@ socketio_running = True  # Flag to control the Socket.IO thread
 # Server configuration - change this to match your server address.
 # In production, port 81 is the nginx reverse proxy that serves the full stack.
 # In development, use http://localhost:8000 (the uvicorn server directly).
+# Default Socket.IO path assumes direct uvicorn (`/socket.io/`); when using nginx
+# that strips `/api`, set SOCKETIO_PATH=/api/socket.io/ in the environment.
 SIO_SERVER_URL = os.environ.get(
     "SOCKETIO_URL", "http://192.168.0.28:81")
-SIO_PATH = os.environ.get("SOCKETIO_PATH", "/api/socket.io/")
+SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
 
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
 
