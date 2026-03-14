@@ -31,6 +31,44 @@ kanban
 
 ```
 
+## Animation Wrapper
+
+### PixiFrameSequenceOverlay
+
+A reusable wrapper that renders a PNG frame sequence as a GPU-accelerated background using Pixi.js and layers child React broadcast components above it.
+
+**File**: `PixiFrameSequenceOverlay.tsx`
+
+**Props**:
+
+| Prop              | Type               | Required | Default    | Description                                                 |
+| ----------------- | ------------------ | -------- | ---------- | ----------------------------------------------------------- |
+| `basePath`        | `string`           | Yes      |            | Base path to the PNG frames directory                       |
+| `frameCount`      | `number`           | Yes      |            | Total number of frames in the sequence                      |
+| `holdImage`       | `number \| string` | Yes      |            | Zero-based frame index or filename suffix to pause on       |
+| `isVisible`       | `boolean`          | Yes      |            | Drives intro (on true) and outro (on false)                 |
+| `children`        | `ReactNode`        | No       |            | Broadcast overlay component to layer above the animation    |
+| `fps`             | `number`           | No       | `30`       | Playback rate in frames per second                          |
+| `fileNamePrefix`  | `string`           | No       | `"frame_"` | Prefix for each frame filename                              |
+| `fileNamePadding` | `number`           | No       | `4`        | Zero-pad width for frame numbers (e.g. `4` → `0001`)        |
+| `fileExtension`   | `string`           | No       | `"png"`    | File extension for frame images                             |
+| `frameUrls`       | `string[]`         | No       |            | Override with explicit frame URL list (skips path building) |
+| `onExitComplete`  | `() => void`       | No       |            | Callback fired when the outro sequence finishes             |
+
+**Playback lifecycle**:
+
+1. All frames are preloaded into GPU textures before playback starts.
+2. When `isVisible` becomes `true`: plays frames `0 → holdImage` (intro).
+3. Holds on `holdImage` frame while `isVisible` remains `true`.
+4. When `isVisible` becomes `false`: plays frames `holdImage+1 → end` (outro).
+5. `onExitComplete` is called and the canvas is hidden.
+
+Frames are expected at `{basePath}/frame_{NNNN}.{ext}`. Pass `frameUrls` to supply a custom URL list (for future Nginx API integration). See `ADR006` for architectural rationale.
+
+**Example**: `Cards/AthleteCardWithAnimation.tsx`
+
+---
+
 ## Features
 
 ### Modals
