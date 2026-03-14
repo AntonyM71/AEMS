@@ -1,0 +1,19 @@
+services:
+  graphics_server:
+    build:
+      context: ./GraphicsServer
+      dockerfile: Dockerfile
+    ports:
+      - "82:82"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O - http://localhost:82/healthz >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ${GRAPHICS_PACK_DIR:?Set GRAPHICS_PACK_DIR to your host graphics pack folder}:/usr/share/nginx/html/pack:ro

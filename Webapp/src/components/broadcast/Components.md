@@ -41,19 +41,21 @@ A reusable wrapper that renders a PNG frame sequence as a GPU-accelerated backgr
 
 **Props**:
 
-| Prop              | Type               | Required | Default    | Description                                                 |
-| ----------------- | ------------------ | -------- | ---------- | ----------------------------------------------------------- |
-| `basePath`        | `string`           | Yes      |            | Base path to the PNG frames directory                       |
-| `frameCount`      | `number`           | Yes      |            | Total number of frames in the sequence                      |
-| `holdImage`       | `number \| string` | Yes      |            | Zero-based frame index or filename suffix to pause on       |
-| `isVisible`       | `boolean`          | Yes      |            | Drives intro (on true) and outro (on false)                 |
-| `children`        | `ReactNode`        | No       |            | Broadcast overlay component to layer above the animation    |
-| `fps`             | `number`           | No       | `30`       | Playback rate in frames per second                          |
-| `fileNamePrefix`  | `string`           | No       | `"frame_"` | Prefix for each frame filename                              |
-| `fileNamePadding` | `number`           | No       | `4`        | Zero-pad width for frame numbers (e.g. `4` → `0001`)        |
-| `fileExtension`   | `string`           | No       | `"png"`    | File extension for frame images                             |
-| `frameUrls`       | `string[]`         | No       |            | Override with explicit frame URL list (skips path building) |
-| `onExitComplete`  | `() => void`       | No       |            | Callback fired when the outro sequence finishes             |
+| Prop                 | Type               | Required | Default            | Description                                                 |
+| -------------------- | ------------------ | -------- | ------------------ | ----------------------------------------------------------- |
+| `configName`         | `string`           | No       |                    | Config key appended to the config endpoint URL              |
+| `configEndpointBase` | `string`           | No       | `"/componentInfo"` | Base endpoint used to fetch config JSON                     |
+| `basePath`           | `string`           | No       |                    | Local fallback base path if config endpoint is not used     |
+| `frameCount`         | `number`           | No       |                    | Local fallback total number of frames                       |
+| `holdImage`          | `number \| string` | No       |                    | Local fallback hold frame index or filename suffix          |
+| `isVisible`          | `boolean`          | Yes      |                    | Drives intro (on true) and outro (on false)                 |
+| `children`           | `ReactNode`        | No       |                    | Broadcast overlay component to layer above the animation    |
+| `fps`                | `number`           | No       | `30`               | Playback rate in frames per second                          |
+| `fileNamePrefix`     | `string`           | No       | `"frame_"`         | Prefix for each frame filename                              |
+| `fileNamePadding`    | `number`           | No       | `4`                | Zero-pad width for frame numbers (e.g. `4` → `0001`)        |
+| `fileExtension`      | `string`           | No       | `"png"`            | File extension for frame images                             |
+| `frameUrls`          | `string[]`         | No       |                    | Override with explicit frame URL list (skips path building) |
+| `onExitComplete`     | `() => void`       | No       |                    | Callback fired when the outro sequence finishes             |
 
 **Playback lifecycle**:
 
@@ -63,7 +65,7 @@ A reusable wrapper that renders a PNG frame sequence as a GPU-accelerated backgr
 4. When `isVisible` becomes `false`: plays frames `holdImage+1 → end` (outro).
 5. `onExitComplete` is called and the canvas is hidden.
 
-Frames are expected at `{basePath}/frame_{NNNN}.{ext}`. Pass `frameUrls` to supply a custom URL list (for future Nginx API integration). See `ADR006` for architectural rationale.
+When `configName` is provided, the component fetches `{configEndpointBase}/{configName}` and resolves frame URLs from the returned config `path` (or `frameUrls`) before preloading textures. Local path props remain available as fallback.
 
 **Example**: `Cards/AthleteCardWithAnimation.tsx`
 

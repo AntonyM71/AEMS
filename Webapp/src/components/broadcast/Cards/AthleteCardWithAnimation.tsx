@@ -6,9 +6,8 @@ import { AthleteInfo } from "./AthleteInfoCard"
 
 interface AthleteCardWithAnimationProps {
 	overlayControlState: OverlayControlState
-	basePath: string
-	frameCount: number
-	holdImage: number | string
+	configName: string
+	configEndpointBase?: string
 }
 
 /**
@@ -21,27 +20,21 @@ interface AthleteCardWithAnimationProps {
  * Usage:
  *   <AthleteCardWithAnimation
  *     overlayControlState={overlayControlState}
- *     basePath="/gfx/athlete_bug"
- *     frameCount={60}
- *     holdImage={30}
+ *     configName="athleteInfo"
+ *     configEndpointBase="http://localhost:82/componentInfo"
  *   />
  *
- * Frame files are expected at:
- *   {basePath}/frame_{0001..N}.png
- *
- * `holdImage` can also be a filename suffix such as "frame_0030.png" to identify
- * the hold frame by name rather than index.
+ * The config endpoint should return frame metadata, including the `path` for
+ * frame assets (for example `/assets/athlete_info`).
  */
 const AthleteCardWithAnimation = ({
 	overlayControlState,
-	basePath,
-	frameCount,
-	holdImage
+	configName,
+	configEndpointBase
 }: AthleteCardWithAnimationProps): React.JSX.Element => (
 	<PixiFrameSequenceOverlay
-		basePath={basePath}
-		frameCount={frameCount}
-		holdImage={holdImage}
+		configName={configName}
+		configEndpointBase={configEndpointBase}
 		isVisible={overlayControlState.showLiveRunScore}
 		style={{ width: "100%", height: "100%" }}
 	>

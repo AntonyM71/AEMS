@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { Application, Assets, Sprite, Texture } from "pixi.js"
 import React, {
 	CSSProperties,
@@ -11,10 +12,23 @@ import React, {
 
 type PlaybackPhase = "loading" | "intro" | "hold" | "outro" | "done"
 
+interface RemoteFrameSequenceConfig {
+	path?: string
+	frameCount?: number
+	holdImage?: number | string
+	fps?: number
+	fileNamePrefix?: string
+	fileNamePadding?: number
+	fileExtension?: string
+	frameUrls?: string[]
+}
+
 export interface PixiFrameSequenceOverlayProps {
-	basePath: string
-	frameCount: number
-	holdImage: number | string
+	configName?: string
+	configEndpointBase?: string
+	basePath?: string
+	frameCount?: number
+	holdImage?: number | string
 	isVisible: boolean
 	children?: ReactNode
 	fps?: number
@@ -29,6 +43,12 @@ export interface PixiFrameSequenceOverlayProps {
 
 const normalizeBasePath = (basePath: string): string =>
 	basePath.endsWith("/") ? basePath.slice(0, -1) : basePath
+
+const joinEndpointPath = (base: string, name: string): string => {
+	const trimmed = base.endsWith("/") ? base.slice(0, -1) : base
+
+	return `${trimmed}/${encodeURIComponent(name)}`
+}
 
 const buildFrameUrls = ({
 	basePath,
@@ -72,7 +92,14 @@ const resolveHoldIndex = (
 	return Math.max(Math.floor(frameUrls.length / 2), 0)
 }
 
+const resolveAbsoluteAssetUrl = (
+	urlOrPath: string,
+	configResponseUrl: string
+): string => new URL(urlOrPath, configResponseUrl).toString()
+
 const PixiFrameSequenceOverlay = ({
+	configName,
+	configEndpointBase = "/componentInfo",
 	basePath,
 	frameCount,
 	holdImage,
@@ -99,27 +126,54 @@ const PixiFrameSequenceOverlay = ({
 		useRef<PixiFrameSequenceOverlayProps["onExitComplete"]>(onExitComplete)
 
 	const [isReady, setIsReady] = useState<boolean>(false)
+	const [isAppReady, setIsAppReady] = useState<boolean>(false)
 	const [phase, setPhase] = useState<PlaybackPhase>("loading")
+	const [remoteConfig, setRemoteConfig] =
+		useState<RemoteFrameSequenceConfig | null>(null)
+
+	const resolvedBasePath = basePath ?? remoteConfig?.path ?? ""
+	const resolvedFrameCount = frameCount ?? remoteConfig?.frameCount ?? 0
+	const resolvedHoldImage = holdImage ?? remoteConfig?.holdImage ?? 0
+	const resolvedFps = fps ?? remoteConfig?.fps ?? 30
+	const resolvedFileNamePrefix =
+		fileNamePrefix ?? remoteConfig?.fileNamePrefix ?? "frame_"
+	const resolvedFileNamePadding =
+		fileNamePadding ?? remoteConfig?.fileNamePadding ?? 4
+	const resolvedFileExtension =
+		fileExtension ?? remoteConfig?.fileExtension ?? "png"
+	const resolvedRemoteFrameUrls = remoteConfig?.frameUrls
 
 	const resolvedFrameUrls = useMemo(() => {
 		if (Array.isArray(frameUrls) && frameUrls.length > 0) {
 			return frameUrls
 		}
 
+		if (
+			Array.isArray(resolvedRemoteFrameUrls) &&
+			resolvedRemoteFrameUrls.length > 0
+		) {
+			return resolvedRemoteFrameUrls
+		}
+
+		if (!resolvedBasePath || resolvedFrameCount <= 0) {
+			return []
+		}
+
 		return buildFrameUrls({
-			basePath,
-			frameCount,
-			fileNamePrefix,
-			fileNamePadding,
-			fileExtension
+			basePath: resolvedBasePath,
+			frameCount: resolvedFrameCount,
+			fileNamePrefix: resolvedFileNamePrefix,
+			fileNamePadding: resolvedFileNamePadding,
+			fileExtension: resolvedFileExtension
 		})
 	}, [
-		basePath,
-		fileExtension,
-		fileNamePadding,
-		fileNamePrefix,
-		frameCount,
-		frameUrls
+		frameUrls,
+		resolvedBasePath,
+		resolvedFileExtension,
+		resolvedFileNamePadding,
+		resolvedFileNamePrefix,
+		resolvedFrameCount,
+		resolvedRemoteFrameUrls
 	])
 
 	const setPlaybackPhase = useCallback((nextPhase: PlaybackPhase) => {
@@ -225,6 +279,67 @@ const PixiFrameSequenceOverlay = ({
 	}, [onExitComplete])
 
 	useEffect(() => {
+		if (!configName) {
+			setRemoteConfig(null)
+
+			return
+		}
+
+		let isDisposed = false
+		const abortController = new AbortController()
+
+		const loadConfig = async (): Promise<void> => {
+			try {
+				const response = await fetch(
+					joinEndpointPath(configEndpointBase, configName),
+					{ signal: abortController.signal }
+				)
+
+				if (!response.ok) {
+					throw new Error(
+						`Failed to load overlay config '${configName}' (${response.status})`
+					)
+				}
+
+				const data =
+					(await response.json()) as RemoteFrameSequenceConfig
+
+				if (isDisposed) {
+					return
+				}
+
+				const resolvedPath = data.path
+					? resolveAbsoluteAssetUrl(data.path, response.url)
+					: undefined
+
+				const resolvedUrls = Array.isArray(data.frameUrls)
+					? data.frameUrls.map((url) =>
+							resolveAbsoluteAssetUrl(url, response.url)
+					  )
+					: undefined
+
+				setRemoteConfig({
+					...data,
+					path: resolvedPath,
+					frameUrls: resolvedUrls
+				})
+			} catch (error) {
+				if (!isDisposed && !abortController.signal.aborted) {
+					console.error("Unable to load frame sequence config", error)
+					setRemoteConfig(null)
+				}
+			}
+		}
+
+		void loadConfig()
+
+		return () => {
+			isDisposed = true
+			abortController.abort()
+		}
+	}, [configEndpointBase, configName])
+
+	useEffect(() => {
 		let isDisposed = false
 
 		const initPixiApp = async (): Promise<void> => {
@@ -254,12 +369,14 @@ const PixiFrameSequenceOverlay = ({
 			sprite.anchor.set(0.5)
 			spriteRef.current = sprite
 			app.stage.addChild(sprite)
+			setIsAppReady(true)
 		}
 
 		void initPixiApp()
 
 		return () => {
 			isDisposed = true
+			setIsAppReady(false)
 			spriteRef.current = null
 			if (appRef.current) {
 				appRef.current.destroy(true, { children: true, texture: false })
@@ -287,7 +404,7 @@ const PixiFrameSequenceOverlay = ({
 		let isDisposed = false
 
 		const loadFrames = async (): Promise<void> => {
-			if (!appRef.current || resolvedFrameUrls.length === 0) {
+			if (!isAppReady || resolvedFrameUrls.length === 0) {
 				texturesRef.current = []
 				holdIndexRef.current = 0
 				setIsReady(false)
@@ -312,7 +429,7 @@ const PixiFrameSequenceOverlay = ({
 			)
 			texturesRef.current = loadedTextures
 			holdIndexRef.current = resolveHoldIndex(
-				holdImage,
+				resolvedHoldImage,
 				resolvedFrameUrls
 			)
 			setIsReady(true)
@@ -329,7 +446,14 @@ const PixiFrameSequenceOverlay = ({
 		return () => {
 			isDisposed = true
 		}
-	}, [holdImage, isVisible, resolvedFrameUrls, setPlaybackPhase, startIntro])
+	}, [
+		isAppReady,
+		isVisible,
+		resolvedFrameUrls,
+		resolvedHoldImage,
+		setPlaybackPhase,
+		startIntro
+	])
 
 	useEffect(() => {
 		if (!isReady) {
@@ -360,7 +484,7 @@ const PixiFrameSequenceOverlay = ({
 			return
 		}
 
-		const safeFps = fps > 0 ? fps : 30
+		const safeFps = resolvedFps > 0 ? resolvedFps : 30
 		const frameDuration = 1000 / safeFps
 		const intervalId = window.setInterval(() => {
 			const textures = texturesRef.current
@@ -412,9 +536,9 @@ const PixiFrameSequenceOverlay = ({
 		}
 	}, [
 		finishPlayback,
-		fps,
 		isReady,
 		isVisible,
+		resolvedFps,
 		setFrame,
 		setPlaybackPhase,
 		startOutro
