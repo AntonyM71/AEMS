@@ -96,7 +96,7 @@ Replacing the `broadcaster` pub/sub library with direct Socket.IO namespace emis
 7. Update `streamingApi.ts` and all components that previously used `WebSocket` to use the `Socket` API (`socket.on(event, handler)`, `socket.emit(event, data)`, `socket.disconnect()`).
 8. Update `Timer/src/timer.py` and `Timer/src/fake_timer.py` to use `socketio.SimpleClient`.
 
-The nginx reverse proxy forwards `/api/socket.io/` to the backend unchanged; no nginx configuration changes are required.
+The nginx reverse proxy strips the `/api` prefix when forwarding requests: a browser request to `/api/socket.io/` is passed to the backend as `/socket.io/` (because `location /api/ { proxy_pass http://server/; }` removes the matched prefix). No nginx configuration changes are required beyond what was already in place.
 
 ## Review:
 
