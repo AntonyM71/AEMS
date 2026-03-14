@@ -26,26 +26,36 @@ sys.modules["RPi"] = MagicMock(GPIO=gpio_mock)
 sys.modules["RPi.GPIO"] = gpio_mock
 
 # ---------------------------------------------------------------------------
-# 2. Mock websockets
+# 2. Mock socketio (imported by timer.py for Socket.IO communication)
 # ---------------------------------------------------------------------------
-websockets_mock = MagicMock()
+socketio_mock = MagicMock()
 
 
-class _FakeWebSocketConnectionClosedError(Exception):
-    """Fake websockets.ConnectionClosed for exception handling tests."""
+class _FakeSimpleClient:
+    """Minimal stand-in for socketio.SimpleClient."""
 
-    code = 1000
-    reason = "normal closure"
+    def __init__(self) -> None:
+        self.connected = True
+        self._emitted: list = []
+
+    def connect(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
+        pass
+
+    def emit(self, event: str, data: object) -> None:
+        self._emitted.append((event, data))
+
+    def disconnect(self) -> None:
+        self.connected = False
+
+    def __enter__(self):  # noqa: ANN204
+        return self
+
+    def __exit__(self, *args) -> None:  # noqa: ANN002
+        pass
 
 
-class _FakeConnectionClosedError(_FakeWebSocketConnectionClosedError):
-    """Fake websockets.exceptions.ConnectionClosedError."""
-
-
-websockets_mock.ConnectionClosed = _FakeWebSocketConnectionClosedError
-websockets_mock.exceptions = MagicMock()
-websockets_mock.exceptions.ConnectionClosedError = _FakeConnectionClosedError
-sys.modules["websockets"] = websockets_mock
+socketio_mock.SimpleClient = _FakeSimpleClient
+sys.modules["socketio"] = socketio_mock
 
 # ---------------------------------------------------------------------------
 # 3. Mock custom_logging (imported from the Server path in timer.py)

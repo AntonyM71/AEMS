@@ -1,21 +1,35 @@
-const websocketURL = () => {
+import { io, Socket } from "socket.io-client"
+
+const socketConfig = () => {
 	const isProd = process.env.NEXT_PUBLIC_ENV === "prod"
+	const path = isProd ? "/api/socket.io/" : "/socket.io/"
+	const origin = isProd
+		? window.location.origin
+		: `http://localhost:${process.env.NEXT_PUBLIC_SERVER_PORT ?? "8000"}`
 
-	const url = new URL(isProd ? "/api/" : "/", location.href)
-	url.protocol = url.protocol.replace("http", "ws")
-
-	if (!isProd) {
-		url.port = process.env.NEXT_PUBLIC_SERVER_PORT ?? "8000"
-	}
-
-	return url
+	return { origin, path }
 }
 
-export const connectWebRunStatusSocket = (): WebSocket =>
-	new WebSocket(`${websocketURL().toString()}run_status`)
-export const connectTimerSocket = (): WebSocket =>
-	new WebSocket(`${websocketURL().toString()}timer`)
-export const connectCurrentScoreStatusSocket = (): WebSocket =>
-	new WebSocket(`${websocketURL().toString()}current_scores`)
-export const connectBroadcastControlSocket = (): WebSocket =>
-	new WebSocket(`${websocketURL().toString()}broadcast_control`)
+export const connectWebRunStatusSocket = (): Socket => {
+	const { origin, path } = socketConfig()
+
+	return io(`${origin}/run_status`, { path, reconnection: true })
+}
+
+export const connectTimerSocket = (): Socket => {
+	const { origin, path } = socketConfig()
+
+	return io(`${origin}/timer`, { path, reconnection: true })
+}
+
+export const connectCurrentScoreStatusSocket = (): Socket => {
+	const { origin, path } = socketConfig()
+
+	return io(`${origin}/current_scores`, { path, reconnection: true })
+}
+
+export const connectBroadcastControlSocket = (): Socket => {
+	const { origin, path } = socketConfig()
+
+	return io(`${origin}/broadcast_control`, { path, reconnection: true })
+}

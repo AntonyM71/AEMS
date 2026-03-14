@@ -3,6 +3,7 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable
 
+import socketio as _socketio
 import structlog
 import uvicorn
 from fastapi import Depends, FastAPI, Request, Response
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
 from app.broadcastEndpoints import broadcast_router
+from app.common.socket_manager import sio
 from app.competition_management.competition_management import (
     competition_management_router,
 )
@@ -38,7 +40,9 @@ frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(os.getenv("LOG_JSON_FORMAT", default=False))
+LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(
+    os.getenv("LOG_JSON_FORMAT", default=False)
+)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 
@@ -154,8 +158,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Wrap the FastAPI app with the Socket.IO ASGI app so that Socket.IO connections
+# are handled transparently alongside existing HTTP routes.
+socket_app = _socketio.ASGIApp(sio, other_asgi_app=app)
+
 
 async def run_server() -> None:
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_config=None)
+    config = uvicorn.Config(socket_app, host="0.0.0.0", port=8000, log_config=None)
     server = uvicorn.Server(config)
     await server.serve()

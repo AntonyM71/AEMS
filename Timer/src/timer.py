@@ -1,5 +1,3 @@
-import asyncio
-import json
 import logging
 import os
 import queue
@@ -7,10 +5,10 @@ import sys
 import threading
 import time
 from dataclasses import asdict, dataclass
-from typing import Any, Literal
+from typing import Literal
 
 import RPi.GPIO as GPIO
-import websockets
+import socketio
 
 sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
 from custom_logging import setup_logging
@@ -92,13 +90,19 @@ ENABLE_WEBSOCKET = os.environ.get("ENABLE_WEBSOCKET", "true").lower() not in (
 # Timer and threading variables
 timer_thread = None
 timer_running = False
-websocket_thread = None
-message_queue = queue.Queue()  # Thread-safe queue for WebSocket messages
-websocket_running = True  # Flag to control the WebSocket thread
+socketio_thread = None
+# Thread-safe queue for Socket.IO messages
+message_queue: queue.Queue = queue.Queue()
+socketio_running = True  # Flag to control the Socket.IO thread
 
-# Server configuration - change this to match your server address
-WS_SERVER_URL = os.environ.get(
-    "WEBSOCKET_URL", "ws://192.168.0.28:81/api/timer")
+# Server configuration - change this to match your server address.
+# In production, port 81 is the nginx reverse proxy that serves the full stack.
+# In development, use http://localhost:8000 (the uvicorn server directly).
+# Default Socket.IO path assumes direct uvicorn (`/socket.io/`); when using nginx
+# that strips `/api`, set SOCKETIO_PATH=/api/socket.io/ in the environment.
+SIO_SERVER_URL = os.environ.get(
+    "SOCKETIO_URL", "http://192.168.0.28:81")
+SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
 
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
 
@@ -128,125 +132,89 @@ class QueueItem:
     time_remaining: int
 
 
-async def send_heartbeat(websocket: Any) -> None:
-    """Keep the WebSocket connection alive manually"""
-    while True:
-        try:
-            # await websocket.ping()  # Custom ping message
-
-            response = await websocket.recv()  # Try receiving pong
-            logging.debug("Received WebSocket message: %s", response)
-
-            # await asyncio.sleep(10)  # Send every 10 seconds
-        except websockets.exceptions.ConnectionClosedError:
-            break  # Exit when disconnected
-
-
-async def process_message_queue(websocket: Any) -> None:
-    """Process pending messages from the queue"""
-    if websocket is None:
-        return
-
+def process_message_queue_sync(sio_client: socketio.SimpleClient) -> None:
+    """Process pending messages from the queue using the Socket.IO client."""
     message: QueueItem | None = None
     try:
-        # Non-blocking check for messages
         message = message_queue.get(block=False)
-        # Send the message
         if message is not None:
-            await websocket.send(json.dumps(asdict(message)))
-
+            sio_client.emit("timer", asdict(message))
             message_queue.task_done()
     except queue.Empty:
-        # No messages to process
         pass
     except Exception:
         logging.exception(
             "Error processing item from queue - Message: %s", message)
         if message is not None:
             message_queue.put(message)
-        raise  # Re-raise the exception
+        raise
 
 
-async def cleanup_websocket(websocket: Any) -> None:
-    """Clean up the websocket connection"""
-    if websocket is not None:
-        try:
-            await websocket.close()
-            logging.info("WebSocket connection closed")
-        except Exception as e:
-            logging.info("Error closing WebSocket: %s", e)
+def run_socketio_loop() -> None:
+    """Main Socket.IO communication loop with automatic reconnection."""
+    global socketio_running
 
-
-# ...existing code...
-async def run_websocket_loop() -> None:
-    """Main websocket communication loop"""
-    global websocket_running
-
-    while websocket_running:
+    while socketio_running:
         connection_start = time.time()
         try:
-            async with websockets.connect(WS_SERVER_URL,
-                                          ping_interval=30,
-                                          ping_timeout=10) as websocket:
+            with socketio.SimpleClient() as sio_client:
+                sio_client.connect(
+                    SIO_SERVER_URL,
+                    namespace="/timer",
+                    socketio_path=SIO_PATH,
+                    wait_timeout=10,
+                )
                 logging.info(
-                    "Connected to WebSocket server at %s", WS_SERVER_URL)
-                heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
+                    "Connected to Socket.IO server at %s (namespace=/timer)",
+                    SIO_SERVER_URL,
+                )
 
-                while websocket_running:
+                while socketio_running and sio_client.connected:
                     try:
-                        await process_message_queue(websocket)
-                        await asyncio.sleep(SLEEP_INTERVAL)
+                        process_message_queue_sync(sio_client)
+                        time.sleep(SLEEP_INTERVAL)
                     except Exception:
-                        logging.exception("Error in message processing loop after %d seconds",
-                                          int(time.time() - connection_start))
+                        logging.exception(
+                            "Error in message processing loop after %d seconds",
+                            int(time.time() - connection_start),
+                        )
                         raise
 
-                heartbeat_task.cancel()
-
-        except websockets.ConnectionClosed as e:
-            logging.warning("Connection closed after %d seconds with code %s: %s",
-                            int(time.time() - connection_start), e.code, e.reason)
-            await asyncio.sleep(2)
         except Exception:
-            logging.exception("Unexpected WebSocket error: %s")
-            await asyncio.sleep(2)
+            logging.exception(
+                "Socket.IO connection error after %d seconds",
+                int(time.time() - connection_start),
+            )
+            time.sleep(2)
 
 
-def websocket_worker() -> None:
-    """Worker thread that maintains a WebSocket connection and sends messages from the queue"""
-    logging.info("Starting WebSocket communication thread")
-
-    # Create a new event loop for this thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        loop.run_until_complete(run_websocket_loop())
-    finally:
-        loop.close()  # Proper cleanup
+def socketio_worker() -> None:
+    """Worker thread that maintains a Socket.IO connection and sends messages."""
+    logging.info("Starting Socket.IO communication thread")
+    run_socketio_loop()
 
 
-def start_websocket_thread() -> None:
-    """Start the WebSocket communication thread"""
-    global websocket_thread, websocket_running
+def start_socketio_thread() -> None:
+    """Start the Socket.IO communication thread."""
+    global socketio_thread, socketio_running
 
-    if websocket_thread is None or not websocket_thread.is_alive():
-        websocket_running = True
-        websocket_thread = threading.Thread(
-            target=websocket_worker, daemon=True)
-        websocket_thread.start()
+    if socketio_thread is None or not socketio_thread.is_alive():
+        socketio_running = True
+        socketio_thread = threading.Thread(
+            target=socketio_worker, daemon=True)
+        socketio_thread.start()
 
 
 def send_timer_update(status: StatusLiteral, time_remaining: float | None = None) -> None:
     """
-    Queue a timer status update to be sent by the WebSocket thread.
+    Queue a timer status update to be sent by the Socket.IO thread.
     Non-blocking and safe to call from the timer thread.
 
     Args:
         status (str): Status of the timer ("started", "running", "finished", "cancelled")
         time_remaining (float, optional): Remaining time in seconds
     """
-    # Skip if WebSocket functionality is disabled
+    # Skip if Socket.IO functionality is disabled
     display_time = int(time_remaining) if time_remaining is not None else 0
     tm.write(swap(tm.encode_string(
         f'{get_short_status(status)}-{display_time:02}')))
@@ -378,7 +346,6 @@ def start_timer() -> None:
 
     timer_running = True
 
-
     # Start timer thread
     timer_thread = threading.Thread(target=timer_task)
     timer_thread.start()
@@ -397,15 +364,15 @@ def cancel_timer() -> None:
 # Main program loop
 if __name__ == "__main__":
     try:
-        # Start the WebSocket communication thread if enabled
+        # Start the Socket.IO communication thread if enabled
         if ENABLE_WEBSOCKET:
             logging.info(
-                "WebSocket functionality is ENABLED - connecting to %s", WS_SERVER_URL
+                "Socket.IO functionality is ENABLED - connecting to %s", SIO_SERVER_URL
             )
-            start_websocket_thread()
+            start_socketio_thread()
         else:
             logging.info(
-                "WebSocket functionality is DISABLED - timer will run in standalone mode"
+                "Socket.IO functionality is DISABLED - timer will run in standalone mode"
             )
 
         while True:
@@ -424,12 +391,12 @@ if __name__ == "__main__":
         logging.info("Exiting program")
 
     finally:
-        # Signal the WebSocket thread to stop if it was started
+        # Signal the Socket.IO thread to stop if it was started
         if ENABLE_WEBSOCKET:
-            websocket_running = False
-            if websocket_thread and websocket_thread.is_alive():
+            socketio_running = False
+            if socketio_thread and socketio_thread.is_alive():
                 # Wait for the thread to finish
-                websocket_thread.join(timeout=1.0)
+                socketio_thread.join(timeout=1.0)
 
         GPIO.cleanup()
         logging.info("GPIO cleanup complete. Exiting.")

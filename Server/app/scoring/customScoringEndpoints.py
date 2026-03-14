@@ -7,20 +7,13 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    WebSocket,
-    WebSocketDisconnect,
     status,
 )
-from fastapi.concurrency import run_until_first_complete
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 from sqlalchemy.orm import Session
 
-from app.common.websocket_handler import (
-    publisher,
-    ws_receiver,
-    ws_sender,
-)
+from app.common.socket_manager import sio
 from app.scoresheetEndpoints import (
     PydanticAvailableBonuses,
     PydanticAvailableMoves,
@@ -217,7 +210,12 @@ async def update_athlete_score(
                 judge_id=judge_id,
                 phase_id=phase_id,
             )
-            await publisher(message=websocket_message.model_dump_json(), channel="current_scores")
+            scored_data = await get_moves_from_server(websocket_message)
+            await sio.emit(
+                "current_scores",
+                scored_data,
+                namespace="/current_scores",
+            )
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -244,12 +242,11 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
     movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
 
 
-async def get_moves_from_server(message: str) -> str:
+async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
     """
-    Receives a message, parses metadata, and returns scored moves and bonuses.
+    Receives metadata for a scored ride and returns scored moves and bonuses as a dict.
     Uses a transaction session context manager to ensure consistent session management.
     """
-    metadata = UpdatedRideMetaData(**json.loads(message))
     with transaction_session_context_manager() as db:
         scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
@@ -266,7 +263,7 @@ async def get_moves_from_server(message: str) -> str:
             run_number=metadata.run_number,
             phase_id=metadata.phase_id,
             judge_id=metadata.judge_id,
-        ).model_dump_json()
+        ).model_dump(mode="json")
 
 
 @scoring_router.get(
@@ -290,12 +287,16 @@ async def get_athlete_moves_and_bonuses(
     if judge_id is not None and judge_id.strip():
         query = query.filter(ScoredMoves.judge_id == judge_id)
     moves = query.all()
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
 
     move_ids = [m.id for m in pydantic_moves]
 
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     return ScoredMovesAndBonusesResponse.model_validate(
         {"moves": pydantic_moves, "bonuses": pydantic_bonuses}
@@ -323,7 +324,9 @@ async def get_heat_scores(
 ) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes = db.query(Athlete).filter(
@@ -342,7 +345,9 @@ async def get_heat_scores(
     )
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
@@ -363,15 +368,18 @@ async def get_heat_scores(
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=[
             AvailableMoves(**move.model_dump())
-            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(scoresheet_available_moves
+            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(
+                scoresheet_available_moves
             )
         ],
         available_bonuses=[
             AvailableBonuses(**bonus.model_dump())
-            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(scoresheet_available_bonuses
+            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(
+                scoresheet_available_bonuses
             )
         ],
-        run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(run_statuses if run_statuses else []
+        run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(
+            run_statuses if run_statuses else []
         ),
     )
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
@@ -416,7 +424,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
         raise ValueError(msg)
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(moves)
+    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
+        moves
+    )
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
     move_ids = [m.id for m in pydantic_moves]
     athletes: list[Athlete] = (
@@ -436,7 +446,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     )
     bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
 
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(bonuses)
+    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
+        bonuses
+    )
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves,
@@ -444,7 +456,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         number_of_runs=phase.number_of_runs,
     )
     athlete_moves_with_judges = [
-        AthleteMovesWithJudgeInfo(**a.model_dump(), number_of_judges=phase.number_of_judges)
+        AthleteMovesWithJudgeInfo(
+            **a.model_dump(), number_of_judges=phase.number_of_judges
+        )
         for a in athlete_moves_list
     ]
 
@@ -452,12 +466,14 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_moves_list=athlete_moves_with_judges,
         available_moves=[
             AvailableMoves(**move.model_dump())
-            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(scoresheet_available_moves
+            for move in TypeAdapter(list[PydanticAvailableMoves]).validate_python(
+                scoresheet_available_moves
             )
         ],
         available_bonuses=[
             AvailableBonuses(**bonus.model_dump())
-            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(scoresheet_available_bonuses
+            for bonus in TypeAdapter(list[PydanticAvailableBonuses]).validate_python(
+                scoresheet_available_bonuses
             )
         ],
         run_statuses=TypeAdapter(list[PydanticRunStatus]).validate_python(run_statuses),
@@ -524,44 +540,31 @@ class RunStatusSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-@scoring_router.websocket("/current_scores")
-async def current_score_websocket(websocket: WebSocket) -> None:
-    await websocket.accept()
-
-    try:
-        await ws_sender(
-            websocket=websocket,
-            channel="current_scores",
-            fetch_data_with_message=get_moves_from_server,
-        )
-
-    except WebSocketDisconnect as e:
-        if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Current Score Websocket")
-
-        await websocket.close()
+@sio.on("connect", namespace="/current_scores")
+async def on_current_scores_connect(sid: str, environ: dict) -> None:
+    logging.info("Socket.IO /current_scores: client connected: %s", sid)
 
 
-@scoring_router.websocket("/run_status")
-async def runstatus_websocket(websocket: WebSocket) -> None:
-    await websocket.accept()
-    try:
-        await run_until_first_complete(
-            (
-                ws_receiver,
-                {
-                    "websocket": websocket,
-                    "side_effect": copy_message_to_db,
-                    "channel": "run_status",
-                },
-            ),
-            (ws_sender, {"websocket": websocket, "channel": "run_status"}),
-        )
-    except WebSocketDisconnect as e:
-        if e.code != 1001:  # 1001 is a "happy" disconnect
-            logging.exception("Error with Current Score Websocket")
+@sio.on("disconnect", namespace="/current_scores")
+async def on_current_scores_disconnect(sid: str) -> None:
+    logging.info("Socket.IO /current_scores: client disconnected: %s", sid)
 
-        await websocket.close()
+
+@sio.on("run_status", namespace="/run_status")
+async def on_run_status(sid: str, data: dict) -> None:
+    logging.info("Socket.IO /run_status: received message from %s", sid)
+    copy_message_to_db(json.dumps(data))
+    await sio.emit("run_status", data, namespace="/run_status")
+
+
+@sio.on("connect", namespace="/run_status")
+async def on_run_status_connect(sid: str, environ: dict) -> None:
+    logging.info("Socket.IO /run_status: client connected: %s", sid)
+
+
+@sio.on("disconnect", namespace="/run_status")
+async def on_run_status_disconnect(sid: str) -> None:
+    logging.info("Socket.IO /run_status: client disconnected: %s", sid)
 
 
 def copy_message_to_db(data: str) -> None:

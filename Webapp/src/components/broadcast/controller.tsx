@@ -1,7 +1,7 @@
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
 import Typography from "@mui/material/Typography"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
 import {
@@ -15,12 +15,15 @@ import {
 	getSelectedRun
 } from "../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../redux/services/aemsApi"
+import {
+	useEmitBroadcastControlMutation,
+	useBroadcastControlStreamQuery
+} from "../../redux/services/streamingApi"
 import { SelectorDisplay } from "../competition/MainSelector"
 import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../Interfaces"
-import { connectBroadcastControlSocket } from "../roles/headJudge/WebSocketConnections"
 import { AthleteInfo } from "../roles/scribe/InfoBar"
 import { PaddlerSelector } from "../roles/scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../roles/scribe/InfoBar/Runselector"
@@ -81,39 +84,20 @@ const OverlayController: React.FC = () => {
 	useEffect(() => {
 		setOverlayControlState({ ...overlayControlState, selectedRun })
 	}, [selectedRun])
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		if (!socketRef.current) {
-			socketRef.current = connectBroadcastControlSocket()
-		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
+	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
+	// Subscribe to the broadcast control stream to maintain a persistent socket
+	// connection. The emitBroadcastControl mutation reuses this socket.
+	useBroadcastControlStreamQuery()
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,
 			[key]: !prevState[key]
 		}))
 	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
 
 	useEffect(() => {
-		if (
-			socketRef.current &&
-			socketRef.current.readyState === WebSocket.OPEN
-		) {
-			socketRef.current?.send(JSON.stringify(overlayControlState))
-		}
-	}, [overlayControlState])
+		void emitBroadcastControl(overlayControlState)
+	}, [overlayControlState, emitBroadcastControl])
 
 	const updateOverlayControlState = (
 		newState: Partial<OverlayControlState>

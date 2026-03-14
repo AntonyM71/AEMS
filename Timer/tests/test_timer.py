@@ -6,11 +6,9 @@ tests can run on any platform (including CI runners without Raspberry Pi
 hardware).
 """
 
-import asyncio
-import json
 import queue
 from collections.abc import Generator
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -26,8 +24,8 @@ def reset_timer_state() -> Generator:
     """Reset module-level timer globals before each test."""
     original_running = timer.timer_running
     original_thread = timer.timer_thread
-    original_ws_running = timer.websocket_running
-    original_ws_thread = timer.websocket_thread
+    original_sio_running = timer.socketio_running
+    original_sio_thread = timer.socketio_thread
 
     # Drain the message queue so tests don't affect each other
     while not timer.message_queue.empty():
@@ -41,8 +39,8 @@ def reset_timer_state() -> Generator:
     # Restore
     timer.timer_running = original_running
     timer.timer_thread = original_thread
-    timer.websocket_running = original_ws_running
-    timer.websocket_thread = original_ws_thread
+    timer.socketio_running = original_sio_running
+    timer.socketio_thread = original_sio_thread
 
     # Drain again after test
     while not timer.message_queue.empty():
@@ -112,7 +110,8 @@ class TestGetShortStatus:
 
     def test_unknown_status_returns_unk(self) -> None:
         # Intentionally passing an invalid status to test the fallback "UNK" path.
-        assert timer.get_short_status("bogus") == "UNK"  # type: ignore[arg-type]
+        assert timer.get_short_status(
+            "bogus") == "UNK"  # type: ignore[arg-type]
 
 
 # ===========================================================================
@@ -201,7 +200,7 @@ class TestUpdateBuzzer:
 
 
 class TestSendTimerUpdate:
-    def test_queues_message_when_websocket_enabled(self) -> None:
+    def test_queues_message_when_socketio_enabled(self) -> None:
         timer.ENABLE_WEBSOCKET = True
         timer.send_timer_update("running", 30.0)
         assert not timer.message_queue.empty()
@@ -209,7 +208,7 @@ class TestSendTimerUpdate:
         assert item.status == "running"
         assert item.time_remaining == 30
 
-    def test_skips_queue_when_websocket_disabled(self) -> None:
+    def test_skips_queue_when_socketio_disabled(self) -> None:
         timer.ENABLE_WEBSOCKET = False
         timer.send_timer_update("running", 30.0)
         assert timer.message_queue.empty()
@@ -223,7 +222,10 @@ class TestSendTimerUpdate:
     def test_status_queued_correctly(self) -> None:
         timer.ENABLE_WEBSOCKET = True
         statuses: tuple[timer.StatusLiteral, ...] = (
-            "started", "running", "finished", "cancelled"
+            "started",
+            "running",
+            "finished",
+            "cancelled",
         )
         for status in statuses:
             timer.send_timer_update(status, 5)
@@ -355,46 +357,34 @@ class TestBuzz:
 
 
 # ===========================================================================
-# process_message_queue() — async
+# process_message_queue_sync()
 # ===========================================================================
 
 
-class TestProcessMessageQueue:
-    def test_sends_queued_message(self) -> None:
-        websocket = AsyncMock()
+class TestProcessMessageQueueSync:
+    def test_emits_queued_message(self) -> None:
+        sio_client = MagicMock()
         item = timer.QueueItem(status="running", time_remaining=25)
         timer.message_queue.put(item)
 
-        asyncio.run(timer.process_message_queue(websocket))
+        timer.process_message_queue_sync(sio_client)
 
-        websocket.send.assert_called_once()
-        sent_payload = json.loads(websocket.send.call_args[0][0])
-        assert sent_payload["status"] == "running"
-        assert sent_payload["time_remaining"] == 25
-
-    def test_does_nothing_when_websocket_is_none(self) -> None:
-        item = timer.QueueItem(status="started", time_remaining=45)
-        timer.message_queue.put(item)
-
-        asyncio.run(timer.process_message_queue(None))
-
-        # Message should still be in the queue
-        assert not timer.message_queue.empty()
-        timer.message_queue.get_nowait()  # clean up
+        sio_client.emit.assert_called_once_with(
+            "timer", {"status": "running", "time_remaining": 25})
 
     def test_does_nothing_when_queue_is_empty(self) -> None:
-        websocket = AsyncMock()
-        asyncio.run(timer.process_message_queue(websocket))
-        websocket.send.assert_not_called()
+        sio_client = MagicMock()
+        timer.process_message_queue_sync(sio_client)
+        sio_client.emit.assert_not_called()
 
-    def test_requeues_message_on_send_error(self) -> None:
-        websocket = AsyncMock()
-        websocket.send.side_effect = Exception("connection lost")
+    def test_requeues_message_on_emit_error(self) -> None:
+        sio_client = MagicMock()
+        sio_client.emit.side_effect = Exception("connection lost")
         item = timer.QueueItem(status="running", time_remaining=10)
         timer.message_queue.put(item)
 
         with pytest.raises(Exception, match="connection lost"):
-            asyncio.run(timer.process_message_queue(websocket))
+            timer.process_message_queue_sync(sio_client)
 
         # Message should have been put back
         assert not timer.message_queue.empty()
@@ -403,46 +393,24 @@ class TestProcessMessageQueue:
 
 
 # ===========================================================================
-# cleanup_websocket() — async
+# start_socketio_thread()
 # ===========================================================================
 
 
-class TestCleanupWebsocket:
-    def test_closes_open_websocket(self) -> None:
-        websocket = AsyncMock()
-        asyncio.run(timer.cleanup_websocket(websocket))
-        websocket.close.assert_called_once()
-
-    def test_does_nothing_for_none_websocket(self) -> None:
-        # Should complete without raising
-        asyncio.run(timer.cleanup_websocket(None))
-
-    def test_handles_close_exception_gracefully(self) -> None:
-        websocket = AsyncMock()
-        websocket.close.side_effect = Exception("already closed")
-        # Should not raise
-        asyncio.run(timer.cleanup_websocket(websocket))
-
-
-# ===========================================================================
-# start_websocket_thread()
-# ===========================================================================
-
-
-class TestStartWebsocketThread:
+class TestStartSocketIOThread:
     def test_starts_thread_when_none(self) -> None:
-        timer.websocket_thread = None
+        timer.socketio_thread = None
         with patch("timer.threading.Thread") as mock_thread_cls:
             mock_thread = MagicMock()
             mock_thread.is_alive.return_value = False
             mock_thread_cls.return_value = mock_thread
-            timer.start_websocket_thread()
+            timer.start_socketio_thread()
             mock_thread.start.assert_called_once()
 
     def test_does_not_start_second_thread_when_alive(self) -> None:
         mock_thread = MagicMock()
         mock_thread.is_alive.return_value = True
-        timer.websocket_thread = mock_thread
+        timer.socketio_thread = mock_thread
         with patch("timer.threading.Thread") as mock_thread_cls:
-            timer.start_websocket_thread()
+            timer.start_socketio_thread()
             mock_thread_cls.assert_not_called()

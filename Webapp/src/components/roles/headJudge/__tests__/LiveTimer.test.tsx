@@ -4,35 +4,31 @@ import { renderWithProviders } from "../../../../testUtils"
 import LiveTimer from "../LiveTimer"
 import * as WebSocketConnections from "../WebSocketConnections"
 
-// Create a properly typed mock WebSocket
+// Create a properly typed mock Socket.IO socket
 const createMockSocket = () => {
-	const socket: Partial<WebSocket> = {
-		onmessage: null,
-		onclose: null,
-		onerror: null,
-		onopen: null,
-		close: jest.fn(),
-		addEventListener: jest.fn(),
-		removeEventListener: jest.fn(),
-		dispatchEvent: jest.fn(),
-		send: jest.fn(),
-		CONNECTING: 0,
-		OPEN: 1,
-		CLOSING: 2,
-		CLOSED: 3,
-		readyState: 1, // WebSocket.OPEN
-		binaryType: "blob",
-		protocol: "",
-		url: "",
-		bufferedAmount: 0,
-		extensions: ""
+	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
+	const socket = {
+		on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
+			if (!handlers[event]) {
+				handlers[event] = []
+			}
+			handlers[event].push(handler)
+		}),
+		off: jest.fn(),
+		emit: jest.fn(),
+		disconnect: jest.fn(),
+		connected: true,
+		// Helper to simulate incoming events in tests
+		_trigger: (event: string, ...args: unknown[]) => {
+			handlers[event]?.forEach((h) => h(...args))
+		}
 	}
 
-	return socket as WebSocket
+	return socket
 }
 
 // Create a mock socket
-let mockSocket: WebSocket
+let mockSocket: ReturnType<typeof createMockSocket>
 
 // Mock the WebSocketConnections module
 jest.mock("../WebSocketConnections", () => {
@@ -58,7 +54,7 @@ describe("LiveTimer Component", () => {
 		expect(screen.getByText("0")).toBeInTheDocument()
 	})
 
-	it("establishes a WebSocket connection when mounted", () => {
+	it("establishes a Socket.IO connection when mounted", () => {
 		// Get a reference to the mocked function
 		const connectTimerMock =
 			WebSocketConnections.connectTimerSocket as jest.Mock
@@ -73,34 +69,17 @@ describe("LiveTimer Component", () => {
 		expect(connectTimerMock).toHaveBeenCalledTimes(1)
 	})
 
-	it("closes the WebSocket connection on error to trigger reconnection", () => {
-		// Create simple test that doesn't rely on property manipulation
-
-		// We need to modify the component's actual behavior
-		// First, set up a spy to watch the close method being called
-		const closeSpy = jest.fn()
-
-		// Create a mock socket with our spy
-		mockSocket = createMockSocket()
-		mockSocket.close = closeSpy
-
-		// Render the component
+	it("registers a timer event listener on connect", () => {
 		renderWithProviders(<LiveTimer />)
 
-		// Get a reference to the socket to manually trigger error
-		const socketRef = { current: mockSocket }
-
-		// Manually run the component's error handler code
-		// Since we can see in LiveTimer.tsx that the error handler does:
-		// socketRef.current.close()
-		// We'll just call this directly:
-		mockSocket.close()
-
-		// Verify our spy was called
-		expect(closeSpy).toHaveBeenCalledTimes(1)
+		// Verify the socket registered the 'timer' event handler
+		expect(mockSocket.on).toHaveBeenCalledWith(
+			"timer",
+			expect.any(Function)
+		)
 	})
 
-	it("attempts to reconnect when the WebSocket connection closes", () => {
+	it("attempts to reconnect when the Socket.IO connection closes", () => {
 		// Mock the global setTimeout function
 		jest.useFakeTimers()
 
@@ -120,14 +99,14 @@ describe("LiveTimer Component", () => {
 		// Verify first connection
 		expect(connectTimerMock).toHaveBeenCalledTimes(1)
 
-		// Create connection close handler to mimic actual implementation
+		// Create connection close handler to mimic Socket.IO reconnection behavior
 		const reconnectFunc = () => {
 			// This simulates the component calling connectTimerSocket again
 			mockSocket = createMockSocket()
 			;(WebSocketConnections.connectTimerSocket as jest.Mock)()
 		}
 
-		// Simulate onclose getting called which starts a timer for reconnection
+		// Simulate a reconnect happening after delay
 		global.setTimeout(reconnectFunc, 1000)
 
 		// Fast-forward time to trigger the setTimeout
