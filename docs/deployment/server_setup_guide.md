@@ -114,6 +114,8 @@ With the server machine and network settings correctly configured, we can run th
 docker compose -f docker-compose.yaml up --build
 ```
 
+If you also want to run the broadcast graphics stack, follow [Running AEMS With the Graphics Server](/docs/deployment/aems-with-graphics-server.md).
+
 ## Setting Up the Timing Box (Raspberry Pi)
 
 To configure the timing box, you'll need to:

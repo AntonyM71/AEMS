@@ -16,22 +16,28 @@ import {
 	useGetOneByPrimaryKeyPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
-import SlidingModal from "../SlidingModal"
+import PixiFrameSequenceOverlay from "../PixiFrameSequenceOverlay"
 
 export const EventTitleModal = ({
 	overlayControlState,
-	size
+	size = 70
 }: {
 	overlayControlState: OverlayControlState
 	size?: number
 }) => (
-	<SlidingModal
-		direction="up"
-		show={overlayControlState.showEventTitle}
-		size={size}
+	<PixiFrameSequenceOverlay
+		configName="eventTitle"
+		isVisible={overlayControlState.showEventTitle}
+		style={{
+			position: "absolute",
+			top: `${(100 - size) / 2}%`,
+			left: `${(100 - size) / 2}%`,
+			width: `${size}%`,
+			height: `${size}%`
+		}}
 	>
 		<EventTitle />
-	</SlidingModal>
+	</PixiFrameSequenceOverlay>
 )
 
 export const EventTitle = () => {

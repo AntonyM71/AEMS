@@ -8,7 +8,7 @@ WORKDIR /Webapp
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN  npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 
 # Rebuild the source code only when needed

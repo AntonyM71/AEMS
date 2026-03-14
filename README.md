@@ -110,8 +110,9 @@ Perfect for clubs and organizers comfortable with technical setup:
 
 ### For Self-Hosting
 1. **Technical Setup** - Follow our [Server Setup Guide](/docs/deployment/server_setup_guide.md)
-2. **Development** - See [Software Maintenance Guide](/docs/smg.md) for contributing
-3. **Community** - Join discussions via [GitHub Issues](https://github.com/your-repo/issues)
+2. **Broadcast Graphics** - Follow [Running AEMS With the Graphics Server](/docs/deployment/aems-with-graphics-server.md) when using overlay graphics packs
+3. **Development** - See [Software Maintenance Guide](/docs/smg.md) for contributing
+4. **Community** - Join discussions via [GitHub Issues](https://github.com/your-repo/issues)
 
 ### For Professional Support
 📧 **Email**: [kayak.freestyle.app@gmail.com](mailto:kayak.freestyle.app@gmail.com)
