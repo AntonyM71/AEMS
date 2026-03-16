@@ -398,6 +398,19 @@ def test_sanitize_filename() -> None:
     # Test mixed characters
     assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"
 
+    # Test CR/LF and other control characters are stripped (header injection prevention)
+    assert sanitize_filename("Test\r\nFile") == "TestFile"
+    assert sanitize_filename("Test\nFile") == "TestFile"
+    assert sanitize_filename("Test\rFile") == "TestFile"
+    assert sanitize_filename("Test\x00File") == "TestFile"
+    assert sanitize_filename("Test\x1fFile") == "TestFile"
+    assert sanitize_filename("Test\x7fFile") == "TestFile"
+    # Embedding CR/LF with surrounding valid text should only strip control chars
+    assert (
+        sanitize_filename("Valid\r\nContent-Type: text/html\r\nName")
+        == "ValidContent-Type__text_htmlName"
+    )
+
 
 def test_get_footer_text() -> None:
     """Test footer text content"""

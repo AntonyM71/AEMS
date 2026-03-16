@@ -58,15 +58,23 @@ class HelveticaNeuePDF(FPDF):
 
 def sanitize_filename(filename: str) -> str:
     """
-    Sanitize a filename by removing or replacing invalid characters.
+    Sanitize a filename for safe use in HTTP Content-Disposition headers and
+    across different operating systems.
+
+    Strips control characters (including CR/LF that could enable header
+    injection), removes leading/trailing whitespace and dots, replaces spaces
+    with underscores, and replaces characters that are invalid in filenames.
 
     Args:
         filename: The filename to sanitize
 
     Returns:
-        A sanitized filename safe for use across different operating systems
+        A sanitized filename safe for use in HTTP headers and file systems
     """
-    # First strip leading/trailing whitespace and dots
+    # Strip control characters (ASCII 0-31 and 127), including CR (\r) and
+    # LF (\n) which could enable HTTP header injection via Content-Disposition
+    filename = "".join(c for c in filename if ord(c) >= 32 and ord(c) != 127)
+    # Strip leading/trailing whitespace and dots
     filename = filename.strip(". ")
     # Replace spaces with underscores
     filename = filename.replace(" ", "_")
