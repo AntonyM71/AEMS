@@ -480,21 +480,26 @@ async def heat_pdf(
         pdf = HelveticaNeuePDF(orientation="L", format="A4")
         setup_pdf_footer(pdf, None, include_page_numbers=True)
 
-        competition_metadata = (
+        for heat_info in heat_info_list:
+            competition_metadata = (
+                db.query(Competition)
+                .filter(Competition.id == heat_info.competition_id)
+                .one()
+            )
+            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
+            build_heat_pdf_page(pdf, heat_info, competition_metadata, heat_athlete_info)
+
+        first_competition = (
             db.query(Competition)
             .filter(Competition.id == heat_info_list[0].competition_id)
             .one()
         )
-        for heat_info in heat_info_list:
-            heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
-            build_heat_pdf_page(pdf, heat_info, competition_metadata, heat_athlete_info)
-
         if len(heat_info_list) == 1:
             # Single heat: use the heat name
-            filename = f"{competition_metadata.name}_{heat_info_list[0].name}.pdf"
+            filename = f"{first_competition.name}_{heat_info_list[0].name}.pdf"
         else:
             # Multiple heats: indicate count to avoid overly long filenames
-            filename = f"{competition_metadata.name}_{len(heat_info_list)}_Heats.pdf"
+            filename = f"{first_competition.name}_{len(heat_info_list)}_Heats.pdf"
 
         return create_pdf_response(pdf, filename)
 
