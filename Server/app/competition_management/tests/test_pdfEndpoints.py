@@ -401,6 +401,16 @@ def test_sanitize_filename() -> None:
         == "ValidContent-Type__text_htmlName"
     )
 
+    # Test HTTP header-parameter delimiters are replaced (RFC 6266 / RFC 2616)
+    # ';' separates Content-Disposition parameters
+    assert sanitize_filename("Test;Filename") == "Test_Filename"
+    assert sanitize_filename("heat; type=injection") == "heat__type=injection"
+    # ',' separates header values
+    assert sanitize_filename("Test,Filename") == "Test_Filename"
+    assert sanitize_filename("CompA,CompB") == "CompA_CompB"
+    # Combined: semicolon and comma together
+    assert sanitize_filename("heat;a,b") == "heat_a_b"
+
 
 @pytest.mark.asyncio
 async def test_phase_pdf_dns_athlete(

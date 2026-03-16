@@ -63,7 +63,8 @@ def sanitize_filename(filename: str) -> str:
 
     Strips control characters (including CR/LF that could enable header
     injection), removes leading/trailing whitespace and dots, replaces spaces
-    with underscores, and replaces characters that are invalid in filenames.
+    with underscores, and replaces characters that are invalid in filenames or
+    that are HTTP header-parameter delimiters (`;` and `,`).
 
     Args:
         filename: The filename to sanitize
@@ -78,8 +79,10 @@ def sanitize_filename(filename: str) -> str:
     filename = filename.strip(". ")
     # Replace spaces with underscores
     filename = filename.replace(" ", "_")
-    # Remove or replace characters that are problematic in filenames
-    invalid_chars = '<>:"/\\|?*'
+    # Remove or replace characters that are problematic in filenames or that
+    # are HTTP header-parameter delimiters (RFC 6266 / RFC 2616).
+    # ';' separates Content-Disposition parameters, ',' separates header values.
+    invalid_chars = '<>:"/\\|?*;,'
     for char in invalid_chars:
         filename = filename.replace(char, "_")
     return filename
