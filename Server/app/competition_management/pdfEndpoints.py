@@ -412,7 +412,10 @@ def build_heat_results_pdf_content(
 
             for i in range(max_runs):
                 if i < len(athlete.run_scores):
-                    pdf.set_font(style="B" if athlete.run_scores[i].locked else "I")
+                    style = "B" if athlete.run_scores[i].locked else "I"
+                else:
+                    style = ""
+                pdf.set_font(style=style)
                 row.cell(
                     ""
                     if i >= len(athlete.run_scores)
