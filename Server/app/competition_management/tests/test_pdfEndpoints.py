@@ -1,6 +1,8 @@
+import io
 import uuid
 from unittest.mock import MagicMock, patch
 
+import pypdf
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -385,3 +387,91 @@ def test_sanitize_filename() -> None:
 
     # Test mixed characters
     assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"
+
+    # Test CR/LF and other control characters are stripped (header injection prevention)
+    assert sanitize_filename("Test\r\nFile") == "TestFile"
+    assert sanitize_filename("Test\nFile") == "TestFile"
+    assert sanitize_filename("Test\rFile") == "TestFile"
+    assert sanitize_filename("Test\x00File") == "TestFile"
+    assert sanitize_filename("Test\x1fFile") == "TestFile"
+    assert sanitize_filename("Test\x7fFile") == "TestFile"
+    # Embedding CR/LF with surrounding valid text should only strip control chars
+    assert (
+        sanitize_filename("Valid\r\nContent-Type: text/html\r\nName")
+        == "ValidContent-Type__text_htmlName"
+    )
+
+    # Test HTTP header-parameter delimiters are replaced (RFC 6266 / RFC 2616)
+    # ';' separates Content-Disposition parameters
+    assert sanitize_filename("Test;Filename") == "Test_Filename"
+    assert sanitize_filename("heat; type=injection") == "heat__type=injection"
+    # ',' separates header values
+    assert sanitize_filename("Test,Filename") == "Test_Filename"
+    assert sanitize_filename("CompA,CompB") == "CompA_CompB"
+    # Combined: semicolon and comma together
+    assert sanitize_filename("heat;a,b") == "heat_a_b"
+
+
+@pytest.mark.asyncio
+async def test_phase_pdf_dns_athlete(
+    mock_db_session: Session,
+    sample_phase_id: str,
+    mock_competition: MagicMock,
+    mock_event: MagicMock,
+    mock_phase: MagicMock,
+) -> None:
+    """Test that a DNS athlete is shown as DNS in the generated phase PDF"""
+    mock_db_session.query.return_value.filter.return_value.one = MagicMock(
+        side_effect=[mock_phase, mock_event, mock_competition]
+    )
+
+    with patch(
+        "app.competition_management.pdfEndpoints.calculate_phase_scores"
+    ) as mock_calc:
+        mock_calc.return_value.phase_id = sample_phase_id
+        mock_calc.return_value.scores = [
+            AthleteScoresWithAthleteInfo(
+                athlete_id=uuid.uuid4(),
+                first_name="Jane",
+                last_name="Smith",
+                bib_number=7,
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[],
+                        mean_run_score=0.0,
+                        highest_scoring_move=0.0,
+                        locked=False,
+                        did_not_start=True,
+                    )
+                ],
+                highest_scoring_move=0.0,
+                total_score=None,
+                ranking=None,
+                reason="DNS",
+                last_phase_rank=None,
+            )
+        ]
+
+        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
+
+        assert response.status_code == 200
+        reader = pypdf.PdfReader(io.BytesIO(response.body))
+        pdf_text = " ".join((page.extract_text() or "") for page in reader.pages)
+        assert "DNS" in pdf_text
+
+
+@pytest.mark.asyncio
+async def test_heat_pdf_exception(
+    mock_db_session: Session,
+) -> None:
+    """Test heat_pdf raises HTTPException when an unexpected error occurs"""
+    heat_id = str(uuid.uuid4())
+    mock_db_session.query.return_value.where.return_value.order_by.return_value.all.side_effect = Exception(
+        "Database error"
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await heat_pdf(heat_ids=[heat_id], db=mock_db_session)
+
+    assert exc_info.value.status_code == 500
