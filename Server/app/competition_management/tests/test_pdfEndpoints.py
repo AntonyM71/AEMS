@@ -1,6 +1,8 @@
+import io
 import uuid
 from unittest.mock import MagicMock, patch
 
+import pypdf
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -408,7 +410,7 @@ async def test_phase_pdf_dns_athlete(
     mock_event: MagicMock,
     mock_phase: MagicMock,
 ) -> None:
-    """Test phase PDF is generated successfully when an athlete has DNS (total_score=None)"""
+    """Test that a DNS athlete is shown as DNS in the generated phase PDF"""
     mock_db_session.query.return_value.filter.return_value.one = MagicMock(
         side_effect=[mock_phase, mock_event, mock_competition]
     )
@@ -444,8 +446,9 @@ async def test_phase_pdf_dns_athlete(
         response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
         assert response.status_code == 200
-        assert response.media_type == "application/pdf"
-        assert b"%PDF-" in response.body
+        reader = pypdf.PdfReader(io.BytesIO(response.body))
+        pdf_text = " ".join(page.extract_text() for page in reader.pages)
+        assert "DNS" in pdf_text
 
 
 @pytest.mark.asyncio

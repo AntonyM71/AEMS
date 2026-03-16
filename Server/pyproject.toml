@@ -75,6 +75,7 @@ dependencies = [
     "asgi-correlation-id",
     "openpyxl",
     "httpx",  # needed for TestClient with modern starlette
+    "pypdf",  # PDF text extraction for tests
 ]
 name = "aems_backend"
 description = "backend functions and database conntroller for the AEMS system"
