@@ -447,7 +447,7 @@ async def test_phase_pdf_dns_athlete(
 
         assert response.status_code == 200
         reader = pypdf.PdfReader(io.BytesIO(response.body))
-        pdf_text = " ".join(page.extract_text() for page in reader.pages)
+        pdf_text = " ".join((page.extract_text() or "") for page in reader.pages)
         assert "DNS" in pdf_text
 
 
