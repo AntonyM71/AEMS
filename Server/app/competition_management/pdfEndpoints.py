@@ -277,7 +277,11 @@ def build_phase_pdf_content(
                 )
             pdf.set_font(style="B" if all(runs_confirmed) else "I")
 
-            row.cell(f"{athlete.total_score:.2f}" if athlete.total_score else "0")
+            row.cell(
+                f"{athlete.total_score:.2f}"
+                if athlete.total_score is not None
+                else "0.00"
+            )
             pdf.set_font("")
             row.cell(athlete.reason if athlete.reason else "")
 
