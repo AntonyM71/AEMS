@@ -77,6 +77,30 @@ export const lightTheme = createTheme({
 		}
 	},
 	components: {
+		MuiTable: {
+			styleOverrides: {
+				root: {
+					borderCollapse: "separate",
+					'& .MuiTableCell-root, & .MuiTableRow-root': {
+						borderBottom: 'none'
+					}
+				}
+			}
+		},
+		MuiTableCell: {
+			styleOverrides: {
+				root: {
+					borderBottom: 'none'
+				}
+			}
+		},
+		MuiTableRow: {
+			styleOverrides: {
+				root: {
+					borderBottom: 'none'
+				}
+			}
+		},
 		MuiGrid: {
 			styleOverrides: {
 				root: {

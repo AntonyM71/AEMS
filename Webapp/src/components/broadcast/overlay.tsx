@@ -13,6 +13,7 @@ import { useBroadcastControlStreamQuery } from "../../redux/services/streamingAp
 
 import { defaultOverlayControllerState } from "../Interfaces"
 import { EventTitleModal } from "./Cards/EventTitle"
+import { HeatListModal } from "./Cards/HeatListModal"
 import { lightTheme } from "./overlayTheme"
 
 interface OverlayProps extends React.FC {
@@ -74,6 +75,10 @@ const Overlay: OverlayProps = () => {
 				to always-mounted Pixi-driven visibility control. */}
 				<EventTitleModal
 					isVisible={overlayControlState.showEventTitle}
+				/>
+				<HeatListModal
+					isVisible={overlayControlState.showHeatSummary}
+					overlayControlState={overlayControlState}
 				/>
 			</div>
 		</ThemeProvider>

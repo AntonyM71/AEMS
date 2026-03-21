@@ -10,11 +10,17 @@ import { useEffect, useState } from "react"
 export const BasicTable = ({
 	data,
 	pageLimit,
-	pageChangeTime
+	pageChangeTime,
+	maxWidth = 800,
+	rowHeight = 48,
+	footerPadding = 0
 }: {
 	data: Record<string, any>[]
 	pageLimit: number
 	pageChangeTime: number
+	maxWidth?: number | string
+	rowHeight?: number
+	footerPadding?: number
 }) => {
 	const [currentPage, setCurrentPage] = useState(0)
 
@@ -41,39 +47,42 @@ export const BasicTable = ({
 		return <></>
 	}
 
+	// Pad with empty rows if needed
+	const emptyRows = pageLimit - paginatedData.length
+	const fontSize = 20
+
 	return (
 		<Table
 			sx={{
-				// display: "flex",
 				flexDirection: "column",
-				height: "100%", // Make the table fill its parent
-				minWidth: 650,
-
-				boxShadow: "0 4px 24px 0 rgba(0,0,0,0.18)"
+				minWidth: 500,
+				maxWidth,
+				margin: "0 auto",
+				borderRadius: 3
 			}}
 			aria-label="simple table"
 		>
 			<TableHead>
-				<TableRow
-					sx={{
-						backgroundImage:
-							"linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(40, 40, 40, 0.5) 100%)",
-						borderBottom: "2px solid rgba(255, 255, 255, 0.2)"
-					}}
-				>
+				<TableRow sx={{ height: rowHeight }}>
 					{Object.keys(data[0]).map((k) => (
 						<TableCell
 							key={k}
 							sx={{
 								fontWeight: "bold",
-								textShadow: `
-								0 1px 6px rgba(0,0,0,0.85),
-								0 0px 12px rgba(0,0,0,0.55),
-								0 2px 4px rgba(0,0,0,0.65)
-							`
+								height: rowHeight,
+								p: 0,
+								m: 0
 							}}
 						>
-							<Typography>{k}</Typography>
+							<Typography
+								sx={{
+									lineHeight: `${rowHeight}px`,
+									fontSize,
+									fontWeight: "bold"
+								}}
+							>
+								{k}
+							</Typography>
 						</TableCell>
 					))}
 				</TableRow>
@@ -82,47 +91,73 @@ export const BasicTable = ({
 				{paginatedData.map((row, i) => (
 					<TableRow
 						key={`${Object.values(row).join("-")}`}
-						sx={{
-							background: i % 2 ? "rgba(255, 255, 255, 0.1)" : ""
-						}}
+						sx={{ height: rowHeight }}
 					>
 						{Object.keys(row).map((d) => (
 							<TableCell
 								key={d}
 								sx={{
-									textShadow: `
-									0 1px 6px rgba(0,0,0,0.85),
-									0 0px 12px rgba(0,0,0,0.55),
-									0 2px 4px rgba(0,0,0,0.65)
-								`
+									height: rowHeight,
+									p: 0,
+									m: 0,
+									borderBottom: "1px solid #1976d2"
 								}}
 							>
-								<Typography>{String(row[d] ?? "")}</Typography>
+								<Typography
+									sx={{
+										lineHeight: `${rowHeight}px`,
+										fontSize
+									}}
+								>
+									{String(row[d] ?? "")}
+								</Typography>
 							</TableCell>
 						))}
 					</TableRow>
 				))}
+				{/* Pad with empty rows if less than pageLimit */}
+				{Array.from({ length: emptyRows > 0 ? emptyRows : 0 }).map(
+					(_, idx) => (
+						<TableRow
+							key={`empty-row-${idx}`}
+							sx={{ height: rowHeight, fontSize: 22 }}
+						>
+							{Object.keys(data[0]).map((k) => (
+								<TableCell
+									key={k}
+									sx={{
+										height: rowHeight,
+										p: 0,
+										m: 0,
+										borderBottom: "1px solid #1976d2"
+									}}
+								/>
+							))}
+						</TableRow>
+					)
+				)}
 			</TableBody>
 			<TableFooter>
-				<TableRow
-					sx={{
-						background: "rgba(40, 40, 40, 0.6)",
-						borderTop: "2px solid rgba(255, 255, 255, 0.2)"
-					}}
-				>
+				<TableRow sx={{ height: rowHeight + footerPadding }}>
 					<TableCell
 						sx={{
 							fontWeight: "bold",
 							textAlign: "right",
-							textShadow: `
-							0 1px 6px rgba(0,0,0,0.85),
-							0 0px 12px rgba(0,0,0,0.55),
-							0 2px 4px rgba(0,0,0,0.65)
-						`
+							fontSize,
+							color: "white",
+							letterSpacing: 1,
+							height: rowHeight,
+							p: 0,
+							m: 0
 						}}
 						colSpan={Object.keys(data[0]).length}
 					>
-						{`Page: ${currentPage + 1}/${totalPages}`}
+						<Typography
+							sx={{
+								lineHeight: `${rowHeight}px`,
+								color: "white"
+							}}
+						>{`Page: ${currentPage + 1}/${totalPages}`}</Typography>
 					</TableCell>
 				</TableRow>
 			</TableFooter>

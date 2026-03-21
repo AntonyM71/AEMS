@@ -1,4 +1,4 @@
-import Divider from "@mui/material/Divider"
+import Box from "@mui/material/Box"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -9,19 +9,19 @@ import {
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery
 } from "../../../redux/services/aemsApi"
-import { OverlayControlState } from "../../Interfaces"
-import SlidingModal from "../SlidingModal"
+
 import { BasicTable } from "./BasicBroadcastTable"
 
 export const HeatSummaryTable = ({
-	overlayControlState,
-	size
+	maxWidth = 1150,
+	pageLimit = 8, // Set max rows to 8
+	rowHeight = 61
 }: {
-	overlayControlState: OverlayControlState
-	size?: number
-}) => {
+	maxWidth?: number | string
+	pageLimit?: number
+	rowHeight?: number
+} = {}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
 			heatId: selectedHeat
@@ -30,43 +30,58 @@ export const HeatSummaryTable = ({
 	)
 
 	return (
-		<SlidingModal
-			direction="down"
-			show={overlayControlState.showHeatSummary}
-			size={size}
+		<Paper
+			elevation={6}
+			sx={{
+				maxWidth,
+				margin: "16px auto",
+				background: "transparent",
+				boxShadow: "none",
+				position: "relative"
+			}}
 		>
-			{athletes && (
-				<Paper>
-					<Stack spacing={2}>
-						<HeatDetails />
-						<Divider />
-						<BasicTable
-							data={
-								processAthleteData(athletes?.data ?? []) ?? []
-							}
-							pageLimit={10}
-							pageChangeTime={5}
-						/>
-					</Stack>
-				</Paper>
-			)}
-		</SlidingModal>
+			<Stack spacing={2}>
+				<HeatDetails />
+				<Box sx={{ height: 85 }} />
+				<BasicTable
+					data={processAthleteData(athletes?.data ?? []) ?? []}
+					pageLimit={pageLimit}
+					pageChangeTime={5}
+					maxWidth={maxWidth}
+					rowHeight={rowHeight}
+					footerPadding={30}
+				/>
+			</Stack>
+		</Paper>
 	)
 }
 const HeatDetails = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
+	const { data: heatData } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{ id: selectedHeat },
+		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
+	)
 
-	const { data: heatData, isLoading: heatIsLoading } =
-		useGetOneByPrimaryKeyHeatIdGetQuery(
-			{
-				id: selectedHeat
-			},
-			{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
-		)
-
+	// Position the title in the top-right blue box overlay (assumes background image is set in parent)
 	return (
-		<Stack spacing={2} direction="row" justifyContent="space-between">
-			<Typography variant="h5">{heatData?.name}</Typography>
+		<Stack
+			direction="row"
+			justifyContent="flex-end"
+			alignItems="flex-start"
+			sx={{ position: "relative", width: "100%" }}
+		>
+			<Typography
+				color="white"
+				variant="h4"
+				sx={{
+					fontWeight: 700,
+					pr: 4,
+					pt: 1,
+					textShadow: "0 2px 8px rgba(0,0,0,0.4)"
+				}}
+			>
+				{heatData?.name}
+			</Typography>
 		</Stack>
 	)
 }
