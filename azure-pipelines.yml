@@ -60,6 +60,11 @@ jobs:
   - job: NodeJS
     displayName: "Node.js Build & Test"
     steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "24.x"
+        displayName: "Install Node.js 24"
+
       - script: |
           npm ci
         displayName: "Install Node.js Dependencies"
@@ -96,6 +101,11 @@ jobs:
   - job: E2ETests
     displayName: "E2E Playwright Tests"
     steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "24.x"
+        displayName: "Install Node.js 24"
+
       - script: |
           docker run -d --name postgres-e2e \
             -e POSTGRES_USER=postgres \
@@ -125,7 +135,7 @@ jobs:
 
       - script: |
           CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
-            $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:app \
+            $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:socket_app \
             --host 0.0.0.0 --port 8000 --log-level warning &
           for i in $(seq 1 30); do
             curl -sf http://localhost:8000/health && break || sleep 2

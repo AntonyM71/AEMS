@@ -4,32 +4,34 @@ import { setupStore } from "../../../redux/store"
 import * as wsConnections from "../../roles/headJudge/WebSocketConnections"
 import OverlayController from "../controller"
 
-// Mock WebSocket and connectBroadcastControlSocket
-let mockSend: jest.Mock<unknown, unknown[]>
-let mockClose: jest.Mock<unknown[], any>
-let mockReadyState: number
-class MockWebSocket {
-	public onclose: (() => void) | null = null
-	public onerror: ((error: unknown) => void) | null = null
-	public readyState = mockReadyState
-	public send = (...args: unknown[]) => {
-		mockSend(...args)
+// Mock Socket.IO socket and connectBroadcastControlSocket
+let mockEmit: jest.Mock<unknown, unknown[]>
+let mockDisconnect: jest.Mock<unknown[], unknown[]>
+let mockConnected: boolean
+
+class MockSocket {
+	public connected = mockConnected
+	public on = jest.fn()
+	public off = jest.fn()
+	public emit = (...args: unknown[]) => {
+		mockEmit(...args)
 	}
-	public close = (...args: unknown[]) => {
-		mockClose(...args)
+	public disconnect = (...args: unknown[]) => {
+		this.connected = false
+		mockDisconnect(...args)
 	}
 }
 
 jest.mock("../../roles/headJudge/WebSocketConnections", () => ({
-	connectBroadcastControlSocket: jest.fn(() => new MockWebSocket())
+	connectBroadcastControlSocket: jest.fn(() => new MockSocket())
 }))
 
-describe("OverlayController WebSocket interactions", () => {
+describe("OverlayController Socket.IO interactions", () => {
 	let store: ReturnType<typeof setupStore>
 	beforeEach(() => {
-		mockSend = jest.fn()
-		mockClose = jest.fn()
-		mockReadyState = 1 // WebSocket.OPEN
+		mockEmit = jest.fn()
+		mockDisconnect = jest.fn()
+		mockConnected = true
 		store = setupStore()
 		jest.clearAllMocks()
 	})
@@ -42,21 +44,25 @@ describe("OverlayController WebSocket interactions", () => {
 		)
 		fireEvent.click(screen.getByText("Show ICF Logo"))
 		await waitFor(() => {
-			expect(mockSend).toHaveBeenCalled()
+			expect(mockEmit).toHaveBeenCalled()
 		})
-		expect(mockSend.mock.calls[0][0]).toContain("showImageCard")
+		const [eventName, payload] = mockEmit.mock.calls[0] as [
+			string,
+			unknown
+		]
+		expect(eventName).toBe("broadcast_control")
+		expect(JSON.stringify(payload)).toContain("showImageCard")
 	})
 
-	it("closes WebSocket on error", () => {
-		render(
+	it("disconnects Socket.IO on component unmount", async () => {
+		const { unmount } = render(
 			<Provider store={store}>
 				<OverlayController />
 			</Provider>
 		)
-		const wsInstance = (
-			wsConnections.connectBroadcastControlSocket as jest.Mock
-		).mock.results[0].value as MockWebSocket
-		wsInstance.onerror?.(new Error("Test error"))
-		expect(mockClose).toHaveBeenCalled()
+		unmount()
+		await waitFor(() => {
+			expect(mockDisconnect).toHaveBeenCalled()
+		})
 	})
 })

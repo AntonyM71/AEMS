@@ -49,7 +49,7 @@ indent-style = "space"
 [project]
 dependencies = [
     "anyio",
-    "broadcaster[postgres]",
+    "python-socketio",
     "alembic>=1.18.0,<2.0",  # Upgraded from 1.14.1
     "psycopg2",
     "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0

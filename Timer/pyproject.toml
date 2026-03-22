@@ -44,8 +44,8 @@ quote-style = "double"
 indent-style = "space"
 [project]
 dependencies = [
+    "python-socketio",
     "RPi.GPIO",
-    "websockets",
     # Dev
     "ruff",
 

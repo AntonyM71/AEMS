@@ -4,10 +4,11 @@ import LiveTimerArena from "../liveTimerArena"
 
 jest.mock("../../roles/headJudge/WebSocketConnections", () => ({
 	connectTimerSocket: jest.fn(() => ({
-		onmessage: null,
-		onclose: null,
-		onerror: null,
-		close: jest.fn()
+		on: jest.fn(),
+		off: jest.fn(),
+		emit: jest.fn(),
+		disconnect: jest.fn(),
+		connected: true
 	}))
 }))
 

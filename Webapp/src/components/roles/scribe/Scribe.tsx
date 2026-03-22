@@ -1,6 +1,6 @@
 import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
-import { useEffect, useRef, useState } from "react"
+import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
@@ -19,11 +19,9 @@ import {
 	useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyAvailablemovesGetQuery,
-	useGetManyRunStatusGetQuery,
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
-import { RunStatus } from "../headJudge/RunStatus"
-import { connectWebRunStatusSocket } from "../headJudge/WebSocketConnections"
+import { useRunStatusStreamQuery } from "../../../redux/services/streamingApi"
 import { InfoBar } from "./InfoBar"
 import {
 	directionType,
@@ -42,7 +40,6 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const selectedRun = useSelector(getSelectedRun)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const setNumberOfRuns = (n: number) => dispatch(updateNumberOfRuns(n))
-	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
 
 	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
@@ -51,60 +48,20 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		{ skip: !selectedHeat }
 	)
 
-	const httpRunStatus = useGetManyRunStatusGetQuery(
-		{
-			heatIdList: [selectedHeat],
-			athleteIdList: [
-				athleteData?.[currentPaddlerIndex]?.athlete_id ?? ""
-			],
-			runNumberList: [selectedRun]
-		},
-		{
-			skip:
-				!selectedHeat ||
-				!athleteData?.[currentPaddlerIndex]?.athlete_id,
-			refetchOnMountOrArgChange: true
-		}
-	)
+	const currentAthleteId =
+		athleteData?.[currentPaddlerIndex]?.athlete_id ?? ""
 
-	const socketRef = useRef<WebSocket | null>(null)
-	const connectWebSocket = () => {
-		socketRef.current = connectWebRunStatusSocket()
-	}
-	useEffect(() => {
-		connectWebSocket()
-	}, [])
-	if (socketRef.current) {
-		socketRef.current.onmessage = (event) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			const jsonData = JSON.parse(event.data) as RunStatus
-
-			if (
-				jsonData?.run_number === selectedRun &&
-				jsonData?.athlete_id ===
-					athleteData?.[currentPaddlerIndex]?.athlete_id &&
-				jsonData?.heat_id === selectedHeat
-			) {
-				setRunStatus(jsonData)
+	const { data: runStatus, isFetching: isRunStatusFetching } =
+		useRunStatusStreamQuery(
+			{
+				heatId: selectedHeat,
+				athleteId: currentAthleteId,
+				runNumber: selectedRun
+			},
+			{
+				skip: !selectedHeat || !currentAthleteId
 			}
-		}
-		socketRef.current.onclose = () => {
-			setTimeout(connectWebSocket, 1000) // Reconnect after 5 seconds
-		}
-		socketRef.current.onerror = (error) => {
-			console.error("WebSocket error:", error)
-			if (socketRef?.current) {
-				socketRef.current.close() // Trigger onclose event for reconnection
-			}
-		}
-	}
-	useEffect(() => {
-		if (httpRunStatus.data) {
-			setRunStatus(httpRunStatus.data[0] as RunStatus)
-		} else {
-			setRunStatus(undefined)
-		}
-	}, [httpRunStatus])
+		)
 	const setScoredMovesAndBonuses = (
 		movesList: scoredMovesType[],
 		bonusList: scoredBonusType[]
@@ -166,7 +123,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		if (
 			!isMoveAndBonusFetching &&
 			!athletes.isFetching &&
-			!httpRunStatus.isFetching &&
+			!isRunStatusFetching &&
 			!runStatus?.locked
 		) {
 			submitScores()
