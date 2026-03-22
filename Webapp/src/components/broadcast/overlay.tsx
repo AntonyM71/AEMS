@@ -14,6 +14,7 @@ import { useBroadcastControlStreamQuery } from "../../redux/services/streamingAp
 import { defaultOverlayControllerState } from "../Interfaces"
 import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatListModal } from "./Cards/HeatListModal"
+import { PhaseResultsModal } from "./Cards/PhaseResultsModal"
 import { lightTheme } from "./overlayTheme"
 
 interface OverlayProps extends React.FC {
@@ -78,6 +79,10 @@ const Overlay: OverlayProps = () => {
 				/>
 				<HeatListModal
 					isVisible={overlayControlState.showHeatSummary}
+					overlayControlState={overlayControlState}
+				/>
+				<PhaseResultsModal
+					isVisible={overlayControlState.showPhaseResults}
 					overlayControlState={overlayControlState}
 				/>
 			</div>

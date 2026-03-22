@@ -1,4 +1,4 @@
-import Divider from "@mui/material/Divider"
+import Box from "@mui/material/Box"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -15,15 +15,25 @@ import {
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
-import SlidingModal from "../SlidingModal"
 import { BasicTable } from "./BasicBroadcastTable"
-
 export const PhaseScoreTable = ({
 	overlayControlState,
-	size
+	size,
+	maxWidth = 1150,
+	pageLimit = 8, // Set max rows to 8
+	rowHeight = 61,
+	footerPadding = 32,
+	firstRowHeight = 54,
+	secondRowHeight = 60
 }: {
 	overlayControlState: OverlayControlState
 	size?: number
+	maxWidth?: number | string
+	pageLimit?: number
+	rowHeight?: number
+	footerPadding?: number
+	firstRowHeight?: number | string
+	secondRowHeight?: number | string
 }) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const {
@@ -49,58 +59,87 @@ export const PhaseScoreTable = ({
 			void refetchScores()
 		}
 	}, [overlayControlState.showPhaseResults])
+	if (!data || !scoreData) {
+		return <></>
+	}
 
 	return (
-		<SlidingModal
-			direction="up"
-			show={overlayControlState.showPhaseResults}
-			size={size}
+		<Paper
+			elevation={6}
+			sx={{
+				maxWidth,
+				margin: "16px auto",
+				background: "transparent",
+				boxShadow: "none",
+				position: "relative"
+			}}
 		>
-			{scoreData?.scores && (
-				<Paper>
-					<Stack spacing={2}>
-						<PhaseDetails />
-						<Divider />
-						<BasicTable
-							data={
-								processScoresData(
-									scoreData.scores,
-									data?.number_of_runs ?? 3
-								) ?? []
-							}
-							pageLimit={10}
-							pageChangeTime={5}
-						/>
-					</Stack>
-				</Paper>
-			)}
-		</SlidingModal>
+			<Stack spacing={2}>
+				<PhaseDetails firstRowHeight={firstRowHeight} secondRowHeight={secondRowHeight} />
+				<Box sx={{ height: 23 }} />
+				<BasicTable
+					data={
+						processScoresData(
+							scoreData.scores,
+							data?.number_of_runs ?? 3
+						) ?? []
+					}
+					pageLimit={pageLimit}
+					pageChangeTime={5}
+					maxWidth={maxWidth}
+					rowHeight={rowHeight}
+					footerPadding={footerPadding}
+				/>
+			</Stack>
+		</Paper>
 	)
 }
-const PhaseDetails = () => {
+interface PhaseDetailsProps {
+	firstRowHeight?: number | string
+	secondRowHeight?: number | string
+}
+const PhaseDetails = ({ firstRowHeight = 32, secondRowHeight = 20 }: PhaseDetailsProps) => {
 	const selectedPhase = useSelector(getSelectedPhase)
-	const { data: phaseData, isLoading: phaseIsLoading } =
-		useGetOneByPrimaryKeyPhaseIdGetQuery(
-			{
-				id: selectedPhase
-			},
-			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
-		)
+	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
+		{ id: selectedPhase },
+		{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
+	)
 	const selectedEvent = useSelector(getSelectedEvent)
-	const { data: eventData, isLoading: eventIsLoading } =
-		useGetOneByPrimaryKeyEventIdGetQuery(
-			{
-				id: selectedEvent
-			},
-			{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
-		)
+	const { data: eventData } = useGetOneByPrimaryKeyEventIdGetQuery(
+		{ id: selectedEvent },
+		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
+	)
 
 	return (
-		<Stack spacing={2} direction="row" justifyContent="space-between">
-			<Typography variant="h5">{eventData?.name}</Typography>
-			<Typography variant="h5">{phaseData?.name}</Typography>
-			<Typography variant="h5">{`Runs: ${phaseData?.number_of_runs}`}</Typography>
-		</Stack>
+		<Box sx={{ width: "100%" }}>
+			<Stack
+				direction="row"
+				justifyContent="flex-end"
+				alignItems="flex-end"
+				spacing={1}
+				sx={{ minHeight: firstRowHeight, height: firstRowHeight }}
+			>
+				<Typography color="white" variant="h5" sx={{ fontWeight: 500 }}>
+					{eventData?.name}
+				</Typography>
+				<Typography color="white" variant="h5" sx={{ fontWeight: 500 }}>
+					{phaseData?.name}
+				</Typography>
+			</Stack>
+			<Stack
+				direction="row"
+				justifyContent="flex-end"
+				alignItems="flex-end"
+				spacing={1}
+				sx={{ minHeight: secondRowHeight, height: secondRowHeight }}
+			>
+				<Typography color="white" variant="h5" sx={{ fontWeight: 400 }}>
+					{phaseData?.number_of_runs
+						? `Runs: ${phaseData.number_of_runs}`
+						: null}
+				</Typography>
+			</Stack>
+		</Box>
 	)
 }
 const processScoresData = (
