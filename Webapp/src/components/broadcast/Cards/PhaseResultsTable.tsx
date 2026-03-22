@@ -75,7 +75,10 @@ export const PhaseScoreTable = ({
 			}}
 		>
 			<Stack spacing={2}>
-				<PhaseDetails firstRowHeight={firstRowHeight} secondRowHeight={secondRowHeight} />
+				<PhaseDetails
+					firstRowHeight={firstRowHeight}
+					secondRowHeight={secondRowHeight}
+				/>
 				<Box sx={{ height: 23 }} />
 				<BasicTable
 					data={
@@ -98,7 +101,10 @@ interface PhaseDetailsProps {
 	firstRowHeight?: number | string
 	secondRowHeight?: number | string
 }
-const PhaseDetails = ({ firstRowHeight = 32, secondRowHeight = 20 }: PhaseDetailsProps) => {
+const PhaseDetails = ({
+	firstRowHeight = 32,
+	secondRowHeight = 20
+}: PhaseDetailsProps) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{ id: selectedPhase },
