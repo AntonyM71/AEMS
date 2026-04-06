@@ -3,8 +3,6 @@ import os
 
 import socketio
 
-from app.common.async_pg_manager import AsyncPgManager
-
 logger = logging.getLogger("app.common.socket_manager")
 
 _cors_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -18,12 +16,12 @@ socketio_cors_allowed_origins: list[str] | str = (
     _parsed_origins if _parsed_origins else "*"
 )
 
-# When a DATABASE_URL / CONNECTION_STRING is available, use the PostgreSQL
-# LISTEN/NOTIFY adapter so that Socket.IO messages are shared across all
-# worker processes.  Fall back to the default in-memory manager for local
-# development and testing where no database is configured.
-_db_url = os.getenv("CONNECTION_STRING")
-_client_manager = AsyncPgManager(_db_url) if _db_url else None
+# When a REDIS_URL is available, use the Redis pub/sub adapter so that
+# Socket.IO messages are shared across all worker processes.  Fall back to
+# the default in-memory manager for local development and testing where no
+# Redis server is configured.
+_redis_url = os.getenv("REDIS_URL")
+_client_manager = socketio.AsyncRedisManager(_redis_url) if _redis_url else None
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
