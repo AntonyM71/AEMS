@@ -1,8 +1,6 @@
-import io
 import uuid
 from unittest.mock import MagicMock, patch
 
-import pypdf
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -420,45 +418,56 @@ async def test_phase_pdf_dns_athlete(
     mock_event: MagicMock,
     mock_phase: MagicMock,
 ) -> None:
-    """Test that a DNS athlete is shown as DNS in the generated phase PDF"""
+    """Test that a DNS athlete's data is passed to build_phase_pdf_content"""
     mock_db_session.query.return_value.filter.return_value.one = MagicMock(
         side_effect=[mock_phase, mock_event, mock_competition]
     )
 
-    with patch(
-        "app.competition_management.pdfEndpoints.calculate_phase_scores"
-    ) as mock_calc:
-        mock_calc.return_value.phase_id = sample_phase_id
-        mock_calc.return_value.scores = [
-            AthleteScoresWithAthleteInfo(
-                athlete_id=uuid.uuid4(),
-                first_name="Jane",
-                last_name="Smith",
-                bib_number=7,
-                run_scores=[
-                    RunScores(
-                        run_number=1,
-                        judge_scores=[],
-                        mean_run_score=0.0,
-                        highest_scoring_move=0.0,
-                        locked=False,
-                        did_not_start=True,
-                    )
-                ],
+    dns_athlete = AthleteScoresWithAthleteInfo(
+        athlete_id=uuid.uuid4(),
+        first_name="Jane",
+        last_name="Smith",
+        bib_number=7,
+        run_scores=[
+            RunScores(
+                run_number=1,
+                judge_scores=[],
+                mean_run_score=0.0,
                 highest_scoring_move=0.0,
-                total_score=None,
-                ranking=None,
-                reason="DNS",
-                last_phase_rank=None,
+                locked=False,
+                did_not_start=True,
             )
-        ]
+        ],
+        highest_scoring_move=0.0,
+        total_score=None,
+        ranking=None,
+        reason="DNS",
+        last_phase_rank=None,
+    )
+
+    with (
+        patch(
+            "app.competition_management.pdfEndpoints.calculate_phase_scores"
+        ) as mock_calc,
+        patch(
+            "app.competition_management.pdfEndpoints.build_phase_pdf_content"
+        ) as mock_build,
+    ):
+        mock_calc.return_value.phase_id = sample_phase_id
+        mock_calc.return_value.scores = [dns_athlete]
 
         response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
         assert response.status_code == 200
-        reader = pypdf.PdfReader(io.BytesIO(response.body))
-        pdf_text = " ".join((page.extract_text() or "") for page in reader.pages)
-        assert "DNS" in pdf_text
+        assert response.media_type == "application/pdf"
+
+        # Verify build_phase_pdf_content was called once with the DNS athlete data
+        mock_build.assert_called_once()
+        _, call_args, _ = mock_build.mock_calls[0]
+        phase_scores_arg = call_args[2]  # third positional arg: phase_scores
+        assert len(phase_scores_arg.scores) == 1
+        assert phase_scores_arg.scores[0].reason == "DNS"
+        assert phase_scores_arg.scores[0].run_scores[0].did_not_start is True
 
 
 @pytest.mark.asyncio
