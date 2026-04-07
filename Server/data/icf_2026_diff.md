@@ -1,51 +1,82 @@
-# ICF Scoresheet Changes: 2025 → 2026
-
-## Summary
-
-This document describes all changes made from `icf_2025.json` to `icf_2026.json`.
-
----
-
-## 1. New Field: `Style` Bonus
-
-All moves now include a `Style` bonus field. The value is determined by:
-
-- **`0`** — if the move's `Value` is ≤ 30 (Style is never eligible for low-value moves)
-- **`0`** — if the move is ineligible for Style per the 2026 appendix bonus eligibility tables
-- **`20`** — if eligible and move `Value` is in the range 31–90
-- **`30`** — if eligible and move `Value` > 90
-
-Moves where Style is **not eligible** (set to `0`) regardless of value bracket:
-- Shuvit, Spin, Cartwheel, Roundhouse, Back Roundhouse (all ≤ 30 bracket)
-- Entry 1, Pirouette (≤ 30 bracket)
-
----
-
-## 2. Trophy Move Value Changes
-
-| Move     | 2025 Value | 2026 Value |
-|----------|-----------|-----------|
-| Trophy 1 | 50        | 60        |
-| Trophy 2 | 170       | 120       |
-| Trophy 3 | 240       | 180       |
-
-Associated bonuses have been updated to reflect the new value brackets:
-
-| Move     | 2025 Bonuses (Clean/SC/Air/Huge/Link) | 2026 Bonuses (Clean/SC/Air/Huge/Link/Style) |
-|----------|---------------------------------------|---------------------------------------------|
-| Trophy 1 | 30/10/30/40/20 (bracket 31–90)        | 30/10/30/40/20/20 (bracket 31–90, 60 pts)  |
-| Trophy 2 | 50/10/40/50/30 (bracket >90)          | 50/10/40/50/30/30 (bracket >90, 120 pts)   |
-| Trophy 3 | 50/10/40/50/30 (bracket >90)          | 50/10/40/50/30/30 (bracket >90, 180 pts)   |
-
----
-
-## 3. New Moves Added
-
-The following moves are new in 2026:
-
-| Move       | Value | Direction | Clean | SuperClean | Air | Huge | Link | Style |
-|------------|-------|-----------|-------|------------|-----|------|------|-------|
-| Gedi Flip  | 160   | LR        | 50    | 10         | 40  | 50   | 30   | 30    |
+{
+  "title": "ICF Scoresheet Changes: 2025 -> 2026",
+  "summary": "This document describes all changes made from icf_2025.json to icf_2026.json.",
+  "sections": [
+    {
+      "title": "New Field: Style Bonus",
+      "description": "All moves now include a Style bonus field.",
+      "rules": [
+        {
+          "style": 0,
+          "condition": "if the move value is less than or equal to 30"
+        },
+        {
+          "style": 0,
+          "condition": "if the move is ineligible for Style per the 2026 appendix bonus eligibility tables"
+        },
+        {
+          "style": 20,
+          "condition": "if eligible and the move value is in the range 31-90"
+        },
+        {
+          "style": 30,
+          "condition": "if eligible and the move value is greater than 90"
+        }
+      ],
+      "not_eligible_moves": [
+        "Shuvit",
+        "Spin",
+        "Cartwheel",
+        "Roundhouse",
+        "Back Roundhouse",
+        "Entry 1",
+        "Pirouette"
+      ]
+    },
+    {
+      "title": "Trophy Move Value Changes",
+      "moves": [
+        {
+          "move": "Trophy 1",
+          "value_2025": 50,
+          "value_2026": 60,
+          "bonuses_2025": "30/10/30/40/20",
+          "bonuses_2026": "30/10/30/40/20/20"
+        },
+        {
+          "move": "Trophy 2",
+          "value_2025": 170,
+          "value_2026": 120,
+          "bonuses_2025": "50/10/40/50/30",
+          "bonuses_2026": "50/10/40/50/30/30"
+        },
+        {
+          "move": "Trophy 3",
+          "value_2025": 240,
+          "value_2026": 180,
+          "bonuses_2025": "50/10/40/50/30",
+          "bonuses_2026": "50/10/40/50/30/30"
+        }
+      ]
+    },
+    {
+      "title": "New Moves Added",
+      "moves": [
+        {
+          "move": "Gedi Flip",
+          "value": 160,
+          "direction": "LR",
+          "clean": 50,
+          "super_clean": 10,
+          "air": 40,
+          "huge": 50,
+          "link": 30,
+          "style": 30
+        }
+      ]
+    }
+  ]
+}
 | Vada Flip  | 180   | LR        | 50    | 10         | 40  | 50   | 30   | 30    |
 | Side Kick  | 80    | LR        | 30    | 10         | 0   | 40   | 20   | 20    |
 | Sasquatch  | 80    | S         | 30    | 10         | 0   | 40   | 20   | 20    |
