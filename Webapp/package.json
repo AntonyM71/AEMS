@@ -87,7 +87,7 @@
 		"@types/lodash": "^4.17.20",
 		"@types/redux-mock-store": "^1.5.0",
 		"@types/uuid": "^8.3.0",
-		"esbuild": "^0.27.4",
+		"esbuild": "^0.28.0",
 		"esbuild-jest": "^0.5.0",
 		"eslint": "^9.35.0",
 		"eslint-plugin-react-hooks": "^5.1.0",
