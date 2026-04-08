@@ -29,7 +29,7 @@
 		"eslint-plugin-testing-library": "^7.8.0",
 		"jest-environment-jsdom": "^29.7.0",
 		"jest-junit": "^16.0.0",
-		"lodash": "^4.17.21",
+		"lodash": "^4.18.1",
 		"next": "^15.4.6",
 		"openapi-types": "^12.1.0",
 		"prettier": "^2.8.3",
