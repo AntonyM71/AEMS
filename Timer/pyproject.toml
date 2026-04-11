@@ -44,13 +44,16 @@ quote-style = "double"
 indent-style = "space"
 [project]
 dependencies = [
+    "rpi-lgpio",
     "python-socketio",
-    "RPi.GPIO",
+    "gpiozero",
+    "spidev",
+    "requests",
     # Dev
     "ruff",
-
     "pytest",
     "pytest-mock",
+    "structlog",
     "pytest-cov",
 
 
@@ -58,4 +61,4 @@ dependencies = [
 name = "aems_timer"
 description = "backend functions and database conntroller for the AEMS system"
 version = "0.1.0"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.11,<3.12"

@@ -19,7 +19,7 @@ Description=Run Python Script Indefinitely
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 $PYTHON_SCRIPT_PATH
+ExecStart=$CURRENT_DIRECTORY/venv/bin/python $PYTHON_SCRIPT_PATH
 Restart=always
 RestartSec=5
 WorkingDirectory=$CURRENT_DIRECTORY
