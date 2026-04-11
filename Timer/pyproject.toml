@@ -49,6 +49,8 @@ dependencies = [
     "gpiozero",
     "spidev",
     "requests",
+    "websocket-client",
+
     # Dev
     "ruff",
     "pytest",
