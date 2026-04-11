@@ -53,9 +53,7 @@ timer_buzzing = False
 
 def get_total_duration() -> int:
     """Return total timer duration based on mode switch state."""
-    print(GPIO.input(PIN_MODE_SWITCH))
     if GPIO.input(PIN_MODE_SWITCH) == GPIO.HIGH:
-        print("Squirt mode selected")
         return squirt_time
     else:
         return float_time
