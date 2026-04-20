@@ -4,6 +4,7 @@ services:
 
     environment:
       - CONNECTION_STRING=postgresql://postgres:postgres@db:5432/postgres
+      - REDIS_URL=redis://redis:6379/0
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 30s
@@ -19,11 +20,13 @@ services:
       [
         "bash",
         "-c",
-        "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 1 -k uvicorn.workers.UvicornWorker --timeout 3600 main:socket_app -b 0.0.0.0:8000",
+        "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 4 -k uvicorn.workers.UvicornWorker --timeout 3600 main:socket_app -b 0.0.0.0:8000",
       ]
 
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend:
@@ -49,6 +52,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
   db:
     image: postgres:17
     restart: always
@@ -65,6 +69,17 @@ services:
       - POSTGRES_DB=postgres
     expose:
       - 5432
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    expose:
+      - 6379
 
 volumes:
   postgres-prod-data:
