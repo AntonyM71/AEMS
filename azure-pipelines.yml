@@ -119,6 +119,15 @@ jobs:
         displayName: "Start PostgreSQL"
 
       - script: |
+          docker run -d --name redis-e2e \
+            -p 6379:6379 \
+            redis:7-alpine
+          for i in $(seq 1 15); do
+            docker exec redis-e2e redis-cli ping | grep -q PONG && break || sleep 1
+          done
+        displayName: "Start Redis"
+
+      - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
           uv sync
@@ -135,6 +144,7 @@ jobs:
 
       - script: |
           CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            REDIS_URL=redis://localhost:6379/0 \
             $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:socket_app \
             --host 0.0.0.0 --port 8000 --log-level warning &
           for i in $(seq 1 30); do
@@ -188,5 +198,6 @@ jobs:
 
       - script: |
           docker stop postgres-e2e && docker rm postgres-e2e
+          docker stop redis-e2e && docker rm redis-e2e
         displayName: "Stop Services"
         condition: always()

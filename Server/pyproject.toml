@@ -54,7 +54,7 @@ dependencies = [
     "psycopg2",
     "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0
     "orjson",
-    "asyncpg>=0.31.0,<1.0",  # Upgraded from 0.26.0
+    "redis>=5.0",
     "fastapi",
     "pandas",
     "pandas[performance]",
