@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box"
 import CssBaseline from "@mui/material/CssBaseline"
 import GlobalStyles from "@mui/material/GlobalStyles"
 import Grid2 from "@mui/material/Grid2"
@@ -23,6 +24,20 @@ import {
 } from "../Interfaces"
 import { darkTheme } from "./arenaTheme"
 import LiveTimerArena from "./liveTimerArena"
+
+// The broadcast Cards below are designed to sit on top of the animated Pixi
+// background frames used by the broadcast overlay, so they render with a
+// transparent background. The arena screen has no such background, so this
+// panel restores the dark, self-contained card treatment for the arena.
+const arenaPanelSx = {
+	maxWidth: 1150,
+	margin: "16px auto",
+	backgroundColor: "#222",
+	borderRadius: "8px",
+	padding: "1em",
+	boxShadow: "0 4px 24px 0 rgba(0,0,0,0.18)"
+}
+
 const Arena = () => {
 	const { data: overlayControlState = defaultOverlayControllerState } =
 		useBroadcastControlStreamQuery()
@@ -69,11 +84,19 @@ const Arena = () => {
 	return (
 		<ThemeProvider theme={darkTheme}>
 			<CssBaseline />
-			<HeatSummaryTable isVisible={overlayControlState.showHeatSummary} />
-			<PhaseScoreTable
-				overlayControlState={overlayControlState}
-				isVisible={overlayControlState.showPhaseResults}
-			/>
+			{overlayControlState.showHeatSummary && (
+				<Box sx={arenaPanelSx}>
+					<HeatSummaryTable maxWidth="100%" />
+				</Box>
+			)}
+			{overlayControlState.showPhaseResults && (
+				<Box sx={arenaPanelSx}>
+					<PhaseScoreTable
+						overlayControlState={overlayControlState}
+						maxWidth="100%"
+					/>
+				</Box>
+			)}
 			<EventTitleModal isVisible={overlayControlState.showEventTitle} />
 			<GlobalStyles
 				styles={{
