@@ -18,22 +18,22 @@ import { OverlayControlState } from "../../Interfaces"
 import { BasicTable } from "./BasicBroadcastTable"
 export const PhaseScoreTable = ({
 	overlayControlState,
-	size,
 	maxWidth = 1150,
 	pageLimit = 8, // Set max rows to 8
 	rowHeight = 61,
 	footerPadding = 32,
 	firstRowHeight = 54,
-	secondRowHeight = 60
+	secondRowHeight = 60,
+	isVisible = true
 }: {
 	overlayControlState: OverlayControlState
-	size?: number
 	maxWidth?: number | string
 	pageLimit?: number
 	rowHeight?: number
 	footerPadding?: number
 	firstRowHeight?: number | string
 	secondRowHeight?: number | string
+	isVisible?: boolean
 }) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const {
@@ -59,7 +59,7 @@ export const PhaseScoreTable = ({
 			void refetchScores()
 		}
 	}, [overlayControlState.showPhaseResults])
-	if (!data || !scoreData) {
+	if (!isVisible || !data || !scoreData) {
 		return <></>
 	}
 

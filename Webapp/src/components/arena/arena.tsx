@@ -69,13 +69,10 @@ const Arena = () => {
 	return (
 		<ThemeProvider theme={darkTheme}>
 			<CssBaseline />
-			<HeatSummaryTable
-				overlayControlState={overlayControlState}
-				size={100}
-			/>
+			<HeatSummaryTable isVisible={overlayControlState.showHeatSummary} />
 			<PhaseScoreTable
 				overlayControlState={overlayControlState}
-				size={100}
+				isVisible={overlayControlState.showPhaseResults}
 			/>
 			<EventTitleModal isVisible={overlayControlState.showEventTitle} />
 			<GlobalStyles

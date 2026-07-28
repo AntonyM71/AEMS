@@ -109,6 +109,8 @@ The current setup relies on three pieces:
 
 This keeps the browser on a single origin while still hosting graphics packs separately from the main application.
 
+`graphics_server` is resolved at request time (via Docker's embedded DNS, `resolver 127.0.0.11`) rather than baked into a static nginx `upstream` block. This means AEMS nginx starts and serves the rest of the app even if the graphics stack isn't running — `/componentInfo/` and `/assets/` just return `502` until the graphics stack is started.
+
 ## Stopping the Stacks
 
 To stop AEMS:

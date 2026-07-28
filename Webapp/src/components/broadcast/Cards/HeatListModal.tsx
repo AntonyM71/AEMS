@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic"
 import { HeatSummaryTable } from "./HeatSummaryTable"
-import { OverlayControlState } from "../../Interfaces"
 
 const PixiFrameSequenceOverlay = dynamic(
   () => import("../PixiFrameSequenceOverlay"),
@@ -9,11 +8,9 @@ const PixiFrameSequenceOverlay = dynamic(
 
 interface HeatListModalProps {
   isVisible: boolean
-  overlayControlState: OverlayControlState
-  size?: number
 }
 
-export const HeatListModal = ({ isVisible, overlayControlState, size }: HeatListModalProps) => (
+export const HeatListModal = ({ isVisible }: HeatListModalProps) => (
   <PixiFrameSequenceOverlay
     configName="startList"
     isVisible={isVisible}
@@ -25,6 +22,6 @@ export const HeatListModal = ({ isVisible, overlayControlState, size }: HeatList
       zIndex: 1400
     }}
   >
-    <HeatSummaryTable overlayControlState={overlayControlState} size={size} />
+    <HeatSummaryTable />
   </PixiFrameSequenceOverlay>
 )

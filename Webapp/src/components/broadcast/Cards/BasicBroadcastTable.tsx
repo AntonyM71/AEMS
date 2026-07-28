@@ -88,7 +88,7 @@ export const BasicTable = ({
 				</TableRow>
 			</TableHead>
 			<TableBody>
-				{paginatedData.map((row, i) => (
+				{paginatedData.map((row) => (
 					<TableRow
 						key={`${Object.values(row).join("-")}`}
 						sx={{ height: rowHeight }}

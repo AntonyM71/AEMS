@@ -77,10 +77,7 @@ const Overlay: OverlayProps = () => {
 				<EventTitleModal
 					isVisible={overlayControlState.showEventTitle}
 				/>
-				<HeatListModal
-					isVisible={overlayControlState.showHeatSummary}
-					overlayControlState={overlayControlState}
-				/>
+				<HeatListModal isVisible={overlayControlState.showHeatSummary} />
 				<PhaseResultsModal
 					isVisible={overlayControlState.showPhaseResults}
 					overlayControlState={overlayControlState}

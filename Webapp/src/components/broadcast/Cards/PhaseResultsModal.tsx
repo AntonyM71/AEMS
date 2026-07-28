@@ -10,13 +10,11 @@ const PixiFrameSequenceOverlay = dynamic(
 interface PhaseResultsModalProps {
 	isVisible: boolean
 	overlayControlState: OverlayControlState
-	size?: number
 }
 
 export const PhaseResultsModal = ({
 	isVisible,
-	overlayControlState,
-	size
+	overlayControlState
 }: PhaseResultsModalProps) => (
 	<PixiFrameSequenceOverlay
 		configName="phaseResults"
@@ -29,9 +27,6 @@ export const PhaseResultsModal = ({
 			zIndex: 1400
 		}}
 	>
-		<PhaseScoreTable
-			overlayControlState={overlayControlState}
-			size={size}
-		/>
+		<PhaseScoreTable overlayControlState={overlayControlState} />
 	</PixiFrameSequenceOverlay>
 )

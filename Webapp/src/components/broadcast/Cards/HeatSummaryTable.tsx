@@ -15,11 +15,13 @@ import { BasicTable } from "./BasicBroadcastTable"
 export const HeatSummaryTable = ({
 	maxWidth = 1150,
 	pageLimit = 8, // Set max rows to 8
-	rowHeight = 61
+	rowHeight = 61,
+	isVisible = true
 }: {
 	maxWidth?: number | string
 	pageLimit?: number
 	rowHeight?: number
+	isVisible?: boolean
 } = {}) => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
@@ -28,6 +30,10 @@ export const HeatSummaryTable = ({
 		},
 		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
 	)
+
+	if (!isVisible) {
+		return null
+	}
 
 	return (
 		<Paper
