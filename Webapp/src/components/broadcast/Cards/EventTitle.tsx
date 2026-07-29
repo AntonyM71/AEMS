@@ -1,6 +1,5 @@
 import Box from "@mui/material/Box"
 import Typography from "@mui/material/Typography"
-import dynamic from "next/dynamic"
 import { useSelector } from "react-redux"
 import {
 	getSelectedCompetition,
@@ -12,26 +11,12 @@ import {
 	useGetOneByPrimaryKeyEventIdGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
-
-const PixiFrameSequenceOverlay = dynamic(
-	() => import("../PixiFrameSequenceOverlay"),
-	{ ssr: false }
-)
+import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
 
 export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
-	<PixiFrameSequenceOverlay
-		configName="eventTitle"
-		isVisible={isVisible}
-		style={{
-			position: "fixed",
-			inset: 0,
-			width: "100vw",
-			height: "100vh",
-			zIndex: 1400
-		}}
-	>
+	<FullscreenPixiOverlay configName="eventTitle" isVisible={isVisible}>
 		<EventTitle />
-	</PixiFrameSequenceOverlay>
+	</FullscreenPixiOverlay>
 )
 
 export const EventTitle = () => {
@@ -57,7 +42,7 @@ export const EventTitle = () => {
 		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
 	)
 	if (!competitionData || !phaseData || !eventData) {
-		return <></>
+		return null
 	}
 
 	return (

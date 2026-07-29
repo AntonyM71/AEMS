@@ -1,31 +1,20 @@
 import Slide from "@mui/material/Slide"
-import React from "react"
+import { ReactNode } from "react"
 
 interface SlidingWrapperProps {
-	children: React.ReactNode
+	children: ReactNode
 	show: boolean
-	direction?: "up" | "down" | "left" | "right" // Allow customization of slide direction
-	gridSize?: number // Allow customization of Grid item size
+	direction?: "up" | "down" | "left" | "right"
 }
 
-const SlidingWrapper: React.FC<SlidingWrapperProps> = ({
+const SlidingWrapper = ({
 	children,
 	show,
-	direction = "up" // Default slide direction
-}) => {
-	const containerRef = React.useRef<HTMLElement>(null)
-
-	return (
-		<Slide
-			direction={direction}
-			in={show}
-			container={containerRef.current}
-			mountOnEnter
-			unmountOnExit
-		>
-			<div>{children}</div>
-		</Slide>
-	)
-}
+	direction = "up"
+}: SlidingWrapperProps): React.JSX.Element => (
+	<Slide direction={direction} in={show} mountOnEnter unmountOnExit>
+		<div>{children}</div>
+	</Slide>
+)
 
 export default SlidingWrapper
