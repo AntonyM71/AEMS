@@ -1,29 +1,29 @@
+#!/usr/bin/env bash
 
+# Determine the directory this script is in
+TIMER_DIRECTORY="$(cd "$(dirname "$0")/.." && pwd)"
 
-# Set timer to run automatically
-
-# Variables
-CURRENT_DIRECTORY=$(pwd)
 SERVICE_NAME="timer.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
-PYTHON_SCRIPT_PATH="$CURRENT_DIRECTORY/src/timer.py"
+PYTHON_SCRIPT_PATH="$TIMER_DIRECTORY/src/timer.py"
+PYTHON_BIN="$TIMER_DIRECTORY/.venv/bin/python"
 
-echo "Running from $CURRENT_DIRECTORY"
-
+echo "Running from $TIMER_DIRECTORY"
 
 # Create the service file
 echo "Creating $SERVICE_NAME..."
 sudo bash -c "cat > $SERVICE_PATH" <<EOL
 [Unit]
-Description=Run Python Script Indefinitely
+Description=AEMS Timer Service
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 $PYTHON_SCRIPT_PATH
+WorkingDirectory=$TIMER_DIRECTORY
+ExecStart=$PYTHON_BIN $PYTHON_SCRIPT_PATH
 Restart=always
 RestartSec=5
-WorkingDirectory=$CURRENT_DIRECTORY
 User=$(whoami)
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target

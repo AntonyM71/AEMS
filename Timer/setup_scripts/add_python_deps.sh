@@ -1,8 +1,21 @@
+#!/bin/bash
+
+set -e
+
 sudo apt-get update
-sudo apt-get install python3-pip
-sudo apt-get install python3-pil
-sudo apt-get install python3-numpy
-sudo apt-get install python3-spidev
-sudo apt-get install python3-websockets
-sudo apt-get install python3-structlog
-sudo apt install python3-gpiozero
+
+# Hardware‑level packages that must come from apt
+sudo apt-get install -y python3-spidev
+sudo apt-get install -y python3-gpiozero
+
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create the environment using the system python with the gpio dependencies installed
+uv venv --python /usr/bin/python3.11 .venv --clear
+
+# Activate it
+source .venv/bin/activate
+
+# Sync dependencies from pyproject.toml
+uv sync

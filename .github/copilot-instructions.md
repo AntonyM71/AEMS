@@ -1,60 +1,272 @@
 # Copilot Coding Agent Onboarding Instructions for AEMS Repository
 
-## What This Repo Is
+## High-Level Overview
 
-AEMS is a multi-service freestyle kayaking competition system. The main code areas are:
+AEMS (Athlete and Event Management System) is a multi-component system for managing freestyle kayaking competitions. It supports real-time scoring, multi-judge workflows, PDF/CSV import/export, and is designed for both local and networked deployments. The system is containerized using Docker and consists of:
 
-- [Server/](../Server) for FastAPI, SQLAlchemy, Alembic, and backend scoring/data logic
-- [Webapp/](../Webapp) for the Next.js/React frontend
-- [Timer/](../Timer) for Raspberry Pi timer hardware
-- [Common/](../Common) for shared OpenAPI output
-- [docs/](../docs) for architecture, deployment, and decision records
+- **Backend**: Python FastAPI (Server/)
+- **Frontend**: React/Next.js (Webapp/)
+- **Timer**: Python (Timer/) for Raspberry Pi hardware integration
+- **Common**: Shared OpenAPI definitions (Common/)
+- **Documentation**: Architecture, setup, and decisions (docs/)
 
-## What To Read First
+**Languages/Frameworks**: Python 3.13, FastAPI, SQLAlchemy, Alembic, React, TypeScript, Redux Toolkit, Material-UI, Jest, RTK Query, Docker, Nginx.
 
-Prefer linking to the existing docs instead of restating them here:
+**Repo Size**: Large, multi-service, with extensive documentation and scripts.
 
-- [README.md](../README.md) for the repo-level overview
-- [Server/README.md](../Server/README.md) for backend setup and backend-specific commands
-- [Webapp/README.md](../Webapp/README.md) for frontend setup and UI conventions
-- [Timer/README.md](../Timer/README.md) for timer hardware setup
-- [docs/server_setup_guide.md](../docs/deployment/server_setup_guide.md) for networked deployment
-- [docs/smg.md](../docs/smg.md) for broader maintenance guidance
+## Build, Test, and Validation Instructions
 
-## Working Rules
+### General Principles
 
-- Use the devcontainer when possible.
-- In [Server/](../Server), use `uv`; activate the virtual environment before running `uv sync`.
-- Run `alembic upgrade head` before backend tests or starting the server.
-- In [Webapp/](../Webapp), install with `npm install` unless the task explicitly requires a clean CI-style install.
-- Check pinned versions in `pyproject.toml` and `package.json` before upgrading dependencies.
-- If a task touches backend API shapes, regenerate the client instead of editing generated files by hand.
+- **Always use the devcontainer for local development if possible.**
+- **Always run `npm install` in Webapp/, and activate the virtual environment (`source .venv/bin/activate`) before running `uv sync` in Server/ prior to building or testing.**
+- **Always apply database migrations (`alembic upgrade head`) before running backend tests or starting the server.**
+- **Lint and format code before submitting changes.**
+- **Trust these instructions unless you encounter errors; only search for additional info if these steps fail.**
 
-## Validation Defaults
+### Backend (Server/)
 
-- Backend: `uv run python -m pytest`, `uv run ruff check .`, `uv run ruff format .`
-- Frontend: `npm run tsc`, `npm run lint`, `npm test`, `npm run build`
-- Timer: `uv run ruff check src/` and `uv run python -m pytest`
-- Docker/local integration: `docker compose -f docker-compose.yaml up`
-- CI behavior is defined in [azure-pipelines.yml](../azure-pipelines.yml)
+- **Python Version**: 3.13.x (requires `>=3.13,<3.14` per `pyproject.toml`)
+- **Dependency Management**: Use [uv](https://docs.astral.sh/uv/) (preferred) or pip
+- **Install dependencies**:
+  ```bash
+  uv venv
+  source .venv/bin/activate
+  uv sync
+  ```
+- **Database Setup**:
+  ```bash
+  alembic upgrade head
+  ```
+- **Run Server**:
+  ```bash
+  uvicorn main:app --reload
+  ```
+- **Run Tests**:
+  ```bash
+  uv run python -m pytest
+  ```
+- **Lint/Format**:
+  ```bash
+  ruff check .
+  ruff format .
+  ```
+- **Code Coverage**: Pytest with coverage is configured in `pyproject.toml`.
+- **Migrations**: Use Alembic (`alembic revision --autogenerate -m "msg"`)
+- **Seed Data**: `python -m scripts.seed_scoresheets`
 
-## Generated Files And Boundaries
+### Frontend (Webapp/)
 
-- Never edit [Webapp/src/redux/services/aemsApi.ts](../Webapp/src/redux/services/aemsApi.ts) directly.
-- Regenerate it by running [buildApi.sh](../buildApi.sh) after backend API changes.
-- The OpenAPI source is written to [Common/openapi.json](../Common/openapi.json).
-- Change backend endpoints in [Server/app/](../Server/app) and then regenerate the client.
+- **Node Version**: 16+
+- **Install dependencies**:
+  ```bash
+  npm install
+  ```
+- **Run Dev Server**:
+  ```bash
+  npm start
+  ```
+- **Run Tests**:
+  ```bash
+  npm test
+  npm test -- --coverage
+  ```
+- **Build**:
+  ```bash
+  npm run build
+  ```
+- **Lint/Format**:
+  ```bash
+  npm run lint
+  npm run lintfix
+  npm run prettierfix
+  ```
 
-## Good Editing Heuristics
+### Timer (Timer/)
 
-- Keep changes scoped to the owning service: backend in [Server/](../Server), frontend in [Webapp/](../Webapp), hardware in [Timer/](../Timer), shared schema in [Common/](../Common).
-- Prefer existing patterns in nearby files over inventing new abstractions.
-- Add or update tests when behavior changes.
-- Use [docs/decisions/](../docs/decisions) for architecture context instead of repeating that history here.
+- **Install dependencies**:
+  ```bash
+  uv venv
+  source .venv/bin/activate
+  uv sync
+  ```
+- **Run Timer**:
+  ```bash
+  python timer.py
+  ```
+- **Test WebSocket Client**:
+  ```bash
+  python fake_timer.py
+  ```
 
-## If Things Break
+### Docker/Production
 
-- Check that dependencies are installed and migrations are applied.
-- If frontend codegen looks stale, rerun [buildApi.sh](../buildApi.sh).
-- If deployment or networking is involved, refer to [docs/deployment/](../docs/deployment).
-- For recurring friction, use `/chronicle improve` to refine these instructions over time.
+- **Start all services**:
+  ```bash
+  docker compose -f docker-compose.yaml up
+  ```
+- **Rebuild**:
+  ```bash
+  docker compose -f docker-compose.yaml up --build
+  ```
+- **Access**: Frontend at `http://localhost:80`, Backend at `http://localhost:8000`
+
+### CI/CD & Validation
+
+- **Azure Pipelines**: Runs on push to `main`. Validates Python and Node builds, runs tests, and publishes results. See `azure-pipelines.yml` for details.
+- **Linting and formatting are enforced in CI.**
+- **Test results must pass for merge.**
+
+## Testing Philosophy and Guidelines
+
+### Core Principle: Test Meaningful Behaviours
+
+**Prefer integration-style tests** that assert meaningful behaviours and outcomes that matter to the user. Tests should validate that features work correctly, not just that code executes without crashing or that functions return a particular type.
+
+- ✅ **Good**: Assert that a score calculation returns the correct value for a specific set of moves and bonuses
+- ✅ **Good**: Assert that creating a competition via the API persists it so it can be read back
+- ✅ **Good**: Assert that clicking a move card updates the Redux store with the correct move and direction
+- ❌ **Avoid**: Asserting only that a response has status `200` without checking the response body
+- ❌ **Avoid**: Asserting only that a component renders without crashing, with no interaction or state checks
+- ❌ **Avoid**: Asserting on internal implementation details like which mock function was called, rather than on the observable outcome
+
+### When to Use Unit Tests
+
+Traditional unit tests (testing a function or module in isolation) are appropriate for:
+
+1. **Common utilities used in multiple places** — e.g., scoring calculation helpers, data transformation utilities
+2. **Key business logic** where correctness is critical and must be certain — e.g., scoring algorithms, heat assignment, bonus deduplication rules
+3. **Logic that would be prohibitively slow or complex** to exercise through full integration tests at scale
+
+For everything else, prefer integration-style tests that exercise the full code path.
+
+### Backend Testing (Server/)
+
+- Test files live in `Server/app/*/tests/` directories.
+- Use `fastapi.testclient.TestClient` together with fixtures from `conftest.py` for API-level tests.
+- `Server/app/crud/tests/conftest.py` provides a `test_client` fixture backed by a mocked SQLAlchemy session; use this for CRUD endpoint tests.
+- Prefer testing **complete request–response cycles** over calling internal functions directly.
+- **Assert on response bodies**, not just status codes. Verify that the data returned is correct.
+- For business logic tests (e.g., scoring), use real data fixtures rather than mocks; see `Server/app/scoring/tests/test_scoring_logic.py` for good examples.
+- See `Server/app/competition_management/tests/test_competition_management.py` for examples of good behavioural tests with real data.
+
+**Good backend test pattern** (integration-style):
+```python
+def test_create_competition_returns_created_competition(
+    test_client: TestClient,
+) -> None:
+    response = test_client.post("/competition/", json=[{"name": "Test Competition"}])
+    assert response.status_code == 201
+    data = response.json()
+    assert data[0]["name"] == "Test Competition"
+    assert data[0]["id"]  # A UUID was assigned
+```
+
+**Good business logic test pattern** (scoring edge case):
+```python
+def test_duplicate_bonuses_are_deduplicated_in_score(
+    available_moves, available_bonuses
+) -> None:
+    # Two scored moves with the same bonus; bonus should count only once
+    result = calculate_run_score(scored_moves, bonuses, available_bonuses, available_moves)
+    assert result.score == 18  # base + bonus, not base + bonus + bonus
+```
+
+### Frontend Testing (Webapp/)
+
+- Test files live alongside components as `*.test.tsx`, or in `tests/` subdirectories.
+- Use `renderWithProviders` from `src/testUtils.tsx` to render components with the Redux store pre-configured.
+- Use **MSW (Mock Service Worker)** via `src/mocks/server.ts` for API mocking — this lets you test the full component + API integration without a running backend.
+- **Do not mock `aemsApi.ts` directly** (it is autogenerated); intercept HTTP requests with MSW handlers instead.
+- **Simulate user interactions** (clicks, form input, keyboard events) using React Testing Library, and assert on the visible outcome.
+- Assert on things that matter: text that appears, Redux state changes, API calls with correct payloads, UI clearing/resetting after an action.
+- See `Webapp/src/components/competition/__tests__/CompetitionSelector.test.tsx` for good integration-style component tests.
+- See `Webapp/src/utils/scoringUtils.spec.ts` for good unit tests on critical business logic.
+
+**Good frontend test pattern** (user workflow):
+```typescript
+it("submits a new competition and shows it in the dropdown", async () => {
+    server.use(
+        http.post("/api/competition", async ({ request }) => {
+            const data = await request.json()
+            return HttpResponse.json(data, { status: 201 })
+        }),
+        http.get("/api/competition", () =>
+            HttpResponse.json([{ id: "1", name: "New Comp" }])
+        )
+    )
+
+    renderWithProviders(<CompetitionSelector showDetailed={true} />)
+
+    const input = await screen.findByLabelText("New Competition")
+    fireEvent.change(input, { target: { value: "New Comp" } })
+    fireEvent.keyUp(input, { key: "Enter" })
+
+    await screen.findByText("New Comp") // Verifies the UI updated with the new item
+    await waitFor(() => expect(input).toHaveValue("")) // Verifies input was cleared
+})
+```
+
+### E2E Testing (e2e/)
+
+- E2E tests use **Playwright** and run against a real running stack (frontend + backend + database).
+- Located in `e2e/tests/`.
+- Use **real API calls and a real database** — no mocking. These tests validate the full system.
+- Test complete user workflows: create data → verify it persists → use it in the UI.
+- Use the `request` fixture for direct API interactions and the `page` fixture for UI interactions.
+- See `e2e/tests/crud.spec.ts` for examples of CRUD integration tests.
+- See `e2e/tests/websocket.spec.ts` for real-time WebSocket/Socket.IO connection tests.
+- Use a unique identifier (e.g., `Date.now()`) in test data names to avoid collisions between runs.
+
+## Project Layout & Key Files
+
+- **Repo Root**: `README.md`, `docker-compose.yaml`, `nginx.conf`, `azure-pipelines.yml`, `sonar-project.properties`
+- **Server/**: Backend code, `main.py`, `pyproject.toml`, `environment.yml`, `alembic.ini`, `db/`, `app/`, `scripts/`, `test_custom_logging.py`
+- **Webapp/**: Frontend code, `package.json`, `eslint.config.mjs`, `jest.config.js`, `src/`, `test/`
+- **Timer/**: Raspberry Pi timer, `pyproject.toml`, `timer.py`, `install_timer.sh`, `README.md`
+- **Common/**: `openapi.json` (shared API schema)
+- **docs/**: `architecture.md`, `server_setup_guide.md`, `decisions/ADR*.md`, diagrams
+
+## Autogenerated Code
+
+### RTK Query API Hooks (`Webapp/src/redux/services/aemsApi.ts`)
+
+**`Webapp/src/redux/services/aemsApi.ts` is autogenerated. Never edit it directly.**
+
+This file is generated from the OpenAPI schema using RTK Query's codegen tool. The workflow is:
+
+1. The backend FastAPI app exports an OpenAPI schema to `Common/openapi.json` via:
+   ```bash
+   cd Server
+   python -m scripts.buildOpenApiJson
+   ```
+2. The `buildApi.sh` script (repo root) then runs RTK Query codegen to regenerate `aemsApi.ts`:
+   ```bash
+   bash buildApi.sh
+   ```
+   This script:
+   - Runs the OpenAPI export from `Server/`
+   - Runs `npx @rtk-query/codegen-openapi src/redux/services/example_api.json` in `Webapp/`
+   - Patches the output to remove `| any` types
+   - Formats the file with Prettier
+
+3. Configuration for codegen is in `Webapp/src/redux/services/example_api.json`.
+4. The base API (not generated) is in `Webapp/src/redux/services/emptyApi.ts`.
+
+**If API endpoints need to change**, modify the FastAPI backend in `Server/app/` and then run `bash buildApi.sh` from the repo root to regenerate `aemsApi.ts`. Do **not** hand-edit `aemsApi.ts`.
+
+## Additional Notes
+
+- **Always check for pinned versions in `pyproject.toml` and `package.json` before upgrading dependencies.**
+- **If you encounter build/test failures, verify that all dependencies are installed and migrations are applied.**
+- **For hardware integration (Timer/), see `Hardware.md` for setup.**
+- **For network setup, see `docs/server_setup_guide.md`.**
+- **For architectural decisions, see `docs/decisions/ADR*.md`.**
+
+## Agent Guidance
+
+- **Trust these instructions for build, test, and validation. Only search if steps fail or information is missing.**
+- **Prioritize changes in Server/ for backend, Webapp/ for frontend, Timer/ for hardware, and Common/ for shared API.**
+- **Lint, format, and test before submitting changes.**
+- **Document any errors and workarounds in PRs.**
+- **Never manually edit `Webapp/src/redux/services/aemsApi.ts`; always regenerate it using `bash buildApi.sh`.**
