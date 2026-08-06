@@ -48,7 +48,11 @@ export const BasicTable = ({
 	}
 
 	// Pad with empty rows if needed
-	const emptyRows = pageLimit - paginatedData.length
+	const emptyRows = Math.max(pageLimit - paginatedData.length, 0)
+	const emptyRowKeys = Array.from(
+		{ length: emptyRows },
+		(_, rowNumber) => `empty-row-${currentPage}-${paginatedData.length + rowNumber}`
+	)
 	const fontSize = 20
 
 	return (
@@ -116,10 +120,9 @@ export const BasicTable = ({
 					</TableRow>
 				))}
 				{/* Pad with empty rows if less than pageLimit */}
-				{Array.from({ length: emptyRows > 0 ? emptyRows : 0 }).map(
-					(_, idx) => (
+				{emptyRowKeys.map((emptyRowKey) => (
 						<TableRow
-							key={`empty-row-${idx}`}
+							key={emptyRowKey}
 							sx={{ height: rowHeight, fontSize: 22 }}
 						>
 							{Object.keys(data[0]).map((k) => (
@@ -134,8 +137,7 @@ export const BasicTable = ({
 								/>
 							))}
 						</TableRow>
-					)
-				)}
+					))}
 			</TableBody>
 			<TableFooter>
 				<TableRow sx={{ height: rowHeight + footerPadding }}>

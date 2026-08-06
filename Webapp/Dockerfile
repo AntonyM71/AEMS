@@ -8,7 +8,8 @@ WORKDIR /Webapp
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts \
+	&& npm rebuild esbuild sharp --foreground-scripts
 
 
 # Rebuild the source code only when needed

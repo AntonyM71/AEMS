@@ -1,25 +1,30 @@
-const { existsSync } = require("node:fs")
-const { execSync } = require("node:child_process")
+const { lookup } = require("node:dns").promises
+const { existsSync, readFileSync } = require("node:fs")
 
-const resolveDefaultGraphicsOrigin = () => {
+const resolveDefaultGraphicsOrigin = async () => {
 	if (!existsSync("/.dockerenv")) {
 		return "http://localhost:82"
 	}
 
 	try {
-		execSync("getent hosts host.docker.internal", {
-			stdio: "ignore"
-		})
+		await lookup("host.docker.internal")
 		return "http://host.docker.internal:82"
 	} catch {
 		try {
-			const gatewayIp = execSync(
-				"ip route show default | awk '{print $3}' | head -n1",
-				{ encoding: "utf8" }
-			).trim()
+			const gatewayIp = readFileSync("/proc/net/route", "utf8")
+				.split("\n")
+				.slice(1)
+				.map((line) => line.trim().split(/\s+/))
+				.find((fields) => fields[1] === "00000000")?.[2]
 
 			if (gatewayIp) {
-				return `http://${gatewayIp}:82`
+				const octets = gatewayIp.match(/../g)
+				if (octets) {
+					return `http://${octets
+						.map((octet) => parseInt(octet, 16))
+						.reverse()
+						.join(".")}:82`
+				}
 			}
 		} catch {
 			// Fall back below when route lookup fails.
@@ -38,7 +43,8 @@ module.exports = {
 		}
 
 		const graphicsOrigin =
-			process.env.GRAPHICS_SERVER_ORIGIN || resolveDefaultGraphicsOrigin()
+			process.env.GRAPHICS_SERVER_ORIGIN ||
+			(await resolveDefaultGraphicsOrigin())
 
 		return [
 			{
