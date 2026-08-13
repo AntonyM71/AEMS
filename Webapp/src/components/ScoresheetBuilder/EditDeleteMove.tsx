@@ -8,13 +8,17 @@ export const EditDeleteMove = ({
 	updateMove,
 	deleteMove,
 	moveUp,
-	moveDown
+	moveDown,
+	canMoveUp,
+	canMoveDown
 }: {
 	moveData: MoveData
 	updateMove: (m: MoveData) => void
 	deleteMove: (m: MoveData) => void
 	moveUp: () => void
 	moveDown: () => void
+	canMoveUp: boolean
+	canMoveDown: boolean
 }) => {
 	const setMoveData = (newMoveData: MoveData) => {
 		updateMove(newMoveData)
@@ -28,10 +32,20 @@ export const EditDeleteMove = ({
 		<Grid container spacing={2} alignItems="center">
 			<EditMove moveData={moveData} setMoveData={setMoveData} />
 			<Grid size={1}>
-				<IconButton onClick={moveUp} data-testid="move-up-button">
+				<IconButton
+					onClick={moveUp}
+					data-testid="move-up-button"
+					aria-label="Move up"
+					disabled={!canMoveUp}
+				>
 					<KeyboardArrowUp />
 				</IconButton>
-				<IconButton onClick={moveDown} data-testid="move-down-button">
+				<IconButton
+					onClick={moveDown}
+					data-testid="move-down-button"
+					aria-label="Move down"
+					disabled={!canMoveDown}
+				>
 					<KeyboardArrowDown />
 				</IconButton>
 				<IconButton

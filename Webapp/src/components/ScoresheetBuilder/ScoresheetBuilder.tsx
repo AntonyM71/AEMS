@@ -38,7 +38,7 @@ export const ScoresheetMoves = ({
 		const orderedMoves = Array.isArray(moves.data)
 			? [...moves.data].sort(sortMoves)
 			: []
-		setNewMoves((orderedMoves as AvailableMoves[]) || [])
+		setNewMoves(orderedMoves as AvailableMoves[])
 	}, [moves.data])
 
 	const bonusInfo = useGetManyAvailablebonusesGetQuery(
@@ -239,7 +239,7 @@ export const ScoresheetMoves = ({
 					deleteBonus={deleteBonusType}
 					setUniqueBonusNamesList={setUniqueBonusNamesList}
 				/>
-				{newMoves.map((m) => (
+				{newMoves.map((m, index) => (
 					<EditDeleteMove
 						key={m.id}
 						moveData={{
@@ -256,6 +256,8 @@ export const ScoresheetMoves = ({
 						deleteMove={deleteMove}
 						moveUp={() => reorderMove(m.id, "up")}
 						moveDown={() => reorderMove(m.id, "down")}
+						canMoveUp={index > 0}
+						canMoveDown={index < newMoves.length - 1}
 					/>
 				))}
 				<AddNewMove
