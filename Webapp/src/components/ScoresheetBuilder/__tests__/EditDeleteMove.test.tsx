@@ -37,6 +37,10 @@ const TestWrapper: FC<{
 			moveData={moveData}
 			deleteMove={handleDelete}
 			updateMove={handleUpdate}
+			moveUp={jest.fn()}
+			moveDown={jest.fn()}
+			canMoveUp={true}
+			canMoveDown={true}
 		/>
 	)
 }

@@ -2,7 +2,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
 from db.client import get_transaction_session
@@ -35,8 +35,8 @@ class PydanticAvailableBonuses(BaseModel):
 
 
 class AddUpdateScoresheetRequest(BaseModel):
-    moves: list[PydanticAvailableMoves] = []
-    bonuses: list[PydanticAvailableBonuses] = []
+    moves: list[PydanticAvailableMoves] = Field(default_factory=list)
+    bonuses: list[PydanticAvailableBonuses] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

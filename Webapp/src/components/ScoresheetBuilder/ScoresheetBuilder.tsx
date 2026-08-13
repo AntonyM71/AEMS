@@ -35,10 +35,11 @@ export const ScoresheetMoves = ({
 	}, [selectedScoresheet])
 
 	useEffect(() => {
+		const movesData = (moves.data as AvailableMoves[] | undefined) ?? []
 		const orderedMoves = Array.isArray(moves.data)
-			? [...moves.data].sort(sortMoves)
+			? [...movesData].sort(sortMoves)
 			: []
-		setNewMoves(orderedMoves as AvailableMoves[])
+		setNewMoves(orderedMoves)
 	}, [moves.data])
 
 	const bonusInfo = useGetManyAvailablebonusesGetQuery(
