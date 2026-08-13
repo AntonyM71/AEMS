@@ -49,6 +49,9 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - default
+      - aems_shared
   db:
     image: postgres:17
     restart: always
@@ -68,3 +71,7 @@ services:
 
 volumes:
   postgres-prod-data:
+
+networks:
+  aems_shared:
+    external: true

@@ -108,11 +108,21 @@ To ensure your server maintains the same IP address (192.168.0.28), you'll need 
 
 ## Running the Server Code
 
+The AEMS Nginx container connects to an external Docker network named `aems_shared` (used to reach the broadcast graphics server, whether or not that stack is running). Create it once on the host machine before the first run:
+
+```bash
+docker network create aems_shared
+```
+
+If the network already exists, Docker will report that it is already present.
+
 With the server machine and network settings correctly configured, we can run the server with:
 
 ```bash
 docker compose -f docker-compose.yaml up --build
 ```
+
+If you also want to run the broadcast graphics stack, follow [Running AEMS With the Graphics Server](/docs/deployment/aems-with-graphics-server.md).
 
 ## Setting Up the Timing Box (Raspberry Pi)
 
