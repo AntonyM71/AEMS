@@ -24,6 +24,7 @@ def mock_available_moves_data() -> dict[str, Any]:
         "fl_score": 100,
         "rb_score": 50,
         "direction": "U",
+        "display_order": 0,
     }
 
 
@@ -61,6 +62,7 @@ def test_get_many_available_moves_no_filters(
         "fl_score": 100,
         "rb_score": 50,
         "direction": "U",
+        "display_order": 0,
     }
 
     # Verify SQLAlchemy execute was called

@@ -16,6 +16,7 @@ interface AvailableMoves {
 	fl_score: number
 	rb_score: number
 	direction: "LR" | "FB" | "S"
+	display_order?: number
 }
 
 interface AvailableBonuses {
@@ -225,7 +226,12 @@ describe("ScoresheetMoves", () => {
 
 				const body = (await request.json()) as Record<string, any>
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-				expect(body.addUpdateScoresheetRequest.moves).toEqual(mockMoves)
+				expect(body.addUpdateScoresheetRequest.moves).toEqual([
+					{
+						...mockMoves[0],
+						display_order: 0
+					}
+				])
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				expect(body.addUpdateScoresheetRequest.bonuses).toEqual(
 					mockBonuses
@@ -257,6 +263,56 @@ describe("ScoresheetMoves", () => {
 		await waitFor(() => {
 			expect(toast.success).toHaveBeenCalled()
 		})
+	})
+
+	it("updates move display order when a move is reordered", async () => {
+		const reorderMoves: AvailableMoves[] = [
+			{
+				id: "1",
+				sheet_id: "test-id",
+				name: "First Move",
+				fl_score: 10,
+				rb_score: 20,
+				direction: "LR"
+			},
+			{
+				id: "2",
+				sheet_id: "test-id",
+				name: "Second Move",
+				fl_score: 30,
+				rb_score: 40,
+				direction: "FB"
+			}
+		]
+
+		server.use(
+			http.get("/api/availablemoves", () => HttpResponse.json(reorderMoves)),
+			http.get("/api/availablebonuses", () => HttpResponse.json([]))
+		)
+
+		render(
+			<Provider store={store}>
+				<ScoresheetMoves selectedScoresheet="test-id" />
+			</Provider>
+		)
+
+		await waitFor(() => {
+			expect(screen.queryByTestId("loading-skeleton")).not.toBeInTheDocument()
+		})
+
+		const moveDownButtons = screen.getAllByTestId("move-down-button")
+		fireEvent.click(moveDownButtons[0])
+
+		const nameInputs = screen.getAllByRole("textbox", {
+			name: "Name"
+		})
+		const orderedMoveNames = nameInputs
+			.map((input) =>
+				input instanceof HTMLInputElement ? input.value : ""
+			)
+			.filter((value) => Boolean(value))
+
+		expect(orderedMoveNames.slice(0, 2)).toEqual(["Second Move", "First Move"])
 	})
 
 	it("deletes a bonus type from all moves", async () => {

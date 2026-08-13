@@ -18,6 +18,7 @@ class PydanticAvailableMoves(BaseModel):
     fl_score: int
     rb_score: int
     direction: Literal["LR", "FB", "S"]
+    display_order: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -47,18 +48,45 @@ async def add_update_scoresheet(
     db: Session = Depends(get_transaction_session),
 ) -> None:
     with db.begin():
-        db.query(AvailableBonuses).filter(
-            AvailableBonuses.sheet_id == scoresheet_id
-        ).delete()
-        db.query(AvailableMoves).filter(
-            AvailableMoves.sheet_id == scoresheet_id
-        ).delete()
+        existing_moves = {
+            move.id: move
+            for move in db.query(AvailableMoves)
+            .filter(AvailableMoves.sheet_id == scoresheet_id)
+            .all()
+        }
+        existing_bonuses = {
+            bonus.id: bonus
+            for bonus in db.query(AvailableBonuses)
+            .filter(AvailableBonuses.sheet_id == scoresheet_id)
+            .all()
+        }
 
-        db.bulk_save_objects(
-            [AvailableMoves(**move.model_dump()) for move in scoresheet.moves]
-        )
-        db.bulk_save_objects(
-            [AvailableBonuses(**bonus.model_dump()) for bonus in scoresheet.bonuses]
-        )
+        incoming_move_ids = set()
+        for move in scoresheet.moves:
+            incoming_move_ids.add(move.id)
+            move_data = move.model_dump()
+            existing_move = existing_moves.get(move.id)
+            if existing_move:
+                for key, value in move_data.items():
+                    setattr(existing_move, key, value)
+            else:
+                db.add(AvailableMoves(**move_data))
 
-        db.commit()
+        incoming_bonus_ids = set()
+        for bonus in scoresheet.bonuses:
+            incoming_bonus_ids.add(bonus.id)
+            bonus_data = bonus.model_dump()
+            existing_bonus = existing_bonuses.get(bonus.id)
+            if existing_bonus:
+                for key, value in bonus_data.items():
+                    setattr(existing_bonus, key, value)
+            else:
+                db.add(AvailableBonuses(**bonus_data))
+
+        for bonus_id, existing_bonus in existing_bonuses.items():
+            if bonus_id not in incoming_bonus_ids:
+                db.delete(existing_bonus)
+
+        for move_id, existing_move in existing_moves.items():
+            if move_id not in incoming_move_ids:
+                db.delete(existing_move)

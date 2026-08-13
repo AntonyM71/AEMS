@@ -35,7 +35,10 @@ export const ScoresheetMoves = ({
 	}, [selectedScoresheet])
 
 	useEffect(() => {
-		setNewMoves((moves.data as AvailableMoves[]) || [])
+		const orderedMoves = Array.isArray(moves.data)
+			? [...moves.data].sort(sortMoves)
+			: []
+		setNewMoves((orderedMoves as AvailableMoves[]) || [])
 	}, [moves.data])
 
 	const bonusInfo = useGetManyAvailablebonusesGetQuery(
@@ -130,6 +133,29 @@ export const ScoresheetMoves = ({
 			newBonusInfo.filter((b) => b.move_id !== deletedMove.id)
 		)
 	}
+	const reorderMove = (moveId: string, direction: "up" | "down") => {
+		setNewMoves((prevMoves) => {
+			const currentIndex = prevMoves.findIndex((move) => move.id === moveId)
+			const newIndex =
+				direction === "up" ? currentIndex - 1 : currentIndex + 1
+
+			if (
+				currentIndex === -1 ||
+				newIndex < 0 ||
+				newIndex >= prevMoves.length
+			) {
+				return prevMoves
+			}
+
+			const reorderedMoves = [...prevMoves]
+			const currentMove = reorderedMoves[currentIndex]
+			reorderedMoves[currentIndex] = reorderedMoves[newIndex]
+			reorderedMoves[newIndex] = currentMove
+
+			return reorderedMoves
+		})
+	}
+
 	const addNewBonusType = (bonusName: string) => {
 		setNewBonusInfo([
 			...newBonusInfo,
@@ -187,7 +213,10 @@ export const ScoresheetMoves = ({
 				scoresheetId: selectedScoresheet,
 				addUpdateScoresheetRequest: {
 					bonuses: newBonusInfo,
-					moves: newMoves
+					moves: newMoves.map((move, index) => ({
+						...move,
+						display_order: index
+					}))
 				}
 			})
 			toast.success("Scoresheet updated successfully")
@@ -210,9 +239,9 @@ export const ScoresheetMoves = ({
 					deleteBonus={deleteBonusType}
 					setUniqueBonusNamesList={setUniqueBonusNamesList}
 				/>
-				{newMoves.map((m, i) => (
+				{newMoves.map((m) => (
 					<EditDeleteMove
-						key={i}
+						key={m.id}
 						moveData={{
 							id: m.id,
 							name: m.name,
@@ -225,6 +254,8 @@ export const ScoresheetMoves = ({
 						}}
 						updateMove={editMove}
 						deleteMove={deleteMove}
+						moveUp={() => reorderMove(m.id, "up")}
+						moveDown={() => reorderMove(m.id, "down")}
 					/>
 				))}
 				<AddNewMove
@@ -264,6 +295,7 @@ interface AvailableMoves {
 	fl_score: number
 	rb_score: number
 	direction: AvailableMoveDirections
+	display_order?: number
 }
 
 interface NewBonusInfo {
@@ -281,6 +313,16 @@ export const sortBonuses = (
 ) => {
 	// Use a fallback value for missing keys, such as `Infinity` or `-Infinity`
 	const aKey = a.display_order ?? Infinity // Preserve original order for missing keys
+	const bKey = b.display_order ?? Infinity
+
+	return aKey - bKey
+}
+
+export const sortMoves = (
+	a: { display_order?: number },
+	b: { display_order?: number }
+) => {
+	const aKey = a.display_order ?? Infinity
 	const bKey = b.display_order ?? Infinity
 
 	return aKey - bKey

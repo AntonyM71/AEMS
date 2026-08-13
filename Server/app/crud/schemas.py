@@ -111,6 +111,7 @@ class AvailableMovesResponse(BaseModel):
     fl_score: int  # Changed from float to int to match models.py
     rb_score: int  # Added missing field
     direction: str  # Added missing field
+    display_order: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

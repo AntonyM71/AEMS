@@ -162,6 +162,7 @@ class AvailableMoves(Base):
     rb_score = Column(Integer, nullable=False)
     schema = "public"
     direction = Column(String, nullable=False)
+    display_order = Column(Integer, nullable=True)
 
 
 class AvailableBonuses(Base):
