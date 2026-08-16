@@ -1,3 +1,5 @@
+echo "Installing sonarqube-cli..."
+curl -o- https://raw.githubusercontent.com/SonarSource/sonarqube-cli/refs/heads/master/user-scripts/install.sh | bash
 echo "Installing npm packages..."
 (cd Webapp && npm install)
 echo "Setting up Python virtual environment..."

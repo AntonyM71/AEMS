@@ -1,4 +1,9 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
+FROM mcr.microsoft.com/devcontainers/python:1-3.13-bookworm
+
+# The base image bakes in an apt source for dl.yarnpkg.com whose keyring lacks
+# Yarn's current signing key, so any apt-get update (e.g. the docker-in-docker
+# feature's install script) fails with NO_PUBKEY. We use npm, not this repo.
+RUN rm -f /etc/apt/sources.list.d/yarn.list
 
 ENV PYTHONUNBUFFERED 1
 ENV PATH="/workspaces/AEMS/Server/.venv/bin:$PATH"
