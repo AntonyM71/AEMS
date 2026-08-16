@@ -1,7 +1,7 @@
 import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
 import _, { cloneDeep } from "lodash"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
 import {
@@ -14,6 +14,8 @@ import { AddNewMove } from "./AddMove"
 import { EditDeleteMove } from "./EditDeleteMove"
 import { MoveData } from "./EditMove"
 import { ScoresheetBuilderHeader } from "./Header"
+
+const SWAP_HIGHLIGHT_MS = 500
 
 export const ScoresheetMoves = ({
 	selectedScoresheet
@@ -69,6 +71,20 @@ export const ScoresheetMoves = ({
 	const [newMoves, setNewMoves] = useState<AvailableMoves[]>([])
 
 	const [uniqueBonusNamesList, setUniqueBonusNamesList] = useState<string[]>(
+		[]
+	)
+
+	const [recentlySwappedIds, setRecentlySwappedIds] = useState<Set<string>>(
+		new Set()
+	)
+	const swapHighlightTimeout = useRef<NodeJS.Timeout | null>(null)
+
+	useEffect(
+		() => () => {
+			if (swapHighlightTimeout.current) {
+				clearTimeout(swapHighlightTimeout.current)
+			}
+		},
 		[]
 	)
 
@@ -136,7 +152,9 @@ export const ScoresheetMoves = ({
 	}
 	const reorderMove = (moveId: string, direction: "up" | "down") => {
 		setNewMoves((prevMoves) => {
-			const currentIndex = prevMoves.findIndex((move) => move.id === moveId)
+			const currentIndex = prevMoves.findIndex(
+				(move) => move.id === moveId
+			)
 			const newIndex =
 				direction === "up" ? currentIndex - 1 : currentIndex + 1
 
@@ -150,8 +168,17 @@ export const ScoresheetMoves = ({
 
 			const reorderedMoves = [...prevMoves]
 			const currentMove = reorderedMoves[currentIndex]
-			reorderedMoves[currentIndex] = reorderedMoves[newIndex]
+			const swappedMove = reorderedMoves[newIndex]
+			reorderedMoves[currentIndex] = swappedMove
 			reorderedMoves[newIndex] = currentMove
+
+			if (swapHighlightTimeout.current) {
+				clearTimeout(swapHighlightTimeout.current)
+			}
+			setRecentlySwappedIds(new Set([currentMove.id, swappedMove.id]))
+			swapHighlightTimeout.current = setTimeout(() => {
+				setRecentlySwappedIds(new Set())
+			}, SWAP_HIGHLIGHT_MS)
 
 			return reorderedMoves
 		})
@@ -219,7 +246,7 @@ export const ScoresheetMoves = ({
 						display_order: index
 					}))
 				}
-			})
+			}).unwrap()
 			toast.success("Scoresheet updated successfully")
 			await bonusInfo.refetch()
 			await moves.refetch()
@@ -231,63 +258,47 @@ export const ScoresheetMoves = ({
 
 	if (moves.isLoading || bonusInfo.isLoading) {
 		return <Skeleton variant="rectangular" data-testid="loading-skeleton" />
-	} else if (newMoves) {
-		return (
-			<>
-				<ScoresheetBuilderHeader
-					bonuses={uniqueBonusNamesList}
-					setBonuses={addNewBonusType}
-					deleteBonus={deleteBonusType}
-					setUniqueBonusNamesList={setUniqueBonusNamesList}
-				/>
-				{newMoves.map((m, index) => (
-					<EditDeleteMove
-						key={m.id}
-						moveData={{
-							id: m.id,
-							name: m.name,
-							rbScore: m.rb_score,
-							flScore: m.fl_score,
-							direction: m.direction,
-							bonuses: newBonusInfo
-								.filter((b) => b.move_id === m.id)
-								.sort(sortBonuses)
-						}}
-						updateMove={editMove}
-						deleteMove={deleteMove}
-						moveUp={() => reorderMove(m.id, "up")}
-						moveDown={() => reorderMove(m.id, "down")}
-						canMoveUp={index > 0}
-						canMoveDown={index < newMoves.length - 1}
-					/>
-				))}
-				<AddNewMove
-					bonuses={uniqueBonusNamesList}
-					addMove={addNewMove}
-				/>
-				<Button
-					onClick={() => void submitDataToDB()}
-					variant="contained"
-					color="secondary"
-				>
-					Update Scoresheet
-				</Button>
-			</>
-		)
-	} else if (!selectedScoresheet) {
-		return <></>
 	}
 
 	return (
-		<div>
+		<>
 			<ScoresheetBuilderHeader
 				bonuses={uniqueBonusNamesList}
 				setBonuses={addNewBonusType}
 				deleteBonus={deleteBonusType}
 				setUniqueBonusNamesList={setUniqueBonusNamesList}
 			/>
+			{newMoves.map((m, index) => (
+				<EditDeleteMove
+					key={m.id}
+					moveData={{
+						id: m.id,
+						name: m.name,
+						rbScore: m.rb_score,
+						flScore: m.fl_score,
+						direction: m.direction,
+						bonuses: newBonusInfo
+							.filter((b) => b.move_id === m.id)
+							.sort(sortBonuses)
+					}}
+					updateMove={editMove}
+					deleteMove={deleteMove}
+					moveUp={() => reorderMove(m.id, "up")}
+					moveDown={() => reorderMove(m.id, "down")}
+					canMoveUp={index > 0}
+					canMoveDown={index < newMoves.length - 1}
+					highlighted={recentlySwappedIds.has(m.id)}
+				/>
+			))}
 			<AddNewMove bonuses={uniqueBonusNamesList} addMove={addNewMove} />
-		</div>
+			<Button
+				onClick={() => void submitDataToDB()}
+				variant="contained"
+				color="secondary"
+			>
+				Update Scoresheet
+			</Button>
+		</>
 	)
 }
 
