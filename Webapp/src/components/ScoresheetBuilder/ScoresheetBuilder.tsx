@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
 import {
+	PydanticAvailableMoves,
 	useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
@@ -37,10 +38,13 @@ export const ScoresheetMoves = ({
 	}, [selectedScoresheet])
 
 	useEffect(() => {
-		const movesData = (moves.data as AvailableMoves[] | undefined) ?? []
-		const orderedMoves = Array.isArray(moves.data)
-			? [...movesData].sort(sortMoves)
+		const movesData = Array.isArray(moves.data)
+			? moves.data.map((move) => ({
+					...move,
+					direction: move.direction as PydanticAvailableMoves["direction"]
+				}))
 			: []
+		const orderedMoves = [...movesData].sort(sortMoves)
 		setNewMoves(orderedMoves)
 	}, [moves.data])
 
@@ -68,7 +72,7 @@ export const ScoresheetMoves = ({
 
 	const [newBonusInfo, setNewBonusInfo] = useState<NewBonusInfo[]>([])
 
-	const [newMoves, setNewMoves] = useState<AvailableMoves[]>([])
+	const [newMoves, setNewMoves] = useState<PydanticAvailableMoves[]>([])
 
 	const [uniqueBonusNamesList, setUniqueBonusNamesList] = useState<string[]>(
 		[]
@@ -276,7 +280,7 @@ export const ScoresheetMoves = ({
 						name: m.name,
 						rbScore: m.rb_score,
 						flScore: m.fl_score,
-						direction: m.direction,
+						direction: m.direction as AvailableMoveDirections,
 						bonuses: newBonusInfo
 							.filter((b) => b.move_id === m.id)
 							.sort(sortBonuses)
@@ -300,16 +304,6 @@ export const ScoresheetMoves = ({
 			</Button>
 		</>
 	)
-}
-
-interface AvailableMoves {
-	id: string
-	sheet_id: string
-	name: string
-	fl_score: number
-	rb_score: number
-	direction: AvailableMoveDirections
-	display_order?: number
 }
 
 interface NewBonusInfo {

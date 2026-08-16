@@ -53,7 +53,9 @@ def test_add_update_scoresheet_returns_409_for_referenced_removals(
     mock_db_session.query.side_effect = [
         _build_query_mock([move_kept, move_removed]),
         _build_query_mock([bonus_kept, bonus_removed]),
+        _build_query_mock([(move_removed.id,)]),
         _build_query_mock([(bonus_removed.id,)]),
+        _build_query_mock([]),
         _build_query_mock([]),
     ]
 
@@ -136,6 +138,8 @@ def test_add_update_scoresheet_upserts_and_deletes_unreferenced_items(
         _build_query_mock([bonus_existing, bonus_to_delete]),
         _build_query_mock([]),
         _build_query_mock([]),
+        _build_query_mock([]),
+        _build_query_mock([]),
     ]
 
     new_move_id = UUID("55555555-5555-5555-5555-555555555555")
@@ -206,3 +210,136 @@ def test_add_update_scoresheet_upserts_and_deletes_unreferenced_items(
     deleted_records = [call.args[0] for call in mock_db_session.delete.call_args_list]
     assert move_to_delete in deleted_records
     assert bonus_to_delete in deleted_records
+
+
+def test_add_update_scoresheet_returns_409_for_referenced_definition_changes(
+    test_client: TestClient, mock_db_session: Session
+) -> None:
+    sheet_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+
+    move_existing = AvailableMoves(
+        id=UUID("11111111-1111-1111-1111-111111111111"),
+        sheet_id=sheet_id,
+        name="Original Name",
+        fl_score=10,
+        rb_score=20,
+        direction="LR",
+        display_order=0,
+    )
+
+    bonus_existing = AvailableBonuses(
+        id=UUID("33333333-3333-3333-3333-333333333333"),
+        sheet_id=sheet_id,
+        move_id=move_existing.id,
+        name="Original Bonus",
+        score=5,
+        display_order=0,
+    )
+
+    mock_db_session.query.side_effect = [
+        _build_query_mock([move_existing]),
+        _build_query_mock([bonus_existing]),
+        _build_query_mock([(move_existing.id,)]),
+        _build_query_mock([(bonus_existing.id,)]),
+    ]
+
+    response = test_client.post(
+        f"/addUpdateScoresheet/{sheet_id}",
+        json={
+            "moves": [
+                {
+                    "id": str(move_existing.id),
+                    "sheet_id": str(sheet_id),
+                    "name": "Updated Name",
+                    "fl_score": move_existing.fl_score,
+                    "rb_score": move_existing.rb_score,
+                    "direction": move_existing.direction,
+                    "display_order": 1,
+                }
+            ],
+            "bonuses": [
+                {
+                    "id": str(bonus_existing.id),
+                    "sheet_id": str(sheet_id),
+                    "move_id": str(move_existing.id),
+                    "name": "Updated Bonus",
+                    "score": bonus_existing.score,
+                    "display_order": 1,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == (
+        "Referenced moves and bonuses can only update display order."
+    )
+    assert move_existing.name == "Original Name"
+    assert bonus_existing.name == "Original Bonus"
+    assert mock_db_session.add.call_count == 0
+    assert mock_db_session.delete.call_count == 0
+
+
+def test_add_update_scoresheet_allows_display_order_updates_for_referenced_items(
+    test_client: TestClient, mock_db_session: Session
+) -> None:
+    sheet_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+
+    move_existing = AvailableMoves(
+        id=UUID("11111111-1111-1111-1111-111111111111"),
+        sheet_id=sheet_id,
+        name="Original Name",
+        fl_score=10,
+        rb_score=20,
+        direction="LR",
+        display_order=0,
+    )
+
+    bonus_existing = AvailableBonuses(
+        id=UUID("33333333-3333-3333-3333-333333333333"),
+        sheet_id=sheet_id,
+        move_id=move_existing.id,
+        name="Original Bonus",
+        score=5,
+        display_order=0,
+    )
+
+    mock_db_session.query.side_effect = [
+        _build_query_mock([move_existing]),
+        _build_query_mock([bonus_existing]),
+        _build_query_mock([(move_existing.id,)]),
+        _build_query_mock([(bonus_existing.id,)]),
+    ]
+
+    response = test_client.post(
+        f"/addUpdateScoresheet/{sheet_id}",
+        json={
+            "moves": [
+                {
+                    "id": str(move_existing.id),
+                    "sheet_id": str(sheet_id),
+                    "name": move_existing.name,
+                    "fl_score": move_existing.fl_score,
+                    "rb_score": move_existing.rb_score,
+                    "direction": move_existing.direction,
+                    "display_order": 1,
+                }
+            ],
+            "bonuses": [
+                {
+                    "id": str(bonus_existing.id),
+                    "sheet_id": str(sheet_id),
+                    "move_id": str(bonus_existing.move_id),
+                    "name": bonus_existing.name,
+                    "score": bonus_existing.score,
+                    "display_order": 1,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    assert move_existing.display_order == 1
+    assert bonus_existing.display_order == 1
+    assert move_existing.name == "Original Name"
+    assert bonus_existing.name == "Original Bonus"
