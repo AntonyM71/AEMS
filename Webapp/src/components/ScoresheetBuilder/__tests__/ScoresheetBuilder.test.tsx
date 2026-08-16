@@ -59,6 +59,80 @@ const createTestStore = () =>
 			getDefaultMiddleware().concat(aemsApi.middleware)
 	})
 
+const renderScoresheet = (store: ReturnType<typeof createTestStore>) =>
+	render(
+		<Provider store={store}>
+			<Toaster />
+			<ScoresheetMoves selectedScoresheet="test-id" />
+		</Provider>
+	)
+
+const waitForScoresheetToLoad = async (timeout?: number) => {
+	await waitFor(() => {
+		expect(screen.queryByTestId("loading-skeleton")).not.toBeInTheDocument()
+	}, timeout ? { timeout } : undefined)
+}
+
+const buildMove = (
+	id: string,
+	name: string,
+	fl_score: number,
+	rb_score: number,
+	direction: AvailableMoves["direction"]
+): AvailableMoves => ({
+	id,
+	sheet_id: "test-id",
+	name,
+	fl_score,
+	rb_score,
+	direction
+})
+
+const createTwoMoves = (): AvailableMoves[] => [
+	buildMove("1", "First Move", 10, 20, "LR"),
+	buildMove("2", "Second Move", 30, 40, "FB")
+]
+
+const createThreeMoves = (): AvailableMoves[] => [
+	...createTwoMoves(),
+	buildMove("3", "Third Move", 50, 60, "FB")
+]
+
+const getOrderedMoveNames = () =>
+	screen
+		.getAllByRole("textbox", {
+			name: "Name"
+		})
+		.map((input) => (input instanceof HTMLInputElement ? input.value : ""))
+		.filter((value) => Boolean(value))
+
+const useScoresheetHandlers = ({
+	moves = mockMoves,
+	bonuses = mockBonuses,
+	onSubmit
+}: {
+	moves?: AvailableMoves[]
+	bonuses?: AvailableBonuses[]
+	onSubmit?: (body: Record<string, any>) => void | Promise<void>
+} = {}) => {
+	const handlers = [
+		http.get("/api/availablemoves", () => HttpResponse.json(moves)),
+		http.get("/api/availablebonuses", () => HttpResponse.json(bonuses))
+	]
+
+	if (onSubmit) {
+		handlers.push(
+			http.post("/api/addUpdateScoresheet/:id", async ({ request }) => {
+				await onSubmit((await request.json()) as Record<string, any>)
+
+				return HttpResponse.json({ success: true })
+			})
+		)
+	}
+
+	server.use(...handlers)
+}
+
 describe("ScoresheetMoves", () => {
 	let store: ReturnType<typeof createTestStore>
 
@@ -86,12 +160,7 @@ describe("ScoresheetMoves", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
+		renderScoresheet(store)
 
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
 
@@ -114,22 +183,9 @@ describe("ScoresheetMoves", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
+		renderScoresheet(store)
 
-		// Wait for loading state to disappear and verify it's gone
-		await waitFor(
-			() => {
-				expect(
-					screen.queryByTestId("loading-skeleton")
-				).not.toBeInTheDocument()
-			},
-			{ timeout: 1000 }
-		)
+		await waitForScoresheetToLoad(1000)
 
 		// Should show header with column names
 		const headers = screen.getAllByText(
@@ -166,21 +222,9 @@ describe("ScoresheetMoves", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
+		renderScoresheet(store)
 
-		// Wait for loading state to disappear and verify it's gone
-		await waitFor(
-			() => {
-				expect(
-					screen.queryByTestId("loading-skeleton")
-				).not.toBeInTheDocument()
-			},
-			{ timeout: 1000 }
-		)
+		await waitForScoresheetToLoad(1000)
 
 		// Check move data is displayed
 		const moveNameInput = await screen.findByDisplayValue("Test Move")
@@ -242,12 +286,7 @@ describe("ScoresheetMoves", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
+		renderScoresheet(store)
 
 		// Wait for loading to finish and update button to appear
 		const updateButton = await screen.findByRole("button", {
@@ -277,12 +316,7 @@ describe("ScoresheetMoves", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
+		renderScoresheet(store)
 
 		const updateButton = await screen.findByRole("button", {
 			name: "Update Scoresheet"
@@ -298,57 +332,15 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("updates move display order when a move is reordered", async () => {
-		const reorderMoves: AvailableMoves[] = [
-			{
-				id: "1",
-				sheet_id: "test-id",
-				name: "First Move",
-				fl_score: 10,
-				rb_score: 20,
-				direction: "LR"
-			},
-			{
-				id: "2",
-				sheet_id: "test-id",
-				name: "Second Move",
-				fl_score: 30,
-				rb_score: 40,
-				direction: "FB"
-			}
-		]
+		useScoresheetHandlers({ moves: createTwoMoves(), bonuses: [] })
 
-		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(reorderMoves)
-			),
-			http.get("/api/availablebonuses", () => HttpResponse.json([]))
-		)
-
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		const moveDownButtons = screen.getAllByTestId("move-down-button")
 		fireEvent.click(moveDownButtons[0])
 
-		const nameInputs = screen.getAllByRole("textbox", {
-			name: "Name"
-		})
-		const orderedMoveNames = nameInputs
-			.map((input) =>
-				input instanceof HTMLInputElement ? input.value : ""
-			)
-			.filter((value) => Boolean(value))
-
-		expect(orderedMoveNames.slice(0, 2)).toEqual([
+		expect(getOrderedMoveNames().slice(0, 2)).toEqual([
 			"Second Move",
 			"First Move"
 		])
@@ -378,43 +370,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("moves a move up and highlights both swapped rows", async () => {
-		const reorderMoves: AvailableMoves[] = [
-			{
-				id: "1",
-				sheet_id: "test-id",
-				name: "First Move",
-				fl_score: 10,
-				rb_score: 20,
-				direction: "LR"
-			},
-			{
-				id: "2",
-				sheet_id: "test-id",
-				name: "Second Move",
-				fl_score: 30,
-				rb_score: 40,
-				direction: "FB"
-			}
-		]
+		useScoresheetHandlers({ moves: createTwoMoves(), bonuses: [] })
 
-		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(reorderMoves)
-			),
-			http.get("/api/availablebonuses", () => HttpResponse.json([]))
-		)
-
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		// The first move can't move up, and the last can't move down
 		expect(screen.getAllByTestId("move-up-button")[0]).toBeDisabled()
@@ -423,14 +382,7 @@ describe("ScoresheetMoves", () => {
 		const moveUpButtons = screen.getAllByTestId("move-up-button")
 		fireEvent.click(moveUpButtons[1])
 
-		const nameInputs = screen.getAllByRole("textbox", { name: "Name" })
-		const orderedMoveNames = nameInputs
-			.map((input) =>
-				input instanceof HTMLInputElement ? input.value : ""
-			)
-			.filter((value) => Boolean(value))
-
-		expect(orderedMoveNames.slice(0, 2)).toEqual([
+		expect(getOrderedMoveNames().slice(0, 2)).toEqual([
 			"Second Move",
 			"First Move"
 		])
@@ -445,51 +397,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("does not let a stale highlight timer wipe out a second reorder's highlight early", async () => {
-		const reorderMoves: AvailableMoves[] = [
-			{
-				id: "1",
-				sheet_id: "test-id",
-				name: "First Move",
-				fl_score: 10,
-				rb_score: 20,
-				direction: "LR"
-			},
-			{
-				id: "2",
-				sheet_id: "test-id",
-				name: "Second Move",
-				fl_score: 30,
-				rb_score: 40,
-				direction: "FB"
-			},
-			{
-				id: "3",
-				sheet_id: "test-id",
-				name: "Third Move",
-				fl_score: 50,
-				rb_score: 60,
-				direction: "FB"
-			}
-		]
+		useScoresheetHandlers({ moves: createThreeMoves(), bonuses: [] })
 
-		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(reorderMoves)
-			),
-			http.get("/api/availablebonuses", () => HttpResponse.json([]))
-		)
-
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		// Fake timers only from here: the data-loading wait above needs real
 		// timers to work with MSW, but the highlight window itself needs
@@ -559,44 +470,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("removes a move from the scoresheet on double click, but not on a single click", async () => {
-		const reorderMoves: AvailableMoves[] = [
-			{
-				id: "1",
-				sheet_id: "test-id",
-				name: "First Move",
-				fl_score: 10,
-				rb_score: 20,
-				direction: "LR"
-			},
-			{
-				id: "2",
-				sheet_id: "test-id",
-				name: "Second Move",
-				fl_score: 30,
-				rb_score: 40,
-				direction: "FB"
-			}
-		]
+		useScoresheetHandlers({ moves: createTwoMoves(), bonuses: [] })
 
-		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(reorderMoves)
-			),
-			http.get("/api/availablebonuses", () => HttpResponse.json([]))
-		)
-
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		expect(
 			await screen.findByDisplayValue("First Move")
@@ -623,26 +500,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("deletes a bonus type from all moves", async () => {
-		server.use(
-			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json(mockBonuses)
-			)
-		)
+		useScoresheetHandlers()
 
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		// Wait for loading state to disappear
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		// Wait for Test Bonus to appear
 		const testBonusText = await screen.findByText(
@@ -667,25 +528,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("adds a new bonus type to all moves", async () => {
-		server.use(
-			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json(mockBonuses)
-			)
-		)
+		useScoresheetHandlers()
 
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		// Wait for loading state to disappear
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		// Add a new bonus type
 		const bonusInput = screen.getByLabelText("Add New Bonus")
@@ -714,24 +560,10 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("adds a new move to the scoresheet, keeping existing moves in place", async () => {
-		server.use(
-			http.get("/api/availablemoves", () => HttpResponse.json(mockMoves)),
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json(mockBonuses)
-			)
-		)
+		useScoresheetHandlers()
 
-		render(
-			<Provider store={store}>
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
-		})
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		// Before adding, only the existing move and the "add move" row itself
 		// have a "Test Bonus" score field
@@ -760,24 +592,7 @@ describe("ScoresheetMoves", () => {
 	})
 
 	it("removes a deleted move's bonuses from the submitted scoresheet", async () => {
-		const twoMoves: AvailableMoves[] = [
-			{
-				id: "1",
-				sheet_id: "test-id",
-				name: "First Move",
-				fl_score: 10,
-				rb_score: 20,
-				direction: "LR"
-			},
-			{
-				id: "2",
-				sheet_id: "test-id",
-				name: "Second Move",
-				fl_score: 30,
-				rb_score: 40,
-				direction: "FB"
-			}
-		]
+		const twoMoves = createTwoMoves()
 		const bonusesForBothMoves: AvailableBonuses[] = [
 			{
 				id: "bonus-1",
@@ -797,31 +612,16 @@ describe("ScoresheetMoves", () => {
 
 		let submittedBonuses: AvailableBonuses[] = []
 
-		server.use(
-			http.get("/api/availablemoves", () => HttpResponse.json(twoMoves)),
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json(bonusesForBothMoves)
-			),
-			http.post("/api/addUpdateScoresheet/:id", async ({ request }) => {
-				const body = (await request.json()) as Record<string, any>
-				submittedBonuses = body.bonuses
-
-				return HttpResponse.json({ success: true })
-			})
-		)
-
-		render(
-			<Provider store={store}>
-				<Toaster />
-				<ScoresheetMoves selectedScoresheet="test-id" />
-			</Provider>
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByTestId("loading-skeleton")
-			).not.toBeInTheDocument()
+		useScoresheetHandlers({
+			moves: twoMoves,
+			bonuses: bonusesForBothMoves,
+			onSubmit: (body) => {
+				submittedBonuses = body.bonuses as AvailableBonuses[]
+			}
 		})
+
+		renderScoresheet(store)
+		await waitForScoresheetToLoad()
 
 		expect(
 			await screen.findByDisplayValue("First Move")
