@@ -310,23 +310,16 @@ interface NewBonusInfo {
 	display_order?: number
 }
 
-export const sortBonuses = (
+export const sortByDisplayOrder = (
 	a: { display_order?: number },
 	b: { display_order?: number }
 ) => {
-	// Use a fallback value for missing keys, such as `Infinity` or `-Infinity`
-	const aKey = a.display_order ?? Infinity // Preserve original order for missing keys
-	const bKey = b.display_order ?? Infinity
-
-	return aKey - bKey
-}
-
-export const sortMoves = (
-	a: { display_order?: number },
-	b: { display_order?: number }
-) => {
+	// Preserve original order for missing keys by sorting them last
 	const aKey = a.display_order ?? Infinity
 	const bKey = b.display_order ?? Infinity
 
 	return aKey - bKey
 }
+
+export const sortBonuses = sortByDisplayOrder
+export const sortMoves = sortByDisplayOrder
