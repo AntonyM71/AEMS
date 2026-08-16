@@ -68,9 +68,9 @@ def _apply_pagination(
     query: Select[Any], offset: int | None, limit: int | None
 ) -> Select[Any]:
     """Apply offset/limit pagination to a query."""
-    if offset:
+    if offset is not None:
         query = query.offset(offset)
-    if limit:
+    if limit is not None:
         query = query.limit(limit)
     return query
 
