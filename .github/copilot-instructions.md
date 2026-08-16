@@ -101,6 +101,10 @@ AEMS (Athlete and Event Management System) is a multi-component system for manag
 
 ### Docker/Production
 
+- **One-time setup**: this compose file attaches to an external `aems_shared` Docker network (used to reach the broadcast graphics server). Create it once per machine before the first run:
+  ```bash
+  docker network create aems_shared
+  ```
 - **Start all services**:
   ```bash
   docker compose -f docker-compose.yaml up

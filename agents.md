@@ -78,6 +78,12 @@ python fake_timer.py     # test WebSocket client
 
 ### Docker / Production
 
+This compose file attaches to an external `aems_shared` Docker network (used to reach the broadcast graphics server). Create it once per machine before the first run:
+
+```bash
+docker network create aems_shared
+```
+
 ```bash
 docker compose -f docker-compose.yaml up           # start all services
 docker compose -f docker-compose.yaml up --build   # rebuild and start
