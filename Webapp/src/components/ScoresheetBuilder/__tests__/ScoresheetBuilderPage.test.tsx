@@ -115,6 +115,9 @@ describe("ScoresheetBuilderPage", () => {
 		await screen.findByRole("combobox", { name: "Scoresheet" })
 
 		// Wait for ScoresheetMoves to be rendered
-		await screen.findByLabelText("Add New Bonus")
+		const addBonusButton = await screen.findByLabelText("Add New Bonus")
+
+		// Assert that the ScoresheetMoves component is rendered
+		expect(addBonusButton).toBeInTheDocument()
 	})
 })
