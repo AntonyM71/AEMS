@@ -1,10 +1,11 @@
 import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
 import _, { cloneDeep } from "lodash"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
 import {
+	PydanticAvailableMoves,
 	useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation,
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
@@ -14,6 +15,8 @@ import { AddNewMove } from "./AddMove"
 import { EditDeleteMove } from "./EditDeleteMove"
 import { MoveData } from "./EditMove"
 import { ScoresheetBuilderHeader } from "./Header"
+
+const SWAP_HIGHLIGHT_MS = 500
 
 export const ScoresheetMoves = ({
 	selectedScoresheet
@@ -35,7 +38,14 @@ export const ScoresheetMoves = ({
 	}, [selectedScoresheet])
 
 	useEffect(() => {
-		setNewMoves((moves.data as AvailableMoves[]) || [])
+		const movesData = Array.isArray(moves.data)
+			? moves.data.map((move) => ({
+					...move,
+					direction: move.direction as PydanticAvailableMoves["direction"]
+				}))
+			: []
+		const orderedMoves = [...movesData].sort(sortMoves)
+		setNewMoves(orderedMoves)
 	}, [moves.data])
 
 	const bonusInfo = useGetManyAvailablebonusesGetQuery(
@@ -62,9 +72,23 @@ export const ScoresheetMoves = ({
 
 	const [newBonusInfo, setNewBonusInfo] = useState<NewBonusInfo[]>([])
 
-	const [newMoves, setNewMoves] = useState<AvailableMoves[]>([])
+	const [newMoves, setNewMoves] = useState<PydanticAvailableMoves[]>([])
 
 	const [uniqueBonusNamesList, setUniqueBonusNamesList] = useState<string[]>(
+		[]
+	)
+
+	const [recentlySwappedIds, setRecentlySwappedIds] = useState<Set<string>>(
+		new Set()
+	)
+	const swapHighlightTimeout = useRef<NodeJS.Timeout | null>(null)
+
+	useEffect(
+		() => () => {
+			if (swapHighlightTimeout.current) {
+				clearTimeout(swapHighlightTimeout.current)
+			}
+		},
 		[]
 	)
 
@@ -130,6 +154,40 @@ export const ScoresheetMoves = ({
 			newBonusInfo.filter((b) => b.move_id !== deletedMove.id)
 		)
 	}
+	const reorderMove = (moveId: string, direction: "up" | "down") => {
+		setNewMoves((prevMoves) => {
+			const currentIndex = prevMoves.findIndex(
+				(move) => move.id === moveId
+			)
+			const newIndex =
+				direction === "up" ? currentIndex - 1 : currentIndex + 1
+
+			if (
+				currentIndex === -1 ||
+				newIndex < 0 ||
+				newIndex >= prevMoves.length
+			) {
+				return prevMoves
+			}
+
+			const reorderedMoves = [...prevMoves]
+			const currentMove = reorderedMoves[currentIndex]
+			const swappedMove = reorderedMoves[newIndex]
+			reorderedMoves[currentIndex] = swappedMove
+			reorderedMoves[newIndex] = currentMove
+
+			if (swapHighlightTimeout.current) {
+				clearTimeout(swapHighlightTimeout.current)
+			}
+			setRecentlySwappedIds(new Set([currentMove.id, swappedMove.id]))
+			swapHighlightTimeout.current = setTimeout(() => {
+				setRecentlySwappedIds(new Set())
+			}, SWAP_HIGHLIGHT_MS)
+
+			return reorderedMoves
+		})
+	}
+
 	const addNewBonusType = (bonusName: string) => {
 		setNewBonusInfo([
 			...newBonusInfo,
@@ -187,9 +245,12 @@ export const ScoresheetMoves = ({
 				scoresheetId: selectedScoresheet,
 				addUpdateScoresheetRequest: {
 					bonuses: newBonusInfo,
-					moves: newMoves
+					moves: newMoves.map((move, index) => ({
+						...move,
+						display_order: index
+					}))
 				}
-			})
+			}).unwrap()
 			toast.success("Scoresheet updated successfully")
 			await bonusInfo.refetch()
 			await moves.refetch()
@@ -201,69 +262,48 @@ export const ScoresheetMoves = ({
 
 	if (moves.isLoading || bonusInfo.isLoading) {
 		return <Skeleton variant="rectangular" data-testid="loading-skeleton" />
-	} else if (newMoves) {
-		return (
-			<>
-				<ScoresheetBuilderHeader
-					bonuses={uniqueBonusNamesList}
-					setBonuses={addNewBonusType}
-					deleteBonus={deleteBonusType}
-					setUniqueBonusNamesList={setUniqueBonusNamesList}
-				/>
-				{newMoves.map((m, i) => (
-					<EditDeleteMove
-						key={i}
-						moveData={{
-							id: m.id,
-							name: m.name,
-							rbScore: m.rb_score,
-							flScore: m.fl_score,
-							direction: m.direction,
-							bonuses: newBonusInfo
-								.filter((b) => b.move_id === m.id)
-								.sort(sortBonuses)
-						}}
-						updateMove={editMove}
-						deleteMove={deleteMove}
-					/>
-				))}
-				<AddNewMove
-					bonuses={uniqueBonusNamesList}
-					addMove={addNewMove}
-				/>
-				<Button
-					onClick={() => void submitDataToDB()}
-					variant="contained"
-					color="secondary"
-				>
-					Update Scoresheet
-				</Button>
-			</>
-		)
-	} else if (!selectedScoresheet) {
-		return <></>
 	}
 
 	return (
-		<div>
+		<>
 			<ScoresheetBuilderHeader
 				bonuses={uniqueBonusNamesList}
 				setBonuses={addNewBonusType}
 				deleteBonus={deleteBonusType}
 				setUniqueBonusNamesList={setUniqueBonusNamesList}
 			/>
+			{newMoves.map((m, index) => (
+				<EditDeleteMove
+					key={m.id}
+					moveData={{
+						id: m.id,
+						name: m.name,
+						rbScore: m.rb_score,
+						flScore: m.fl_score,
+						direction: m.direction as AvailableMoveDirections,
+						bonuses: newBonusInfo
+							.filter((b) => b.move_id === m.id)
+							.sort(sortBonuses)
+					}}
+					updateMove={editMove}
+					deleteMove={deleteMove}
+					moveUp={() => reorderMove(m.id, "up")}
+					moveDown={() => reorderMove(m.id, "down")}
+					canMoveUp={index > 0}
+					canMoveDown={index < newMoves.length - 1}
+					highlighted={recentlySwappedIds.has(m.id)}
+				/>
+			))}
 			<AddNewMove bonuses={uniqueBonusNamesList} addMove={addNewMove} />
-		</div>
+			<Button
+				onClick={() => void submitDataToDB()}
+				variant="contained"
+				color="secondary"
+			>
+				Update Scoresheet
+			</Button>
+		</>
 	)
-}
-
-interface AvailableMoves {
-	id: string
-	sheet_id: string
-	name: string
-	fl_score: number
-	rb_score: number
-	direction: AvailableMoveDirections
 }
 
 interface NewBonusInfo {
@@ -275,13 +315,16 @@ interface NewBonusInfo {
 	display_order?: number
 }
 
-export const sortBonuses = (
+export const sortByDisplayOrder = (
 	a: { display_order?: number },
 	b: { display_order?: number }
 ) => {
-	// Use a fallback value for missing keys, such as `Infinity` or `-Infinity`
-	const aKey = a.display_order ?? Infinity // Preserve original order for missing keys
+	// Preserve original order for missing keys by sorting them last
+	const aKey = a.display_order ?? Infinity
 	const bKey = b.display_order ?? Infinity
 
 	return aKey - bKey
 }
+
+export const sortBonuses = sortByDisplayOrder
+export const sortMoves = sortByDisplayOrder

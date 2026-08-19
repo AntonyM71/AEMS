@@ -42,6 +42,14 @@ async def get_many(
     rb_score____list_____comparison_operator: str | None = Query(
         None, alias="rb_score____list_____comparison_operator"
     ),
+    display_order____from: int | None = Query(None, alias="display_order____from"),
+    display_order____to: int | None = Query(None, alias="display_order____to"),
+    display_order____list: list[int] | None = Query(
+        None, alias="display_order____list"
+    ),
+    display_order____list_____comparison_operator: str | None = Query(
+        None, alias="display_order____list_____comparison_operator"
+    ),
     direction____str: list[str] | None = Query(None, alias="direction____str"),
     direction____str_____comparison_operator: str | None = Query(
         None, alias="direction____str_____comparison_operator"
@@ -90,6 +98,13 @@ async def get_many(
     if direction____list:
         query = query.where(AvailableMoves.direction.in_(direction____list))
 
+    if display_order____from is not None:
+        query = query.where(AvailableMoves.display_order >= display_order____from)
+    if display_order____to is not None:
+        query = query.where(AvailableMoves.display_order <= display_order____to)
+    if display_order____list:
+        query = query.where(AvailableMoves.display_order.in_(display_order____list))
+
     # Apply ordering
     if order_by_columns:
         for order_col in order_by_columns:
@@ -113,6 +128,13 @@ async def get_many(
                     query = query.order_by(AvailableMoves.direction.desc())
                 else:
                     query = query.order_by(AvailableMoves.direction.asc())
+            elif "display_order" in order_col.lower():
+                if "desc" in order_col.lower():
+                    query = query.order_by(AvailableMoves.display_order.desc())
+                else:
+                    query = query.order_by(AvailableMoves.display_order.asc())
+    else:
+        query = query.order_by(AvailableMoves.display_order.asc(), AvailableMoves.id.asc())
 
     # Apply pagination
     if offset is not None:

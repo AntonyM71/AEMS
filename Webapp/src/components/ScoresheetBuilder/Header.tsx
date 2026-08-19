@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography"
 import { includes } from "lodash"
 import { Dispatch, SetStateAction, useState } from "react"
 import toast from "react-hot-toast"
+import { SCORE_FIELD_WIDTH } from "./EditMove"
 
 export const ScoresheetBuilderHeader = ({
 	bonuses,
@@ -61,30 +62,31 @@ export const ScoresheetBuilderHeader = ({
 			<Grid size={1}>
 				<Typography>Direction</Typography>
 			</Grid>
-			<Grid size={1}>
+			<Grid size="auto" sx={{ width: SCORE_FIELD_WIDTH }}>
 				<Typography>F/R Score</Typography>
 			</Grid>
-			<Grid size={1}>
+			<Grid size="auto" sx={{ width: SCORE_FIELD_WIDTH }}>
 				<Typography>L/B Score</Typography>
 			</Grid>
 			{bonuses.map((b, i) => (
-				<Grid key={b} size={1}>
+				<Grid key={b} size="auto" sx={{ width: SCORE_FIELD_WIDTH }}>
 					<Paper>
 						<Grid
 							container
 							justifyContent="space-between"
 							alignItems="center"
 						>
-							<Grid size={6}>
-								<Typography>{b}</Typography>
+							<Grid size={12}>
+								<Typography noWrap>{b}</Typography>
 							</Grid>
 							<Grid>
 								<IconButton
 									onClick={() => deleteBonus(b)}
 									color="error"
+									size="small"
 									data-testid={`delete-bonus-${b}`}
 								>
-									<DeleteIcon />
+									<DeleteIcon fontSize="small" />
 								</IconButton>
 							</Grid>
 							<Grid>
@@ -92,9 +94,10 @@ export const ScoresheetBuilderHeader = ({
 									onClick={() =>
 										handleMoveItem(bonuses, i, "left")
 									}
+									size="small"
 									data-testid={`move-bonus-left-${b}`}
 								>
-									<ChevronLeft />
+									<ChevronLeft fontSize="small" />
 								</IconButton>
 							</Grid>
 							<Grid>
@@ -102,9 +105,10 @@ export const ScoresheetBuilderHeader = ({
 									onClick={() =>
 										handleMoveItem(bonuses, i, "right")
 									}
+									size="small"
 									data-testid={`move-bonus-right-${b}`}
 								>
-									<ChevronRight />
+									<ChevronRight fontSize="small" />
 								</IconButton>
 							</Grid>
 						</Grid>

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) and other AI coding agents (GitHub Copilot, OpenAI Codex, etc.) when working with code in this repository. It is also referenced as `agents.md`. For GitHub Copilot-specific onboarding instructions, see [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
 ## What AEMS Is
 
@@ -62,6 +62,10 @@ npm run test:report          # open the last Playwright report
 ```
 
 ### Full stack via Docker (from repo root)
+Both compose files below attach to an external `aems_shared` Docker network (used to reach the broadcast graphics server). Create it once per machine before the first run:
+```bash
+docker network create aems_shared
+```
 ```bash
 docker compose -f docker-compose.yaml up          # server + frontend + nginx + postgres
 ```
@@ -72,6 +76,23 @@ The server container runs `alembic upgrade head && seed_scoresheets && gunicorn 
 export GRAPHICS_PACK_DIR=/absolute/path/to/active-pack
 docker compose -f docker-compose.graphics.yaml up --build   # serves on http://localhost:82
 ```
+
+## Testing Philosophy
+
+Prefer integration-style tests that assert outcomes that matter to users, over tests that only check internals or that code runs without crashing.
+
+- ✅ Assert that a score calculation returns the correct value for a specific set of moves and bonuses
+- ✅ Assert that creating a competition via the API persists it so it can be read back
+- ✅ Assert that clicking a move card updates the Redux store with the correct move and direction
+- ❌ Avoid asserting only that a response has status `200` without checking the body
+- ❌ Avoid asserting only that a component renders without crashing
+- ❌ Avoid asserting on internal implementation details
+
+Unit tests are appropriate for: common utilities, key business logic (scoring algorithms, bonus deduplication), and logic too slow or complex to cover through integration tests.
+
+- **Backend** ([Server/](Server/)): test files live in `Server/app/*/tests/`; use `fastapi.testclient.TestClient` with fixtures from `conftest.py`, and assert on response bodies, not just status codes. See `Server/app/scoring/tests/test_scoring_logic.py` and `Server/app/competition_management/tests/test_competition_management.py` for good examples.
+- **Frontend** ([Webapp/](Webapp/)): use `renderWithProviders` from `src/testUtils.tsx`, and **MSW** via `src/mocks/server.ts` for API mocking — do **not** mock `aemsApi.ts` directly. Simulate user interactions and assert on visible outcomes. See `Webapp/src/components/competition/__tests__/CompetitionSelector.test.tsx` and `Webapp/src/utils/scoringUtils.spec.ts`.
+- **E2E** ([e2e/](e2e/)): use Playwright against a real running stack, no mocking. Test complete user workflows (create data → verify it persists → use it in the UI) with a unique identifier (e.g., `Date.now()`) in test data names to avoid collisions.
 
 ## Architecture Notes
 

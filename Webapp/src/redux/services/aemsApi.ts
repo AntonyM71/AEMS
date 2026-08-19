@@ -446,6 +446,11 @@ const injectedRtkApi = api.injectEndpoints({
 					rb_score____list: queryArg.rbScoreList,
 					rb_score____list_____comparison_operator:
 						queryArg.rbScoreListComparisonOperator,
+					display_order____from: queryArg.displayOrderFrom,
+					display_order____to: queryArg.displayOrderTo,
+					display_order____list: queryArg.displayOrderList,
+					display_order____list_____comparison_operator:
+						queryArg.displayOrderListComparisonOperator,
 					direction____str: queryArg.directionStr,
 					direction____str_____comparison_operator:
 						queryArg.directionStrComparisonOperator,
@@ -866,6 +871,10 @@ export type GetManyAvailablemovesGetApiArg = {
 	rbScoreTo?: number
 	rbScoreList?: number[]
 	rbScoreListComparisonOperator?: string
+	displayOrderFrom?: number
+	displayOrderTo?: number
+	displayOrderList?: number[]
+	displayOrderListComparisonOperator?: string
 	directionStr?: string[]
 	directionStrComparisonOperator?: string
 	directionList?: string[]
@@ -1076,6 +1085,7 @@ export type PydanticAvailableMoves = {
 	fl_score: number
 	rb_score: number
 	direction: "LR" | "FB" | "S"
+	display_order?: number
 }
 export type PydanticAvailableBonuses = {
 	id: string
@@ -1211,6 +1221,7 @@ export type AvailableMovesResponse = {
 	fl_score: number
 	rb_score: number
 	direction: string
+	display_order?: number
 }
 export type AvailableBonusesResponse = {
 	id: string
