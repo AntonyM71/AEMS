@@ -13,7 +13,7 @@ def _build_query_mock(return_value):  # noqa: ANN001, ANN202
     return query
 
 
-def _create_move_mock(  # noqa: ANN001, ANN201
+def _create_move_mock(
     move_id: UUID,
     sheet_id: UUID,
     name: str,
@@ -33,7 +33,7 @@ def _create_move_mock(  # noqa: ANN001, ANN201
     return move
 
 
-def _create_bonus_mock(  # noqa: ANN001, ANN201
+def _create_bonus_mock(
     bonus_id: UUID,
     sheet_id: UUID,
     move_id: UUID,
@@ -98,7 +98,7 @@ def _create_referenced_move_and_bonus(
 
 
 def _setup_referenced_item_mocks(
-    mock_db_session: Session, move, bonus  # noqa: ANN001, ANN201
+    mock_db_session: Session, move, bonus  # noqa: ANN001
 ) -> None:
     mock_db_session.query.side_effect = [
         _build_query_mock([move]),
