@@ -190,6 +190,108 @@ def test_get_many_events_with_name_filter(
     )
 
 
+def test_get_many_events_with_name_case_insensitive_filter(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/ with a case-insensitive name pattern filter"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get(
+        "/event/?name____str=test&name____str_____matching_pattern=case_insensitive"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    whereclause = query.whereclause
+
+    assert str(whereclause.left).endswith(".name")
+    assert whereclause.operator.__name__ == "ilike_op"
+    assert whereclause.right.value == "%test%"
+
+
+def test_get_many_events_with_name_case_sensitive_filter(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/ with a case-sensitive name pattern filter"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get(
+        "/event/?name____str=Test&name____str_____matching_pattern=case_sensitive"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    whereclause = query.whereclause
+
+    assert str(whereclause.left).endswith(".name")
+    assert whereclause.operator.__name__ == "like_op"
+    assert whereclause.right.value == "%Test%"
+
+
+def test_get_many_events_with_name_list_filter(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/ with a name list filter"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get("/event/?name____list=Test Event&name____list=Other")
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    whereclause = query.whereclause
+
+    assert str(whereclause.left).endswith(".name")
+    assert whereclause.operator.__name__ == "in_op"
+    assert [str(v) for v in whereclause.right.value] == ["Test Event", "Other"]
+
+
+def test_get_many_events_with_join_foreign_table_phase(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/ with join_foreign_table=phase returns phase_foreign"""
+    mock_phase = MagicMock()
+    mock_phase.id = UUID("44444444-4444-4444-4444-444444444444")
+    mock_phase.event_id = mock_event.id
+    mock_phase.name = "Phase 1"
+    mock_phase.number_of_runs = 3
+    mock_phase.number_of_runs_for_score = 2
+    mock_phase.number_of_judges = 3
+    mock_phase.scoresheet = UUID("55555555-5555-5555-5555-555555555555")
+    mock_event.phases = [mock_phase]
+
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    mock_competition = MagicMock()
+    mock_competition.id = mock_event.competition_id
+    mock_competition.name = "Test Competition"
+    mock_event.competition = mock_competition
+
+    response = test_client.get(
+        "/event/?join_foreign_table=phase&join_foreign_table=competition"
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["phase_foreign"][0]["id"] == str(mock_phase.id)
+    assert data[0]["phase_foreign"][0]["name"] == "Phase 1"
+    assert data[0]["competition_foreign"][0]["name"] == "Test Competition"
+
+
 def test_get_many_events_with_pagination(
     test_client: TestClient, mock_db_session: Session, mock_event: Event
 ) -> None:
@@ -200,30 +302,70 @@ def test_get_many_events_with_pagination(
     mock_db_session.execute.return_value = mock_result
 
     # Make request with pagination
-    response = test_client.get("/event/?limit=10&offset=0")
+    response = test_client.get("/event/?limit=10&offset=5")
 
     # Verify response
     assert response.status_code == 200
 
-    assert mock_db_session.execute.called
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    assert query._limit == 10
+    assert query._offset == 5
 
 
+@pytest.mark.parametrize(
+    ("order_by_columns", "expected_column", "expected_direction"),
+    [
+        ("name_asc", "name", "asc"),
+        ("name_desc", "name", "desc"),
+        ("competition_id_asc", "competition_id", "asc"),
+        ("competition_id_desc", "competition_id", "desc"),
+    ],
+)
 def test_get_many_events_with_ordering(
-    test_client: TestClient, mock_db_session: Session, mock_event: Event
+    test_client: TestClient,
+    mock_db_session: Session,
+    mock_event: Event,
+    order_by_columns: str,
+    expected_column: str,
+    expected_direction: str,
 ) -> None:
-    """Test GET /event/ with ordering"""
+    """Test GET /event/ orders by the requested column and direction"""
     # Mock the database query execution
     mock_result = MagicMock()
     mock_result.scalars.return_value.all.return_value = [mock_event]
     mock_db_session.execute.return_value = mock_result
 
     # Make request with ordering
-    response = test_client.get("/event/?order_by_columns=name_asc")
+    response = test_client.get(f"/event/?order_by_columns={order_by_columns}")
 
     # Verify response
     assert response.status_code == 200
 
-    assert mock_db_session.execute.called
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    order_by_clauses = query._order_by_clauses
+    assert len(order_by_clauses) == 1
+    clause = order_by_clauses[0]
+    assert str(clause.element).endswith(f".{expected_column}")
+    assert clause.modifier.__name__ == expected_direction + "_op"
+
+
+def test_get_many_events_with_unknown_order_column_ignored(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/ ignores unrecognised order_by_columns values"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get("/event/?order_by_columns=unknown_column")
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    assert len(query._order_by_clauses) == 0
 
 
 def test_get_many_events_empty_result(
@@ -348,10 +490,77 @@ def test_get_one_event_with_competition_id_filter(
     )
 
 
+def test_get_one_event_with_name_filters(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/{id} with name____str and name____list filters"""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_event
+    mock_db_session.execute.return_value = mock_result
+
+    event_id = str(mock_event.id)
+    response = test_client.get(
+        f"/event/{event_id}?name____str=Test Event&name____list=Test Event"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    clauses = list(query.whereclause.clauses)
+
+    assert any(
+        str(c.left).endswith(".name") and c.operator.__name__ == "eq" for c in clauses
+    )
+    assert any(
+        str(c.left).endswith(".name") and c.operator.__name__ == "in_op"
+        for c in clauses
+    )
+
+
+def test_get_one_event_with_join_foreign_table(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/{id} with join_foreign_table returns phase and competition"""
+    mock_phase = MagicMock()
+    mock_phase.id = UUID("44444444-4444-4444-4444-444444444444")
+    mock_phase.event_id = mock_event.id
+    mock_phase.name = "Phase 1"
+    mock_phase.number_of_runs = 3
+    mock_phase.number_of_runs_for_score = 2
+    mock_phase.number_of_judges = 3
+    mock_phase.scoresheet = UUID("55555555-5555-5555-5555-555555555555")
+    mock_event.phases = [mock_phase]
+
+    mock_competition = MagicMock()
+    mock_competition.id = mock_event.competition_id
+    mock_competition.name = "Test Competition"
+    mock_event.competition = mock_competition
+
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_event
+    mock_db_session.execute.return_value = mock_result
+
+    event_id = str(mock_event.id)
+    response = test_client.get(
+        f"/event/{event_id}?join_foreign_table=phase&join_foreign_table=competition"
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["phase_foreign"][0]["name"] == "Phase 1"
+    assert data["competition_foreign"][0]["name"] == "Test Competition"
+
+
 def test_get_many_with_foreign_tree(
     test_client: TestClient, mock_db_session: Session, mock_event: Event
 ) -> None:
     """Test GET /event/get_many_with_foreign_tree/"""
+    mock_competition = MagicMock()
+    mock_competition.id = mock_event.competition_id
+    mock_competition.name = "Test Competition"
+    mock_event.competition = mock_competition
+
     # Mock the database query execution
     mock_result = MagicMock()
     mock_result.scalars.return_value.all.return_value = [mock_event]
@@ -362,9 +571,61 @@ def test_get_many_with_foreign_tree(
 
     # Verify response
     assert response.status_code == 200
+    data = response.json()
+    assert data[0]["competition_foreign"][0]["name"] == "Test Competition"
 
-    # Verify execute was called
-    assert mock_db_session.execute.called
+
+def test_get_many_with_foreign_tree_applies_filters_ordering_and_pagination(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/get_many_with_foreign_tree/ applies query params"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get(
+        "/event/get_many_with_foreign_tree/"
+        "?name____str=Test&order_by_columns=name_desc&limit=5&offset=1"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    assert query._limit == 5
+    assert query._offset == 1
+    assert len(query._order_by_clauses) == 1
+    assert str(query._order_by_clauses[0].element).endswith(".name")
+
+
+def test_get_many_with_foreign_tree_applies_id_and_competition_id_filters(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/get_many_with_foreign_tree/ applies id/competition_id filters"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_event]
+    mock_db_session.execute.return_value = mock_result
+
+    filter_id = str(mock_event.id)
+    filter_competition_id = str(mock_event.competition_id)
+    response = test_client.get(
+        "/event/get_many_with_foreign_tree/"
+        f"?id____list={filter_id}&competition_id____list={filter_competition_id}"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    clauses = list(query.whereclause.clauses)
+
+    assert any(
+        str(c.left).endswith(".id") and c.operator.__name__ == "in_op" for c in clauses
+    )
+    assert any(
+        str(c.left).endswith(".competition_id") and c.operator.__name__ == "in_op"
+        for c in clauses
+    )
 
 
 def test_get_event_phases(
@@ -385,6 +646,103 @@ def test_get_event_phases(
 
     # Verify execute was called
     assert mock_db_session.execute.called
+
+
+def test_get_event_phases_with_range_and_list_filters(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/{event_pk_id}/phase applies numeric range and list filters"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = []
+    mock_db_session.execute.return_value = mock_result
+
+    event_id = str(mock_event.id)
+    phase_id = "77777777-7777-7777-7777-777777777777"
+    response = test_client.get(
+        f"/event/{event_id}/phase"
+        f"?id____list={phase_id}"
+        "&number_of_runs____from=1&number_of_runs____to=5"
+        "&number_of_runs_for_score____list=2&number_of_judges____from=3"
+        "&name____list=Final"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    whereclause = query.whereclause
+    clauses = list(whereclause.clauses)
+
+    def find_clause(suffix: str, operator: str) -> bool:
+        return any(
+            str(c.left).endswith(suffix) and c.operator.__name__ == operator
+            for c in clauses
+        )
+
+    assert find_clause(".event_id", "eq")
+    assert find_clause(".id", "in_op")
+    assert find_clause(".number_of_runs", "ge")
+    assert find_clause(".number_of_runs", "le")
+    assert find_clause(".number_of_runs_for_score", "in_op")
+    assert find_clause(".number_of_judges", "ge")
+    assert find_clause(".name", "in_op")
+
+
+def test_get_event_phases_with_join_foreign_table_event(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/{event_pk_id}/phase returns event_foreign when requested"""
+    mock_phase = MagicMock()
+    mock_phase.id = UUID("44444444-4444-4444-4444-444444444444")
+    mock_phase.event_id = mock_event.id
+    mock_phase.name = "Phase 1"
+    mock_phase.number_of_runs = 3
+    mock_phase.number_of_runs_for_score = 2
+    mock_phase.number_of_judges = 3
+    mock_phase.scoresheet = UUID("55555555-5555-5555-5555-555555555555")
+    mock_phase.event = mock_event
+
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_phase]
+    mock_db_session.execute.return_value = mock_result
+
+    event_id = str(mock_event.id)
+    response = test_client.get(f"/event/{event_id}/phase?join_foreign_table=event")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["event_foreign"][0]["name"] == mock_event.name
+    assert data[0]["event_foreign"][0]["id"] == str(mock_event.id)
+
+
+def test_get_event_phases_with_name_str_and_scoresheet_filters(
+    test_client: TestClient, mock_db_session: Session, mock_event: Event
+) -> None:
+    """Test GET /event/{event_pk_id}/phase applies name____str and scoresheet filters"""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = []
+    mock_db_session.execute.return_value = mock_result
+
+    scoresheet_id = "66666666-6666-6666-6666-666666666666"
+    event_id = str(mock_event.id)
+    response = test_client.get(
+        f"/event/{event_id}/phase?name____str=Final&scoresheet____list={scoresheet_id}"
+    )
+
+    assert response.status_code == 200
+
+    call_args = mock_db_session.execute.call_args
+    query = call_args[0][0]
+    clauses = list(query.whereclause.clauses)
+
+    assert any(
+        str(c.left).endswith(".name") and c.operator.__name__ == "eq" for c in clauses
+    )
+    assert any(
+        str(c.left).endswith(".scoresheet") and c.operator.__name__ == "in_op"
+        for c in clauses
+    )
 
 
 def test_post_insert_many_events(

@@ -1,8 +1,10 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import ColumnElement, select
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.sql import Select
 
 from app.crud.schemas import (
     CompetitionNested,
@@ -15,6 +17,105 @@ from db.client import get_transaction_session
 from db.models import Event, Phase
 
 event_router = APIRouter(prefix="/event", tags=["event"])
+
+
+def _apply_string_filter(
+    query: Select[Any],
+    column: ColumnElement[Any],
+    value____list: list[str] | None,
+    value____str: str | None,
+    value____str_____matching_pattern: str | None,
+) -> Select[Any]:
+    """Apply a string list/exact/pattern filter shared across event queries."""
+    if value____list:
+        query = query.where(column.in_(value____list))
+
+    if value____str:
+        if value____str_____matching_pattern == "case_insensitive":
+            query = query.where(column.ilike(f"%{value____str}%"))
+        elif value____str_____matching_pattern == "case_sensitive":
+            query = query.where(column.like(f"%{value____str}%"))
+        else:
+            query = query.where(column == value____str)
+
+    return query
+
+
+def _apply_event_ordering(
+    query: Select[Any], order_by_columns: list[str] | None
+) -> Select[Any]:
+    """Apply ordering for Event queries by name or competition_id."""
+    if not order_by_columns:
+        return query
+
+    for order_col in order_by_columns:
+        order_col_lower = order_col.lower()
+        if "name" in order_col_lower:
+            column = Event.name
+        elif "competition_id" in order_col_lower:
+            column = Event.competition_id
+        else:
+            continue
+
+        query = query.order_by(
+            column.desc() if "desc" in order_col_lower else column.asc()
+        )
+
+    return query
+
+
+def _apply_pagination(
+    query: Select[Any], offset: int | None, limit: int | None
+) -> Select[Any]:
+    """Apply offset/limit pagination to a query."""
+    if offset is not None:
+        query = query.offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    return query
+
+
+def _build_event_dict(
+    event: Event, join_foreign_table: list[str] | None
+) -> dict[str, Any]:
+    """Build the response dict for an Event, including requested foreign keys."""
+    event_dict: dict[str, Any] = {
+        "id": event.id,
+        "competition_id": event.competition_id,
+        "name": event.name,
+    }
+
+    if join_foreign_table:
+        if "competition" in join_foreign_table and event.competition:
+            event_dict["competition_foreign"] = [
+                CompetitionNested.model_validate(event.competition)
+            ]
+        if "phase" in join_foreign_table and event.phases:
+            event_dict["phase_foreign"] = [
+                PhaseNested.model_validate(p) for p in event.phases
+            ]
+
+    return event_dict
+
+
+def _apply_range_and_list_filter(
+    query: Select[Any],
+    column: ColumnElement[Any],
+    value____from: int | None,
+    value____to: int | None,
+    value____list: list[int] | None,
+) -> Select[Any]:
+    """Apply from/to/list numeric filters shared across phase queries."""
+    if value____from is not None:
+        query = query.where(column >= value____from)
+
+    if value____to is not None:
+        query = query.where(column <= value____to)
+
+    if value____list:
+        query = query.where(column.in_(value____list))
+
+    return query
 
 
 @event_router.get("/", response_model=list[EventResponse])
@@ -60,61 +161,21 @@ async def get_many(
     if competition_id____list:
         query = query.where(Event.competition_id.in_(competition_id____list))
 
-    if name____list:
-        query = query.where(Event.name.in_(name____list))
+    query = _apply_string_filter(
+        query, Event.name, name____list, name____str, name____str_____matching_pattern
+    )
 
-    if name____str:
-        if name____str_____matching_pattern == "case_insensitive":
-            query = query.where(Event.name.ilike(f"%{name____str}%"))
-        elif name____str_____matching_pattern == "case_sensitive":
-            query = query.where(Event.name.like(f"%{name____str}%"))
-        else:
-            query = query.where(Event.name == name____str)
-
-    # Apply ordering
-    if order_by_columns:
-        for order_col in order_by_columns:
-            if "name" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.name.desc())
-                else:
-                    query = query.order_by(Event.name.asc())
-            elif "competition_id" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.competition_id.desc())
-                else:
-                    query = query.order_by(Event.competition_id.asc())
-
-    # Apply pagination
-    if offset:
-        query = query.offset(offset)
-    if limit:
-        query = query.limit(limit)
+    query = _apply_event_ordering(query, order_by_columns)
+    query = _apply_pagination(query, offset, limit)
 
     result = db.execute(query)
     events = result.scalars().all()
 
     # Convert to response format with _foreign suffix
-    response_data = []
-    for event in events:
-        event_dict = {
-            "id": event.id,
-            "competition_id": event.competition_id,
-            "name": event.name,
-        }
-
-        # Add foreign relationships as lists (matching autogen behavior)
-        if join_foreign_table:
-            if "competition" in join_foreign_table and event.competition:
-                event_dict["competition_foreign"] = [
-                    CompetitionNested.model_validate(event.competition)
-                ]
-            if "phase" in join_foreign_table and event.phases:
-                event_dict["phase_foreign"] = [
-                    PhaseNested.model_validate(p) for p in event.phases
-                ]
-
-        response_data.append(EventResponse(**event_dict))
+    response_data = [
+        EventResponse(**_build_event_dict(event, join_foreign_table))
+        for event in events
+    ]
 
     return response_data
 
@@ -156,24 +217,7 @@ async def get_one_by_primary_key(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    event_dict = {
-        "id": event.id,
-        "competition_id": event.competition_id,
-        "name": event.name,
-    }
-
-    # Add foreign relationships if requested
-    if join_foreign_table:
-        if "phase" in join_foreign_table and event.phases:
-            event_dict["phase_foreign"] = [
-                PhaseNested.model_validate(p) for p in event.phases
-            ]
-        if "competition" in join_foreign_table and event.competition:
-            event_dict["competition_foreign"] = [
-                CompetitionNested.model_validate(event.competition)
-            ]
-
-    return EventResponse(**event_dict)
+    return EventResponse(**_build_event_dict(event, join_foreign_table))
 
 
 @event_router.get("/get_many_with_foreign_tree/", response_model=list[EventResponse])
@@ -211,52 +255,20 @@ async def get_many_with_foreign_tree(
     if competition_id____list:
         query = query.where(Event.competition_id.in_(competition_id____list))
 
-    if name____list:
-        query = query.where(Event.name.in_(name____list))
+    query = _apply_string_filter(
+        query, Event.name, name____list, name____str, name____str_____matching_pattern
+    )
 
-    if name____str:
-        if name____str_____matching_pattern == "case_insensitive":
-            query = query.where(Event.name.ilike(f"%{name____str}%"))
-        elif name____str_____matching_pattern == "case_sensitive":
-            query = query.where(Event.name.like(f"%{name____str}%"))
-        else:
-            query = query.where(Event.name == name____str)
-
-    # Apply ordering
-    if order_by_columns:
-        for order_col in order_by_columns:
-            if "name" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.name.desc())
-                else:
-                    query = query.order_by(Event.name.asc())
-            elif "competition_id" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.competition_id.desc())
-                else:
-                    query = query.order_by(Event.competition_id.asc())
-
-    # Apply pagination
-    if offset is not None:
-        query = query.offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
+    query = _apply_event_ordering(query, order_by_columns)
+    query = _apply_pagination(query, offset, limit)
 
     result = db.execute(query)
     events = result.scalars().all()
 
     # Convert to response format with competition_foreign as list
-    response_data = []
-    for event in events:
-        event_dict = {
-            "id": event.id,
-            "competition_id": event.competition_id,
-            "name": event.name,
-            "competition_foreign": [CompetitionNested.model_validate(event.competition)]
-            if event.competition
-            else None,
-        }
-        response_data.append(EventResponse(**event_dict))
+    response_data = [
+        EventResponse(**_build_event_dict(event, ["competition"])) for event in events
+    ]
 
     return response_data
 
@@ -332,38 +344,29 @@ async def get_many_by_pk_from_phase(
     if name____list:
         query = query.where(Phase.name.in_(name____list))
 
-    if number_of_runs____from is not None:
-        query = query.where(Phase.number_of_runs >= number_of_runs____from)
+    query = _apply_range_and_list_filter(
+        query,
+        Phase.number_of_runs,
+        number_of_runs____from,
+        number_of_runs____to,
+        number_of_runs____list,
+    )
 
-    if number_of_runs____to is not None:
-        query = query.where(Phase.number_of_runs <= number_of_runs____to)
+    query = _apply_range_and_list_filter(
+        query,
+        Phase.number_of_runs_for_score,
+        number_of_runs_for_score____from,
+        number_of_runs_for_score____to,
+        number_of_runs_for_score____list,
+    )
 
-    if number_of_runs____list:
-        query = query.where(Phase.number_of_runs.in_(number_of_runs____list))
-
-    if number_of_runs_for_score____from is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score >= number_of_runs_for_score____from
-        )
-
-    if number_of_runs_for_score____to is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score <= number_of_runs_for_score____to
-        )
-
-    if number_of_runs_for_score____list:
-        query = query.where(
-            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
-        )
-
-    if number_of_judges____from is not None:
-        query = query.where(Phase.number_of_judges >= number_of_judges____from)
-
-    if number_of_judges____to is not None:
-        query = query.where(Phase.number_of_judges <= number_of_judges____to)
-
-    if number_of_judges____list:
-        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
+    query = _apply_range_and_list_filter(
+        query,
+        Phase.number_of_judges,
+        number_of_judges____from,
+        number_of_judges____to,
+        number_of_judges____list,
+    )
 
     if scoresheet____list:
         query = query.where(Phase.scoresheet.in_(scoresheet____list))
