@@ -21,11 +21,18 @@ class MockWebSocket {
 	onmessage = null
 	onclose = null
 	onerror = null
+
+	/** Mock implementation: no-op */
 	send() {}
+
 	close() {
 		this.readyState = MockWebSocket.CLOSED
 	}
+
+	/** Mock implementation: no-op */
 	addEventListener() {}
+
+	/** Mock implementation: no-op */
 	removeEventListener() {}
 }
 

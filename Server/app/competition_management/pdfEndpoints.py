@@ -21,6 +21,10 @@ from db.models import Competition, Event, Heat, Phase
 
 pdf_router = APIRouter(tags=["pdf generation"])
 
+# Constants for PDF table headers
+FIRST_NAME_HEADER = "First Name"
+LAST_NAME_HEADER = "Last Name"
+
 font_directory = Path("./fonts/")
 
 
@@ -249,8 +253,8 @@ def build_phase_pdf_content(
     ) as table:
         header = table.row()
         header.cell("Rank")
-        header.cell("First Name")
-        header.cell("Last Name")
+        header.cell(FIRST_NAME_HEADER)
+        header.cell(LAST_NAME_HEADER)
         header.cell("Bib")
         header.cell("Affiliation")
 
@@ -335,8 +339,8 @@ def build_heat_pdf_page(
 
     with pdf.table(col_widths=(3, 3, 3, 1, 3, 3)) as table:
         header = table.row()
-        header.cell("First Name")
-        header.cell("Last Name")
+        header.cell(FIRST_NAME_HEADER)
+        header.cell(LAST_NAME_HEADER)
         header.cell("Event Name")
         header.cell("Bib")
         header.cell("Affiliation")
@@ -397,8 +401,8 @@ def build_heat_results_pdf_content(
 
     with pdf.table(col_widths=(3, 3, 1, 3, *([2] * max_runs))) as table:
         header = table.row()
-        header.cell("First Name")
-        header.cell("Last Name")
+        header.cell(FIRST_NAME_HEADER)
+        header.cell(LAST_NAME_HEADER)
         header.cell("Bib")
         header.cell("Affiliation")
 
