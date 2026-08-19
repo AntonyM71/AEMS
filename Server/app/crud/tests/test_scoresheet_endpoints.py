@@ -13,42 +13,105 @@ def _build_query_mock(return_value):  # noqa: ANN001, ANN202
     return query
 
 
+def _create_move_mock(  # noqa: ANN001, ANN201
+    move_id: UUID,
+    sheet_id: UUID,
+    name: str,
+    fl_score: int,
+    rb_score: int,
+    direction: str,
+    display_order: int,
+) -> MagicMock:
+    move = MagicMock(spec=AvailableMoves)
+    move.id = move_id
+    move.sheet_id = sheet_id
+    move.name = name
+    move.fl_score = fl_score
+    move.rb_score = rb_score
+    move.direction = direction
+    move.display_order = display_order
+    return move
+
+
+def _create_bonus_mock(  # noqa: ANN001, ANN201
+    bonus_id: UUID,
+    sheet_id: UUID,
+    move_id: UUID,
+    name: str,
+    score: int,
+    display_order: int,
+) -> MagicMock:
+    bonus = MagicMock(spec=AvailableBonuses)
+    bonus.id = bonus_id
+    bonus.sheet_id = sheet_id
+    bonus.move_id = move_id
+    bonus.name = name
+    bonus.score = score
+    bonus.display_order = display_order
+    return bonus
+
+
+def _move_to_request_dict(move, display_order=None):  # noqa: ANN001, ANN202
+    return {
+        "id": str(move.id),
+        "sheet_id": str(move.sheet_id),
+        "name": move.name,
+        "fl_score": move.fl_score,
+        "rb_score": move.rb_score,
+        "direction": move.direction,
+        "display_order": move.display_order if display_order is None else display_order,
+    }
+
+
+def _bonus_to_request_dict(bonus, display_order=None):  # noqa: ANN001, ANN202
+    return {
+        "id": str(bonus.id),
+        "sheet_id": str(bonus.sheet_id),
+        "move_id": str(bonus.move_id),
+        "name": bonus.name,
+        "score": bonus.score,
+        "display_order": bonus.display_order if display_order is None else display_order,
+    }
+
+
 def test_add_update_scoresheet_returns_409_for_referenced_removals(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
-    move_kept = MagicMock(spec=AvailableMoves)
-    move_kept.id = UUID("11111111-1111-1111-1111-111111111111")
-    move_kept.sheet_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-    move_kept.name = "Kept Move"
-    move_kept.fl_score = 10
-    move_kept.rb_score = 20
-    move_kept.direction = "LR"
-    move_kept.display_order = 0
-
-    move_removed = MagicMock(spec=AvailableMoves)
-    move_removed.id = UUID("22222222-2222-2222-2222-222222222222")
-    move_removed.sheet_id = move_kept.sheet_id
-    move_removed.name = "Removed Move"
-    move_removed.fl_score = 30
-    move_removed.rb_score = 40
-    move_removed.direction = "FB"
-    move_removed.display_order = 1
-
-    bonus_kept = MagicMock(spec=AvailableBonuses)
-    bonus_kept.id = UUID("33333333-3333-3333-3333-333333333333")
-    bonus_kept.sheet_id = move_kept.sheet_id
-    bonus_kept.move_id = move_kept.id
-    bonus_kept.name = "Kept Bonus"
-    bonus_kept.score = 5
-    bonus_kept.display_order = 0
-
-    bonus_removed = MagicMock(spec=AvailableBonuses)
-    bonus_removed.id = UUID("44444444-4444-4444-4444-444444444444")
-    bonus_removed.sheet_id = move_kept.sheet_id
-    bonus_removed.move_id = move_removed.id
-    bonus_removed.name = "Removed Bonus"
-    bonus_removed.score = 7
-    bonus_removed.display_order = 1
+    sheet_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+    move_kept = _create_move_mock(
+        UUID("11111111-1111-1111-1111-111111111111"),
+        sheet_id,
+        "Kept Move",
+        10,
+        20,
+        "LR",
+        0,
+    )
+    move_removed = _create_move_mock(
+        UUID("22222222-2222-2222-2222-222222222222"),
+        sheet_id,
+        "Removed Move",
+        30,
+        40,
+        "FB",
+        1,
+    )
+    bonus_kept = _create_bonus_mock(
+        UUID("33333333-3333-3333-3333-333333333333"),
+        sheet_id,
+        move_kept.id,
+        "Kept Bonus",
+        5,
+        0,
+    )
+    bonus_removed = _create_bonus_mock(
+        UUID("44444444-4444-4444-4444-444444444444"),
+        sheet_id,
+        move_removed.id,
+        "Removed Bonus",
+        7,
+        1,
+    )
 
     mock_db_session.query.side_effect = [
         _build_query_mock([move_kept, move_removed]),
@@ -99,39 +162,40 @@ def test_add_update_scoresheet_upserts_and_deletes_unreferenced_items(
 ) -> None:
     sheet_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
-    move_existing = MagicMock(spec=AvailableMoves)
-    move_existing.id = UUID("11111111-1111-1111-1111-111111111111")
-    move_existing.sheet_id = sheet_id
-    move_existing.name = "Original Name"
-    move_existing.fl_score = 10
-    move_existing.rb_score = 20
-    move_existing.direction = "LR"
-    move_existing.display_order = 0
-
-    move_to_delete = MagicMock(spec=AvailableMoves)
-    move_to_delete.id = UUID("22222222-2222-2222-2222-222222222222")
-    move_to_delete.sheet_id = sheet_id
-    move_to_delete.name = "Delete Me"
-    move_to_delete.fl_score = 30
-    move_to_delete.rb_score = 40
-    move_to_delete.direction = "FB"
-    move_to_delete.display_order = 1
-
-    bonus_existing = MagicMock(spec=AvailableBonuses)
-    bonus_existing.id = UUID("33333333-3333-3333-3333-333333333333")
-    bonus_existing.sheet_id = sheet_id
-    bonus_existing.move_id = move_existing.id
-    bonus_existing.name = "Original Bonus"
-    bonus_existing.score = 5
-    bonus_existing.display_order = 0
-
-    bonus_to_delete = MagicMock(spec=AvailableBonuses)
-    bonus_to_delete.id = UUID("44444444-4444-4444-4444-444444444444")
-    bonus_to_delete.sheet_id = sheet_id
-    bonus_to_delete.move_id = move_to_delete.id
-    bonus_to_delete.name = "Delete Bonus"
-    bonus_to_delete.score = 7
-    bonus_to_delete.display_order = 1
+    move_existing = _create_move_mock(
+        UUID("11111111-1111-1111-1111-111111111111"),
+        sheet_id,
+        "Original Name",
+        10,
+        20,
+        "LR",
+        0,
+    )
+    move_to_delete = _create_move_mock(
+        UUID("22222222-2222-2222-2222-222222222222"),
+        sheet_id,
+        "Delete Me",
+        30,
+        40,
+        "FB",
+        1,
+    )
+    bonus_existing = _create_bonus_mock(
+        UUID("33333333-3333-3333-3333-333333333333"),
+        sheet_id,
+        move_existing.id,
+        "Original Bonus",
+        5,
+        0,
+    )
+    bonus_to_delete = _create_bonus_mock(
+        UUID("44444444-4444-4444-4444-444444444444"),
+        sheet_id,
+        move_to_delete.id,
+        "Delete Bonus",
+        7,
+        1,
+    )
 
     mock_db_session.query.side_effect = [
         _build_query_mock([move_existing, move_to_delete]),
@@ -243,31 +307,17 @@ def test_add_update_scoresheet_returns_409_for_referenced_definition_changes(
         _build_query_mock([(bonus_existing.id,)]),
     ]
 
+    move_request = _move_to_request_dict(move_existing)
+    move_request["name"] = "Updated Name"
+    move_request["display_order"] = 1
+
+    bonus_request = _bonus_to_request_dict(bonus_existing)
+    bonus_request["name"] = "Updated Bonus"
+    bonus_request["display_order"] = 1
+
     response = test_client.post(
         f"/addUpdateScoresheet/{sheet_id}",
-        json={
-            "moves": [
-                {
-                    "id": str(move_existing.id),
-                    "sheet_id": str(sheet_id),
-                    "name": "Updated Name",
-                    "fl_score": move_existing.fl_score,
-                    "rb_score": move_existing.rb_score,
-                    "direction": move_existing.direction,
-                    "display_order": 1,
-                }
-            ],
-            "bonuses": [
-                {
-                    "id": str(bonus_existing.id),
-                    "sheet_id": str(sheet_id),
-                    "move_id": str(move_existing.id),
-                    "name": "Updated Bonus",
-                    "score": bonus_existing.score,
-                    "display_order": 1,
-                }
-            ],
-        },
+        json={"moves": [move_request], "bonuses": [bonus_request]},
     )
 
     assert response.status_code == 409
@@ -311,31 +361,12 @@ def test_add_update_scoresheet_allows_display_order_updates_for_referenced_items
         _build_query_mock([(bonus_existing.id,)]),
     ]
 
+    move_request = _move_to_request_dict(move_existing, display_order=1)
+    bonus_request = _bonus_to_request_dict(bonus_existing, display_order=1)
+
     response = test_client.post(
         f"/addUpdateScoresheet/{sheet_id}",
-        json={
-            "moves": [
-                {
-                    "id": str(move_existing.id),
-                    "sheet_id": str(sheet_id),
-                    "name": move_existing.name,
-                    "fl_score": move_existing.fl_score,
-                    "rb_score": move_existing.rb_score,
-                    "direction": move_existing.direction,
-                    "display_order": 1,
-                }
-            ],
-            "bonuses": [
-                {
-                    "id": str(bonus_existing.id),
-                    "sheet_id": str(sheet_id),
-                    "move_id": str(bonus_existing.move_id),
-                    "name": bonus_existing.name,
-                    "score": bonus_existing.score,
-                    "display_order": 1,
-                }
-            ],
-        },
+        json={"moves": [move_request], "bonuses": [bonus_request]},
     )
 
     assert response.status_code == 200
