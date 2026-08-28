@@ -27,12 +27,22 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
+# SQL constants for UUID generation and foreign key references
+POSTGRES_UUID_DEFAULT = text("gen_random_uuid()")
+FK_SCORESHEET_ID = "scoreSheet.id"
+FK_COMPETITION_ID = "competition.id"
+FK_EVENT_ID = "event.id"
+FK_PHASE_ID = "phase.id"
+FK_HEAT_ID = "heat.id"
+FK_ATHLETE_ID = "athlete.id"
+
+
 class Competition(ToDictMixin, Base):
     __tablename__ = "competition"
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -46,12 +56,12 @@ class Event(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
     competition_id = Column(
-        UUID(as_uuid=True), ForeignKey("competition.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey(FK_COMPETITION_ID), nullable=False
     )
     competition = relationship("Competition", back_populates="events")
     phases = relationship("Phase", back_populates="event")
@@ -64,17 +74,17 @@ class Phase(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
-    event_id = Column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey(FK_EVENT_ID), nullable=False)
     event = relationship("Event", back_populates="phases")
     name = Column(String, nullable=False)
     number_of_runs = Column(Integer, nullable=False, default=3)
     number_of_runs_for_score = Column(Integer, nullable=False, default=2)
     number_of_judges = Column(Integer, nullable=False, default=3)
-    scoresheet = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    scoresheet = Column(UUID(as_uuid=True), ForeignKey(FK_SCORESHEET_ID), nullable=False)
     athletes = relationship("AthleteHeat", back_populates="phases")
 
     schema = "public"
@@ -85,12 +95,12 @@ class Heat(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
     competition_id = Column(
-        UUID(as_uuid=True), ForeignKey("competition.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey(FK_COMPETITION_ID), nullable=False
     )
     name = Column(String, nullable=False)
     schema = "public"
@@ -102,13 +112,13 @@ class AthleteHeat(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
-    heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"), nullable=False)
-    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
-    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    heat_id = Column(UUID(as_uuid=True), ForeignKey(FK_HEAT_ID), nullable=False)
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(FK_ATHLETE_ID), nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), nullable=False)
     heats = relationship("Heat", back_populates="athletes")
     athletes = relationship("Athlete", back_populates="heats")
     phases = relationship("Phase", back_populates="athletes")
@@ -120,7 +130,7 @@ class Athlete(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -138,7 +148,7 @@ class ScoreSheet(ToDictMixin, Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -151,7 +161,7 @@ class AvailableMoves(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -170,7 +180,7 @@ class AvailableBonuses(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -191,7 +201,7 @@ class ScoredMoves(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -199,11 +209,11 @@ class ScoredMoves(Base):
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)
-    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), nullable=False)
     phase = relationship("Phase", foreign_keys=[phase_id])
     move = relationship("AvailableMoves", foreign_keys=[move_id])
     judge_id = Column(String, nullable=False)
-    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(FK_ATHLETE_ID), nullable=False)
     athlete = relationship("Athlete", foreign_keys=[athlete_id])
     direction = Column(String, nullable=False)
     schema = "public"
@@ -214,7 +224,7 @@ class ScoredBonuses(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
@@ -233,16 +243,16 @@ class RunStatus(Base):
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=POSTGRES_UUID_DEFAULT,
         unique=True,
         nullable=False,
     )
     heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)
-    phase_id = Column(UUID(as_uuid=True), ForeignKey("phase.id"), nullable=False)
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), nullable=False)
     phase = relationship("Phase", foreign_keys=[phase_id])
-    athlete_id = Column(UUID(as_uuid=True), ForeignKey("athlete.id"), nullable=False)
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(FK_ATHLETE_ID), nullable=False)
     athlete = relationship("Athlete", foreign_keys=[athlete_id])
     locked = Column(Boolean, nullable=False)
     did_not_start = Column(Boolean, nullable=False)
