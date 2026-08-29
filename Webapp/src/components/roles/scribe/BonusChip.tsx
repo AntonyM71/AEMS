@@ -15,8 +15,20 @@ export const BonusChip = ({
 	)
 
 	const isScored = !!filteredBonuses
-	const matches = availableBonus.name?.match(/\b(\w)/g) || ["?"] // ['J','S','O','N']
-	const acronym = matches.join("").toUpperCase() // JSON
+
+	const splitIntoWords = (name: string): string[] =>
+		name
+			.replace(/([a-z0-9])([A-Z])/g, "$1 $2") // camelCase: superClean -> super Clean
+			.replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // acronym run: HTMLParser -> HTML Parser
+			.replace(/[_-]+/g, " ") // snake_case / kebab-case -> spaces
+			.split(/\s+/)
+			.map((word) => word.replace(/[^a-zA-Z0-9]/g, ""))
+			.filter(Boolean)
+
+	const words = splitIntoWords(availableBonus.name ?? "")
+	const acronym = (words.length ? words.map((w) => w[0]) : ["?"])
+		.join("")
+		.toUpperCase()
 
 	const updateScoredBonuses = () => {
 		if (!chipActionsDisabled) {
@@ -42,6 +54,8 @@ export const BonusChip = ({
 		}
 	}
 
+	const BONUS_CHIP_DIAMETER = 32
+
 	return (
 		<Grid key={availableBonus.id}>
 			<Chip
@@ -55,6 +69,14 @@ export const BonusChip = ({
 					"scored-remove-" + scoredMove.id + "-" + availableBonus.id
 				}
 				disabled={!availableBonus.score}
+				sx={{
+					width: BONUS_CHIP_DIAMETER,
+					height: BONUS_CHIP_DIAMETER,
+					borderRadius: "50%",
+					"& .MuiChip-label": {
+						padding: 0
+					}
+				}}
 			/>
 		</Grid>
 	)
