@@ -2,17 +2,17 @@ import Box from "@mui/material/Box"
 import Modal from "@mui/material/Modal"
 import Slide from "@mui/material/Slide"
 
-interface SlidingWrapperProps {
+interface SlidingModalProps {
 	children: React.ReactNode
 	show: boolean
-	direction?: "up" | "down" | "left" | "right" // Allow customization of slide direction
+	direction?: "up" | "down" | "left" | "right"
 	size?: number
 }
 
-const SlidingModal: React.FC<SlidingWrapperProps> = ({
+const SlidingModal: React.FC<SlidingModalProps> = ({
 	children,
 	show,
-	direction = "up", // Default slide direction
+	direction = "up",
 	size = 70
 }) => (
 	<Modal open={show} disableAutoFocus={true}>
@@ -20,18 +20,15 @@ const SlidingModal: React.FC<SlidingWrapperProps> = ({
 			<Box
 				sx={{
 					position: "absolute",
-					top: `${(100 - size) / 2}%`, // Center vertically
-					left: `${(100 - size) / 2}%`, // Center horizontally
-					transform: "translate(-50%, -50%)", // Adjust for both axes
+					top: `${(100 - size) / 2}%`,
+					left: `${(100 - size) / 2}%`,
 					width: `${size}%`,
 					height: `${size}%`,
-					justifyContent: "center",
-					alignItems: "center",
-
 					display: "flex",
 					flexDirection: "column",
-					"& > *": { width: "calc(100% - 2em)" },
-					border: "none" // Transparent border
+					justifyContent: "center",
+					alignItems: "center",
+					"& > *": { width: "calc(100% - 2em)" }
 				}}
 			>
 				{children}

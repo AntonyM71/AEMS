@@ -68,7 +68,7 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 				{/* A rule on the arena; invisible artwork clearance on the
 				    overlay, where the theme zeroes dividers and the height
 				    comes from AemsPhaseResults.spacerHeight. */}
-				<Divider sx={spacerHeight ? { height: spacerHeight } : {}} />
+				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
 					data={
 						processScoresData(
@@ -97,25 +97,23 @@ const PhaseDetails = ({
 		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
 	)
 
-	const names = [
-		<Typography key="event" variant="h5" sx={{ color: "text.primary" }}>
-			{eventData?.name}
-		</Typography>,
-		<Typography key="phase" variant="h5" sx={{ color: "text.primary" }}>
-			{phaseData?.name}
-		</Typography>
-	]
+	const eventPhase = (
+		<>
+			<Typography variant="h5" sx={{ color: "text.primary" }}>
+				{eventData?.name}
+			</Typography>
+			<Typography variant="h5" sx={{ color: "text.primary" }}>
+				{phaseData?.name}
+			</Typography>
+		</>
+	)
 	const runs = (
-		<Typography
-			variant="h5"
-			sx={{ color: "text.primary", fontWeight: 400 }}
-		>
+		<Typography variant="h5" sx={{ color: "text.primary", fontWeight: 400 }}>
 			{phaseData?.number_of_runs
 				? `Runs: ${phaseData.number_of_runs}`
 				: null}
 		</Typography>
 	)
-
 	const row = (children: React.ReactNode, className: string) => (
 		<Stack
 			className={className}
@@ -134,11 +132,17 @@ const PhaseDetails = ({
 	// theme's AemsPhaseDetails-* rules).
 	return detailRows === "split" ? (
 		<Stack sx={{ width: "100%" }}>
-			{row(names, "AemsPhaseDetails-names")}
+			{row(eventPhase, "AemsPhaseDetails-names")}
 			{row(runs, "AemsPhaseDetails-runs")}
 		</Stack>
 	) : (
-		row([...names, runs], "AemsPhaseDetails-names")
+		row(
+			<>
+				{eventPhase}
+				{runs}
+			</>,
+			"AemsPhaseDetails-names"
+		)
 	)
 }
 const processScoresData = (

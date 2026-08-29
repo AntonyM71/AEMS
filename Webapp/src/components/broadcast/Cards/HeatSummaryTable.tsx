@@ -47,7 +47,7 @@ export const HeatSummaryTable = (inProps: HeatSummaryTableProps = {}) => {
 				{/* A rule on the arena; invisible artwork clearance on the
 				    overlay, where the theme zeroes dividers and the height
 				    comes from AemsHeatSummary.spacerHeight. */}
-				<Divider sx={spacerHeight ? { height: spacerHeight } : {}} />
+				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
 					data={processAthleteData(athletes?.data ?? []) ?? []}
 					pageChangeTime={5}

@@ -332,3 +332,4 @@ Server/.coverage
 Webapp/tsconfig.tsbuildinfo
 Server/.coverage
 nohup.out
+Webapp/tsconfig.tsbuildinfo
