@@ -19,7 +19,7 @@ export const BonusChip = ({
 	const splitIntoWords = (name: string): string[] =>
 		name
 			.replace(/([a-z0-9])([A-Z])/g, "$1 $2") // camelCase: superClean -> super Clean
-			.replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // acronym run: HTMLParser -> HTML Parser
+			.replace(/([A-Z])(?=[A-Z][a-z])/g, "$1 ") // acronym run: HTMLParser -> HTML Parser
 			.replace(/[_-]+/g, " ") // snake_case / kebab-case -> spaces
 			.split(/\s+/)
 			.map((word) => word.replace(/[^a-zA-Z0-9]/g, ""))
