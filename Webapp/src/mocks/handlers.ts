@@ -176,6 +176,13 @@ export const handlers = [
 
 		return new HttpResponse(null, { status: 404 })
 	}),
+	http.get("/api/event/:id", ({ params }) =>
+		HttpResponse.json({
+			id: params.id,
+			name: "Test Event",
+			competition_id: "1"
+		})
+	),
 	http.post("/api/event", async ({ request }) => {
 		const body = await request.json()
 
