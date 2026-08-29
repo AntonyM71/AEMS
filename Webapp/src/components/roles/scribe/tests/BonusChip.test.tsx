@@ -183,4 +183,80 @@ describe("BonusChip Component", () => {
 
 		expect(mockUpdateBonuses).toHaveBeenCalledWith([])
 	})
+
+	it("handles camelCase bonus names and generates correct acronym", () => {
+		const camelCaseBonus = {
+			...mockAvailableBonus,
+			name: "SuperClean"
+		}
+		render(
+			<BonusChip
+				availableBonus={camelCaseBonus}
+				scoredMoveBonuses={[]}
+				scoredMove={mockScoredMove}
+				chipActionsDisabled={false}
+				updateScoredMoveBonuses={jest.fn()}
+			/>
+		)
+
+		const chip = screen.getByRole("button")
+		expect(chip).toHaveTextContent("SC")
+	})
+
+	it("handles single word bonus names correctly", () => {
+		const singleWordBonus = {
+			...mockAvailableBonus,
+			name: "Style"
+		}
+		render(
+			<BonusChip
+				availableBonus={singleWordBonus}
+				scoredMoveBonuses={[]}
+				scoredMove={mockScoredMove}
+				chipActionsDisabled={false}
+				updateScoredMoveBonuses={jest.fn()}
+			/>
+		)
+
+		const chip = screen.getByRole("button")
+		expect(chip).toHaveTextContent("S")
+	})
+
+	it("handles snake_case bonus names and generates correct acronym", () => {
+		const snakeCaseBonus = {
+			...mockAvailableBonus,
+			name: "super_clean"
+		}
+		render(
+			<BonusChip
+				availableBonus={snakeCaseBonus}
+				scoredMoveBonuses={[]}
+				scoredMove={mockScoredMove}
+				chipActionsDisabled={false}
+				updateScoredMoveBonuses={jest.fn()}
+			/>
+		)
+
+		const chip = screen.getByRole("button")
+		expect(chip).toHaveTextContent("SC")
+	})
+
+	it("handles kebab-case bonus names and generates correct acronym", () => {
+		const kebabCaseBonus = {
+			...mockAvailableBonus,
+			name: "super-clean"
+		}
+		render(
+			<BonusChip
+				availableBonus={kebabCaseBonus}
+				scoredMoveBonuses={[]}
+				scoredMove={mockScoredMove}
+				chipActionsDisabled={false}
+				updateScoredMoveBonuses={jest.fn()}
+			/>
+		)
+
+		const chip = screen.getByRole("button")
+		expect(chip).toHaveTextContent("SC")
+	})
 })
