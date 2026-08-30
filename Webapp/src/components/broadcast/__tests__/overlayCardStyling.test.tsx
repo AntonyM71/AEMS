@@ -8,6 +8,7 @@ import { EventTitle } from "../Cards/EventTitle"
 import { HeatSummaryTable } from "../Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../Cards/PhaseResultsTable"
 import { lightTheme } from "../overlayTheme"
+import { closestPaper } from "./cardStylingTestHelpers"
 
 // Characterization tests for the BROADCAST OVERLAY.
 //
@@ -35,9 +36,6 @@ const renderOverlay = (ui: React.ReactElement) =>
 			<ThemeProvider theme={lightTheme}>{ui}</ThemeProvider>
 		</Provider>
 	)
-
-// eslint-disable-next-line testing-library/no-node-access
-const closestPaper = (el: HTMLElement) => el.closest(".MuiPaper-root")
 
 describe("broadcast overlay card styling (characterization)", () => {
 	describe("HeatSummaryTable", () => {

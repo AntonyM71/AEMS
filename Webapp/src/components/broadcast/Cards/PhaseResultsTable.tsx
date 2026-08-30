@@ -16,10 +16,10 @@ import {
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
-import { AemsCardHeaderThemeProps } from "../themeAugmentation"
+import { AemsPhaseResultsThemeProps } from "../themeAugmentation"
 import { BasicTable } from "./BasicBroadcastTable"
 
-interface PhaseScoreTableProps extends AemsCardHeaderThemeProps {
+interface PhaseScoreTableProps extends AemsPhaseResultsThemeProps {
 	overlayControlState: OverlayControlState
 	isVisible?: boolean
 }
@@ -85,7 +85,9 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 const PhaseDetails = ({
 	titleAlign,
 	detailRows
-}: Required<Pick<AemsCardHeaderThemeProps, "titleAlign" | "detailRows">>) => {
+}: Required<
+	Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">
+>) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{ id: selectedPhase },

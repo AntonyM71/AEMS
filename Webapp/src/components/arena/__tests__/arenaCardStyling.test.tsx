@@ -6,6 +6,7 @@ import { setupStore } from "../../../redux/store"
 import { EventTitle } from "../../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../../broadcast/Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../../broadcast/Cards/PhaseResultsTable"
+import { closestPaper } from "../../broadcast/__tests__/cardStylingTestHelpers"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import { darkTheme } from "../arenaTheme"
 
@@ -30,9 +31,6 @@ const renderArena = (ui: React.ReactElement) =>
 			<ThemeProvider theme={darkTheme}>{ui}</ThemeProvider>
 		</Provider>
 	)
-
-// eslint-disable-next-line testing-library/no-node-access
-const closestPaper = (el: HTMLElement) => el.closest(".MuiPaper-root")
 
 describe("arena card styling", () => {
 	describe("HeatSummaryTable", () => {

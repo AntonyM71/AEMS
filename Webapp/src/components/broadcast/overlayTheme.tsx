@@ -4,6 +4,9 @@ import "./themeAugmentation"
 const icfLightBlue = "rgb(28, 154, 215)"
 const icfDarkBlue = "rgb(12, 40, 80)"
 const icfWhite = "#f8f9fc"
+// Shared by the table and its card so they stay registered with the same
+// width of background artwork.
+const scoreboardCardMaxWidth = 1150
 
 export const lightTheme = createTheme({
 	palette: {
@@ -138,7 +141,7 @@ export const lightTheme = createTheme({
 			styleOverrides: {
 				root: {
 					borderCollapse: "separate",
-					maxWidth: 1150,
+					maxWidth: scoreboardCardMaxWidth,
 					minWidth: 500,
 					margin: "0 auto",
 					borderRadius: 12,
@@ -222,7 +225,7 @@ export const lightTheme = createTheme({
 					// The scoreboard cards are capped to the width of their
 					// background frame; the event title fills the screen so its
 					// absolutely-positioned groups resolve against the viewport.
-					"&.AemsTableCard-root": { maxWidth: 1150 },
+					"&.AemsTableCard-root": { maxWidth: scoreboardCardMaxWidth },
 					"&.AemsEventTitle-root": {
 						width: "100%",
 						height: "100%",
@@ -279,14 +282,14 @@ export const lightTheme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					color: icfDarkBlue
-				},
-				// The heat name sits inside the frame's top-right title box.
-				h4: {
-					fontWeight: 700,
-					paddingRight: 32,
-					paddingTop: 8,
-					textShadow: "0 2px 8px rgba(0,0,0,0.4)"
+					color: icfDarkBlue,
+					// The heat name sits inside the frame's top-right title box.
+					"&.AemsHeatSummary-title": {
+						fontWeight: 700,
+						paddingRight: 32,
+						paddingTop: 8,
+						textShadow: "0 2px 8px rgba(0,0,0,0.4)"
+					}
 				}
 			}
 		}

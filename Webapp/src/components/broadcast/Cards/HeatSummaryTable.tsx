@@ -72,7 +72,11 @@ const HeatDetails = ({
 			alignItems="flex-start"
 			sx={{ position: "relative", width: "100%" }}
 		>
-			<Typography variant="h4" sx={{ color: "text.primary" }}>
+			<Typography
+				variant="h4"
+				className="AemsHeatSummary-title"
+				sx={{ color: "text.primary" }}
+			>
 				{heatData?.name}
 			</Typography>
 		</Stack>

@@ -19,6 +19,9 @@ export interface AemsCardHeaderThemeProps {
 	/** Separator height between title and table. Overlay uses it as invisible
 	 *  artwork clearance; arena leaves it unset for an ordinary rule. */
 	spacerHeight?: number
+}
+
+export interface AemsPhaseResultsThemeProps extends AemsCardHeaderThemeProps {
 	/** "single" one-line row (arena) or "split" two fixed-height lines landing
 	 *  in separate bands of the overlay frame. */
 	detailRows?: "single" | "split"
@@ -40,7 +43,7 @@ declare module "@mui/material/styles" {
 	interface ComponentsPropsList {
 		AemsBasicTable: AemsBasicTableThemeProps
 		AemsHeatSummary: AemsCardHeaderThemeProps
-		AemsPhaseResults: AemsCardHeaderThemeProps
+		AemsPhaseResults: AemsPhaseResultsThemeProps
 		AemsEventTitle: AemsEventTitleThemeProps
 	}
 
