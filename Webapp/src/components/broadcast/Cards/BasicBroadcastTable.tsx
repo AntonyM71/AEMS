@@ -4,24 +4,27 @@ import TableCell from "@mui/material/TableCell"
 import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
-import Typography from "@mui/material/Typography"
+import { useThemeProps } from "@mui/material/styles"
 import { useEffect, useState } from "react"
+import { AemsBasicTableThemeProps } from "../themeAugmentation"
 
-export const BasicTable = ({
-	data,
-	pageLimit,
-	pageChangeTime,
-	maxWidth = 800,
-	rowHeight = 48,
-	footerPadding = 0
-}: {
+interface BasicTableProps extends AemsBasicTableThemeProps {
 	data: Record<string, any>[]
-	pageLimit: number
 	pageChangeTime: number
-	maxWidth?: number | string
-	rowHeight?: number
-	footerPadding?: number
-}) => {
+}
+
+// Sizing, colour and borders all come from the active theme (MuiTable*), and the
+// paging geometry from its AemsBasicTable defaultProps — so this renders as a
+// frame-aligned broadcast scoreboard under overlayTheme and as an elastic dark
+// table under arenaTheme, with no branching here.
+export const BasicTable = (inProps: BasicTableProps) => {
+	const {
+		data,
+		pageChangeTime,
+		pageLimit = 10,
+		padEmptyRows = false
+	} = useThemeProps({ props: inProps, name: "AemsBasicTable" })
+
 	const [currentPage, setCurrentPage] = useState(0)
 
 	// Calculate the total number of pages
@@ -47,119 +50,48 @@ export const BasicTable = ({
 		return <></>
 	}
 
-	// Pad with empty rows if needed
-	const emptyRows = Math.max(pageLimit - paginatedData.length, 0)
+	// The overlay pads short pages so the table stays registered with its
+	// background frame; the arena lets the table shrink to its content.
+	const emptyRows = padEmptyRows
+		? Math.max(pageLimit - paginatedData.length, 0)
+		: 0
 	const emptyRowKeys = Array.from(
 		{ length: emptyRows },
-		(_, rowNumber) => `empty-row-${currentPage}-${paginatedData.length + rowNumber}`
+		(_, rowNumber) =>
+			`empty-row-${currentPage}-${paginatedData.length + rowNumber}`
 	)
-	const fontSize = 20
 
 	return (
-		<Table
-			sx={{
-				flexDirection: "column",
-				minWidth: 500,
-				maxWidth,
-				margin: "0 auto",
-				borderRadius: 3
-			}}
-			aria-label="simple table"
-		>
+		<Table aria-label="simple table">
 			<TableHead>
-				<TableRow sx={{ height: rowHeight }}>
+				<TableRow>
 					{Object.keys(data[0]).map((k) => (
-						<TableCell
-							key={k}
-							sx={{
-								fontWeight: "bold",
-								height: rowHeight,
-								p: 0,
-								m: 0
-							}}
-						>
-							<Typography
-								sx={{
-									lineHeight: `${rowHeight}px`,
-									fontSize,
-									fontWeight: "bold"
-								}}
-							>
-								{k}
-							</Typography>
-						</TableCell>
+						<TableCell key={k}>{k}</TableCell>
 					))}
 				</TableRow>
 			</TableHead>
 			<TableBody>
 				{paginatedData.map((row) => (
-					<TableRow
-						key={`${Object.values(row).join("-")}`}
-						sx={{ height: rowHeight }}
-					>
+					<TableRow key={`${Object.values(row).join("-")}`}>
 						{Object.keys(row).map((d) => (
-							<TableCell
-								key={d}
-								sx={{
-									height: rowHeight,
-									p: 0,
-									m: 0,
-									borderBottom: "1px solid #1976d2"
-								}}
-							>
-								<Typography
-									sx={{
-										lineHeight: `${rowHeight}px`,
-										fontSize
-									}}
-								>
-									{String(row[d] ?? "")}
-								</Typography>
+							<TableCell key={d}>
+								{String(row[d] ?? "")}
 							</TableCell>
 						))}
 					</TableRow>
 				))}
-				{/* Pad with empty rows if less than pageLimit */}
 				{emptyRowKeys.map((emptyRowKey) => (
-						<TableRow
-							key={emptyRowKey}
-							sx={{ height: rowHeight, fontSize: 22 }}
-						>
-							{Object.keys(data[0]).map((k) => (
-								<TableCell
-									key={k}
-									sx={{
-										height: rowHeight,
-										p: 0,
-										m: 0,
-										borderBottom: "1px solid #1976d2"
-									}}
-								/>
-							))}
-						</TableRow>
-					))}
+					<TableRow key={emptyRowKey}>
+						{Object.keys(data[0]).map((k) => (
+							<TableCell key={k} />
+						))}
+					</TableRow>
+				))}
 			</TableBody>
 			<TableFooter>
-				<TableRow sx={{ height: rowHeight + footerPadding }}>
-					<TableCell
-						sx={{
-							fontWeight: "bold",
-							textAlign: "right",
-							fontSize,
-							color: "white",
-							letterSpacing: 1,
-							height: rowHeight,
-							p: 0,
-							m: 0
-						}}
-						colSpan={Object.keys(data[0]).length}
-					>
-						<Typography
-							sx={{
-								lineHeight: `${rowHeight}px`,
-								color: "white"
-							}}
-						>{`Page: ${currentPage + 1}/${totalPages}`}</Typography>
+				<TableRow>
+					<TableCell colSpan={Object.keys(data[0]).length}>
+						{`Page: ${currentPage + 1}/${totalPages}`}
 					</TableCell>
 				</TableRow>
 			</TableFooter>

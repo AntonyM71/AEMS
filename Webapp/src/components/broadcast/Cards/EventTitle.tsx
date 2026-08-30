@@ -1,5 +1,9 @@
 import Box from "@mui/material/Box"
+import Divider from "@mui/material/Divider"
+import Paper from "@mui/material/Paper"
+import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
+import { useThemeProps } from "@mui/material/styles"
 import { useSelector } from "react-redux"
 import {
 	getSelectedCompetition,
@@ -12,6 +16,7 @@ import {
 	useGetOneByPrimaryKeyPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
+import { AemsEventTitleThemeProps } from "../themeAugmentation"
 
 export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
 	<FullscreenPixiOverlay configName="eventTitle" isVisible={isVisible}>
@@ -19,7 +24,18 @@ export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
 	</FullscreenPixiOverlay>
 )
 
-export const EventTitle = () => {
+// One layout for both surfaces. The overlay's theme positions the two text
+// groups absolutely over its background art and picks the smaller type scale;
+// the arena's theme leaves them in normal flow inside a dark panel.
+export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
+	const {
+		titleVariant = "h1",
+		detailVariant = "h4",
+		headingSx = {},
+		runsSx = {},
+		stackSpacing = 2
+	} = useThemeProps({ props: inProps, name: "AemsEventTitle" })
+
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const { data: competitionData } = useGetManyCompetitionGetQuery(
 		{
@@ -46,90 +62,78 @@ export const EventTitle = () => {
 	}
 
 	return (
-		<Box
-			sx={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				pointerEvents: "none"
-			}}
-		>
-			<Box
-				sx={{
-					position: "absolute",
-					left: "27%",
-					top: "53%",
-					display: "flex",
-					flexDirection: "column",
-					gap: "0.35rem",
-					maxWidth: "72%"
-				}}
-			>
-				<Typography
-					variant="h2"
-					sx={{
-						color: "#ffffff"
-					}}
-				>
-					{competitionData?.[0].name}
-				</Typography>
+		<Paper className="AemsEventTitle-root">
+			<Stack spacing={stackSpacing}>
 				<Box
 					sx={{
 						display: "flex",
-						gap: "0.7rem",
-						flexWrap: "wrap",
-						paddingTop: "0.5em"
+						flexDirection: "column",
+						...headingSx
 					}}
 				>
 					<Typography
-						variant="h5"
+						variant={titleVariant}
+						sx={{ color: "text.primary" }}
+					>
+						{competitionData?.[0].name}
+					</Typography>
+					<Box
 						sx={{
-							textTransform: "uppercase",
-							color: "#ffffff"
+							display: "flex",
+							gap: "0.7rem",
+							flexWrap: "wrap",
+							paddingTop: "0.5em"
 						}}
 					>
-						{`Event : ${eventData?.name}`}
+						<Typography
+							variant={detailVariant}
+							sx={{
+								textTransform: "uppercase",
+								color: "text.primary"
+							}}
+						>
+							{`Event : ${eventData?.name}`}
+						</Typography>
+						<Typography
+							variant={detailVariant}
+							sx={{
+								textTransform: "uppercase",
+								color: "text.primary"
+							}}
+						>
+							{`Phase : ${phaseData?.name}`}
+						</Typography>
+					</Box>
+				</Box>
+				<Divider />
+				<Box
+					sx={{
+						display: "flex",
+						gap: "0.75rem",
+						flexWrap: "wrap",
+						...runsSx
+					}}
+				>
+					<Typography
+						variant={detailVariant}
+						sx={{
+							textTransform: "uppercase",
+							color: "text.secondary"
+						}}
+					>
+						{`Runs : ${phaseData?.number_of_runs}`}
 					</Typography>
 					<Typography
-						variant="h5"
+						variant={detailVariant}
 						sx={{
 							textTransform: "uppercase",
-							color: "#ffffff"
+							color: "text.secondary"
 						}}
 					>
-						{`Phase : ${phaseData?.name}`}
+						{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
 					</Typography>
 				</Box>
-			</Box>
-
-			<Box
-				sx={{
-					position: "absolute",
-					left: "43%",
-					top: "76%",
-					display: "flex",
-					gap: "0.75rem",
-					flexWrap: "wrap",
-					maxWidth: "60%"
-				}}
-			>
-				<Typography
-					variant="h5"
-					sx={{
-						textTransform: "uppercase"
-					}}
-				>
-					{`Runs : ${phaseData?.number_of_runs}`}
-				</Typography>
-				<Typography
-					variant="h5"
-					sx={{
-						textTransform: "uppercase"
-					}}
-				>
-					{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
-				</Typography>
-			</Box>
-		</Box>
+			</Stack>
+		</Paper>
 	)
 }
