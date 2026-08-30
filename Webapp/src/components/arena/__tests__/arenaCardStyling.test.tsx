@@ -6,7 +6,7 @@ import { setupStore } from "../../../redux/store"
 import { EventTitle } from "../../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../../broadcast/Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../../broadcast/Cards/PhaseResultsTable"
-import { closestPaper } from "../../broadcast/__tests__/cardStylingTestHelpers"
+import { closestPaper } from "../../../testUtils"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import { darkTheme } from "../arenaTheme"
 

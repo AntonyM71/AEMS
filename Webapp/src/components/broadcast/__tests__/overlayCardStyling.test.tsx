@@ -8,7 +8,7 @@ import { EventTitle } from "../Cards/EventTitle"
 import { HeatSummaryTable } from "../Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../Cards/PhaseResultsTable"
 import { lightTheme } from "../overlayTheme"
-import { closestPaper } from "./cardStylingTestHelpers"
+import { closestPaper } from "../../../testUtils"
 
 // Characterization tests for the BROADCAST OVERLAY.
 //
