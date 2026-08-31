@@ -19,10 +19,6 @@ import HeadJudge from "../headJudge"
 
 jest.mock("../WebSocketConnections")
 
-// The lock-run button is gated on this build-time flag; without it every
-// lock assertion in this file would be vacuously green.
-process.env.NEXT_PUBLIC_SHOW_LOCK_RUN = "true"
-
 const competitionsWithHeat: typeof competitionInitialState = {
 	...competitionInitialState,
 	selectedPhase: "phase-1",
@@ -70,6 +66,20 @@ const runStatusResponse = (overrides: Record<string, unknown>) =>
 	)
 
 describe("HeadJudge", () => {
+	// The lock-run button is gated on this build-time flag. Scope it to this
+	// file — process.env is shared across a Jest worker with no auto-reset.
+	const originalShowLockRun = process.env.NEXT_PUBLIC_SHOW_LOCK_RUN
+	beforeAll(() => {
+		process.env.NEXT_PUBLIC_SHOW_LOCK_RUN = "true"
+	})
+	afterAll(() => {
+		if (originalShowLockRun === undefined) {
+			delete process.env.NEXT_PUBLIC_SHOW_LOCK_RUN
+		} else {
+			process.env.NEXT_PUBLIC_SHOW_LOCK_RUN = originalShowLockRun
+		}
+	})
+
 	let store: ReturnType<typeof createTestStore>
 
 	beforeEach(() => {
