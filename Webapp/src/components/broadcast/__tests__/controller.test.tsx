@@ -43,6 +43,30 @@ describe("OverlayController", () => {
 		)
 	})
 
+	it("emits the ICF-logo toggle to subscribers", async () => {
+		const user = userEvent.setup({ delay: null })
+		render(
+			<Provider store={setupStore()}>
+				<OverlayController />
+			</Provider>
+		)
+		await waitFor(() =>
+			expect(
+				socketHub.openCount("broadcast_control")
+			).toBeGreaterThan(0)
+		)
+
+		// defaultOverlayControllerState.showImageCard is true; toggling turns it off.
+		await user.click(screen.getByRole("button", { name: "Show ICF Logo" }))
+
+		await waitFor(() =>
+			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
+				"broadcast_control",
+				expect.objectContaining({ showImageCard: false })
+			])
+		)
+	})
+
 	// Proves the client contract only — the controller emits what the arena
 	// knows how to consume. The real server broadcast is covered by
 	// e2e/tests/websocket.spec.ts.
