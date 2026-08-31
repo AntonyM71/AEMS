@@ -18,15 +18,25 @@ is; `screen` works everywhere.
 
 - `Webapp/src/testUtils.tsx` — the `renderWithProviders` signature and return
 
-## 2. `LiveRunScore` hardcodes lock/DNS and renders "NaN" before data
+## 2. `LiveRunScore` hardcodes lock/DNS and renders "NaN" before data — FIXED
 
-`SubscribedFinalScore` passes `locked={false}` and `did_not_start={false}` as
-literals to `FinalScore`, so the broadcast/arena live-score card can never show
-the locked styling or "DNS". With its initial empty `allJudgeScores`,
-`calculateAverage([])` is `0 / 0`, so the card renders the string **`NaN`**
-until the first score arrives. A test must never assert on that `NaN`.
+**Fixed** on branch `improve-frontend-tests`. `calculateAverage([])` now returns
+`0` (so the card shows `0.00`, not `NaN`, before the first score), and
+`SubscribedFinalScore` subscribes to run status for the shown athlete and passes
+the real `locked`/`did_not_start` values through to `FinalScore`.
 
-- `Webapp/src/components/broadcast/Cards/LiveRunScore.tsx` — the `FinalScore` props and `allJudgeScores` initial state
+Residual: adding the subscription pushed `SubscribedFinalScore`'s lint
+cyclomatic complexity from 11 to 16 (it was already over the limit). The
+component does four subscriptions plus a scoring effect and wants splitting —
+deferred as it is out of scope for the bug fix.
+
+The original bug: `SubscribedFinalScore` passed `locked={false}` /
+`did_not_start={false}` as literals, so the arena live-score card could never
+show the locked styling or "DNS"; and the empty `allJudgeScores` gave
+`calculateAverage([])` = `0 / 0` = the string "NaN".
+
+- `Webapp/src/components/broadcast/Cards/LiveRunScore.tsx` — `SubscribedFinalScore`
+- `Webapp/src/components/roles/headJudge/FinalScore.tsx` — `calculateAverage`
 
 ## 3. `RunCard` splits its text across elements
 

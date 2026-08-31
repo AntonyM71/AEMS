@@ -70,4 +70,43 @@ describe("Arena", () => {
 		)
 		expect(screen.getByText("RIVERA")).toBeInTheDocument()
 	})
+
+	it("shows DNS on the live score when the head judge marks the run did-not-start", async () => {
+		renderWithProviders(<Arena />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+
+		broadcast({
+			selectedHeat: "1",
+			selectedAthlete,
+			showLiveRunScore: true
+		})
+
+		// SubscribedFinalScore subscribes to run status for the shown athlete.
+		await waitFor(() =>
+			expect(socketHub.openCount("run_status")).toBeGreaterThan(0)
+		)
+		await waitFor(() =>
+			expect(screen.getByTestId("final-score-value")).toHaveTextContent(
+				"0.00"
+			)
+		)
+
+		act(() => {
+			socketHub.emit("run_status", "run_status", {
+				heat_id: "1",
+				athlete_id: "athlete-1",
+				run_number: 0,
+				locked: false,
+				did_not_start: true
+			})
+		})
+
+		await waitFor(() =>
+			expect(screen.getByTestId("final-score-value")).toHaveTextContent(
+				"DNS"
+			)
+		)
+	})
 })
