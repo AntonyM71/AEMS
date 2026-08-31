@@ -278,6 +278,19 @@ describe("HeadJudge", () => {
 			"Lock Run"
 		)
 
+		// The click sent a lock request for this run to the server.
+		await waitFor(() =>
+			expect(socketHub.emittedOn("run_status")).toContainEqual([
+				"run_status",
+				expect.objectContaining({
+					locked: true,
+					heat_id: "heat-1",
+					athlete_id: "athlete-1",
+					run_number: 1
+				})
+			])
+		)
+
 		// The server broadcasts the confirmed lock back to every subscriber.
 		act(() => {
 			socketHub.emit("run_status", "run_status", {
