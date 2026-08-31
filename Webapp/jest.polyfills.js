@@ -14,7 +14,7 @@ global.ReadableStream = global.ReadableStream || ReadableStream
 global.TransformStream = global.TransformStream || TransformStream
 global.WritableStream = global.WritableStream || WritableStream
 
-if (globalThis.BroadcastChannel === undefined) {
+if (!("BroadcastChannel" in globalThis)) {
 	globalThis.BroadcastChannel = class BroadcastChannel {
 		postMessage() {
 			/* no-op: MSW only needs the constructor to exist under jsdom */

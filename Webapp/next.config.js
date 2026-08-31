@@ -21,7 +21,7 @@ const resolveDefaultGraphicsOrigin = async () => {
 				const octets = gatewayIp.match(/../g)
 				if (octets) {
 					return `http://${octets
-						.map((octet) => parseInt(octet, 16))
+						.map((octet) => Number.parseInt(octet, 16))
 						.reverse()
 						.join(".")}:82`
 				}
