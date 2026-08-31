@@ -4,7 +4,10 @@ import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { socketHub } from "../../../mocks/socketHub"
 import { server } from "../../../mocks/server"
-import { updateSelectedHeat } from "../../../redux/atoms/competitions"
+import {
+	competitionInitialState,
+	updateSelectedHeat
+} from "../../../redux/atoms/competitions"
 import { setupStore } from "../../../redux/store"
 import Arena from "../../arena/arena"
 import OverlayController from "../controller"
@@ -42,6 +45,34 @@ describe("OverlayController", () => {
 			expect(
 				socketHub.disconnectedCount("broadcast_control")
 			).toBeGreaterThan(0)
+		)
+	})
+
+	it("carries the pre-selected competition, event and heat into the first broadcast", async () => {
+		render(
+			<Provider
+				store={setupStore({
+					competitions: {
+						...competitionInitialState,
+						selectedCompetition: "comp-1",
+						selectedEvent: "event-1",
+						selectedHeat: "heat-1"
+					}
+				})}
+			>
+				<OverlayController />
+			</Provider>
+		)
+
+		await waitFor(() =>
+			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
+				"broadcast_control",
+				expect.objectContaining({
+					selectedCompetition: "comp-1",
+					selectedEvent: "event-1",
+					selectedHeat: "heat-1"
+				})
+			])
 		)
 	})
 
