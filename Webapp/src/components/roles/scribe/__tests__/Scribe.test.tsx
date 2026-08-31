@@ -18,7 +18,12 @@ const move = {
 	sheet_id: "sheet-1"
 }
 
-let scorePosts: { heatId: string; athleteId: string; body: unknown }[]
+interface ScorePost {
+	heatId: string
+	athleteId: string
+	moves: { move_id: string; direction: string }[]
+}
+let scorePosts: ScorePost[]
 
 const renderScribe = () =>
 	renderWithProviders(<Scribe scribeNumber="1" />, {
@@ -38,10 +43,13 @@ beforeEach(() => {
 		http.post(
 			"/api/addUpdateAthleteScore/:heatId/:athleteId/:runNumber/:judgeId",
 			async ({ params, request }) => {
+				const body = (await request.json()) as {
+					moves: { move_id: string; direction: string }[]
+				}
 				scorePosts.push({
 					heatId: String(params.heatId),
 					athleteId: String(params.athleteId),
-					body: await request.json()
+					moves: body.moves ?? []
 				})
 
 				return HttpResponse.json({ success: true })
@@ -61,9 +69,18 @@ describe("Scribe", () => {
 		expect(await list.findByText("Cartwheel")).toBeInTheDocument()
 		expect(list.getByText("L")).toBeInTheDocument()
 
-		await waitFor(() => expect(scorePosts.length).toBeGreaterThan(0))
-		expect(scorePosts[0].heatId).toBe("heat-1")
-		expect(scorePosts[0].athleteId).toBe("athlete-1")
+		// A POST carrying the tapped move reaches the server (not just the
+		// empty mount-time save — see known issue #6).
+		await waitFor(() =>
+			expect(scorePosts.some((p) => p.moves.length === 1)).toBe(true)
+		)
+		const scored = scorePosts.find((p) => p.moves.length === 1)!
+		expect(scored.heatId).toBe("heat-1")
+		expect(scored.athleteId).toBe("athlete-1")
+		expect(scored.moves[0]).toMatchObject({
+			move_id: "test-move-1",
+			direction: "L"
+		})
 	})
 
 	it("blocks scoring and shows a notice while the run is locked", async () => {
