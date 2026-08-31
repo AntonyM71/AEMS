@@ -39,6 +39,7 @@ const OverlayController: React.FC = () => {
 
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
+	const selectedPhase = useSelector(getSelectedPhase)
 	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
 			heatId: selectedHeat
@@ -62,28 +63,28 @@ const OverlayController: React.FC = () => {
 			setSelectedAthlete(undefined)
 		}
 	}, [currentPaddlerIndex, athleteData, selectedHeat])
+	// Keep the overlay-control state in sync with the operator's selections.
+	// One effect with a functional update — six separate non-functional setState
+	// calls clobbered each other whenever a selector cascade changed more than
+	// one value in a commit (picking a competition resets event/phase/heat too).
 	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedCompetition })
-	}, [selectedCompetition])
-
-	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedEvent })
-	}, [selectedEvent])
-
-	const selectedPhase = useSelector(getSelectedPhase)
-	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedPhase })
-	}, [selectedPhase])
-
-	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedHeat })
-	}, [selectedHeat])
-	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedAthlete })
-	}, [selectedAthlete])
-	useEffect(() => {
-		setOverlayControlState({ ...overlayControlState, selectedRun })
-	}, [selectedRun])
+		setOverlayControlState((prev) => ({
+			...prev,
+			selectedCompetition,
+			selectedEvent,
+			selectedPhase,
+			selectedHeat,
+			selectedAthlete,
+			selectedRun
+		}))
+	}, [
+		selectedCompetition,
+		selectedEvent,
+		selectedPhase,
+		selectedHeat,
+		selectedAthlete,
+		selectedRun
+	])
 	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
 	// Subscribe to the broadcast control stream to maintain a persistent socket
 	// connection. The emitBroadcastControl mutation reuses this socket.
@@ -98,15 +99,6 @@ const OverlayController: React.FC = () => {
 	useEffect(() => {
 		void emitBroadcastControl(overlayControlState)
 	}, [overlayControlState, emitBroadcastControl])
-
-	const updateOverlayControlState = (
-		newState: Partial<OverlayControlState>
-	) => {
-		setOverlayControlState({
-			...overlayControlState,
-			...newState
-		})
-	}
 
 	return (
 		<Grid

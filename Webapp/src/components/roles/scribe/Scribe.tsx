@@ -1,6 +1,6 @@
 import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
 	getSelectedHeat,
@@ -34,6 +34,9 @@ import { MoveCard } from "./MoveCard"
 // eslint-disable-next-line complexity
 const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	const dispatch = useDispatch()
+	// Set by the load effect so the submit effect it triggers doesn't echo
+	// freshly-loaded server data straight back to the server.
+	const skipSubmitForHydration = useRef(false)
 	const scoredMoves = useSelector(getScoredMoves)
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const selectedHeat = useSelector(getSelectedHeat)
@@ -120,6 +123,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		}
 	}
 	useEffect(() => {
+		if (skipSubmitForHydration.current) {
+			skipSubmitForHydration.current = false
+
+			return
+		}
 		if (
 			!isMoveAndBonusFetching &&
 			!athletes.isFetching &&
@@ -150,6 +158,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	useEffect(() => {
 		if (!isMoveAndBonusFetching) {
+			skipSubmitForHydration.current = true
 			setScoredMovesAndBonuses(
 				moveAndBonusdata?.moves
 					? moveAndBonusdata.moves.map((m) => ({

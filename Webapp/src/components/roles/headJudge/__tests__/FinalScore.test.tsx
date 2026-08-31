@@ -25,4 +25,17 @@ describe("FinalScore", () => {
 
 		expect(screen.getByText("20.00")).toBeInTheDocument()
 	})
+
+	it("shows 0.00 before any judge has scored", () => {
+		render(
+			<FinalScore
+				allJudgeScores={{}}
+				locked={false}
+				did_not_start={false}
+			/>
+		)
+
+		expect(screen.getByText("0.00")).toBeInTheDocument()
+		expect(screen.queryByText("NaN")).not.toBeInTheDocument()
+	})
 })
