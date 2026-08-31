@@ -144,13 +144,14 @@ describe("HeadJudge", () => {
 		)
 		await userEvent.click(screen.getByTestId("dns-button"))
 
-		// The guard blocks the write entirely — no run_status was sent.
-		expect(socketHub.emittedOn("run_status")).toHaveLength(0)
-		// And the operator is told why, with the run still not marked DNS.
+		// The operator is told why, with the run still not marked DNS.
 		expect(screen.getByTestId("dns-button")).toHaveTextContent("SET DNS")
 		expect(toast.error).toHaveBeenCalledWith(
 			"Please unlock run before setting DNS"
 		)
+		// The guard blocks the write entirely — no run_status was sent.
+		// Checked last so any stray async emit has had maximum time to appear.
+		expect(socketHub.emittedOn("run_status")).toHaveLength(0)
 	})
 
 	it("shows the mean of the judges' scores and keeps each judge's moves separate", async () => {
@@ -289,6 +290,7 @@ describe("HeadJudge", () => {
 				"run_status",
 				expect.objectContaining({
 					locked: true,
+					did_not_start: false,
 					heat_id: "heat-1",
 					athlete_id: "athlete-1",
 					run_number: 1

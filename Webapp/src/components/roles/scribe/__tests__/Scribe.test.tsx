@@ -69,18 +69,22 @@ describe("Scribe", () => {
 		expect(await list.findByText("Cartwheel")).toBeInTheDocument()
 		expect(list.getByText("L")).toBeInTheDocument()
 
-		// A POST carrying the tapped move reaches the server (not just the
-		// empty mount-time save — see known issue #6).
+		// A POST carrying the tapped move reaches the server — not just the
+		// empty mount-time save (known issue #6).
 		await waitFor(() =>
-			expect(scorePosts.some((p) => p.moves.length === 1)).toBe(true)
+			expect(
+				scorePosts.some(
+					(p) =>
+						p.heatId === "heat-1" &&
+						p.athleteId === "athlete-1" &&
+						p.moves.some(
+							(m) =>
+								m.move_id === "test-move-1" &&
+								m.direction === "L"
+						)
+				)
+			).toBe(true)
 		)
-		const scored = scorePosts.find((p) => p.moves.length === 1)!
-		expect(scored.heatId).toBe("heat-1")
-		expect(scored.athleteId).toBe("athlete-1")
-		expect(scored.moves[0]).toMatchObject({
-			move_id: "test-move-1",
-			direction: "L"
-		})
 	})
 
 	it("blocks scoring and shows a notice while the run is locked", async () => {

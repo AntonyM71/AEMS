@@ -30,8 +30,10 @@ describe("Arena", () => {
 		server.use(
 			http.get("/api/heat/:id", ({ params }) =>
 				HttpResponse.json({
+					// Distinct from the global /api/heat *list* fixture
+					// ("Heat 1"/…) so a name query here can't collide.
 					id: params.id,
-					name: `Heat ${String(params.id)}`
+					name: `Heat detail ${String(params.id)}`
 				})
 			)
 		)
@@ -54,7 +56,7 @@ describe("Arena", () => {
 		// AthleteInfo renders the surname in caps, always visible on the arena
 		expect(await screen.findByText("RIVERA")).toBeInTheDocument()
 		// The heat summary modal now shows the selected heat's name
-		expect(await screen.findByText("Heat 1")).toBeInTheDocument()
+		expect(await screen.findByText("Heat detail 1")).toBeInTheDocument()
 
 		broadcast({
 			selectedHeat: "1",
@@ -64,7 +66,7 @@ describe("Arena", () => {
 		})
 
 		await waitFor(() =>
-			expect(screen.queryByText("Heat 1")).not.toBeInTheDocument()
+			expect(screen.queryByText("Heat detail 1")).not.toBeInTheDocument()
 		)
 		expect(screen.getByText("RIVERA")).toBeInTheDocument()
 	})

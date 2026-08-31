@@ -16,8 +16,10 @@ beforeEach(() => {
 	server.use(
 		http.get("/api/heat/:id", ({ params }) =>
 			HttpResponse.json({
+				// Distinct from the global /api/heat *list* fixture ("Heat 1"/…)
+				// so a future test with a selected competition can't collide.
 				id: params.id,
-				name: `Heat ${String(params.id)}`
+				name: `Heat detail ${String(params.id)}`
 			})
 		)
 	)
@@ -56,7 +58,15 @@ describe("OverlayController", () => {
 			).toBeGreaterThan(0)
 		)
 
-		// defaultOverlayControllerState.showImageCard is true; toggling turns it off.
+		// Precondition: the default (and the mount emit) has the logo ON, so
+		// asserting OFF below is a genuine state change, not just the default.
+		await waitFor(() =>
+			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
+				"broadcast_control",
+				expect.objectContaining({ showImageCard: true })
+			])
+		)
+
 		await user.click(screen.getByRole("button", { name: "Show ICF Logo" }))
 
 		await waitFor(() =>
@@ -104,11 +114,15 @@ describe("OverlayController", () => {
 		await user.click(summaryButton)
 
 		// The arena, on its own separate store, shows the heat the operator picked.
-		expect(await screen.findByText("Heat 1")).toBeInTheDocument()
+		expect(
+			await screen.findByText("Heat detail 1")
+		).toBeInTheDocument()
 
 		await user.click(summaryButton)
 		await waitFor(() =>
-			expect(screen.queryByText("Heat 1")).not.toBeInTheDocument()
+			expect(
+				screen.queryByText("Heat detail 1")
+			).not.toBeInTheDocument()
 		)
 	})
 })

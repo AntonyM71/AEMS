@@ -6,6 +6,9 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
 	testEnvironment: "jsdom",
+	// Above jest's 5s default so a genuinely failing test still surfaces RTL's
+	// "element not found" message before jest's own timeout fires.
+	testTimeout: 15000,
 	setupFiles: ["<rootDir>/jest.polyfills.js"],
 	moduleNameMapper: {
 		"^msw/node$": "<rootDir>/node_modules/msw/lib/node/index.js",

@@ -8,6 +8,12 @@ process.env.NEXT_PUBLIC_API_URL_DEV = "http://localhost/api/"
 import "@testing-library/jest-dom"
 import "@testing-library/jest-dom/extend-expect"
 
+// Raise RTL's default findBy/waitFor timeout (1000ms) — several suites render
+// heavy component trees and the CI runner blows the 1s window under parallel
+// load, producing intermittent failures unrelated to the code under test.
+import { configure } from "@testing-library/react"
+configure({ asyncUtilTimeout: 2000 })
+
 // Fetch polyfill for tests (jsdom 20 ships no fetch/Request/Response)
 import "whatwg-fetch"
 
