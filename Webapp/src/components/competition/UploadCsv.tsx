@@ -98,7 +98,6 @@ const UploadForm = () => {
 	const [numberOfJudges, setNumberOfJudges] = useState<number>(2)
 	const [file, setFile] = useState<Blob>(new Blob())
 
-	const formData = new FormData()
 	const handleFileUpload: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement
 	> = (event) => {
@@ -111,14 +110,11 @@ const UploadForm = () => {
 				// @ts-ignore
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				const fileData = event.target.files[0] as Blob
-				// create a new FormData object and append the file to it
 				setFile(fileData)
 				// @ts-ignore
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				setFileName(event.target.files[0].name as string)
-				formData.append("file", file)
 			}
-			// make a POST request to the File Upload API with the FormData object and Rapid API headers
 		}
 	}
 	const onSubmit = () => {
@@ -130,6 +126,7 @@ const UploadForm = () => {
 			numberOfScoringRuns &&
 			file
 		) {
+			const formData = new FormData()
 			formData.append("competition_name", competitionName)
 			formData.append("scoresheet_name", scoresheetName)
 			formData.append("number_of_runs", numberOfRuns.toString())
@@ -150,9 +147,8 @@ const UploadForm = () => {
 					{}
 				)
 
-				.then((response) => {
-					// handle the response
-					toast(JSON.stringify(response.data))
+				.then(() => {
+					toast.success("Competition uploaded")
 				})
 				.catch((error: AxiosError) => {
 					// handle errors

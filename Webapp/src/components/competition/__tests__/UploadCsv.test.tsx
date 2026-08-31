@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import axios from "axios"
+import toast from "react-hot-toast"
 import { renderWithProviders } from "../../../testUtils"
 import UploadCsv from "../UploadCsv"
 
@@ -8,6 +9,28 @@ import UploadCsv from "../UploadCsv"
 // whatwg-fetch polyfill, MSW's XHR interceptor throws on a FormData request
 // body, so the network boundary is checked with a spy here rather than a real
 // handler. See docs/webapp-test-known-issues.md #5.
+
+/** Fill every required field and attach a file, leaving the form submit-ready. */
+const fillCompleteForm = async (user: ReturnType<typeof userEvent.setup>) => {
+	await user.type(
+		screen.getByRole("textbox", { name: "Competition Name" }),
+		"Spring Slalom"
+	)
+	await user.click(screen.getByRole("combobox", { name: "Scoresheet" }))
+	await user.click(
+		await screen.findByRole("option", { name: "Scoresheet 1" })
+	)
+	await user.upload(
+		screen.getByLabelText("Choose CSV or XLSX file"),
+		new File(["first_name,last_name\nA,B"], "athletes.csv", {
+			type: "text/csv"
+		})
+	)
+	await waitFor(() =>
+		expect(screen.getByRole("button", { name: "Submit" })).toBeEnabled()
+	)
+}
+
 describe("UploadCsv", () => {
 	it("keeps the submit button disabled until the form is complete", async () => {
 		renderWithProviders(<UploadCsv />)
@@ -59,6 +82,40 @@ describe("UploadCsv", () => {
 		expect(sent.get("competition_name")).toBe("Spring Slalom")
 		expect(sent.get("scoresheet_name")).toBe("Scoresheet 1")
 		expect((sent.get("file") as File).name).toBe("athletes.csv")
+
+		post.mockRestore()
+	})
+
+	it("confirms the upload with a readable message, not raw JSON", async () => {
+		const post = jest
+			.spyOn(axios, "post")
+			.mockResolvedValue({ data: { competition_id: "new-comp" } })
+		const user = userEvent.setup({ delay: null })
+		renderWithProviders(<UploadCsv />)
+
+		await fillCompleteForm(user)
+		await user.click(screen.getByRole("button", { name: "Submit" }))
+
+		await waitFor(() => expect(post).toHaveBeenCalledTimes(1))
+		expect(toast.success).toHaveBeenCalledWith("Competition uploaded")
+		expect(toast).not.toHaveBeenCalled() // never the bare toast(json)
+
+		post.mockRestore()
+	})
+
+	it("sends a fresh form on each submit — no duplicated fields", async () => {
+		const post = jest.spyOn(axios, "post").mockResolvedValue({ data: {} })
+		const user = userEvent.setup({ delay: null })
+		renderWithProviders(<UploadCsv />)
+
+		await fillCompleteForm(user)
+		await user.click(screen.getByRole("button", { name: "Submit" }))
+		await user.click(screen.getByRole("button", { name: "Submit" }))
+
+		await waitFor(() => expect(post).toHaveBeenCalledTimes(2))
+		const secondBody = post.mock.calls[1][1] as FormData
+		expect(secondBody.getAll("competition_name")).toEqual(["Spring Slalom"])
+		expect(secondBody.getAll("file")).toHaveLength(1)
 
 		post.mockRestore()
 	})
