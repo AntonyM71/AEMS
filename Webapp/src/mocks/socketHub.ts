@@ -13,7 +13,7 @@ export type SocketChannel =
 export interface MockSocket {
 	on: jest.Mock
 	off: jest.Mock
-	emit: jest.Mock
+	emit: jest.Mock<void, [string, ...unknown[]]>
 	disconnect: jest.Mock
 	connected: boolean
 	trigger: (event: string, ...args: unknown[]) => void
@@ -86,6 +86,15 @@ class SocketHub {
 		return this.sockets[channel].filter(
 			(socket) => socket.disconnect.mock.calls.length > 0
 		).length
+	}
+
+	/**
+	 * Every outbound emit made on this channel, across all its sockets, as the
+	 * raw argument lists (e.g. ["run_status", { locked: true, … }]). Lets a test
+	 * assert what the client sent without pinning which socket instance sent it.
+	 */
+	public emittedOn(channel: SocketChannel): unknown[][] {
+		return this.sockets[channel].flatMap((socket) => socket.emit.mock.calls)
 	}
 
 	public reset(): void {
