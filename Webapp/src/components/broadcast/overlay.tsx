@@ -1,4 +1,4 @@
-import ThemeProvider from "@mui/material/styles/ThemeProvider"
+import { ThemeProvider } from "@mui/material/styles"
 import React from "react"
 import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 
@@ -31,7 +31,9 @@ const Overlay: OverlayComponent = () => {
 				<EventTitleModal
 					isVisible={overlayControlState.showEventTitle}
 				/>
-				<HeatListModal isVisible={overlayControlState.showHeatSummary} />
+				<HeatListModal
+					isVisible={overlayControlState.showHeatSummary}
+				/>
 				<PhaseResultsModal
 					isVisible={overlayControlState.showPhaseResults}
 					overlayControlState={overlayControlState}

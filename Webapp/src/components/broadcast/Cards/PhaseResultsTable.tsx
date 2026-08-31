@@ -1,7 +1,8 @@
-import Box from "@mui/material/Box"
+import Divider from "@mui/material/Divider"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
+import { useThemeProps } from "@mui/material/styles"
 import { useEffect } from "react"
 import { useSelector } from "react-redux"
 import {
@@ -15,37 +16,31 @@ import {
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
+import { AemsPhaseResultsThemeProps } from "../themeAugmentation"
 import { BasicTable } from "./BasicBroadcastTable"
-export const PhaseScoreTable = ({
-	overlayControlState,
-	maxWidth = 1150,
-	pageLimit = 8, // Set max rows to 8
-	rowHeight = 61,
-	footerPadding = 32,
-	firstRowHeight = 54,
-	secondRowHeight = 60,
-	isVisible = true
-}: {
+
+interface PhaseScoreTableProps extends AemsPhaseResultsThemeProps {
 	overlayControlState: OverlayControlState
-	maxWidth?: number | string
-	pageLimit?: number
-	rowHeight?: number
-	footerPadding?: number
-	firstRowHeight?: number | string
-	secondRowHeight?: number | string
 	isVisible?: boolean
-}) => {
-	const selectedPhase = useSelector(getSelectedPhase)
+}
+
+export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 	const {
-		data,
-		isLoading,
-		refetch: refetchPhase
-	} = useGetOneByPrimaryKeyPhaseIdGetQuery(
-		{
-			id: selectedPhase
-		},
-		{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
-	)
+		overlayControlState,
+		isVisible = true,
+		titleAlign = "space-between",
+		spacerHeight,
+		detailRows = "single"
+	} = useThemeProps({ props: inProps, name: "AemsPhaseResults" })
+
+	const selectedPhase = useSelector(getSelectedPhase)
+	const { data, refetch: refetchPhase } =
+		useGetOneByPrimaryKeyPhaseIdGetQuery(
+			{
+				id: selectedPhase
+			},
+			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
+		)
 	const { data: scoreData, refetch: refetchScores } =
 		useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
 			{
@@ -65,21 +60,15 @@ export const PhaseScoreTable = ({
 
 	return (
 		<Paper
-			elevation={6}
-			sx={{
-				maxWidth,
-				margin: "16px auto",
-				background: "transparent",
-				boxShadow: "none",
-				position: "relative"
-			}}
+			className="AemsTableCard-root"
+			sx={{ margin: "16px auto", position: "relative" }}
 		>
 			<Stack spacing={2}>
-				<PhaseDetails
-					firstRowHeight={firstRowHeight}
-					secondRowHeight={secondRowHeight}
-				/>
-				<Box sx={{ height: 23 }} />
+				<PhaseDetails titleAlign={titleAlign} detailRows={detailRows} />
+				{/* A rule on the arena; invisible artwork clearance on the
+				    overlay, where the theme zeroes dividers and the height
+				    comes from AemsPhaseResults.spacerHeight. */}
+				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
 					data={
 						processScoresData(
@@ -87,24 +76,18 @@ export const PhaseScoreTable = ({
 							data?.number_of_runs ?? 3
 						) ?? []
 					}
-					pageLimit={pageLimit}
 					pageChangeTime={5}
-					maxWidth={maxWidth}
-					rowHeight={rowHeight}
-					footerPadding={footerPadding}
 				/>
 			</Stack>
 		</Paper>
 	)
 }
-interface PhaseDetailsProps {
-	firstRowHeight?: number | string
-	secondRowHeight?: number | string
-}
 const PhaseDetails = ({
-	firstRowHeight = 32,
-	secondRowHeight = 20
-}: PhaseDetailsProps) => {
+	titleAlign,
+	detailRows
+}: Required<
+	Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">
+>) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{ id: selectedPhase },
@@ -116,36 +99,52 @@ const PhaseDetails = ({
 		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
 	)
 
-	return (
-		<Box sx={{ width: "100%" }}>
-			<Stack
-				direction="row"
-				justifyContent="flex-end"
-				alignItems="flex-end"
-				spacing={1}
-				sx={{ minHeight: firstRowHeight, height: firstRowHeight }}
-			>
-				<Typography color="white" variant="h5" sx={{ fontWeight: 500 }}>
-					{eventData?.name}
-				</Typography>
-				<Typography color="white" variant="h5" sx={{ fontWeight: 500 }}>
-					{phaseData?.name}
-				</Typography>
-			</Stack>
-			<Stack
-				direction="row"
-				justifyContent="flex-end"
-				alignItems="flex-end"
-				spacing={1}
-				sx={{ minHeight: secondRowHeight, height: secondRowHeight }}
-			>
-				<Typography color="white" variant="h5" sx={{ fontWeight: 400 }}>
-					{phaseData?.number_of_runs
-						? `Runs: ${phaseData.number_of_runs}`
-						: null}
-				</Typography>
-			</Stack>
-		</Box>
+	const eventPhase = (
+		<>
+			<Typography variant="h5" sx={{ color: "text.primary" }}>
+				{eventData?.name}
+			</Typography>
+			<Typography variant="h5" sx={{ color: "text.primary" }}>
+				{phaseData?.name}
+			</Typography>
+		</>
+	)
+	const runs = (
+		<Typography variant="h5" sx={{ color: "text.primary", fontWeight: 400 }}>
+			{phaseData?.number_of_runs
+				? `Runs: ${phaseData.number_of_runs}`
+				: null}
+		</Typography>
+	)
+	const row = (children: React.ReactNode, className: string) => (
+		<Stack
+			className={className}
+			direction="row"
+			justifyContent={titleAlign}
+			alignItems="flex-end"
+			spacing={1}
+			sx={{ width: "100%" }}
+		>
+			{children}
+		</Stack>
+	)
+
+	// One line on the arena; two fixed-height lines on the overlay, where each
+	// lands in its own band of the background frame (heights come from the
+	// theme's AemsPhaseDetails-* rules).
+	return detailRows === "split" ? (
+		<Stack sx={{ width: "100%" }}>
+			{row(eventPhase, "AemsPhaseDetails-names")}
+			{row(runs, "AemsPhaseDetails-runs")}
+		</Stack>
+	) : (
+		row(
+			<>
+				{eventPhase}
+				{runs}
+			</>,
+			"AemsPhaseDetails-names"
+		)
 	)
 }
 const processScoresData = (

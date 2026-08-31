@@ -157,6 +157,7 @@ export const ScoredMoveList = ({
 			container
 			spacing={1}
 			direction="row"
+			data-testid="scored-move-list"
 			style={{
 				maxHeight: "calc(100vh - 310px)", // this is a bit fragile,
 				overflowY: "scroll"

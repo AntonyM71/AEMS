@@ -102,6 +102,39 @@ Unit tests are appropriate for: common utilities, key business logic (scoring al
 - **Frontend structure:** Role-based components under [Webapp/src/components/](Webapp/src/components/) (`competition/`, `judging/`, `roles/`, `ScoresheetBuilder/`). State via Redux Toolkit; API access via RTK Query services in [Webapp/src/redux/](Webapp/src/redux/). Touch-optimized for tablets.
 - **Broadcast overlays:** Overlays render PNG frame sequences (intro → hold frame → outro) via a **Pixi.js/WebGL** React wrapper (`@pixi/react`, `pixi.js`), composing React overlay content above the animated background. Frame packs are served statically by GraphicsServer/Nginx, kept separate from the open-source code so licensed graphics assets stay out of the repo. See ADR005 (WebGL + Nginx) and ADR006 (Pixi React wrapper).
 
+## Comments & Docstrings
+
+Comments are a last resort. If something is already visible in the code — a name, a type, a default — don't restate it; that's usually a sign the code should change instead:
+
+- Comment says what a value **is** → rename it. `d = 5  # elapsed days` → `elapsed_days = 5`
+- Comment says what a block **does** → extract a function named for it. `# check if eligible` + 10 lines → `if is_eligible_for_discount(user):`
+- Comment says what a condition **means** → extract an explanatory variable. `# expired and empty` above `if a and b:` → `if is_expired_and_empty:`
+- Docstring repeats the signature → delete the repeat. Python type hints and TS types already carry the name and type; an `Args:`/`@param` block that just re-types `moves (list[Move]): the moves` adds nothing. Keep only what the signature can't say — units, valid ranges, invariants, side effects — or drop the block entirely:
+  ```python
+  def score_run(moves: list[Move], bonuses: list[Bonus]) -> float:
+      """Score is capped at 100; bonuses apply after move deductions."""
+  ```
+  not
+  ```python
+  def score_run(moves: list[Move], bonuses: list[Bonus]) -> float:
+      """
+      Calculate the score for a run.
+
+      Args:
+          moves (list[Move]): The list of moves performed.
+          bonuses (list[Bonus]): The list of bonuses awarded.
+
+      Returns:
+          float: The calculated score.
+      """
+  ```
+
+Write a comment only for what code can't say by itself: *why* (a non-obvious constraint or the reason for a workaround), a warning of a real consequence, or a public contract for callers who won't read the implementation (FastAPI docstrings, exported Webapp hooks/components). Keep those to one or two lines — the docstring's job is the contract, not a tutorial.
+
+Don't write: commented-out code (delete it — git has the history), changelog/attribution notes (that's the commit message), or section banners or closing-brace comments (break the function down into helper functions instead).
+
+Keep what you do write true — fix or delete a comment in the same change that makes it stop matching the code. And write it like prose: active voice, positive form, concrete, no needless words.
+
 ## Working Rules
 
 - Use the devcontainer ([.devcontainer/](.devcontainer/)) when possible.

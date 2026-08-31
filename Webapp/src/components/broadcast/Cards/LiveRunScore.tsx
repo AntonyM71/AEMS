@@ -7,7 +7,10 @@ import {
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
-import { useAthleteMovesAndBonusesStreamQuery } from "../../../redux/services/streamingApi"
+import {
+	useAthleteMovesAndBonusesStreamQuery,
+	useRunStatusStreamQuery
+} from "../../../redux/services/streamingApi"
 import { OverlayControlState } from "../../Interfaces"
 import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
@@ -81,6 +84,15 @@ export const SubscribedFinalScore = ({
 		{ skip: !selectedHeat || !selectedAthleteId }
 	)
 
+	const { data: runStatus } = useRunStatusStreamQuery(
+		{
+			heatId: selectedHeat,
+			athleteId: selectedAthleteId,
+			runNumber: selectedRun
+		},
+		{ skip: !selectedHeat || !selectedAthleteId }
+	)
+
 	useEffect(() => {
 		if (!streamMoveData) {
 			return
@@ -111,8 +123,8 @@ export const SubscribedFinalScore = ({
 	return (
 		<FinalScore
 			allJudgeScores={allJudgeScores}
-			locked={false}
-			did_not_start={false}
+			locked={runStatus?.locked ?? false}
+			did_not_start={runStatus?.did_not_start ?? false}
 			textSize={textSize}
 			direction="row"
 		/>

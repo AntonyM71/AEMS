@@ -1,8 +1,12 @@
 import { createTheme } from "@mui/material/styles"
 import "@mui/x-data-grid/themeAugmentation"
+import "./themeAugmentation"
 const icfLightBlue = "rgb(28, 154, 215)"
 const icfDarkBlue = "rgb(12, 40, 80)"
 const icfWhite = "#f8f9fc"
+// Shared by the table and its card so they stay registered with the same
+// width of background artwork.
+const scoreboardCardMaxWidth = 1150
 
 export const lightTheme = createTheme({
 	palette: {
@@ -20,7 +24,9 @@ export const lightTheme = createTheme({
 		},
 
 		text: {
-			primary: icfDarkBlue,
+			// Card headings sit on dark artwork; body copy and table rows sit
+			// on the light scoreboard panels.
+			primary: "white",
 			secondary: icfDarkBlue
 		}
 	},
@@ -77,12 +83,70 @@ export const lightTheme = createTheme({
 		}
 	},
 	components: {
+		// Geometry the overlay Cards used to hardcode inline. It lives here so
+		// the same components can be dropped into the arena's theme instead.
+		AemsBasicTable: {
+			defaultProps: {
+				pageLimit: 8,
+				padEmptyRows: true
+			}
+		},
+		AemsHeatSummary: {
+			defaultProps: {
+				titleAlign: "flex-end",
+				spacerHeight: 85
+			}
+		},
+		AemsPhaseResults: {
+			defaultProps: {
+				titleAlign: "flex-end",
+				spacerHeight: 23,
+				detailRows: "split"
+			}
+		},
+		MuiStack: {
+			styleOverrides: {
+				root: {
+					// The two phase-detail lines are pinned to the bands of the
+					// background frame they sit in.
+					"&.AemsPhaseDetails-names": { height: 54, minHeight: 54 },
+					"&.AemsPhaseDetails-runs": { height: 60, minHeight: 60 }
+				}
+			}
+		},
+		AemsEventTitle: {
+			defaultProps: {
+				titleVariant: "h2",
+				detailVariant: "h5",
+				// Both groups are positioned absolutely against the frame, so the
+				// Stack must add no spacing — otherwise its sibling margin nudges
+				// the run-count group down off its band.
+				stackSpacing: 0,
+				headingSx: {
+					position: "absolute",
+					left: "27%",
+					top: "53%",
+					maxWidth: "72%",
+					gap: "0.35rem"
+				},
+				runsSx: {
+					position: "absolute",
+					left: "43%",
+					top: "76%",
+					maxWidth: "60%"
+				}
+			}
+		},
 		MuiTable: {
 			styleOverrides: {
 				root: {
 					borderCollapse: "separate",
-					'& .MuiTableCell-root, & .MuiTableRow-root': {
-						borderBottom: 'none'
+					maxWidth: scoreboardCardMaxWidth,
+					minWidth: 500,
+					margin: "0 auto",
+					borderRadius: 12,
+					"& .MuiTableRow-root": {
+						borderBottom: "none"
 					}
 				}
 			}
@@ -90,14 +154,52 @@ export const lightTheme = createTheme({
 		MuiTableCell: {
 			styleOverrides: {
 				root: {
-					borderBottom: 'none'
+					// The blue rule under each row is part of the overlay's
+					// scoreboard artwork; head and footer opt out below.
+					borderBottom: "1px solid #1976d2",
+					height: 61,
+					padding: 0,
+					margin: 0,
+					fontSize: 20,
+					// Body rows previously took their weight from the body1
+					// Typography they were wrapped in; keep it now the wrapper is
+					// gone. Head and footer raise this to bold below.
+					fontWeight: 500,
+					lineHeight: "61px",
+					color: icfDarkBlue
 				}
 			}
 		},
 		MuiTableRow: {
 			styleOverrides: {
 				root: {
-					borderBottom: 'none'
+					borderBottom: "none",
+					height: 61
+				}
+			}
+		},
+		MuiTableHead: {
+			styleOverrides: {
+				root: {
+					"& .MuiTableCell-root": {
+						fontWeight: "bold",
+						borderBottom: "none"
+					}
+				}
+			}
+		},
+		MuiTableFooter: {
+			styleOverrides: {
+				root: {
+					// rowHeight 61 + 30px clearance for the frame's bottom bar.
+					"& .MuiTableRow-root": { height: 91 },
+					"& .MuiTableCell-root": {
+						color: "white",
+						textAlign: "right",
+						fontWeight: "bold",
+						letterSpacing: 1,
+						borderBottom: "none"
+					}
 				}
 			}
 		},
@@ -119,6 +221,22 @@ export const lightTheme = createTheme({
 					padding: "1em", // Add some margin for spacing
 
 					overflow: "hidden", // Ensures the blur effect stays contained
+
+					// The scoreboard cards are capped to the width of their
+					// background frame; the event title fills the screen so its
+					// absolutely-positioned groups resolve against the viewport.
+					"&.AemsTableCard-root": { maxWidth: scoreboardCardMaxWidth },
+					"&.AemsEventTitle-root": {
+						width: "100%",
+						height: "100%",
+						maxWidth: "none",
+						padding: 0,
+						pointerEvents: "none",
+						// The old root was a plain Box; a Paper would otherwise
+						// clip the absolutely-positioned title groups at the
+						// frame edge.
+						overflow: "visible"
+					},
 
 					backgroundImage: "none",
 					boxShadow: "none",
@@ -164,7 +282,14 @@ export const lightTheme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					color: icfDarkBlue
+					color: icfDarkBlue,
+					// The heat name sits inside the frame's top-right title box.
+					"&.AemsHeatSummary-title": {
+						fontWeight: 700,
+						paddingRight: 32,
+						paddingTop: 8,
+						textShadow: "0 2px 8px rgba(0,0,0,0.4)"
+					}
 				}
 			}
 		}

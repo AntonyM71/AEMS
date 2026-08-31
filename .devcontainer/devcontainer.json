@@ -20,8 +20,8 @@
   // Configure tool-specific properties.
   // "customizations": {},
 
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  "remoteUser": "root",
+  // Use vscode user to avoid WSL permission issues with generated files (like devcontainer-lock.json)
+  "remoteUser": "vscode",
   "customizations": {
     "vscode": {
       "extensions": [

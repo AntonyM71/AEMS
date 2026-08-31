@@ -176,6 +176,13 @@ export const handlers = [
 
 		return new HttpResponse(null, { status: 404 })
 	}),
+	http.get("/api/event/:id", ({ params }) =>
+		HttpResponse.json({
+			id: params.id,
+			name: "Test Event",
+			competition_id: "1"
+		})
+	),
 	http.post("/api/event", async ({ request }) => {
 		const body = await request.json()
 
@@ -331,5 +338,41 @@ export const handlers = [
 				...body.addUpdateScoresheetRequest
 			})
 		}
-	)
+	),
+	http.get("/api/getHeatInfo/:heatId/phase", () =>
+		HttpResponse.json([
+			{
+				id: "phase-1",
+				event_id: "event-1",
+				name: "Test Phase",
+				number_of_runs: 3,
+				number_of_runs_for_score: 2,
+				number_of_judges: 3,
+				scoresheet: "sheet-1"
+			}
+		])
+	),
+	http.get("/api/getHeatInfo/:heatId", ({ params }) =>
+		HttpResponse.json([
+			{
+				athlete_heat_id: "ah-1",
+				heat_id: params.heatId,
+				athlete_id: "athlete-1",
+				phase_id: "phase-1",
+				number_of_runs: 3,
+				number_of_runs_for_score: 2,
+				scoresheet: "sheet-1",
+				first_name: "John",
+				last_name: "Smith",
+				affiliation: "GBR",
+				bib: "42",
+				event_name: "Test Event"
+			}
+		])
+	),
+	http.get(
+		"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
+		() => HttpResponse.json({ moves: [], bonuses: [] })
+	),
+	http.get("/api/run_status/", () => HttpResponse.json([]))
 ]
