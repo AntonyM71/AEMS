@@ -63,16 +63,25 @@ nodes with the id. Tests assert on **`final-score-value`** instead.
 
 - `Webapp/src/components/competition/UploadCsv.tsx` — `UploadForm`
 
-## 6. Scribe re-saves a judge's scores just for loading them
+## 6. Scribe re-saves a judge's scores just for loading them — FIXED
 
-On mount, Scribe loads the judge's existing moves, writes them into the store,
-which trips the `useEffect([scoredMoves, scoredBonuses])` submit effect, which
-POSTs the just-loaded moves straight back to the server. With two scribe
-devices open for one judge, whichever loads last re-saves stale data over the
-other. `Scribe.test.tsx` carries a skipped test
-(`does not re-save the judge's scores merely for loading them`); flip it to
-`it` once the submit effect skips the just-loaded state (e.g. a dirty check, or
-a flag set by the load effect).
+**Fixed** on branch `improve-frontend-tests`. The load effect now sets a
+`skipSubmitForHydration` ref before writing to the store, and the submit effect
+consumes it once and returns, so the single change the load effect causes no
+longer echoes back. `Scribe.test.tsx`'s `does not re-save the judge's scores
+merely for loading them` test is now active. Switching paddler/run also no
+longer re-saves the previous paddler's moves.
+
+Residual: under React Strict Mode (dev only, not the production build or the
+test env), the load effect's double-invoke could still let one echo through.
+Fully closing that needs the larger "submit only from explicit user actions"
+refactor — deferred.
+
+The original bug: on mount Scribe loaded the judge's existing moves, wrote them
+into the store, which tripped the `useEffect([scoredMoves, scoredBonuses])`
+submit effect, which POSTed the just-loaded moves straight back. With two
+scribe devices open for one judge, whichever loaded last re-saved stale data
+over the other.
 
 - `Webapp/src/components/roles/scribe/Scribe.tsx` — the load effect (`useEffect([moveAndBonusdata])`) and the submit effect (`useEffect([scoredMoves, scoredBonuses])`)
 

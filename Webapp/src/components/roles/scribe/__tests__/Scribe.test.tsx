@@ -144,11 +144,10 @@ describe("Scribe", () => {
 		expect(list.getByText("L")).toBeInTheDocument()
 	})
 
-	// Loading a judge's existing scores currently fires an immediate POST that
-	// echoes them straight back — see docs/webapp-test-known-issues.md. With
-	// two scribe devices open for one judge, the last to load stomps the other.
-	// Flip this to `it` once the submit effect skips the just-loaded state.
-	it.skip("does not re-save the judge's scores merely for loading them", async () => {
+	// The load effect populates the store from the server; that must not trip
+	// the auto-submit effect into echoing the same data straight back (two
+	// scribe devices on one judge would otherwise stomp each other).
+	it("does not re-save the judge's scores merely for loading them", async () => {
 		server.use(
 			http.get(
 				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
