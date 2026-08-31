@@ -58,6 +58,24 @@ describe("PromotePhase", () => {
 		expect(promoteBodies).toHaveLength(0)
 	})
 
+	it("labels the add-heat and remove-heat buttons for assistive tech", async () => {
+		const user = userEvent.setup({ delay: null })
+		renderPromotePhase()
+
+		expect(
+			await screen.findByRole("button", { name: "Add heat" })
+		).toBeInTheDocument()
+
+		await user.type(
+			screen.getByRole("textbox", { name: "New Heat Name" }),
+			"Heat A{Enter}"
+		)
+
+		expect(
+			screen.getByRole("button", { name: "Remove heat 1" })
+		).toBeInTheDocument()
+	})
+
 	it("promotes the phase with the entered heat names", async () => {
 		const user = userEvent.setup({ delay: null })
 		renderPromotePhase()

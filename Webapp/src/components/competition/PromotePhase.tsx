@@ -222,7 +222,9 @@ export const PromotePhase = () => {
 												endAdornment: (
 													<InputAdornment position="end">
 														<IconButton
-															aria-label="toggle password visibility"
+															aria-label={`Remove heat ${
+																i + 1
+															}`}
 															onClick={() => {
 																const updatedNewHeatNames =
 																	newHeatNames.filter(
@@ -271,7 +273,7 @@ export const PromotePhase = () => {
 											endAdornment: (
 												<InputAdornment position="end">
 													<IconButton
-														aria-label="toggle password visibility"
+														aria-label="Add heat"
 														onClick={() => {
 															handleAddNewHeat()
 														}}
