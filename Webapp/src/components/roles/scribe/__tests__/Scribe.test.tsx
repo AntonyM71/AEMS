@@ -35,6 +35,30 @@ const renderScribe = () =>
 /** The scored-move list element, once the page is past its "loading" state. */
 const moveListEl = () => screen.findByTestId("scored-move-list")
 
+/** MSW: the judge already has one recorded move (test-move-1, direction L). */
+const seedExistingMove = () =>
+	server.use(
+		http.get(
+			"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
+			() =>
+				HttpResponse.json({
+					moves: [
+						{
+							id: "existing-1",
+							move_id: "test-move-1",
+							heat_id: "heat-1",
+							run_number: 0,
+							phase_id: "phase-1",
+							judge_id: "1",
+							athlete_id: "athlete-1",
+							direction: "L"
+						}
+					],
+					bonuses: []
+				})
+		)
+	)
+
 beforeEach(() => {
 	socketHub.reset()
 	scorePosts = []
@@ -116,27 +140,7 @@ describe("Scribe", () => {
 	})
 
 	it("shows the judge's previously recorded moves when the page opens", async () => {
-		server.use(
-			http.get(
-				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
-				() =>
-					HttpResponse.json({
-						moves: [
-							{
-								id: "existing-1",
-								move_id: "test-move-1",
-								heat_id: "heat-1",
-								run_number: 0,
-								phase_id: "phase-1",
-								judge_id: "1",
-								athlete_id: "athlete-1",
-								direction: "L"
-							}
-						],
-						bonuses: []
-					})
-			)
-		)
+		seedExistingMove()
 		renderScribe()
 
 		const list = within(await moveListEl())
@@ -148,27 +152,7 @@ describe("Scribe", () => {
 	// the auto-submit effect into echoing the same data straight back (two
 	// scribe devices on one judge would otherwise stomp each other).
 	it("does not re-save the judge's scores merely for loading them", async () => {
-		server.use(
-			http.get(
-				"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
-				() =>
-					HttpResponse.json({
-						moves: [
-							{
-								id: "existing-1",
-								move_id: "test-move-1",
-								heat_id: "heat-1",
-								run_number: 0,
-								phase_id: "phase-1",
-								judge_id: "1",
-								athlete_id: "athlete-1",
-								direction: "L"
-							}
-						],
-						bonuses: []
-					})
-			)
-		)
+		seedExistingMove()
 		renderScribe()
 
 		const list = within(await moveListEl())
