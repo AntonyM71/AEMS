@@ -1,6 +1,8 @@
 import { act, screen, waitFor } from "@testing-library/react"
+import { http, HttpResponse } from "msw"
 import { renderWithProviders } from "../../../testUtils"
 import { socketHub } from "../../../mocks/socketHub"
+import { server } from "../../../mocks/server"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import Arena from "../arena"
 
@@ -23,7 +25,17 @@ const selectedAthlete = {
 }
 
 describe("Arena", () => {
-	beforeEach(() => socketHub.reset())
+	beforeEach(() => {
+		socketHub.reset()
+		server.use(
+			http.get("/api/heat/:id", ({ params }) =>
+				HttpResponse.json({
+					id: params.id,
+					name: `Heat ${String(params.id)}`
+				})
+			)
+		)
+	})
 
 	it("shows the athlete and heat the broadcast operator pushes to the screen", async () => {
 		renderWithProviders(<Arena />)
@@ -42,7 +54,7 @@ describe("Arena", () => {
 		// AthleteInfo renders the surname in caps, always visible on the arena
 		expect(await screen.findByText("RIVERA")).toBeInTheDocument()
 		// The heat summary modal now shows the selected heat's name
-		expect(await screen.findByText("Test Heat")).toBeInTheDocument()
+		expect(await screen.findByText("Heat 1")).toBeInTheDocument()
 
 		broadcast({
 			selectedHeat: "1",
@@ -52,7 +64,7 @@ describe("Arena", () => {
 		})
 
 		await waitFor(() =>
-			expect(screen.queryByText("Test Heat")).not.toBeInTheDocument()
+			expect(screen.queryByText("Heat 1")).not.toBeInTheDocument()
 		)
 		expect(screen.getByText("RIVERA")).toBeInTheDocument()
 	})

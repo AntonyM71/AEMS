@@ -1,7 +1,9 @@
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
 import { socketHub } from "../../../mocks/socketHub"
+import { server } from "../../../mocks/server"
 import { updateSelectedHeat } from "../../../redux/atoms/competitions"
 import { setupStore } from "../../../redux/store"
 import Arena from "../../arena/arena"
@@ -9,7 +11,17 @@ import OverlayController from "../controller"
 
 jest.mock("../../roles/headJudge/WebSocketConnections")
 
-beforeEach(() => socketHub.reset())
+beforeEach(() => {
+	socketHub.reset()
+	server.use(
+		http.get("/api/heat/:id", ({ params }) =>
+			HttpResponse.json({
+				id: params.id,
+				name: `Heat ${String(params.id)}`
+			})
+		)
+	)
+})
 
 describe("OverlayController", () => {
 	it("closes its broadcast socket when it unmounts", async () => {
@@ -68,11 +80,11 @@ describe("OverlayController", () => {
 		await user.click(summaryButton)
 
 		// The arena, on its own separate store, shows the heat the operator picked.
-		expect(await screen.findByText("Test Heat")).toBeInTheDocument()
+		expect(await screen.findByText("Heat 1")).toBeInTheDocument()
 
 		await user.click(summaryButton)
 		await waitFor(() =>
-			expect(screen.queryByText("Test Heat")).not.toBeInTheDocument()
+			expect(screen.queryByText("Heat 1")).not.toBeInTheDocument()
 		)
 	})
 })
