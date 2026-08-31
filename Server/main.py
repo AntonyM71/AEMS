@@ -106,7 +106,8 @@ async def logging_middleware(
         response = await call_next(request)
     except Exception:
         structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
-        raise
+        # Keep the pre-built 500 response so the logging and timing headers
+        # below still get attached before it is returned to the client.
     finally:
         process_time = time.perf_counter_ns() - start_time
         status_code = response.status_code
@@ -129,7 +130,7 @@ async def logging_middleware(
             network={"client": {"ip": client_host, "port": client_port}},
         )
         response.headers["X-Process-Time"] = str(process_time / 10**9)
-        return response  # noqa: B012
+    return response
 
 
 @app.get("/")

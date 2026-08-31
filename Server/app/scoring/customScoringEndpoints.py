@@ -67,7 +67,6 @@ class HeatInfoResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}",
     response_class=ORJSONResponse,
-    response_model=list[HeatInfoResponse],
 )
 async def get_heat_info(
     heat_id: str,
@@ -119,7 +118,6 @@ class PhaseResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}/phase",
     response_class=ORJSONResponse,
-    response_model=list[PhaseResponse],
 )
 async def get_heat_phases(
     heat_id: str,
@@ -269,7 +267,6 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}",
     response_class=ORJSONResponse,
-    response_model=ScoredMovesAndBonusesResponse,
 )
 async def get_athlete_moves_and_bonuses(
     heat_id: str,
@@ -316,7 +313,6 @@ class PhaseScoresResponse(BaseModel):
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
     response_class=ORJSONResponse,
-    response_model=HeatScoresResponse,
 )
 async def get_heat_scores(
     heat_id: str,
@@ -408,7 +404,6 @@ async def get_heat_scores(
 @scoring_router.get(
     "/getPhaseScores/{phase_id}",
     response_class=ORJSONResponse,
-    response_model=PhaseScoresResponse,
 )
 async def get_phase_scores(
     phase_id: str,

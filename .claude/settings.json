@@ -31,7 +31,7 @@
     "typescript-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "sonarqube@claude-plugins-official": true,
+    "sonarqube@claude-plugins-official": false,
     "code-review@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
