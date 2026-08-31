@@ -84,7 +84,9 @@ class Phase(Base):
     number_of_runs = Column(Integer, nullable=False, default=3)
     number_of_runs_for_score = Column(Integer, nullable=False, default=2)
     number_of_judges = Column(Integer, nullable=False, default=3)
-    scoresheet = Column(UUID(as_uuid=True), ForeignKey(FK_SCORESHEET_ID), nullable=False)
+    scoresheet = Column(
+        UUID(as_uuid=True), ForeignKey(FK_SCORESHEET_ID), nullable=False
+    )
     athletes = relationship("AthleteHeat", back_populates="phases")
 
     schema = "public"
@@ -165,7 +167,7 @@ class AvailableMoves(Base):
         unique=True,
         nullable=False,
     )
-    sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    sheet_id = Column(UUID(as_uuid=True), ForeignKey(FK_SCORESHEET_ID), nullable=False)
 
     name = Column(String, nullable=False)
     fl_score = Column(Integer, nullable=False)
@@ -184,7 +186,7 @@ class AvailableBonuses(Base):
         unique=True,
         nullable=False,
     )
-    sheet_id = Column(UUID(as_uuid=True), ForeignKey("scoreSheet.id"), nullable=False)
+    sheet_id = Column(UUID(as_uuid=True), ForeignKey(FK_SCORESHEET_ID), nullable=False)
     move_id = Column(
         UUID(as_uuid=True), ForeignKey("availableMoves.id"), nullable=False
     )
@@ -206,7 +208,7 @@ class ScoredMoves(Base):
         nullable=False,
     )
     move_id = Column(UUID(as_uuid=True), ForeignKey("availableMoves.id"))
-    heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
+    heat_id = Column(UUID(as_uuid=True), ForeignKey(FK_HEAT_ID))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)
     phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), nullable=False)
@@ -247,7 +249,7 @@ class RunStatus(Base):
         unique=True,
         nullable=False,
     )
-    heat_id = Column(UUID(as_uuid=True), ForeignKey("heat.id"))
+    heat_id = Column(UUID(as_uuid=True), ForeignKey(FK_HEAT_ID))
     heat = relationship("Heat", foreign_keys=[heat_id])
     run_number = Column(Integer, nullable=False)
     phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), nullable=False)

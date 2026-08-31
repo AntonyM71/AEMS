@@ -11,7 +11,7 @@ from db.models import Athlete
 athlete_router = APIRouter(prefix="/athlete", tags=["athlete"])
 
 
-@athlete_router.post("/", response_model=list[AthleteResponse], status_code=201)
+@athlete_router.post("/", status_code=201)
 async def insert_many(
     athletes: list[AthleteCreate],
     db: Session = Depends(get_transaction_session),
@@ -33,7 +33,7 @@ async def insert_many(
     return [AthleteResponse.model_validate(athlete) for athlete in db_athletes]
 
 
-@athlete_router.patch("/{id}", response_model=AthleteResponse)
+@athlete_router.patch("/{id}")
 async def partial_update_one_by_primary_key(
     id: UUID,
     athlete_update: AthleteUpdate,

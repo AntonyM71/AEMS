@@ -118,7 +118,7 @@ def _apply_range_and_list_filter(
     return query
 
 
-@event_router.get("/", response_model=list[EventResponse])
+@event_router.get("/")
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
@@ -180,7 +180,7 @@ async def get_many(
     return response_data
 
 
-@event_router.get("/{id}", response_model=EventResponse)
+@event_router.get("/{id}")
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
@@ -220,7 +220,7 @@ async def get_one_by_primary_key(
     return EventResponse(**_build_event_dict(event, join_foreign_table))
 
 
-@event_router.get("/get_many_with_foreign_tree/", response_model=list[EventResponse])
+@event_router.get("/get_many_with_foreign_tree/")
 async def get_many_with_foreign_tree(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
@@ -273,7 +273,7 @@ async def get_many_with_foreign_tree(
     return response_data
 
 
-@event_router.post("/", response_model=list[EventResponse], status_code=201)
+@event_router.post("/", status_code=201)
 async def insert_many(
     events: list[EventCreateRequest],
     db: Session = Depends(get_transaction_session),
@@ -295,7 +295,7 @@ async def insert_many(
     return [EventResponse.model_validate(event) for event in db_events]
 
 
-@event_router.get("/{event_pk_id}/phase", response_model=list[PhaseResponse])
+@event_router.get("/{event_pk_id}/phase")
 async def get_many_by_pk_from_phase(
     event_pk_id: UUID,
     db: Session = Depends(get_transaction_session),

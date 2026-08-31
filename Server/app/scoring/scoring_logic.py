@@ -256,20 +256,20 @@ def organise_moves_by_athlete_run_judge(
 ) -> list[AthleteMoves]:
     resp: list[AthleteMoves] = []
 
-    unique_athletes = list(set(move.athlete_id for move in moves))
+    unique_athletes = list({move.athlete_id for move in moves})
     unique_athletes.sort()
     for athlete in unique_athletes:
         this_athlete_moves = [m for m in moves if m.athlete_id == athlete]
         if number_of_runs:
             unique_runs = list(range(0, number_of_runs))
         else:
-            unique_runs = list(set(m.run_number for m in this_athlete_moves))
+            unique_runs = list({m.run_number for m in this_athlete_moves})
         unique_runs.sort()
         run_moves_list: list[RunMoves] = []
         for run in unique_runs:
             this_run_noves = [m for m in this_athlete_moves if m.run_number == run]
 
-            unique_judges = list(set(m.judge_id for m in this_run_noves))
+            unique_judges = list({m.judge_id for m in this_run_noves})
             unique_judges.sort()
             judge_moves_list: list[JudgeMoves] = []
             for judge in unique_judges:
@@ -434,7 +434,12 @@ def calculate_tied_rank(
             ranking=min(
                 [
                     sorted_athlete_score.index(
-                        next(filter(lambda n: n.athlete_id == a, sorted_athlete_score))
+                        next(
+                            filter(
+                                lambda n, a=a: n.athlete_id == a,
+                                sorted_athlete_score,
+                            )
+                        )
                     )
                     for a in fully_tied_athletes
                 ]

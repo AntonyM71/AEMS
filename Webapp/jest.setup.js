@@ -28,18 +28,21 @@ class MockWebSocket {
 	onclose = null
 	onerror = null
 
-	/** Mock implementation: no-op */
-	send() {}
+	send() {
+		/* no-op: tests never assert on outbound frames */
+	}
 
 	close() {
 		this.readyState = MockWebSocket.CLOSED
 	}
 
-	/** Mock implementation: no-op */
-	addEventListener() {}
+	addEventListener() {
+		/* no-op: tests drive callbacks via the on* handlers */
+	}
 
-	/** Mock implementation: no-op */
-	removeEventListener() {}
+	removeEventListener() {
+		/* no-op */
+	}
 }
 
 global.WebSocket = MockWebSocket
