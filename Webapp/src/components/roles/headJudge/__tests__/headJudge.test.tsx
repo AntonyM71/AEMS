@@ -139,9 +139,14 @@ describe("HeadJudge", () => {
 			)
 		)
 
+		await waitFor(() =>
+			expect(socketHub.openCount("run_status")).toBeGreaterThan(0)
+		)
 		await userEvent.click(screen.getByTestId("dns-button"))
 
-		// Nothing changed: the run is still not marked DNS.
+		// The guard blocks the write entirely — no run_status was sent.
+		expect(socketHub.emittedOn("run_status")).toHaveLength(0)
+		// And the operator is told why, with the run still not marked DNS.
 		expect(screen.getByTestId("dns-button")).toHaveTextContent("SET DNS")
 		expect(toast.error).toHaveBeenCalledWith(
 			"Please unlock run before setting DNS"
