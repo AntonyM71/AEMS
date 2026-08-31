@@ -185,6 +185,7 @@ const UploadForm = () => {
 									<input
 										hidden
 										type="file"
+										aria-label="Choose CSV or XLSX file"
 										onChange={handleFileUpload}
 									/>
 								</IconButton>

@@ -8,7 +8,7 @@ process.env.NEXT_PUBLIC_API_URL_DEV = "http://localhost/api/"
 import "@testing-library/jest-dom"
 import "@testing-library/jest-dom/extend-expect"
 
-// Fetch polyfill for tests
+// Fetch polyfill for tests (jsdom 20 ships no fetch/Request/Response)
 import "whatwg-fetch"
 
 class MockWebSocket {
@@ -42,25 +42,24 @@ if (typeof window !== "undefined") {
 	window.WebSocket = MockWebSocket
 }
 
-// Mock react-hot-toast
-const mockToast = {
+// Mock react-hot-toast. The real default export is a callable (`toast("msg")`)
+// with `.error`/`.success` attached, so the mock has to be callable too —
+// otherwise code paths that call `toast(...)` directly throw under test.
+const mockToast = Object.assign(jest.fn(), {
 	error: jest.fn(),
 	success: jest.fn()
-}
+})
 
 jest.mock("react-hot-toast", () => ({
 	__esModule: true,
 	toast: mockToast,
 	Toaster: () => null, // Mock Toaster component to render nothing
-	default: {
-		...mockToast,
-		error: mockToast.error,
-		success: mockToast.success
-	}
+	default: mockToast
 }))
 
 // Clear mock calls between tests
 afterEach(() => {
+	mockToast.mockClear()
 	mockToast.error.mockClear()
 	mockToast.success.mockClear()
 })

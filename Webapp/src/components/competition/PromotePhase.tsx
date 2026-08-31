@@ -37,6 +37,8 @@ export const PromotePhase = () => {
 	const submitForm = async () => {
 		if (newHeatNames.length === 0) {
 			toast.error("Please set at least one heat name")
+
+			return
 		}
 		await postPromotedPhase({
 			newPhaseInfo: {

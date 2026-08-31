@@ -1,7 +1,7 @@
 import CssBaseline from "@mui/material/CssBaseline"
 import GlobalStyles from "@mui/material/GlobalStyles"
 import Grid2 from "@mui/material/Grid2"
-import ThemeProvider from "@mui/material/styles/ThemeProvider"
+import { ThemeProvider } from "@mui/material/styles"
 import React from "react"
 import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 import { AthleteInfo } from "../broadcast/Cards/AthleteInfoCard"
