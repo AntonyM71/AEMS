@@ -4,7 +4,9 @@
 
 **Goal:** Replace the flat `TieBreak: Resolved by Tiebreak Engine` note with a sentence naming the deciding ICF tie-breaker and each athlete's bib number and value.
 
-**Architecture:** A per-athlete walk of the tie-breakers in ICF precedence order (each run's score descending, then highest scoring move) finds the first criterion where the tied athletes differ and formats a human-readable `reason` string. Bib numbers are threaded into `calculate_rank` from its one production caller. The existing ranking computation in `calculate_tied_rank` is left untouched so ranks cannot change; only the `reason` string is new.
+**Architecture:** A per-athlete walk of the tie-breakers in ICF precedence order (each run's score descending, then highest scoring move) finds the first criterion where an athlete and their adjacent rival differ and formats a human-readable `reason` string. Bib numbers are threaded into `calculate_rank` from its one production caller. Ranking behaviour in `calculate_tied_rank` is unchanged — it and the message share one sort helper (`_resolve_tie_order`) with an identical sort sequence, so no rank moves; only the `reason` string is new.
+
+> **Post-execution note:** two follow-up commits refined this after the plan's tasks: the message compares against the *adjacent rival* rather than the whole tied group (spec §1, commit f78b3f5), and `calculate_tied_rank` was switched to call the shared `_resolve_tie_order` instead of an inline copy of the sort ladder (commit 255846a). The step-by-step task text below predates both.
 
 **Tech Stack:** Python 3 / Pydantic (Server), pytest; Next.js / TypeScript / Jest (Webapp).
 
@@ -306,7 +308,7 @@ Replace the tied branch (currently `s.reason = f"TieBreak: {rank_info.reason}"`)
                 )
 ```
 
-Leave `calculate_tied_rank`, `RankInfo`, `athletes_with_this_exact_score_after_tiebreak`, and `athlete_is_fully_tied` unchanged — `rank_info.ranking` still drives the rank; only `rank_info.reason` is now unused.
+Leave `RankInfo`, `athletes_with_this_exact_score_after_tiebreak`, and `athlete_is_fully_tied` unchanged — `rank_info.ranking` still drives the rank; only `rank_info.reason` is now unused. (`calculate_tied_rank` itself was later refactored to call `_resolve_tie_order` — same sort sequence, ranks unchanged; see the post-execution note in the header.)
 
 - [ ] **Step 6: Revive the dead tie test and update the 4 real tie tests**
 

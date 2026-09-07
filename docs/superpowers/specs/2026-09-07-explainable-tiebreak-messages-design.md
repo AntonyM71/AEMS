@@ -99,11 +99,12 @@ The message a competitor needs answers "why did I place here and not one place
 higher?", so it compares each athlete against the **rival ranked immediately
 adjacent** to them, not against the whole tied group:
 
-1. Resolve the tied group into finishing order. Use the same sort
-   `calculate_tied_rank` uses: start from the group, then for each criterion from
-   lowest precedence to highest (`highest scoring move`, then the last run, …,
-   then the first run) apply a stable descending sort. The first-run sort ends up
-   dominant, so the result matches the ranks `calculate_tied_rank` assigns.
+1. Resolve the tied group into finishing order via `_resolve_tie_order`: start
+   from the group, then for each criterion from lowest precedence to highest
+   (`highest scoring move`, then the last run, …, then the first run) apply a
+   stable descending sort. The first-run sort ends up dominant. `calculate_tied_rank`
+   calls the same helper for the ranks it assigns, so the order and the ranks
+   agree by construction.
 2. Find this athlete's position in that order. Their rival is the athlete one
    position above; if this athlete is first in the tied block, the rival is the
    athlete one position below.
@@ -121,9 +122,10 @@ puts one athlete clear but the other two are separated only by highest scoring
 move, the clear athlete's message names "highest scoring run" and the other two
 name "highest scoring move", each listing just the relevant pair.
 
-Ranks are unchanged — `calculate_tied_rank` still assigns them. `RankInfo` gains
-no new fields; its `reason` becomes unused (left in place to keep that tested
-function untouched).
+Ranks are unchanged — `calculate_tied_rank` still assigns them, now sharing
+`_resolve_tie_order` instead of re-encoding the sort ladder inline (the sort
+sequence is identical, so no rank moves). `RankInfo` gains no new fields; its
+`reason` field is now unused.
 
 ### 2. Message formatting
 
