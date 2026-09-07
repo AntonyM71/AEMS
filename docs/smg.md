@@ -53,7 +53,7 @@ The backend exposes a Swagger/OpenAPI UI for interactive API exploration and tes
 
 ## Testing Strategy
 
-We use intent-driven tests, following the principles of [Sociable Testing(https://www.richard-seidl.com/en/podcast/sociable-tests/) (testing user behavior, not implementation details) for new features. Our general aim is to cover Use cases, with more traditional unit tests for common code used by multiple modules.
+We use intent-driven tests, following the principles of [Sociable Testing](https://www.richard-seidl.com/en/podcast/sociable-tests/) (testing user behavior, not implementation details) for new features. Our general aim is to cover use cases, with more traditional unit tests for common code used by multiple modules.
 
 ### Current Testing
 
