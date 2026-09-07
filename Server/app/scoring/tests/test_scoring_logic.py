@@ -2645,30 +2645,99 @@ class TestAthleteRankCalculation:
         )
         assert got == want
 
-    def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move(
+    def test_it_breaks_a_three_way_tie_by_third_run_then_highest_move(
         self,
     ) -> None:
+        # #5 clears the field on the 3rd run; #3 and #4 tie on every run and
+        # are split only by the highest scoring move.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+        # deliberately not in finishing order
+        scores = [
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
+        ]
+
+        run_reason = "Tie resolved by 3rd highest scoring run: #5 (20.00), #3 (10.00)"
+        want = [
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
+        ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring move: #3 (25.00), #4 (20.00)"
+        want[1].ranking = 2
+        want[1].reason = run_reason
+        want[2].ranking = 1
+        want[2].reason = run_reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
+        assert got == want
+
+    def test_it_breaks_a_three_way_tie_across_successive_runs(
+        self,
+    ) -> None:
+        # highest run peels off #3, second-highest run splits #4 from #5.
         id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
         id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_3, [30.0, 30.0, 30.0], highest_move=30.0),
-            _tied_athlete(id_4, [30.0, 30.0, 30.0], highest_move=20.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
+            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
         ]
 
-        run_reason = "Tie resolved by highest scoring run: #5 (35.00), #3 (30.00)"
+        top_reason = "Tie resolved by highest scoring run: #3 (40.00), #4 (30.00)"
         want = [
-            _tied_athlete(id_3, [30.0, 30.0, 30.0], highest_move=30.0),
-            _tied_athlete(id_4, [30.0, 30.0, 30.0], highest_move=20.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
+            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
         ]
-        want[0].ranking = 2
-        want[0].reason = run_reason
-        want[1].ranking = 3
-        want[1].reason = "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00)"
+        want[0].ranking = 3
+        want[
+            0
+        ].reason = "Tie resolved by 2nd highest scoring run: #4 (30.00), #5 (25.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
         want[2].ranking = 1
-        want[2].reason = run_reason
+        want[2].reason = top_reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
+        assert got == want
+
+    def test_it_breaks_a_three_way_tie_entirely_on_the_highest_move(
+        self,
+    ) -> None:
+        # identical on every run; only the highest scoring move separates them.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+        scores = [
+            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
+        ]
+
+        top_reason = "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00)"
+        want = [
+            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
+        ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring move: #4 (20.00), #5 (10.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
+        want[2].ranking = 1
+        want[2].reason = top_reason
 
         got = calculate_rank(
             scores,
