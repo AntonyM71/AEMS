@@ -63,7 +63,6 @@ async def get_many(
     competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    name____str: list[str] | None = Query(None, alias="name____str"),
     name____list: list[str] | None = Query(None, alias="name____list"),
     limit: int | None = Query(None),
     offset: int | None = Query(None),
@@ -78,7 +77,6 @@ async def get_many(
         [
             (Heat.id, id____list),
             (Heat.competition_id, competition_id____list),
-            (Heat.name, name____str),
             (Heat.name, name____list),
         ],
     )
@@ -96,24 +94,10 @@ async def get_many(
 async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    competition_id____list: list[UUID] | None = Query(
-        None, alias="competition_id____list"
-    ),
-    name____str: list[str] | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
     join_foreign_table: list[str] | None = Query(None),
 ) -> HeatResponse:
     """Get one heat by primary key"""
     query = select(Heat).where(Heat.id == id)
-
-    query = apply_in_filters(
-        query,
-        [
-            (Heat.competition_id, competition_id____list),
-            (Heat.name, name____str),
-            (Heat.name, name____list),
-        ],
-    )
     query = _apply_heat_joins(query, join_foreign_table)
 
     result = db.execute(query)

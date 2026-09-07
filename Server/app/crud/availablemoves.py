@@ -21,49 +21,22 @@ availablemoves_router = APIRouter(prefix="/availablemoves", tags=["availablemove
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    id____list_____comparison_operator: str | None = Query(
-        None, alias="id____list_____comparison_operator"
-    ),
     sheet_id____list: list[UUID] | None = Query(None, alias="sheet_id____list"),
-    sheet_id____list_____comparison_operator: str | None = Query(
-        None, alias="sheet_id____list_____comparison_operator"
-    ),
     name____str: list[str] | None = Query(None, alias="name____str"),
-    name____str_____comparison_operator: str | None = Query(
-        None, alias="name____str_____comparison_operator"
-    ),
     name____list: list[str] | None = Query(None, alias="name____list"),
-    name____list_____comparison_operator: str | None = Query(
-        None, alias="name____list_____comparison_operator"
-    ),
     fl_score____from: int | None = Query(None, alias="fl_score____from"),
     fl_score____to: int | None = Query(None, alias="fl_score____to"),
     fl_score____list: list[int] | None = Query(None, alias="fl_score____list"),
-    fl_score____list_____comparison_operator: str | None = Query(
-        None, alias="fl_score____list_____comparison_operator"
-    ),
     rb_score____from: int | None = Query(None, alias="rb_score____from"),
     rb_score____to: int | None = Query(None, alias="rb_score____to"),
     rb_score____list: list[int] | None = Query(None, alias="rb_score____list"),
-    rb_score____list_____comparison_operator: str | None = Query(
-        None, alias="rb_score____list_____comparison_operator"
-    ),
     display_order____from: int | None = Query(None, alias="display_order____from"),
     display_order____to: int | None = Query(None, alias="display_order____to"),
     display_order____list: list[int] | None = Query(
         None, alias="display_order____list"
     ),
-    display_order____list_____comparison_operator: str | None = Query(
-        None, alias="display_order____list_____comparison_operator"
-    ),
     direction____str: list[str] | None = Query(None, alias="direction____str"),
-    direction____str_____comparison_operator: str | None = Query(
-        None, alias="direction____str_____comparison_operator"
-    ),
     direction____list: list[str] | None = Query(None, alias="direction____list"),
-    direction____list_____comparison_operator: str | None = Query(
-        None, alias="direction____list_____comparison_operator"
-    ),
     limit: int | None = Query(None),
     offset: int | None = Query(None),
     order_by_columns: list[str] | None = Query(None),

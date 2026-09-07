@@ -20,7 +20,6 @@ scoresheet_router = APIRouter(prefix="/scoresheet", tags=["scoresheet"])
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    name____str: list[str] | None = Query(None, alias="name____str"),
     name____list: list[str] | None = Query(None, alias="name____list"),
     limit: int | None = Query(None),
     offset: int | None = Query(None),
@@ -33,7 +32,6 @@ async def get_many(
         query,
         [
             (ScoreSheet.id, id____list),
-            (ScoreSheet.name, name____str),
             (ScoreSheet.name, name____list),
         ],
     )
