@@ -407,21 +407,9 @@ def calculate_tied_rank(
     athlete_id: UUID, athlete_scores: list[AthleteScores]
 ) -> RankInfo:
     number_of_runs = max(len(a.run_scores) for a in athlete_scores)
-    # _resolve_tie_order must stay in sync with this sort sequence.
-    # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
-    # First sort by highest scored move
-    sorted_athlete_score = sorted(
-        athlete_scores,
-        key=lambda x: x.highest_scoring_move,
-        reverse=True,
+    sorted_athlete_score = _resolve_tie_order(
+        athlete_scores, _tie_break_criteria(number_of_runs)
     )
-
-    # Sort by dropped rides
-    for i in range(1, number_of_runs + 1):
-        sorted_athlete_score.sort(
-            key=get_nth_highest_score(index=number_of_runs - i),
-            reverse=True,
-        )
     if (
         len(
             fully_tied_athletes := athletes_with_this_exact_score_after_tiebreak(
@@ -526,7 +514,13 @@ def _resolve_tie_order(
     tied_athletes: list[AthleteScores],
     criteria: list[tuple[str, Callable[[AthleteScores], float]]],
 ) -> list[AthleteScores]:
-    # Sort ladder must stay in sync with calculate_tied_rank's sort sequence.
+    """Order a tied group by the ICF tie-breakers, best first.
+
+    Sorts are applied lowest-precedence first so the stable sort leaves the
+    highest-precedence criterion dominant. This is the single sort used both to
+    assign ranks (``calculate_tied_rank``) and to explain them
+    (``build_tie_break_reason``).
+    """
     ordered = list(tied_athletes)
     for _criterion, value_of in reversed(criteria):
         ordered.sort(key=value_of, reverse=True)
