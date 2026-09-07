@@ -1,3 +1,4 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,7 +15,7 @@ athlete_router = APIRouter(prefix="/athlete", tags=["athlete"])
 @athlete_router.post("/", status_code=201)
 async def insert_many(
     athletes: list[AthleteCreate],
-    db: Session = Depends(get_transaction_session),
+    db: Annotated[Session, Depends(get_transaction_session)],
 ) -> list[AthleteResponse]:
     """Insert many athletes"""
     db_athletes = []
@@ -37,7 +38,7 @@ async def insert_many(
 async def partial_update_one_by_primary_key(
     id: UUID,
     athlete_update: AthleteUpdate,
-    db: Session = Depends(get_transaction_session),
+    db: Annotated[Session, Depends(get_transaction_session)],
 ) -> AthleteResponse:
     """Partial update one athlete by primary key"""
     query = select(Athlete).where(Athlete.id == id)
