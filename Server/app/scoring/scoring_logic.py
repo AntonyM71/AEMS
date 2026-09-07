@@ -531,13 +531,6 @@ def build_tie_break_reason(
     tied_athletes: list[AthleteScores],
     bib_numbers: dict[UUID, str] | None,
 ) -> str:
-    fully_tied = athletes_with_this_exact_score_after_tiebreak(
-        athlete_id, tied_athletes
-    )
-    if len(fully_tied) > 1:
-        remaining = ", ".join(_athlete_label(a, bib_numbers) for a in fully_tied)
-        return f"Tie unresolved - athletes remain tied: {remaining}"
-
     number_of_runs = max(len(a.run_scores) for a in tied_athletes)
     criteria = _tie_break_criteria(number_of_runs)
     resolved_order = _resolve_tie_order(tied_athletes, criteria)
@@ -545,10 +538,23 @@ def build_tie_break_reason(
         i for i, a in enumerate(resolved_order) if a.athlete_id == athlete_id
     )
     this_athlete = resolved_order[position]
+
+    # Athletes this athlete draws with on every criterion (0-padding a shorter
+    # run list) — the ones no tie-breaker can separate.
+    still_tied = [
+        a
+        for a in resolved_order
+        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
+    ]
+    if len(still_tied) > 1:
+        remaining = ", ".join(
+            _athlete_label(a.athlete_id, bib_numbers) for a in still_tied
+        )
+        return f"Tie unresolved - athletes remain tied: {remaining}"
+
     rival = (
         resolved_order[position - 1] if position > 0 else resolved_order[position + 1]
     )
-
     for criterion, value_of in criteria:
         if value_of(this_athlete) != value_of(rival):
             pair = sorted([this_athlete, rival], key=value_of, reverse=True)
@@ -558,5 +564,5 @@ def build_tie_break_reason(
             )
             return f"Tie resolved by {criterion}: {compared}"
 
-    msg = "unreachable: athletes_with_this_exact_score_after_tiebreak handles ties"
+    msg = "rival draws on every criterion yet is not in still_tied"
     raise AssertionError(msg)

@@ -2238,6 +2238,27 @@ class TestAthleteRankCalculation:
         )
         assert got == want
 
+    def test_it_does_not_crash_on_a_mixed_run_count_tie(
+        self,
+    ) -> None:
+        # supported but discouraged: #3 ran once, #4 ran twice, and the two
+        # draw on every criterion once the missing run counts as 0.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [10.0], highest_move=5.0, total_score=10.0),
+            _tied_athlete(id_4, [10.0, 0.0], highest_move=5.0, total_score=10.0),
+        ]
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        reasons = {a.athlete_id: a.reason for a in got}
+        assert reasons[UUID(id_3)] == "Tie unresolved - athletes remain tied: #3, #4"
+        assert reasons[UUID(id_4)] == "Tie unresolved - athletes remain tied: #3, #4"
+
 
 A = "c7476320-6c48-11ee-b962-0242ac120001"
 B = "c7476320-6c48-11ee-b962-0242ac120002"
