@@ -95,9 +95,11 @@ describe("PromotePhase", () => {
 
 		await waitFor(() => expect(promoteBodies).toHaveLength(1))
 		expect(promoteBodies[0]).toMatchObject({
-			new_phase_name: "Final",
-			new_heat_names: ["Heat A"],
-			phase_id: "phase-1"
+			request_body: {
+				new_phase_name: "Final",
+				new_heat_names: ["Heat A"],
+				phase_id: "phase-1"
+			}
 		})
 	})
 })

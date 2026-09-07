@@ -145,7 +145,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	} =
 		useGetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRunNumberGetQuery(
 			{
-				runNumber: selectedRun.toString(),
+				runNumber: selectedRun,
 				athleteId: athleteData?.[currentPaddlerIndex].athlete_id ?? "",
 				judgeId: scribeNumber,
 				heatId: selectedHeat

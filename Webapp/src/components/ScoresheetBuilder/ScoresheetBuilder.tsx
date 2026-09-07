@@ -41,8 +41,9 @@ export const ScoresheetMoves = ({
 		const movesData = Array.isArray(moves.data)
 			? moves.data.map((move) => ({
 					...move,
-					direction: move.direction as PydanticAvailableMoves["direction"]
-				}))
+					direction:
+						move.direction as PydanticAvailableMoves["direction"]
+			  }))
 			: []
 		const orderedMoves = [...movesData].sort(sortMoves)
 		setNewMoves(orderedMoves)
@@ -316,8 +317,8 @@ interface NewBonusInfo {
 }
 
 export const sortByDisplayOrder = (
-	a: { display_order?: number },
-	b: { display_order?: number }
+	a: { display_order?: number | null },
+	b: { display_order?: number | null }
 ) => {
 	// Preserve original order for missing keys by sorting them last
 	const aKey = a.display_order ?? Infinity

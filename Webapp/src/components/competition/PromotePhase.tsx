@@ -41,14 +41,16 @@ export const PromotePhase = () => {
 			return
 		}
 		await postPromotedPhase({
-			newPhaseInfo: {
-				new_heat_names: newHeatNames,
-				phase_id: phaseId,
-				new_phase_name: phaseName,
-				number_of_paddlers: numberOfAthletes,
-				number_of_runs: numberOfRuns,
-				number_of_runs_for_score: numberOfScoringRuns,
-				number_of_judges: numberOfJudges
+			bodyPromotePhaseCompetitionManagementPromotePhasePost: {
+				request_body: {
+					new_heat_names: newHeatNames,
+					phase_id: phaseId,
+					new_phase_name: phaseName,
+					number_of_paddlers: numberOfAthletes,
+					number_of_runs: numberOfRuns,
+					number_of_runs_for_score: numberOfScoringRuns,
+					number_of_judges: numberOfJudges
+				}
 			}
 		})
 		await refetchHeats()
