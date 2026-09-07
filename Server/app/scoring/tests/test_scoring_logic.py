@@ -2553,9 +2553,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=3,
                 total_score=50,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2594,9 +2592,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=30.0,
                 ranking=2,
                 total_score=50,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #4 (30.00)"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -2635,9 +2631,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #4 (30.00)"),
             ),
         ]
 
@@ -2851,9 +2845,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #3 (25.00)"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2908,7 +2900,7 @@ class TestAthleteRankCalculation:
                 ranking=3,
                 total_score=50,
                 reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                    "Tie resolved by 3rd highest scoring run: #3 (25.00), #4 (20.00)"
                 ),
             ),
             AthleteScores(
@@ -2948,9 +2940,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #3 (25.00)"),
             ),
         ]
 
@@ -3119,9 +3109,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=20.0,
                 ranking=3,
                 total_score=50,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring move: #4 (25.00), #3 (20.00)"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -3160,9 +3148,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -3201,9 +3187,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason=(
-                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
-                ),
+                reason=("Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"),
             ),
         ]
 
@@ -3467,6 +3451,7 @@ class TestAthleteRankCalculation:
 
 A = "c7476320-6c48-11ee-b962-0242ac120001"
 B = "c7476320-6c48-11ee-b962-0242ac120002"
+C = "c7476320-6c48-11ee-b962-0242ac120003"
 
 
 class TestBuildTieBreakReason:
@@ -3534,4 +3519,37 @@ class TestBuildTieBreakReason:
         assert build_tie_break_reason(UUID(A), tied, None) == (
             f"Tie resolved by highest scoring run: athlete {UUID(A)} (30.00), "
             f"athlete {UUID(B)} (25.00)"
+        )
+
+    def test_it_compares_each_athlete_against_its_adjacent_rival(self) -> None:
+        tied = [
+            _tied_athlete(
+                "c7476320-6c48-11ee-b962-0242ac120005",
+                [35.0, 15.0],
+                highest_move=10.0,
+            ),
+            _tied_athlete(A, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(C, [25.0, 25.0], highest_move=12.0),
+        ]
+        bibs = {
+            UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            UUID(A): "4",
+            UUID(C): "3",
+        }
+        reasons = {
+            aid: build_tie_break_reason(aid, tied, bibs)
+            for aid in (
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"),
+                UUID(A),
+                UUID(C),
+            )
+        }
+        assert reasons[UUID("c7476320-6c48-11ee-b962-0242ac120005")] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(A)] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(C)] == (
+            "Tie resolved by highest scoring move: #4 (20.00), #3 (12.00)"
         )

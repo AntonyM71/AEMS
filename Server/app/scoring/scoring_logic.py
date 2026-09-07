@@ -521,25 +521,45 @@ def _tie_break_criteria(
     return criteria
 
 
+def _resolve_tie_order(
+    tied_athletes: list[AthleteScores],
+    criteria: list[tuple[str, Callable[[AthleteScores], float]]],
+) -> list[AthleteScores]:
+    ordered = list(tied_athletes)
+    for _criterion, value_of in reversed(criteria):
+        ordered.sort(key=value_of, reverse=True)
+    return ordered
+
+
 def build_tie_break_reason(
     athlete_id: UUID,
     tied_athletes: list[AthleteScores],
     bib_numbers: dict[UUID, str] | None,
 ) -> str:
     number_of_runs = max(len(a.run_scores) for a in tied_athletes)
-    this_athlete = next(a for a in tied_athletes if a.athlete_id == athlete_id)
-    still_tied = list(tied_athletes)
+    criteria = _tie_break_criteria(number_of_runs)
+    resolved_order = _resolve_tie_order(tied_athletes, criteria)
+    position = next(
+        i for i, a in enumerate(resolved_order) if a.athlete_id == athlete_id
+    )
+    this_athlete = resolved_order[position]
+    rival = (
+        resolved_order[position - 1] if position > 0 else resolved_order[position + 1]
+    )
 
-    for criterion, value_of in _tie_break_criteria(number_of_runs):
-        if len({value_of(a) for a in still_tied}) > 1:
-            ordered = sorted(still_tied, key=value_of, reverse=True)
+    for criterion, value_of in criteria:
+        if value_of(this_athlete) != value_of(rival):
+            pair = sorted([this_athlete, rival], key=value_of, reverse=True)
             compared = ", ".join(
                 f"{_athlete_label(a.athlete_id, bib_numbers)} ({value_of(a):.2f})"
-                for a in ordered
+                for a in pair
             )
             return f"Tie resolved by {criterion}: {compared}"
-        my_value = value_of(this_athlete)
-        still_tied = [a for a in still_tied if value_of(a) == my_value]
 
-    remaining = ", ".join(_athlete_label(a.athlete_id, bib_numbers) for a in still_tied)
+    tied_with = [
+        a
+        for a in tied_athletes
+        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
+    ]
+    remaining = ", ".join(_athlete_label(a.athlete_id, bib_numbers) for a in tied_with)
     return f"Tie unresolved — athletes remain tied: {remaining}"
