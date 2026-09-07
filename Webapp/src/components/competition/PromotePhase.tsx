@@ -40,17 +40,25 @@ export const PromotePhase = () => {
 
 			return
 		}
-		await postPromotedPhase({
-			newPhaseInfo: {
-				new_heat_names: newHeatNames,
-				phase_id: phaseId,
-				new_phase_name: phaseName,
-				number_of_paddlers: numberOfAthletes,
-				number_of_runs: numberOfRuns,
-				number_of_runs_for_score: numberOfScoringRuns,
-				number_of_judges: numberOfJudges
-			}
-		})
+		try {
+			await postPromotedPhase({
+				bodyPromotePhaseCompetitionManagementPromotePhasePost: {
+					request_body: {
+						new_heat_names: newHeatNames,
+						phase_id: phaseId,
+						new_phase_name: phaseName,
+						number_of_paddlers: numberOfAthletes,
+						number_of_runs: numberOfRuns,
+						number_of_runs_for_score: numberOfScoringRuns,
+						number_of_judges: numberOfJudges
+					}
+				}
+			}).unwrap()
+		} catch {
+			toast.error("Failed to promote phase")
+
+			return
+		}
 		await refetchHeats()
 		await refetchPhases()
 		toast.success(`Created New Phase ${phaseName} and associated heat`)
