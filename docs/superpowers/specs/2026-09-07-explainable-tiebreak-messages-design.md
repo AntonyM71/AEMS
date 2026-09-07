@@ -79,43 +79,51 @@ bonuses.**
 
 ## Design
 
-### 1. Deciding-criterion detection in `calculate_tied_rank`
+### 1. Deciding-criterion detection
 
-`calculate_tied_rank` is already called once per athlete with the full group that
-shares that athlete's `total_score`. Replace the "sort by everything, return an
-index" approach with a per-athlete walk of the tie-breakers in precedence order:
+`calculate_rank` calls `calculate_tied_rank` once per athlete with the full group
+that shares that athlete's `total_score`. The ranking computation in
+`calculate_tied_rank` is left untouched — it already produces correct ranks. A
+new module-level helper produces the `reason` string; `calculate_rank` stores it
+in place of the old `f"TieBreak: {rank_info.reason}"`.
 
-1. Build the ordered list of criteria for the phase:
-   - one criterion per run position `n` (n = 0, 1, 2, …), value =
-     `get_nth_highest_score(n)(athlete)` — the athlete's n-th best
-     `mean_run_score`. `number_of_runs` is `max(len(a.run_scores) for a in group)`,
-     matching the current code.
-   - a final criterion "highest scoring move", value = `athlete.highest_scoring_move`.
-2. Track the "still tied" set: athletes whose values have equalled this athlete's
-   on every criterion so far (starts as the whole group).
-3. For each criterion in order: if this athlete's value differs from any athlete
-   in the still-tied set, this criterion is **this athlete's** decider — record it
-   and the still-tied set as it stood entering this criterion, then stop.
-   Otherwise drop from the still-tied set anyone whose value now differs and
-   continue.
-4. If no criterion ever separates this athlete from the still-tied set, this
-   athlete is unresolved.
+The tie-break criteria, in ICF precedence order:
 
-This makes the message accurate for 3+ way ties: if the highest run splits one
-athlete off but the other two need the 2nd-highest run, the first athlete's
-message names "highest scoring run" and the other two name "2nd highest scoring
-run", each listing only the athletes involved in that step.
+- one criterion per run position `n` (n = 0, 1, 2, …), value =
+  `get_nth_highest_score(n)(athlete)` — the athlete's n-th best `mean_run_score`.
+  `number_of_runs` is `max(len(a.run_scores) for a in group)`, matching the
+  current code.
+- a final criterion "highest scoring move", value = `athlete.highest_scoring_move`.
 
-Ranking within the tied block: for a resolved athlete, `ranking` = the count of
-athletes in the group who rank strictly ahead once the criteria are applied in
-order (equivalent to the current index result). For an unresolved athlete, keep
-today's behaviour — the shared minimum index of the mutually-unresolved
-sub-group, so they share a rank. The deciding-criterion walk and the ranking
-computation use the same ordered criteria and the same `get_nth_highest_score`
-helper, so they stay consistent.
+The message a competitor needs answers "why did I place here and not one place
+higher?", so it compares each athlete against the **rival ranked immediately
+adjacent** to them, not against the whole tied group:
 
-`RankInfo` gains no new public fields — `reason` stays a plain string. The walk's
-result is formatted into that string before returning.
+1. Resolve the tied group into finishing order. Use the same sort
+   `calculate_tied_rank` uses: start from the group, then for each criterion from
+   lowest precedence to highest (`highest scoring move`, then the last run, …,
+   then the first run) apply a stable descending sort. The first-run sort ends up
+   dominant, so the result matches the ranks `calculate_tied_rank` assigns.
+2. Find this athlete's position in that order. Their rival is the athlete one
+   position above; if this athlete is first in the tied block, the rival is the
+   athlete one position below.
+3. Walk the criteria in precedence order. The first criterion where this
+   athlete's value differs from the rival's is the decider. The message names
+   that criterion and lists the two athletes — this athlete and the rival —
+   ordered by that criterion's value, descending.
+4. If no criterion separates this athlete from the rival, this athlete is
+   unresolved: the message lists every athlete in the group whose value equals
+   this athlete's on every criterion.
+
+For a 2-way tie this is exactly "compare A and B". For a 3+ way tie each athlete's
+message names the criterion that settled their own placement: if the highest run
+puts one athlete clear but the other two are separated only by highest scoring
+move, the clear athlete's message names "highest scoring run" and the other two
+name "highest scoring move", each listing just the relevant pair.
+
+Ranks are unchanged — `calculate_tied_rank` still assigns them. `RankInfo` gains
+no new fields; its `reason` becomes unused (left in place to keep that tested
+function untouched).
 
 ### 2. Message formatting
 
@@ -124,23 +132,24 @@ A small helper formats the `RankInfo.reason` string:
 - Run criterion at position `n`: `"highest scoring run"` for n = 0, otherwise
   `f"{ordinal(n + 1)} highest scoring run"` (`2nd`, `3rd`, `4th`, …).
 - Move criterion: `"highest scoring move"`.
-- Value list: the tied athletes that entered the deciding criterion, ordered by
-  that criterion's value descending, rendered as `#{bib} ({value:.2f})`,
+- Value list: this athlete and their adjacent rival, ordered by the deciding
+  criterion's value descending, rendered as `#{bib} ({value:.2f})`,
   comma-separated.
 - Resolved: `f"Tie resolved by {criterion}: {value_list}"`.
 - Unresolved: `f"Tie unresolved — athletes remain tied: {bib_list}"` where
   `bib_list` is `#{bib}` comma-separated.
 
-`calculate_rank` stores `rank_info.reason` directly on `s.reason` — the
+`calculate_rank` stores the helper's string directly on `s.reason` — the
 `"TieBreak: "` prefix is removed.
 
 ### 3. Bib numbers reach the engine
 
-- `calculate_rank(athlete_scores, bib_numbers: dict[UUID, int] | None = None)`.
-- `calculate_tied_rank(athlete_id, athlete_scores, bib_numbers)` — same map.
+- `calculate_rank(athlete_scores, bib_numbers: dict[UUID, str] | None = None)`
+  (`Athlete.bib` is a `String` column, so the map is `UUID -> str`).
+- The new reason helper takes the same map.
 - `calculate_phase_scores` builds `{a.id: a.bib for a in athletes}` and passes it.
 - Fallback when a bib is missing from the map (or the map is `None`):
-  `f"athlete {str(athlete_id)[:8]}"` in place of `#{bib}`.
+  `f"athlete {athlete_id}"` (the full UUID) in place of `#{bib}`.
 
 ### 4. Frontend copy
 
