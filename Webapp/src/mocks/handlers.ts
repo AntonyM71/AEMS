@@ -200,14 +200,6 @@ export const handlers = [
 			])
 		}
 
-		// For test cases that expect errors
-		if (competitionIdList?.includes("2")) {
-			return HttpResponse.json(
-				{ message: "Internal server error" },
-				{ status: 500 }
-			)
-		}
-
 		return HttpResponse.json([])
 	}),
 	http.post("/api/heat", async ({ request }) => {
