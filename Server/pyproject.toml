@@ -54,7 +54,6 @@ dependencies = [
     "psycopg2",
     "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0
     "fastapi",
-    "orjson",  # required by fastapi.responses.ORJSONResponse (customScoringEndpoints)
     "pandas[performance]",
     "uvicorn[standard]>=0.40.0,<1.0",  # Upgraded from 0.19.0
     "python-multipart",
