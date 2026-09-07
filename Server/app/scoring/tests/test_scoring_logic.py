@@ -3356,7 +3356,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=1,
                 total_score=50,
-                reason=("Tie unresolved — athletes remain tied: #3, #4"),
+                reason=("Tie unresolved - athletes remain tied: #3, #4"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -3395,7 +3395,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=1,
                 total_score=50,
-                reason=("Tie unresolved — athletes remain tied: #3, #4"),
+                reason=("Tie unresolved - athletes remain tied: #3, #4"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -3507,7 +3507,7 @@ class TestBuildTieBreakReason:
         bibs = {UUID(A): "7", UUID(B): "12"}
 
         assert build_tie_break_reason(UUID(A), tied, bibs) == (
-            "Tie unresolved — athletes remain tied: #7, #12"
+            "Tie unresolved - athletes remain tied: #7, #12"
         )
 
     def test_it_falls_back_to_athlete_id_when_no_bib(self) -> None:
@@ -3552,4 +3552,24 @@ class TestBuildTieBreakReason:
         )
         assert reasons[UUID(C)] == (
             "Tie resolved by highest scoring move: #4 (20.00), #3 (12.00)"
+        )
+
+    def test_fully_tied_pair_below_a_cleared_athlete_is_told_it_is_unresolved(
+        self,
+    ) -> None:
+        cleared_id = "c7476320-6c48-11ee-b962-0242ac120005"
+        tied = [
+            _tied_athlete(
+                cleared_id, [35.0, 15.0], highest_move=10.0, total_score=50.0
+            ),
+            _tied_athlete(A, [25.0, 25.0], highest_move=20.0, total_score=50.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=20.0, total_score=50.0),
+        ]
+        bibs = {UUID(cleared_id): "5", UUID(A): "4", UUID(B): "3"}
+
+        unresolved = "Tie unresolved - athletes remain tied: #4, #3"
+        assert build_tie_break_reason(UUID(A), tied, bibs) == unresolved
+        assert build_tie_break_reason(UUID(B), tied, bibs) == unresolved
+        assert build_tie_break_reason(UUID(cleared_id), tied, bibs) == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
         )

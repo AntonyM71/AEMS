@@ -407,6 +407,7 @@ def calculate_tied_rank(
     athlete_id: UUID, athlete_scores: list[AthleteScores]
 ) -> RankInfo:
     number_of_runs = max(len(a.run_scores) for a in athlete_scores)
+    # _resolve_tie_order must stay in sync with this sort sequence.
     # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
     # First sort by highest scored move
     sorted_athlete_score = sorted(
@@ -525,6 +526,7 @@ def _resolve_tie_order(
     tied_athletes: list[AthleteScores],
     criteria: list[tuple[str, Callable[[AthleteScores], float]]],
 ) -> list[AthleteScores]:
+    # Sort ladder must stay in sync with calculate_tied_rank's sort sequence.
     ordered = list(tied_athletes)
     for _criterion, value_of in reversed(criteria):
         ordered.sort(key=value_of, reverse=True)
@@ -536,6 +538,13 @@ def build_tie_break_reason(
     tied_athletes: list[AthleteScores],
     bib_numbers: dict[UUID, str] | None,
 ) -> str:
+    fully_tied = athletes_with_this_exact_score_after_tiebreak(
+        athlete_id, tied_athletes
+    )
+    if len(fully_tied) > 1:
+        remaining = ", ".join(_athlete_label(a, bib_numbers) for a in fully_tied)
+        return f"Tie unresolved - athletes remain tied: {remaining}"
+
     number_of_runs = max(len(a.run_scores) for a in tied_athletes)
     criteria = _tie_break_criteria(number_of_runs)
     resolved_order = _resolve_tie_order(tied_athletes, criteria)
@@ -556,10 +565,9 @@ def build_tie_break_reason(
             )
             return f"Tie resolved by {criterion}: {compared}"
 
-    tied_with = [
-        a
-        for a in tied_athletes
-        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
-    ]
-    remaining = ", ".join(_athlete_label(a.athlete_id, bib_numbers) for a in tied_with)
-    return f"Tie unresolved — athletes remain tied: {remaining}"
+    # No criterion separated the pair (unequal run counts / float edge) yet the
+    # fully-tied predicate above did not flag it.
+    unresolved = ", ".join(
+        _athlete_label(a.athlete_id, bib_numbers) for a in (this_athlete, rival)
+    )
+    return f"Tie unresolved - athletes remain tied: {unresolved}"

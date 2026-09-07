@@ -19,12 +19,12 @@
 - Athletes are identified in messages by bib number only, rendered `#{bib}`. Bibs are stored as strings (`Athlete.bib` is a `String` column).
 - Message formats, exact:
   - Resolved: `Tie resolved by {criterion}: {label} ({value}), {label} ({value})[, ...]`
-  - Unresolved: `Tie unresolved — athletes remain tied: {label}, {label}[, ...]`
+  - Unresolved: `Tie unresolved - athletes remain tied: {label}, {label}[, ...]`
   - `{criterion}` is `highest scoring run` (best run), `2nd highest scoring run`, `3rd highest scoring run`, … or `highest scoring move`.
   - `{label}` is `#{bib}` when a bib is known, otherwise `athlete {athlete_id}` (full UUID).
   - `{value}` is formatted with exactly 2 decimal places (`f"{value:.2f}"`).
   - In a resolved message the athletes are ordered by the deciding criterion's value, descending.
-- The `—` in the unresolved message is a real em dash (U+2014).
+- The dash in the unresolved message is a plain ASCII hyphen (`-`).
 - Frontend copy changes go only to `Webapp/src/pages/index.tsx` and its test. No rendering/component changes — the richer string flows through the existing "Notes" column unchanged.
 
 ---
@@ -142,7 +142,7 @@ class TestBuildTieBreakReason:
         bibs = {UUID(A): "7", UUID(B): "12"}
 
         assert build_tie_break_reason(UUID(A), tied, bibs) == (
-            "Tie unresolved — athletes remain tied: #7, #12"
+            "Tie unresolved - athletes remain tied: #7, #12"
         )
 
     def test_it_falls_back_to_athlete_id_when_no_bib(self) -> None:
@@ -270,7 +270,7 @@ def build_tie_break_reason(
     remaining = ", ".join(
         _athlete_label(a.athlete_id, bib_numbers) for a in tied_with
     )
-    return f"Tie unresolved — athletes remain tied: {remaining}"
+    return f"Tie unresolved - athletes remain tied: {remaining}"
 ```
 
 `_resolve_tie_order` applies `reversed(criteria)` as stable descending sorts —
@@ -321,7 +321,7 @@ For the other four tie tests, add a `bib_numbers` argument to the `calculate_ran
   - `test_it_breaks_a_tie_with_dropped_run_run` (2 athletes): tie on runs 0 and 1 (both `25`), differ on run 2 (`10` vs `5`) → both `"Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"`.
   - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run`: adjacent pairs differ on run 0 → each athlete `"Tie resolved by highest scoring run: ..."` naming its own pair.
   - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move` and `test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move`: the athlete cleared by the top run gets `"...highest scoring run..."`; the pair separated only by the move gets `"Tie resolved by highest scoring move: ..."` (the test names finally match the behaviour).
-  - `test_it_returns_tied_ranks_for_an_actual_tie`: the two fully-tied athletes get `"Tie unresolved — athletes remain tied: #{bib}, #{bib}"` (order: the order they appear in `athletes_with_same_score`, which is the order they appear in the input `scores` list). The third, non-tied athlete keeps `reason=None`.
+  - `test_it_returns_tied_ranks_for_an_actual_tie`: the two fully-tied athletes get `"Tie unresolved - athletes remain tied: #{bib}, #{bib}"` (order: the order they appear in `athletes_with_same_score`, which is the order they appear in the input `scores` list). The third, non-tied athlete keeps `reason=None`.
 
   Rankings asserted in these tests **must not change** — if any `ranking` value changes, stop and report it as a plan defect.
 
@@ -418,7 +418,7 @@ In `Webapp/src/pages/index.tsx`, replace the second `<ul>` block:
 				- Tiebreaks now show which criterion decided the result and
 				the athletes' bib numbers and values, e.g. "Tie resolved by
 				highest scoring run: #12 (85.00), #7 (80.00)". A complete tie
-				shows "Tie unresolved — athletes remain tied".
+				shows "Tie unresolved - athletes remain tied".
 			</ul>
 ```
 
@@ -453,7 +453,7 @@ EOF
 - "Message formatting" (criterion labels, ordinals, `#{bib}`, `:.2f`, ordering) → Task 1 Step 3 + Global Constraints + `TestBuildTieBreakReason`.
 - "Bib numbers reach the engine" (`calculate_rank` param, caller, fallback) → Task 1 Steps 5, 7 + fallback test.
 - "Drop the `TieBreak:` prefix" → Task 1 Step 5.
-- `"Fully Tied"` → `"Tie unresolved — athletes remain tied: …"` → Task 1 Step 3 + Step 6 + unresolved test.
+- `"Fully Tied"` → `"Tie unresolved - athletes remain tied: …"` → Task 1 Step 3 + Step 6 + unresolved test.
 - "Frontend copy" → Task 2.
 - Ranking unchanged → Task 1 Step 5 leaves `calculate_tied_rank` untouched; Step 6 asserts rankings don't move.
 - Precedence audit note → no code; recorded in the spec.

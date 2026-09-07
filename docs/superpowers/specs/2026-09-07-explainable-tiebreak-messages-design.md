@@ -22,7 +22,7 @@ identifying athletes by bib number:
 - `Tie resolved by highest scoring run: #12 (85.00), #7 (80.00)`
 - `Tie resolved by 2nd highest scoring run: #12 (72.50), #7 (70.00)`
 - `Tie resolved by highest scoring move: #5 (150.00), #9 (80.00)`
-- `Tie unresolved — athletes remain tied: #12, #7`
+- `Tie unresolved - athletes remain tied: #12, #7`
 
 ## Background: the ICF tie-break rules
 
@@ -136,7 +136,7 @@ A small helper formats the `RankInfo.reason` string:
   criterion's value descending, rendered as `#{bib} ({value:.2f})`,
   comma-separated.
 - Resolved: `f"Tie resolved by {criterion}: {value_list}"`.
-- Unresolved: `f"Tie unresolved — athletes remain tied: {bib_list}"` where
+- Unresolved: `f"Tie unresolved - athletes remain tied: {bib_list}"` where
   `bib_list` is `#{bib}` comma-separated.
 
 `calculate_rank` stores the helper's string directly on `s.reason` — the
@@ -177,7 +177,7 @@ Backend (`Server/app/scoring/tests/test_scoring_logic.py`):
   - tie decided on the 2nd highest run → `"2nd highest scoring run"`.
   - tie decided on the 3rd highest run → `"3rd highest scoring run"`.
   - tie decided on the highest scoring move → `"Tie resolved by highest scoring move: …"`.
-  - fully unresolved tie → `"Tie unresolved — athletes remain tied: …"`.
+  - fully unresolved tie → `"Tie unresolved - athletes remain tied: …"`.
   - `bib_numbers=None` → fallback `athlete <uuid8>` label, tie still resolved.
 - An integration-style assertion through `calculate_phase_scores` (or the
   `get_phase_scores` endpoint, following the pattern in
