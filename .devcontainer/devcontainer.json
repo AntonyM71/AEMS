@@ -9,13 +9,21 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "mounts": [
-    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly"
+    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
+    // Named volumes so VS Code extensions and Claude Code state (login, plugins,
+    // history) survive a container rebuild instead of being reinstalled from the
+    // Marketplace every time — which is slow and fails on the offline venue network.
+    "source=aems-vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume",
+    "source=aems-claude,target=/home/vscode/.claude,type=volume"
   ],
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [5432],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "bash .devcontainer/setupEnvs.sh",
+  // - chown fixes the root-owned named volumes mounted above so the vscode user can write to them.
+  // - The .claude.json symlink keeps MCP approvals / folder trust / history on the /workspaces
+  //   bind mount, since that file lives outside the ~/.claude volume and is otherwise lost on rebuild.
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.vscode-server/extensions /home/vscode/.claude && P=/workspaces/.claude-json && [ -s \"$P\" ] || echo '{}' > \"$P\" && rm -f /home/vscode/.claude.json && ln -sfn \"$P\" /home/vscode/.claude.json && bash .devcontainer/setupEnvs.sh",
 
   // Configure tool-specific properties.
   // "customizations": {},
