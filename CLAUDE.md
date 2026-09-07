@@ -31,7 +31,7 @@ The frontend's API client is **generated** from the backend's OpenAPI schema. Do
 ```bash
 uv venv && source .venv/bin/activate && uv sync   # first-time setup
 alembic upgrade head                              # apply migrations (REQUIRED before tests or running)
-uvicorn main:app --reload                         # run dev server (http://localhost:8000, docs at /docs)
+uvicorn main:socket_app --reload                         # run dev server (http://localhost:8000, docs at /docs)
 uv run python -m pytest                           # run all backend tests
 uv run python -m pytest path/to/test.py::test_fn # run a single test
 uv run ruff check .                               # lint

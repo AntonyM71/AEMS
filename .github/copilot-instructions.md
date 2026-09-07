@@ -40,7 +40,7 @@ AEMS (Athlete and Event Management System) is a multi-component system for manag
   ```
 - **Run Server**:
   ```bash
-  uvicorn main:app --reload
+  uvicorn main:socket_app --reload
   ```
 - **Run Tests**:
   ```bash

@@ -26,7 +26,7 @@
    uv venv && source .venv/bin/activate  # If not using devcontainer
    uv sync                                # Install dependencies
    alembic upgrade head                   # Apply database migrations
-   uvicorn main:app --reload             # Start development server
+   uvicorn main:socket_app --reload       # Start development server
 
    # Start frontend (in new terminal)
    cd Webapp
@@ -157,7 +157,7 @@ uv sync                                # Install dependencies
 alembic upgrade head                   # Update database schema
 python -m scripts.seed_scoresheets     # Seed initial data
 python -m scripts.buildOpenApiJson     # Update API specs
-uvicorn main:app --reload             # Start development server
+uvicorn main:socket_app --reload       # Start development server
 uv run python -m pytest               # Run tests
 ruff check . && ruff format .         # Lint and format code
 ```
