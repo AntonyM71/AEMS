@@ -487,12 +487,6 @@ def _ordinal(number: int) -> str:
     return f"{number}{suffix}"
 
 
-def _run_criterion_label(position: int) -> str:
-    if position == 0:
-        return "highest scoring run"
-    return f"{_ordinal(position + 1)} highest scoring run"
-
-
 def _athlete_label(athlete_id: UUID, bib_numbers: dict[UUID, str] | None) -> str:
     if bib_numbers and athlete_id in bib_numbers:
         return f"#{bib_numbers[athlete_id]}"
@@ -503,7 +497,12 @@ def _tie_break_criteria(
     number_of_runs: int,
 ) -> list[tuple[str, Callable[[AthleteScores], float]]]:
     criteria: list[tuple[str, Callable[[AthleteScores], float]]] = [
-        (_run_criterion_label(position), get_nth_highest_score(position))
+        (
+            "highest scoring run"
+            if position == 0
+            else f"{_ordinal(position + 1)} highest scoring run",
+            get_nth_highest_score(position),
+        )
         for position in range(number_of_runs)
     ]
     criteria.append(("highest scoring move", lambda a: a.highest_scoring_move))
@@ -559,9 +558,5 @@ def build_tie_break_reason(
             )
             return f"Tie resolved by {criterion}: {compared}"
 
-    # No criterion separated the pair (unequal run counts / float edge) yet the
-    # fully-tied predicate above did not flag it.
-    unresolved = ", ".join(
-        _athlete_label(a.athlete_id, bib_numbers) for a in (this_athlete, rival)
-    )
-    return f"Tie unresolved - athletes remain tied: {unresolved}"
+    msg = "unreachable: athletes_with_this_exact_score_after_tiebreak handles ties"
+    raise AssertionError(msg)
