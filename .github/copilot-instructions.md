@@ -250,11 +250,11 @@ This file is generated from the OpenAPI schema using RTK Query's codegen tool. T
    ```
    This script:
    - Runs the OpenAPI export from `Server/`
-   - Runs `npx @rtk-query/codegen-openapi src/redux/services/example_api.json` in `Webapp/`
+   - Runs `npx @rtk-query/codegen-openapi src/redux/services/openapi-config.js` in `Webapp/`
    - Patches the output to remove `| any` types
    - Formats the file with Prettier
 
-3. Configuration for codegen is in `Webapp/src/redux/services/example_api.json`.
+3. Configuration for codegen is in `Webapp/src/redux/services/openapi-config.js`.
 4. The base API (not generated) is in `Webapp/src/redux/services/emptyApi.ts`.
 
 **If API endpoints need to change**, modify the FastAPI backend in `Server/app/` and then run `bash buildApi.sh` from the repo root to regenerate `aemsApi.ts`. Do **not** hand-edit `aemsApi.ts`.

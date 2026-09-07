@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
+import { toast } from "react-hot-toast"
 import { server } from "../../../mocks/server"
 import { competitionInitialState } from "../../../redux/atoms/competitions"
 import { renderWithProviders } from "../../../testUtils"
@@ -101,5 +102,33 @@ describe("PromotePhase", () => {
 				phase_id: "phase-1"
 			}
 		})
+	})
+
+	it("shows an error and no success toast when promotion fails", async () => {
+		server.use(
+			http.post("/api/competition_management/promote_phase", () =>
+				HttpResponse.json({ detail: "boom" }, { status: 422 })
+			)
+		)
+		const user = userEvent.setup({ delay: null })
+		renderPromotePhase()
+
+		await user.type(
+			await screen.findByRole("textbox", { name: "New Phase Name" }),
+			"Final"
+		)
+		await user.type(
+			screen.getByRole("textbox", { name: "New Heat Name" }),
+			"Heat A{Enter}"
+		)
+
+		const create = screen.getByRole("button", { name: "Create Phase" })
+		await waitFor(() => expect(create).toBeEnabled())
+		await user.click(create)
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith("Failed to promote phase")
+		)
+		expect(toast.success).not.toHaveBeenCalled()
 	})
 })

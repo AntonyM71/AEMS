@@ -19,7 +19,8 @@ export default [
 	{
 		ignores: [
 			"src/components/formSpecs/typescript/**/*",
-			"src/redux/services/aemsApi.ts"
+			"src/redux/services/aemsApi.ts",
+			"src/redux/services/openapi-config.js"
 		]
 	},
 

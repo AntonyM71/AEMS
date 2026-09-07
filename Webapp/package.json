@@ -55,7 +55,7 @@
 		"prettierfix": "npx prettier ./src -w",
 		"tsc": "npx tsc",
 		"precommit": "npm run tsc && npm run lintfix && npm run prettierfix",
-		"api-generate": " npx @rtk-query/codegen-openapi src/services/example_api.json"
+		"api-generate": "npx @rtk-query/codegen-openapi src/redux/services/openapi-config.js"
 	},
 	"eslintConfig": {
 		"extends": [

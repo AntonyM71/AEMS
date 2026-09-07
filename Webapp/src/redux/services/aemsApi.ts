@@ -1,16 +1,6 @@
 import { emptySplitApi as api } from "./emptyApi"
 const injectedRtkApi = api.injectEndpoints({
 	endpoints: (build) => ({
-		uploadCompetitionManagementUploadPost: build.mutation<
-			UploadCompetitionManagementUploadPostApiResponse,
-			UploadCompetitionManagementUploadPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition_management/upload`,
-				method: "POST",
-				body: queryArg.bodyUploadCompetitionManagementUploadPost
-			})
-		}),
 		promotePhaseCompetitionManagementPromotePhasePost: build.mutation<
 			PromotePhaseCompetitionManagementPromotePhasePostApiResponse,
 			PromotePhaseCompetitionManagementPromotePhasePostApiArg
@@ -478,11 +468,6 @@ const injectedRtkApi = api.injectEndpoints({
 	overrideExisting: false
 })
 export { injectedRtkApi as aemsApi }
-export type UploadCompetitionManagementUploadPostApiResponse =
-	/** status 200 Successful Response */ any
-export type UploadCompetitionManagementUploadPostApiArg = {
-	bodyUploadCompetitionManagementUploadPost: BodyUploadCompetitionManagementUploadPost
-}
 export type PromotePhaseCompetitionManagementPromotePhasePostApiResponse =
 	/** status 200 Successful Response */ any
 export type PromotePhaseCompetitionManagementPromotePhasePostApiArg = {
@@ -797,16 +782,6 @@ export type ValidationError = {
 export type HttpValidationError = {
 	detail?: ValidationError[]
 }
-export type BodyUploadCompetitionManagementUploadPost = {
-	competition_name: string
-	scoresheet_name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	random_heats: boolean
-	number_of_random_heats: number
-	file: string
-}
 export type NewPhaseInfo = {
 	new_heat_names: string[]
 	phase_id: string
@@ -1099,7 +1074,6 @@ export type RunStatusResponse = {
 	did_not_start: boolean
 }
 export const {
-	useUploadCompetitionManagementUploadPostMutation,
 	usePromotePhaseCompetitionManagementPromotePhasePostMutation,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
