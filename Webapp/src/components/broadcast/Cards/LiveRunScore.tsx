@@ -54,14 +54,12 @@ export const SubscribedFinalScore = ({
 
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [scoresheet ?? ""]
 		},
 		{ skip: !scoresheet }
 	)
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [scoresheet ?? ""]
 		},
 		{ skip: !scoresheet }

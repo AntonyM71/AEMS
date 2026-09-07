@@ -43,8 +43,6 @@ async def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
     event_id____list: list[UUID] | None = Query(None, alias="event_id____list"),
-    name____str: list[str] | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
     number_of_runs____from: int | None = Query(None, alias="number_of_runs____from"),
     number_of_runs____to: int | None = Query(None, alias="number_of_runs____to"),
     number_of_runs____list: list[int] | None = Query(
@@ -77,8 +75,6 @@ async def get_one_by_primary_key(
         query,
         [
             (Phase.event_id, event_id____list),
-            (Phase.name, name____str),
-            (Phase.name, name____list),
             (Phase.number_of_runs, number_of_runs____list),
             (Phase.number_of_runs_for_score, number_of_runs_for_score____list),
             (Phase.number_of_judges, number_of_judges____list),

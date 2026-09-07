@@ -59,11 +59,9 @@ const ScoredMove = React.memo(
 		}
 
 		const availableMovesList = useGetManyAvailablemovesGetQuery({
-			idListComparisonOperator: "Equal",
 			idList: [scoredMove.moveId]
 		})
 		const bonusList = useGetManyAvailablebonusesGetQuery({
-			moveIdListComparisonOperator: "Equal",
 			moveIdList: [scoredMove.moveId]
 		})
 		const filteredMoves =

@@ -25,7 +25,6 @@ export const ScoresheetMoves = ({
 }) => {
 	const moves = useGetManyAvailablemovesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [selectedScoresheet]
 		},
 		{ refetchOnMountOrArgChange: true }
@@ -51,7 +50,6 @@ export const ScoresheetMoves = ({
 
 	const bonusInfo = useGetManyAvailablebonusesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [selectedScoresheet]
 		},
 		{ refetchOnMountOrArgChange: true }

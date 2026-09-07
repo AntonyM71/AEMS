@@ -29,14 +29,12 @@ export const JudgeCard = ({
 }: JudgeCardProps) => {
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [selectedAthlete.scoresheet ?? ""]
 		},
 		{ skip: !selectedAthlete?.scoresheet }
 	)
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
-			sheetIdListComparisonOperator: "Equal",
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
 		},
 		{ skip: !selectedAthlete?.scoresheet }

@@ -23,38 +23,17 @@ availablebonuses_router = APIRouter(
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    id____list_____comparison_operator: str | None = Query(
-        None, alias="id____list_____comparison_operator"
-    ),
     sheet_id____list: list[UUID] | None = Query(None, alias="sheet_id____list"),
-    sheet_id____list_____comparison_operator: str | None = Query(
-        None, alias="sheet_id____list_____comparison_operator"
-    ),
     move_id____list: list[UUID] | None = Query(None, alias="move_id____list"),
-    move_id____list_____comparison_operator: str | None = Query(
-        None, alias="move_id____list_____comparison_operator"
-    ),
     name____str: list[str] | None = Query(None, alias="name____str"),
-    name____str_____comparison_operator: str | None = Query(
-        None, alias="name____str_____comparison_operator"
-    ),
     name____list: list[str] | None = Query(None, alias="name____list"),
-    name____list_____comparison_operator: str | None = Query(
-        None, alias="name____list_____comparison_operator"
-    ),
     score____from: int | None = Query(None, alias="score____from"),
     score____to: int | None = Query(None, alias="score____to"),
     score____list: list[int] | None = Query(None, alias="score____list"),
-    score____list_____comparison_operator: str | None = Query(
-        None, alias="score____list_____comparison_operator"
-    ),
     display_order____from: int | None = Query(None, alias="display_order____from"),
     display_order____to: int | None = Query(None, alias="display_order____to"),
     display_order____list: list[int] | None = Query(
         None, alias="display_order____list"
-    ),
-    display_order____list_____comparison_operator: str | None = Query(
-        None, alias="display_order____list_____comparison_operator"
     ),
     limit: int | None = Query(None),
     offset: int | None = Query(None),

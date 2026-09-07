@@ -53,12 +53,12 @@ The backend exposes a Swagger/OpenAPI UI for interactive API exploration and tes
 
 ## Testing Strategy
 
-We use intent-driven tests (testing user behavior, not implementation details) for new features.
+We use intent-driven tests, following the principles of [Sociable Testing](https://www.richard-seidl.com/en/podcast/sociable-tests/) (testing user behavior, not implementation details) for new features. Our general aim is to cover use cases, with more traditional unit tests for common code used by multiple modules.
 
 ### Current Testing
 
-- **Frontend**: React Testing Library (RTL), Jest
-- **Backend**: Pytest with coverage reporting
+- **Frontend**: React Testing Library (RTL), Jest, using Kent C Dodds principles, [use case coverage](https://kentcdodds.com/blog/how-to-know-what-to-test), [don't test implementation details](https://kentcdodds.com/blog/testing-implementation-details), [use msw over fetch](https://kentcdodds.com/blog/stop-mocking-fetch)
+- **Backend**: Pytest with coverage reporting, use-case/does the API work focus
 - **Timer**: Python unittest/pytest
 
 Test scripts and instructions are documented in each service's README.
@@ -88,15 +88,9 @@ Key user journeys to test manually:
    - Generate phase results
    - Regenerate after score corrections
 
-### Future Integration Testing
+### Integration Testing
 
-We plan to implement automated integration tests using Microsoft Playwright and Docker to:
-- Test complete user workflows end-to-end
-- Validate WebSocket behavior under network stress
-- Ensure data consistency across multiple devices
-- Test PDF generation and export functionality
-
-This will reduce manual testing burden and catch regressions earlier.
+We have a small number of E2E tests set up using playwright, these are mostly to catch configuration errors, but more comprehensive use-case testing is welcome.
 
 ## Error Handling & Logging
 

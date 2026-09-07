@@ -146,10 +146,11 @@ Coverage report is automatically included (configured in pyproject.toml)
 
 ## Key Components
 
-### WebSocket Handler
+### Real-time updates
 
-- Manages real-time updates for scoring and competition status
-- Located in `app/common/websocket_handler.py`
+- Socket.IO server (`python-socketio`, ASGI) mounted alongside FastAPI
+- Pushes live scoring and competition-status updates to connected clients
+- Located in `app/common/socket_manager.py`
 
 ### Scoring Logic
 
@@ -170,7 +171,7 @@ The application uses custom exception handlers for:
 - Scoring validation errors
 - Data import issues
 
-See `interfaces.py` for error definitions.
+The global handler is in `main.py`; individual exceptions are defined in the modules that raise them (e.g. `app/scoring/scoring_logic.py`).
 
 ## Logging
 

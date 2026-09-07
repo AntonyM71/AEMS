@@ -62,7 +62,6 @@ def _build_event_response(
 async def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    name____str: list[str] | None = Query(None, alias="name____str"),
     name____list: list[str] | None = Query(None, alias="name____list"),
     limit: int | None = Query(None),
     offset: int | None = Query(None),
@@ -76,7 +75,6 @@ async def get_many(
         query,
         [
             (Competition.id, id____list),
-            (Competition.name, name____str),
             (Competition.name, name____list),
         ],
     )
@@ -125,18 +123,9 @@ async def partial_update_one_by_primary_key(
     id: UUID,
     competition_update: CompetitionUpdate,
     db: Session = Depends(get_transaction_session),
-    # Query parameters from the OpenAPI spec
-    name____str: list[str] | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
 ) -> CompetitionResponse:
     """Partial update one competition by primary key"""
     query = select(Competition).where(Competition.id == id)
-
-    # Apply additional filters if provided
-    if name____str:
-        query = query.where(Competition.name.in_(name____str))
-    if name____list:
-        query = query.where(Competition.name.in_(name____list))
 
     result = db.execute(query)
     db_competition = result.scalar_one_or_none()
@@ -158,7 +147,6 @@ async def get_many_by_pk_from_event(
     competition__pk__id: UUID,
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    name____str: list[str] | None = Query(None, alias="name____str"),
     name____list: list[str] | None = Query(None, alias="name____list"),
     join_foreign_table: list[str] | None = Query(None),
 ) -> list[EventResponse]:
@@ -169,7 +157,6 @@ async def get_many_by_pk_from_event(
         query,
         [
             (Event.id, id____list),
-            (Event.name, name____str),
             (Event.name, name____list),
         ],
     )

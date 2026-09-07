@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from itertools import groupby
 from typing import Literal
 from uuid import UUID
 
@@ -7,8 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 def all_equal(iterable: list) -> bool:
-    g = groupby(iterable)
-    return next(g, True) and not next(g, False)
+    return len({*iterable}) <= 1
 
 
 class PydanticScoredMoves(BaseModel):
@@ -124,21 +122,17 @@ def calculate_run_score(
 def check_moves_have_same_run_judge_athlete_heat(
     scored_moves: list[PydanticScoredMovesResponse],
 ) -> None:
-    if not all_equal([sm.judge_id for sm in scored_moves]):
-        msg = "Move List contains moves from different judges"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.run_number for sm in scored_moves]):
-        msg = "Move List contains moves from different run_numbers"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.athlete_id for sm in scored_moves]):
-        msg = "Move List contains moves from different athlete_ids"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.heat_id for sm in scored_moves]):
-        msg = "Move List contains moves from different heat_ids"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.phase_id for sm in scored_moves]):
-        msg = "Move List contains moves from different phase_ids"
-        raise MixedUpScoresheetExceptionError(msg)
+    fields = [
+        ("judge_id", "different judges"),
+        ("run_number", "different run_numbers"),
+        ("athlete_id", "different athlete_ids"),
+        ("heat_id", "different heat_ids"),
+        ("phase_id", "different phase_ids"),
+    ]
+    for attr, label in fields:
+        if not all_equal([getattr(sm, attr) for sm in scored_moves]):
+            msg = f"Move List contains moves from {label}"
+            raise MixedUpScoresheetExceptionError(msg)
 
 
 def make_move_string(move: PydanticScoredMoveWithBonus) -> str:
