@@ -470,7 +470,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     )
 
     athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
-    athlete_scores_with_rank = calculate_rank(athlete_scores)
+    athlete_scores_with_rank = calculate_rank(
+        athlete_scores, bib_numbers={a.id: a.bib for a in athletes}
+    )
     for a_info in athletes:
         athlete_score = [
             a for a in athlete_scores_with_rank if a.athlete_id == a_info.id

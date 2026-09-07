@@ -17,11 +17,43 @@ from app.scoring.scoring_logic import (
     PydanticScoredMovesResponse,
     RunMoves,
     RunScores,
+    build_tie_break_reason,
     calculate_heat_scores,
     calculate_rank,
     calculate_run_score,
     organise_moves_by_athlete_run_judge,
 )
+
+
+def _tied_athlete(
+    athlete_id: str,
+    run_means: list[float],
+    highest_move: float,
+    total_score: float = 50.0,
+) -> AthleteScores:
+    return AthleteScores(
+        athlete_id=UUID(athlete_id),
+        run_scores=[
+            RunScores(
+                run_number=i + 1,
+                judge_scores=[
+                    JudgeScores(
+                        judge_id="j",
+                        score_info=AthleteScoreInfo(
+                            score=mean, highest_scoring_move=mean
+                        ),
+                    )
+                ],
+                mean_run_score=mean,
+                highest_scoring_move=mean,
+                locked=False,
+                did_not_start=False,
+            )
+            for i, mean in enumerate(run_means)
+        ],
+        highest_scoring_move=highest_move,
+        total_score=total_score,
+    )
 
 
 @pytest.fixture
@@ -2108,82 +2140,28 @@ class TestAthleteRankCalculation:
     def test_it_breaks_a_tie_with_highest_scoring_run(
         self,
     ) -> None:
-        [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                total_score=50,
-            ),
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
         ]
+
+        reason = "Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"
+        want = [
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
+        ]
+        want[0].ranking = 2
+        want[0].reason = reason
+        want[1].ranking = 1
+        want[1].reason = reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+        assert got == want
 
     def test_it_breaks_a_tie_with_dropped_run_run(
         self,
@@ -2346,7 +2324,9 @@ class TestAthleteRankCalculation:
                 ],
                 highest_scoring_move=25.0,
                 ranking=2,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"
+                ),
                 total_score=50.0,
                 last_phase_rank=None,
             ),
@@ -2401,13 +2381,21 @@ class TestAthleteRankCalculation:
                 ],
                 highest_scoring_move=25.0,
                 ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"
+                ),
                 total_score=50.0,
                 last_phase_rank=None,
             ),
         ]
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={
+                UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3",
+                UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4",
+            },
+        )
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run(
@@ -2565,7 +2553,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2604,7 +2594,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=30.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -2643,11 +2635,20 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
+                ),
             ),
         ]
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={
+                UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3",
+                UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4",
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            },
+        )
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move(
@@ -2850,7 +2851,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -2904,7 +2907,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -2943,11 +2948,20 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
         ]
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={
+                UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3",
+                UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4",
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            },
+        )
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move(
@@ -3105,7 +3119,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=20.0,
                 ranking=3,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -3144,7 +3160,9 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=2,
                 total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -3183,11 +3201,20 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=35.0,
                 total_score=50,
                 ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
+                reason=(
+                    "Tie resolved by highest scoring run: #5 (35.00), #3 (25.00), #4 (25.00)"
+                ),
             ),
         ]
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={
+                UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3",
+                UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4",
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            },
+        )
         assert got == want
 
     def test_it_returns_tied_ranks_for_an_actual_tie(
@@ -3345,7 +3372,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=1,
                 total_score=50,
-                reason="TieBreak: Fully Tied",
+                reason=("Tie unresolved — athletes remain tied: #3, #4"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
@@ -3384,7 +3411,7 @@ class TestAthleteRankCalculation:
                 highest_scoring_move=25.0,
                 ranking=1,
                 total_score=50,
-                reason="TieBreak: Fully Tied",
+                reason=("Tie unresolved — athletes remain tied: #3, #4"),
             ),
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
@@ -3427,5 +3454,84 @@ class TestAthleteRankCalculation:
             ),
         ]
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={
+                UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3",
+                UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4",
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            },
+        )
         assert got == want
+
+
+A = "c7476320-6c48-11ee-b962-0242ac120001"
+B = "c7476320-6c48-11ee-b962-0242ac120002"
+
+
+class TestBuildTieBreakReason:
+    def test_it_names_the_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by highest scoring run: #7 (30.00), #12 (25.00)"
+        )
+
+    def test_it_names_the_second_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0, 10.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 18.0, 12.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by 2nd highest scoring run: #7 (20.00), #12 (18.00)"
+        )
+
+    def test_it_names_the_third_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0, 10.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 20.0, 8.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by 3rd highest scoring run: #7 (10.00), #12 (8.00)"
+        )
+
+    def test_it_names_the_highest_scoring_move(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=25.0),
+            _tied_athlete(B, [30.0, 20.0], highest_move=15.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by highest scoring move: #7 (25.00), #12 (15.00)"
+        )
+
+    def test_it_reports_an_unresolved_tie(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 20.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie unresolved — athletes remain tied: #7, #12"
+        )
+
+    def test_it_falls_back_to_athlete_id_when_no_bib(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=10.0),
+        ]
+
+        assert build_tie_break_reason(UUID(A), tied, None) == (
+            f"Tie resolved by highest scoring run: athlete {UUID(A)} (30.00), "
+            f"athlete {UUID(B)} (25.00)"
+        )

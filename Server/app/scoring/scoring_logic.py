@@ -376,7 +376,10 @@ def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool
     return True
 
 
-def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
+def calculate_rank(
+    athlete_scores: list[AthleteScores],
+    bib_numbers: dict[UUID, str] | None = None,
+) -> list[AthleteScores]:
     sorted_athletes_scores = sorted(
         athlete_scores, key=lambda x: x.total_score or 0, reverse=True
     )
@@ -393,7 +396,9 @@ def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
             else:
                 rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
                 s.ranking = rank + rank_info.ranking + 1
-                s.reason = f"TieBreak: {rank_info.reason}"
+                s.reason = build_tie_break_reason(
+                    s.athlete_id, athletes_with_same_score, bib_numbers
+                )
 
     return sorted_athletes_scores
 
@@ -483,3 +488,58 @@ def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:
             return 0
 
     return get_highest_score_for_n
+
+
+def _ordinal(number: int) -> str:
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
+def _run_criterion_label(position: int) -> str:
+    if position == 0:
+        return "highest scoring run"
+    return f"{_ordinal(position + 1)} highest scoring run"
+
+
+def _athlete_label(athlete_id: UUID, bib_numbers: dict[UUID, str] | None) -> str:
+    if bib_numbers and athlete_id in bib_numbers:
+        return f"#{bib_numbers[athlete_id]}"
+    return f"athlete {athlete_id}"
+
+
+def _tie_break_criteria(
+    number_of_runs: int,
+) -> list[tuple[str, Callable[[AthleteScores], float]]]:
+    criteria: list[tuple[str, Callable[[AthleteScores], float]]] = [
+        (_run_criterion_label(position), get_nth_highest_score(position))
+        for position in range(number_of_runs)
+    ]
+    criteria.append(("highest scoring move", lambda a: a.highest_scoring_move))
+    return criteria
+
+
+def build_tie_break_reason(
+    athlete_id: UUID,
+    tied_athletes: list[AthleteScores],
+    bib_numbers: dict[UUID, str] | None,
+) -> str:
+    number_of_runs = max(len(a.run_scores) for a in tied_athletes)
+    this_athlete = next(a for a in tied_athletes if a.athlete_id == athlete_id)
+    still_tied = list(tied_athletes)
+
+    for criterion, value_of in _tie_break_criteria(number_of_runs):
+        if len({value_of(a) for a in still_tied}) > 1:
+            ordered = sorted(still_tied, key=value_of, reverse=True)
+            compared = ", ".join(
+                f"{_athlete_label(a.athlete_id, bib_numbers)} ({value_of(a):.2f})"
+                for a in ordered
+            )
+            return f"Tie resolved by {criterion}: {compared}"
+        my_value = value_of(this_athlete)
+        still_tied = [a for a in still_tied if value_of(a) == my_value]
+
+    remaining = ", ".join(_athlete_label(a.athlete_id, bib_numbers) for a in still_tied)
+    return f"Tie unresolved — athletes remain tied: {remaining}"
