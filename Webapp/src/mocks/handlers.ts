@@ -75,14 +75,8 @@ export const handlers = [
 	http.get("/api/availablemoves", ({ request }) => {
 		const url = new URL(request.url)
 		const idList = url.searchParams.get("idList")?.split(",")
-		const idListComparisonOperator = url.searchParams.get(
-			"idListComparisonOperator"
-		)
 
-		if (
-			idListComparisonOperator === "Equal" &&
-			idList?.includes("test-move-1")
-		) {
+		if (idList?.includes("test-move-1")) {
 			return HttpResponse.json([
 				{
 					id: "test-move-1",
@@ -100,14 +94,8 @@ export const handlers = [
 	http.get("/api/availablebonuses", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const moveIdList = url.searchParams.get("moveIdList")?.split(",")
-		const moveIdListComparisonOperator = url.searchParams.get(
-			"moveIdListComparisonOperator"
-		)
 
-		if (
-			moveIdListComparisonOperator === "Equal" &&
-			moveIdList?.includes("test-move-1")
-		) {
+		if (moveIdList?.includes("test-move-1")) {
 			return HttpResponse.json([
 				{
 					id: "available-bonus-1",
@@ -150,16 +138,9 @@ export const handlers = [
 	http.get("/api/event", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList[]")
-		const competitionIdListComparisonOperator = url.searchParams.get(
-			"competitionIdListComparisonOperator"
-		)
 		const joinForeignTable = url.searchParams.get("joinForeignTable[]")
 
-		if (
-			competitionIdList === "1" &&
-			competitionIdListComparisonOperator === "Equal" &&
-			joinForeignTable === "phase"
-		) {
+		if (competitionIdList === "1" && joinForeignTable === "phase") {
 			return HttpResponse.json([
 				{
 					id: "1",
@@ -191,11 +172,8 @@ export const handlers = [
 	http.get("/api/heat", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList")
-		const competitionIdListComparisonOperator = url.searchParams.get(
-			"competitionIdListComparisonOperator"
-		)
 
-		if (!competitionIdList || !competitionIdListComparisonOperator) {
+		if (!competitionIdList) {
 			return HttpResponse.json([])
 		}
 
@@ -223,10 +201,7 @@ export const handlers = [
 		}
 
 		// For test cases that expect errors
-		if (
-			competitionIdList?.includes("2") &&
-			competitionIdListComparisonOperator === "Equal"
-		) {
+		if (competitionIdList?.includes("2")) {
 			return HttpResponse.json(
 				{ message: "Internal server error" },
 				{ status: 500 }

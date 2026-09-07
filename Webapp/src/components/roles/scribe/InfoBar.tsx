@@ -23,7 +23,7 @@ export interface AthleteInfo {
 	last_name: string
 	bib: string
 	scoresheet: string
-	affiliation?: string
+	affiliation?: string | null
 }
 interface PropsType {
 	paddlerInfo: AthleteInfo
@@ -114,7 +114,6 @@ export const CurrentScoreCalculation = ({
 	scoresheet: string
 }) => {
 	const bonusList = useGetManyAvailablebonusesGetQuery({
-		sheetIdListComparisonOperator: "Equal",
 		sheetIdList: [scoresheet]
 	})
 	const scoredMoves = useSelector(getScoredMoves)

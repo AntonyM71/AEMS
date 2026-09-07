@@ -40,11 +40,9 @@ export const MoveCard = React.memo((props: MovePropsType) => {
 	useEffect(() => {
 		try {
 			prefetchAvailableMoves({
-				idListComparisonOperator: "Equal",
 				idList: [props.move.id]
 			})
 			prefetchAvailableBonuses({
-				moveIdListComparisonOperator: "Equal",
 				moveIdList: [props.move.id]
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
