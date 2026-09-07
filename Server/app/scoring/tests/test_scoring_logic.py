@@ -2645,7 +2645,7 @@ class TestAthleteRankCalculation:
         )
         assert got == want
 
-    def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move(
+    def test_it_breaks_a_tie_with_three_paddlers_using_the_third_run(
         self,
     ) -> None:
         scores = [
