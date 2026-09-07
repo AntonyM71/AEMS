@@ -34,13 +34,13 @@
 **Files:**
 - Modify: `Server/app/scoring/scoring_logic.py` (add helpers after `get_nth_highest_score` near line 486; change `calculate_rank` signature and its tied branch near lines 379-398)
 - Modify: `Server/app/scoring/customScoringEndpoints.py:473` (pass a bib map into `calculate_rank`)
-- Test: `Server/app/scoring/tests/test_scoring_logic.py` (revive one dead test, update 4 tie tests, add 6 new tests)
+- Test: `Server/app/scoring/tests/test_scoring_logic.py` (revive one dead test, update 4 tie tests, add 7 new tests)
 
 **Interfaces:**
 - Consumes: existing `AthleteScores` (`athlete_id: UUID`, `run_scores: list[RunScores]`, `highest_scoring_move: float`, `total_score: float | None`, `ranking: int | None`, `reason: str | None`); existing module-level `get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]`.
 - Produces:
   - `calculate_rank(athlete_scores: list[AthleteScores], bib_numbers: dict[UUID, str] | None = None) -> list[AthleteScores]` — new optional second parameter; behaviour identical when omitted except for the `reason` string wording.
-  - `build_tie_break_reason(athlete_id: UUID, tied_athletes: list[AthleteScores], bib_numbers: dict[UUID, str] | None) -> str` — module-level, used by `calculate_rank`.
+  - `build_tie_break_reason(athlete_id: UUID, tied_athletes: list[AthleteScores], bib_numbers: dict[UUID, str] | None) -> str` — module-level, used by `calculate_rank`. Compares each athlete against the rival ranked immediately adjacent in the resolved tie order (helper `_resolve_tie_order`).
 
 ---
 
@@ -155,7 +155,34 @@ class TestBuildTieBreakReason:
             f"Tie resolved by highest scoring run: athlete {UUID(A)} (30.00), "
             f"athlete {UUID(B)} (25.00)"
         )
+
+    def test_it_compares_each_athlete_against_its_adjacent_rival(self) -> None:
+        C = "c7476320-6c48-11ee-b962-0242ac120003"
+        D = "c7476320-6c48-11ee-b962-0242ac120005"
+        tied = [
+            _tied_athlete(D, [35.0, 15.0], highest_move=10.0),
+            _tied_athlete(A, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(C, [25.0, 25.0], highest_move=12.0),
+        ]
+        bibs = {UUID(D): "5", UUID(A): "4", UUID(C): "3"}
+        reasons = {
+            aid: build_tie_break_reason(aid, tied, bibs)
+            for aid in (UUID(D), UUID(A), UUID(C))
+        }
+
+        assert reasons[UUID(D)] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(A)] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(C)] == (
+            "Tie resolved by highest scoring move: #4 (20.00), #3 (12.00)"
+        )
 ```
+
+`D` (best run 35) is cleared from `A` by run 0; `A` and `C` tie on both runs and
+are separated only by highest scoring move, so `C`'s message names the move.
 
 - [ ] **Step 2: Run the new tests to verify they fail**
 
@@ -198,31 +225,59 @@ def _tie_break_criteria(
     return criteria
 
 
+def _resolve_tie_order(
+    tied_athletes: list[AthleteScores],
+    criteria: list[tuple[str, Callable[[AthleteScores], float]]],
+) -> list[AthleteScores]:
+    ordered = list(tied_athletes)
+    for _criterion, value_of in reversed(criteria):
+        ordered.sort(key=value_of, reverse=True)
+    return ordered
+
+
 def build_tie_break_reason(
     athlete_id: UUID,
     tied_athletes: list[AthleteScores],
     bib_numbers: dict[UUID, str] | None,
 ) -> str:
     number_of_runs = max(len(a.run_scores) for a in tied_athletes)
-    this_athlete = next(a for a in tied_athletes if a.athlete_id == athlete_id)
-    still_tied = list(tied_athletes)
+    criteria = _tie_break_criteria(number_of_runs)
+    resolved_order = _resolve_tie_order(tied_athletes, criteria)
+    position = next(
+        i for i, a in enumerate(resolved_order) if a.athlete_id == athlete_id
+    )
+    this_athlete = resolved_order[position]
+    rival = (
+        resolved_order[position - 1]
+        if position > 0
+        else resolved_order[position + 1]
+    )
 
-    for criterion, value_of in _tie_break_criteria(number_of_runs):
-        if len({value_of(a) for a in still_tied}) > 1:
-            ordered = sorted(still_tied, key=value_of, reverse=True)
+    for criterion, value_of in criteria:
+        if value_of(this_athlete) != value_of(rival):
+            pair = sorted([this_athlete, rival], key=value_of, reverse=True)
             compared = ", ".join(
                 f"{_athlete_label(a.athlete_id, bib_numbers)} ({value_of(a):.2f})"
-                for a in ordered
+                for a in pair
             )
             return f"Tie resolved by {criterion}: {compared}"
-        my_value = value_of(this_athlete)
-        still_tied = [a for a in still_tied if value_of(a) == my_value]
 
+    tied_with = [
+        a
+        for a in tied_athletes
+        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
+    ]
     remaining = ", ".join(
-        _athlete_label(a.athlete_id, bib_numbers) for a in still_tied
+        _athlete_label(a.athlete_id, bib_numbers) for a in tied_with
     )
     return f"Tie unresolved — athletes remain tied: {remaining}"
 ```
+
+`_resolve_tie_order` applies `reversed(criteria)` as stable descending sorts —
+the same sequence `calculate_tied_rank` uses (move, then last run, …, then first
+run), so the resolved order matches the ranks it assigns. Each athlete's message
+compares them only against `rival`, the athlete ranked immediately adjacent
+(above, or below when this athlete tops the tied block).
 
 - [ ] **Step 4: Run the new tests to verify they pass**
 
@@ -257,15 +312,15 @@ Leave `calculate_tied_rank`, `RankInfo`, `athletes_with_this_exact_score_after_t
 
 `test_it_breaks_a_tie_with_highest_scoring_run` (around line 2108) currently builds a list literal and asserts nothing. Make it a real test: assign the list to `scores`, build the `want` list (mirror the other tie tests' structure), call `got = calculate_rank(scores, bib_numbers={UUID("c7476320-6c48-11ee-b962-0242ac120003"): "3", UUID("c7476320-6c48-11ee-b962-0242ac120004"): "4"})`, and `assert got == want`. Athlete `...003` has runs `[25, 25]`, `...004` has runs `[30, 20]`, both `total_score=50`, both `highest_scoring_move` equal. Expected `reason` for **both** athletes: `"Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"`. Expected `ranking`: `...004` = 1, `...003` = 2.
 
-For the other four tie tests, add a `bib_numbers` argument to the `calculate_rank(scores)` call and update every `reason=` field in the `want` list. Use bib `"3"` for athlete id ending `...120003`, `"4"` for `...120004`, `"5"` for `...120005` (whatever ids the test uses — map each to the last digit as a string). The new `reason` string is the same for every tied athlete within one test. Determine it by running the test and reading the produced value from the assertion diff, then verify by hand that it:
-  - names the correct criterion (the lowest-precedence run/move where the athletes' sorted values first differ — run 0 = `highest scoring run`),
-  - lists the tied athletes ordered by that criterion's value, descending,
+For the other four tie tests, add a `bib_numbers` argument to the `calculate_rank(scores)` call and update every `reason=` field in the `want` list. Use bib `"3"` for athlete id ending `...120003`, `"4"` for `...120004`, `"5"` for `...120005` (whatever ids the test uses — map each to the last digit as a string). In a 3-athlete test each athlete may now get a **different** `reason` (each compares against its own adjacent rival) — set them per-athlete in the `want` list. Determine each by running the test and reading the produced value from the assertion diff, then verify by hand that it:
+  - names the criterion — the highest-precedence run/move where **this athlete and its adjacent rival** first differ (run 0 = `highest scoring run`),
+  - lists exactly this athlete and that rival, ordered by that criterion's value, descending,
   - shows each value to 2 decimal places,
   - uses `#{bib}` labels.
 
-  - `test_it_breaks_a_tie_with_dropped_run_run`: athletes tie on runs 0 and 1 (both `25`), differ on run 2 (`10` vs `5`) → `"Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"`.
-  - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run` → `"Tie resolved by highest scoring run: ..."`.
-  - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move` and `test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move` → `"Tie resolved by highest scoring move: ..."`.
+  - `test_it_breaks_a_tie_with_dropped_run_run` (2 athletes): tie on runs 0 and 1 (both `25`), differ on run 2 (`10` vs `5`) → both `"Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"`.
+  - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run`: adjacent pairs differ on run 0 → each athlete `"Tie resolved by highest scoring run: ..."` naming its own pair.
+  - `test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move` and `test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move`: the athlete cleared by the top run gets `"...highest scoring run..."`; the pair separated only by the move gets `"Tie resolved by highest scoring move: ..."` (the test names finally match the behaviour).
   - `test_it_returns_tied_ranks_for_an_actual_tie`: the two fully-tied athletes get `"Tie unresolved — athletes remain tied: #{bib}, #{bib}"` (order: the order they appear in `athletes_with_same_score`, which is the order they appear in the input `scores` list). The third, non-tied athlete keeps `reason=None`.
 
   Rankings asserted in these tests **must not change** — if any `ranking` value changes, stop and report it as a plan defect.
@@ -394,7 +449,7 @@ EOF
 ## Self-Review
 
 **1. Spec coverage:**
-- "Deciding-criterion detection … per-athlete walk" → Task 1 Steps 3, `build_tie_break_reason`.
+- "Deciding-criterion detection … compare against the adjacent rival" → Task 1 Step 3, `build_tie_break_reason` + `_resolve_tie_order`; locked by `test_it_compares_each_athlete_against_its_adjacent_rival`.
 - "Message formatting" (criterion labels, ordinals, `#{bib}`, `:.2f`, ordering) → Task 1 Step 3 + Global Constraints + `TestBuildTieBreakReason`.
 - "Bib numbers reach the engine" (`calculate_rank` param, caller, fallback) → Task 1 Steps 5, 7 + fallback test.
 - "Drop the `TieBreak:` prefix" → Task 1 Step 5.
@@ -405,4 +460,4 @@ EOF
 
 **2. Placeholder scan:** No TBD/TODO. All code steps carry full code. Existing-test `reason` values in Step 6 are derived by running the deterministic implementation and hand-verified against an explicit checklist — the criterion and format for each are stated.
 
-**3. Type consistency:** `build_tie_break_reason(athlete_id: UUID, tied_athletes: list[AthleteScores], bib_numbers: dict[UUID, str] | None)` — same name/signature in the helper definition (Task 1 Step 3), the `calculate_rank` call site (Step 5), and the tests (Step 1). `calculate_rank`'s new `bib_numbers: dict[UUID, str] | None = None` matches the caller passing `{a.id: a.bib for a in athletes}` (`UUID` → `str`). `get_nth_highest_score(position)` used as documented.
+**3. Type consistency:** `build_tie_break_reason(athlete_id: UUID, tied_athletes: list[AthleteScores], bib_numbers: dict[UUID, str] | None)` — same name/signature in the helper definition (Task 1 Step 3), the `calculate_rank` call site (Step 5), and the tests (Step 1). `_resolve_tie_order(tied_athletes, criteria)` where `criteria` is the `list[tuple[str, Callable[[AthleteScores], float]]]` returned by `_tie_break_criteria`. `calculate_rank`'s new `bib_numbers: dict[UUID, str] | None = None` matches the caller passing `{a.id: a.bib for a in athletes}` (`UUID` → `str`). `get_nth_highest_score(position)` used as documented.
