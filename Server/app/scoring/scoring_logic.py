@@ -369,11 +369,7 @@ class RankInfo(BaseModel):
 def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:
     dns_list = [a.did_not_start for a in athlete_info.run_scores]
 
-    if len(dns_list) == 0:
-        return True
-    if all(dns_list):
-        return False
-    return True
+    return not (dns_list and all(dns_list))
 
 
 def calculate_rank(
@@ -453,7 +449,7 @@ def athletes_with_this_exact_score_after_tiebreak(
 
 
 def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
-    if (
+    return (
         a.total_score == this_athlete.total_score
         and a.highest_scoring_move == this_athlete.highest_scoring_move
         and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
@@ -461,9 +457,7 @@ def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool
             get_nth_highest_score(i)(this_athlete)
             for i, r in enumerate(this_athlete.run_scores)
         ]
-    ):
-        return True
-    return False
+    )
 
 
 def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:

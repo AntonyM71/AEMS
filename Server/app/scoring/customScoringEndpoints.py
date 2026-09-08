@@ -607,6 +607,4 @@ def check_run_is_locked(
         )
         .first()
     )
-    if existing_run_status and existing_run_status.locked:
-        return True
-    return False
+    return bool(existing_run_status and existing_run_status.locked)
