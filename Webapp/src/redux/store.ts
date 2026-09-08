@@ -9,11 +9,6 @@ import { scoringReducer } from "./atoms/scoring"
 import { utilitiesReducer } from "./atoms/utilities"
 import { emptySplitApi } from "./services/emptyApi"
 
-// structuredClone is Baseline 2022; JSON round-trip covers any older runtime,
-// safe here because Redux state is required to be serializable.
-const clone = <T>(value: T): T =>
-	globalThis.structuredClone?.(value) ?? JSON.parse(JSON.stringify(value))
-
 export const rootReducer = combineReducers({
 	score: scoringReducer,
 	competitions: competitionsReducer,
@@ -25,7 +20,7 @@ export const setupStore = (
 ): EnhancedStore<RootState> =>
 	configureStore({
 		reducer: rootReducer,
-		preloadedState: clone(preloadedState),
+		preloadedState: structuredClone(preloadedState),
 		middleware: (getDefaultMiddleware) =>
 			getDefaultMiddleware()
 				.concat(emptySplitApi.middleware)

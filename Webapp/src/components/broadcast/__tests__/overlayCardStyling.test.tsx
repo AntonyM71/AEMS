@@ -156,7 +156,6 @@ describe("broadcast overlay card styling (characterization)", () => {
 			expect(groups).toHaveLength(2)
 			// The heading group must be the one that positions the title, so
 			// the percentages resolve against the full-screen card.
-			// eslint-disable-next-line testing-library/no-node-access
 			expect(groups[0]).toContainElement(title)
 			expect(groups?.[0]).toHaveStyle({
 				position: "absolute",
