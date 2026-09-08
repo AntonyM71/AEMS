@@ -46,10 +46,8 @@ indent-style = "space"
 dependencies = [
     "rpi-lgpio",
     "python-socketio",
-    "gpiozero",
-    "spidev",
-    "requests",
-    "websocket-client",
+    "requests",  # python-socketio sync client: HTTP long-polling transport
+    "websocket-client",  # python-socketio sync client: WebSocket transport
 
     # Dev
     "ruff",
