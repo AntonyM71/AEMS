@@ -2296,6 +2296,207 @@ class TestAthleteRankCalculation:
             "Tie unresolved - athletes remain tied: #3, #4"
         )
 
+    def test_two_adjacent_fully_tied_pairs_each_get_a_gap(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 5)]
+        scores = [
+            _tied_athlete(ids[0], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[1], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[2], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[3], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 1, 3, 3]
+
+    def test_a_tied_pair_above_a_resolved_pair(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 5)]
+        scores = [
+            _tied_athlete(ids[0], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[1], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[2], [30.0, 10.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[3], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 1, 3, 4]
+
+    def test_two_adjacent_resolved_pairs_number_sequentially(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 5)]
+        scores = [
+            _tied_athlete(ids[0], [30.0, 10.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[1], [20.0, 20.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[2], [30.0, 10.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[3], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 2, 3, 4]
+
+    def test_three_adjacent_tied_groups(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 7)]
+        scores = [
+            _tied_athlete(ids[0], [30.0, 30.0], highest_move=10.0, total_score=60.0),
+            _tied_athlete(ids[1], [30.0, 30.0], highest_move=10.0, total_score=60.0),
+            _tied_athlete(ids[2], [40.0, 10.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[3], [20.0, 20.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[4], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[5], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 1, 3, 4, 5, 5]
+
+    def test_a_solo_athlete_below_two_adjacent_tied_groups(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 6)]
+        scores = [
+            _tied_athlete(ids[0], [30.0, 10.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[1], [20.0, 20.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[2], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[3], [20.0, 20.0], highest_move=10.0, total_score=40.0),
+            _tied_athlete(ids[4], [30.0, 0.0], highest_move=10.0, total_score=30.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 2, 3, 3, 5]
+
+    def test_a_gap_follows_an_unresolved_tie_that_is_not_for_first(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 5)]
+        scores = [
+            _tied_athlete(ids[0], [30.0, 0.0], highest_move=10.0, total_score=60.0),
+            _tied_athlete(ids[1], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[2], [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(ids[3], [20.0, 0.0], highest_move=10.0, total_score=40.0),
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        ranks = {
+            a.athlete_id: a.ranking for a in calculate_rank(scores, bib_numbers=bibs)
+        }
+
+        assert [ranks[UUID(u)] for u in ids] == [1, 2, 2, 4]
+
+    def test_a_whole_field_that_stays_fully_tied_all_gets_rank_one(self) -> None:
+        ids = [f"c7476320-6c48-11ee-b962-0242ac12000{n}" for n in range(1, 4)]
+        scores = [
+            _tied_athlete(u, [25.0, 25.0], highest_move=10.0, total_score=50.0)
+            for u in ids
+        ]
+        bibs = {UUID(u): str(i + 1) for i, u in enumerate(ids)}
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert [got[UUID(u)].ranking for u in ids] == [1, 1, 1]
+        assert got[UUID(ids[0])].reason == (
+            "Tie unresolved - athletes remain tied: #1, #2, #3"
+        )
+
+    def test_a_partially_resolved_group_of_three_below_a_solo(self) -> None:
+        solo = "c7476320-6c48-11ee-b962-0242ac120001"
+        clear = "c7476320-6c48-11ee-b962-0242ac120002"
+        tied_a = "c7476320-6c48-11ee-b962-0242ac120003"
+        tied_b = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(solo, [30.0, 0.0], highest_move=10.0, total_score=60.0),
+            _tied_athlete(clear, [40.0, 10.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(tied_a, [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(tied_b, [25.0, 25.0], highest_move=10.0, total_score=50.0),
+        ]
+        bibs = {
+            UUID(solo): "1",
+            UUID(clear): "2",
+            UUID(tied_a): "3",
+            UUID(tied_b): "4",
+        }
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert got[UUID(solo)].ranking == 1
+        assert got[UUID(clear)].ranking == 2
+        assert got[UUID(tied_a)].ranking == 3
+        assert got[UUID(tied_b)].ranking == 3
+        assert got[UUID(clear)].reason == (
+            "Tie resolved by highest scoring run: #2 (40.00), #3 (25.00)"
+        )
+        assert got[UUID(tied_a)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+
+    def test_a_non_starter_with_the_top_score_does_not_push_down_a_tie(self) -> None:
+        non_starter_id = "c7476320-6c48-11ee-b962-0242ac120009"
+        id_1 = "c7476320-6c48-11ee-b962-0242ac120001"
+        id_2 = "c7476320-6c48-11ee-b962-0242ac120002"
+        non_starter = AthleteScores(
+            athlete_id=UUID(non_starter_id),
+            run_scores=[
+                RunScores(
+                    run_number=1,
+                    judge_scores=[
+                        JudgeScores(
+                            judge_id="j",
+                            score_info=AthleteScoreInfo(
+                                score=99.0, highest_scoring_move=99.0
+                            ),
+                        )
+                    ],
+                    mean_run_score=99.0,
+                    highest_scoring_move=99.0,
+                    locked=False,
+                    did_not_start=True,
+                )
+            ],
+            highest_scoring_move=99.0,
+            total_score=99.0,
+        )
+        scores = [
+            non_starter,
+            _tied_athlete(id_1, [25.0, 25.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(id_2, [25.0, 25.0], highest_move=10.0, total_score=50.0),
+        ]
+        bibs = {UUID(non_starter_id): "9", UUID(id_1): "1", UUID(id_2): "2"}
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert got[UUID(non_starter_id)].ranking is None
+        assert got[UUID(id_1)].ranking == 1
+        assert got[UUID(id_2)].ranking == 1
+
+    def test_the_reason_falls_back_to_athlete_id_when_no_bibs_are_given(self) -> None:
+        id_1 = "c7476320-6c48-11ee-b962-0242ac120001"
+        id_2 = "c7476320-6c48-11ee-b962-0242ac120002"
+        scores = [
+            _tied_athlete(id_1, [30.0, 20.0], highest_move=10.0, total_score=50.0),
+            _tied_athlete(id_2, [25.0, 25.0], highest_move=10.0, total_score=50.0),
+        ]
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=None)}
+
+        assert got[UUID(id_1)].ranking == 1
+        assert got[UUID(id_2)].ranking == 2
+        assert got[UUID(id_1)].reason == (
+            f"Tie resolved by highest scoring run: athlete {UUID(id_1)} (30.00), "
+            f"athlete {UUID(id_2)} (25.00)"
+        )
+
 
 A = "c7476320-6c48-11ee-b962-0242ac120001"
 B = "c7476320-6c48-11ee-b962-0242ac120002"
