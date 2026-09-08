@@ -17,11 +17,43 @@ from app.scoring.scoring_logic import (
     PydanticScoredMovesResponse,
     RunMoves,
     RunScores,
+    build_tie_break_reason,
     calculate_heat_scores,
     calculate_rank,
     calculate_run_score,
     organise_moves_by_athlete_run_judge,
 )
+
+
+def _tied_athlete(
+    athlete_id: str,
+    run_means: list[float],
+    highest_move: float,
+    total_score: float = 50.0,
+) -> AthleteScores:
+    return AthleteScores(
+        athlete_id=UUID(athlete_id),
+        run_scores=[
+            RunScores(
+                run_number=i + 1,
+                judge_scores=[
+                    JudgeScores(
+                        judge_id="j",
+                        score_info=AthleteScoreInfo(
+                            score=mean, highest_scoring_move=mean
+                        ),
+                    )
+                ],
+                mean_run_score=mean,
+                highest_scoring_move=mean,
+                locked=False,
+                did_not_start=False,
+            )
+            for i, mean in enumerate(run_means)
+        ],
+        highest_scoring_move=highest_move,
+        total_score=total_score,
+    )
 
 
 @pytest.fixture
@@ -1784,161 +1816,18 @@ class TestAthleteRankCalculation:
     def test_it_returns_simple_ranks_based_on_total_score(
         self,
     ) -> None:
+        aid = "c7476320-6c48-11ee-b962-0242ac120003"
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=45,
-            ),
+            _tied_athlete(aid, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(aid, [25.0, 20.0], highest_move=25.0, total_score=45.0),
         ]
 
         want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=1,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=2,
-                total_score=45,
-            ),
+            _tied_athlete(aid, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(aid, [25.0, 20.0], highest_move=25.0, total_score=45.0),
         ]
+        want[0].ranking = 1
+        want[1].ranking = 2
 
         got = calculate_rank(scores)
         assert got == want
@@ -2108,1324 +1997,390 @@ class TestAthleteRankCalculation:
     def test_it_breaks_a_tie_with_highest_scoring_run(
         self,
     ) -> None:
-        [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                total_score=50,
-            ),
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
         ]
+
+        reason = "Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"
+        want = [
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
+        ]
+        want[0].ranking = 2
+        want[0].reason = reason
+        want[1].ranking = 1
+        want[1].reason = reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+        assert got == want
 
     def test_it_breaks_a_tie_with_dropped_run_run(
         self,
     ) -> None:
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=5, highest_scoring_move=5
-                                ),
-                            )
-                        ],
-                        mean_run_score=5.0,
-                        highest_scoring_move=5.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=10, highest_scoring_move=10
-                                ),
-                            )
-                        ],
-                        mean_run_score=10.0,
-                        highest_scoring_move=10.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-        ]
-        want = [
-            AthleteScores(
-                athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25.0, highest_scoring_move=25.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                    RunScores(
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25.0, highest_scoring_move=25.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                    RunScores(
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=5.0, highest_scoring_move=5.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=5.0,
-                        highest_scoring_move=5.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=2,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-                total_score=50.0,
-                last_phase_rank=None,
-            ),
-            AthleteScores(
-                athlete_id=UUID("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25.0, highest_scoring_move=25.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                    RunScores(
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25.0, highest_scoring_move=25.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                    RunScores(
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=10.0, highest_scoring_move=10.0
-                                ),
-                            )
-                        ],
-                        mean_run_score=10.0,
-                        highest_scoring_move=10.0,
-                        locked=False,
-                        did_not_start=False,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-                total_score=50.0,
-                last_phase_rank=None,
-            ),
+            _tied_athlete(id_3, [25.0, 25.0, 5.0], highest_move=25.0),
+            _tied_athlete(id_4, [25.0, 25.0, 10.0], highest_move=25.0),
         ]
 
-        got = calculate_rank(scores)
+        reason = "Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"
+        want = [
+            _tied_athlete(id_3, [25.0, 25.0, 5.0], highest_move=25.0),
+            _tied_athlete(id_4, [25.0, 25.0, 10.0], highest_move=25.0),
+        ]
+        want[0].ranking = 2
+        want[0].reason = reason
+        want[1].ranking = 1
+        want[1].reason = reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run(
         self,
     ) -> None:
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=30.0),
+            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
 
+        top_reason = "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00)"
         want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=3,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                ranking=2,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-                ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [30.0, 20.0], highest_move=30.0),
+            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
+        want[2].ranking = 1
+        want[2].reason = top_reason
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
         assert got == want
 
-    def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_move(
+    def test_it_breaks_a_three_way_tie_by_third_run_then_highest_move(
         self,
     ) -> None:
+        # #5 clears the field on the 3rd run; #3 and #4 tie on every run and
+        # are split only by the highest scoring move.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+        # deliberately not in finishing order
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-            ),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
         ]
 
+        run_reason = "Tie resolved by 3rd highest scoring run: #5 (20.00), #3 (10.00)"
         want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=2,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=3,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=3,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-                ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
+        ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring move: #3 (25.00), #4 (20.00)"
+        want[1].ranking = 2
+        want[1].reason = run_reason
+        want[2].ranking = 1
+        want[2].reason = run_reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
+        assert got == want
+
+    def test_it_breaks_a_three_way_tie_across_successive_runs(
+        self,
+    ) -> None:
+        # highest run peels off #3, second-highest run splits #4 from #5.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+        scores = [
+            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
         ]
 
-        got = calculate_rank(scores)
+        top_reason = "Tie resolved by highest scoring run: #3 (40.00), #4 (30.00)"
+        want = [
+            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
+        ]
+        want[0].ranking = 3
+        want[
+            0
+        ].reason = "Tie resolved by 2nd highest scoring run: #4 (30.00), #5 (25.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
+        want[2].ranking = 1
+        want[2].reason = top_reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
+        assert got == want
+
+    def test_it_breaks_a_three_way_tie_entirely_on_the_highest_move(
+        self,
+    ) -> None:
+        # identical on every run; only the highest scoring move separates them.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+        scores = [
+            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
+        ]
+
+        top_reason = "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00)"
+        want = [
+            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
+            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
+            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
+        ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring move: #4 (20.00), #5 (10.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
+        want[2].ranking = 1
+        want[2].reason = top_reason
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move(
         self,
     ) -> None:
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=20.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
 
+        top_reason = "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
         want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=20.0,
-                ranking=3,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=2,
-                total_score=50,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=35, highest_scoring_move=35
-                                ),
-                            )
-                        ],
-                        mean_run_score=35.0,
-                        highest_scoring_move=35.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=35.0,
-                total_score=50,
-                ranking=1,
-                reason="TieBreak: Resolved by Tiebreak Engine",
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
+        want[0].ranking = 3
+        want[0].reason = "Tie resolved by highest scoring move: #4 (25.00), #3 (20.00)"
+        want[1].ranking = 2
+        want[1].reason = top_reason
+        want[2].ranking = 1
+        want[2].reason = top_reason
 
-        got = calculate_rank(scores)
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
         assert got == want
 
     def test_it_returns_tied_ranks_for_an_actual_tie(
         self,
     ) -> None:
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                total_score=45,
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 15.0], highest_move=30.0, total_score=45.0),
         ]
 
+        unresolved = "Tie unresolved - athletes remain tied: #3, #4"
         want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=20.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=1,
-                total_score=50,
-                reason="TieBreak: Fully Tied",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120004"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=1,
-                total_score=50,
-                reason="TieBreak: Fully Tied",
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120005"),
-                run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=30, highest_scoring_move=30
-                                ),
-                            )
-                        ],
-                        mean_run_score=30.0,
-                        highest_scoring_move=30.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=15, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=15.0,
-                        highest_scoring_move=15.0,
-                    ),
-                ],
-                highest_scoring_move=30.0,
-                total_score=45,
-                ranking=2,
-                reason=None,
-            ),
+            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(id_5, [30.0, 15.0], highest_move=30.0, total_score=45.0),
+        ]
+        want[0].ranking = 1
+        want[0].reason = unresolved
+        want[1].ranking = 1
+        want[1].reason = unresolved
+        want[2].ranking = 2
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+        )
+        assert got == want
+
+    def test_it_does_not_crash_on_a_mixed_run_count_tie(
+        self,
+    ) -> None:
+        # supported but discouraged: #3 ran once, #4 ran twice, and the two
+        # draw on every criterion once the missing run counts as 0.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [10.0], highest_move=5.0, total_score=10.0),
+            _tied_athlete(id_4, [10.0, 0.0], highest_move=5.0, total_score=10.0),
         ]
 
-        got = calculate_rank(scores)
-        assert got == want
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        reasons = {a.athlete_id: a.reason for a in got}
+        assert reasons[UUID(id_3)] == "Tie unresolved - athletes remain tied: #3, #4"
+        assert reasons[UUID(id_4)] == "Tie unresolved - athletes remain tied: #3, #4"
+
+
+A = "c7476320-6c48-11ee-b962-0242ac120001"
+B = "c7476320-6c48-11ee-b962-0242ac120002"
+C = "c7476320-6c48-11ee-b962-0242ac120003"
+
+
+class TestBuildTieBreakReason:
+    def test_it_names_the_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by highest scoring run: #7 (30.00), #12 (25.00)"
+        )
+
+    def test_it_names_the_second_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0, 10.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 18.0, 12.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by 2nd highest scoring run: #7 (20.00), #12 (18.00)"
+        )
+
+    def test_it_names_the_third_highest_scoring_run(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0, 10.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 20.0, 8.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by 3rd highest scoring run: #7 (10.00), #12 (8.00)"
+        )
+
+    def test_it_names_the_highest_scoring_move(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=25.0),
+            _tied_athlete(B, [30.0, 20.0], highest_move=15.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie resolved by highest scoring move: #7 (25.00), #12 (15.00)"
+        )
+
+    def test_it_reports_an_unresolved_tie(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [30.0, 20.0], highest_move=10.0),
+        ]
+        bibs = {UUID(A): "7", UUID(B): "12"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            "Tie unresolved - athletes remain tied: #7, #12"
+        )
+
+    def test_it_falls_back_to_athlete_id_when_no_bib(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=10.0),
+        ]
+
+        assert build_tie_break_reason(UUID(A), tied, None) == (
+            f"Tie resolved by highest scoring run: athlete {UUID(A)} (30.00), "
+            f"athlete {UUID(B)} (25.00)"
+        )
+
+    def test_it_compares_each_athlete_against_its_adjacent_rival(self) -> None:
+        tied = [
+            _tied_athlete(
+                "c7476320-6c48-11ee-b962-0242ac120005",
+                [35.0, 15.0],
+                highest_move=10.0,
+            ),
+            _tied_athlete(A, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(C, [25.0, 25.0], highest_move=12.0),
+        ]
+        bibs = {
+            UUID("c7476320-6c48-11ee-b962-0242ac120005"): "5",
+            UUID(A): "4",
+            UUID(C): "3",
+        }
+        reasons = {
+            aid: build_tie_break_reason(aid, tied, bibs)
+            for aid in (
+                UUID("c7476320-6c48-11ee-b962-0242ac120005"),
+                UUID(A),
+                UUID(C),
+            )
+        }
+        assert reasons[UUID("c7476320-6c48-11ee-b962-0242ac120005")] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(A)] == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+        assert reasons[UUID(C)] == (
+            "Tie resolved by highest scoring move: #4 (20.00), #3 (12.00)"
+        )
+
+    def test_fully_tied_pair_below_a_cleared_athlete_is_told_it_is_unresolved(
+        self,
+    ) -> None:
+        cleared_id = "c7476320-6c48-11ee-b962-0242ac120005"
+        tied = [
+            _tied_athlete(
+                cleared_id, [35.0, 15.0], highest_move=10.0, total_score=50.0
+            ),
+            _tied_athlete(A, [25.0, 25.0], highest_move=20.0, total_score=50.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=20.0, total_score=50.0),
+        ]
+        bibs = {UUID(cleared_id): "5", UUID(A): "4", UUID(B): "3"}
+
+        unresolved = "Tie unresolved - athletes remain tied: #4, #3"
+        assert build_tie_break_reason(UUID(A), tied, bibs) == unresolved
+        assert build_tie_break_reason(UUID(B), tied, bibs) == unresolved
+        assert build_tie_break_reason(UUID(cleared_id), tied, bibs) == (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
