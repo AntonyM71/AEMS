@@ -2,7 +2,6 @@ import { configureStore, EnhancedStore } from "@reduxjs/toolkit"
 
 import { render, RenderOptions } from "@testing-library/react"
 
-import _ from "lodash"
 import React, { JSX, PropsWithChildren } from "react"
 import { Provider } from "react-redux"
 import { competitionInitialState } from "./redux/atoms/competitions"
@@ -26,6 +25,26 @@ const baseState: Partial<RootState> = {
 	utilities: utilitiesInitialState
 }
 
+// Shallow-merge each slice of the preloaded state over the defaults so a test
+// can override just the fields it cares about.
+const mergeState = (
+	base: Partial<RootState>,
+	overrides: DeepPartial<RootState>
+): Partial<RootState> => {
+	const keys = Object.keys(base).concat(
+		Object.keys(overrides).filter((key) => !(key in base))
+	)
+	const merged: Record<string, unknown> = {}
+	keys.forEach((key) => {
+		merged[key] = {
+			...((base as Record<string, object>)[key] ?? {}),
+			...((overrides as Record<string, object>)[key] ?? {})
+		}
+	})
+
+	return merged as Partial<RootState>
+}
+
 export const renderWithProviders = (
 	ui: React.ReactElement,
 	{
@@ -35,12 +54,7 @@ export const renderWithProviders = (
 			reducer: rootReducer,
 			middleware: (getDefaultMiddleware) =>
 				getDefaultMiddleware().concat(aemsApi.middleware),
-			preloadedState: _.mergeWith(
-				{},
-				baseState,
-				preloadedState,
-				(a: object, b: object) => (b ? { ...a, ...b } : a)
-			)
+			preloadedState: mergeState(baseState, preloadedState)
 		}),
 		...renderOptions
 	}: ExtendedRenderOptions = {}

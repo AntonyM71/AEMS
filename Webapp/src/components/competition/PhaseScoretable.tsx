@@ -10,7 +10,6 @@ import {
 	GridValidRowModel
 } from "@mui/x-data-grid"
 import axios from "axios"
-import { flatten } from "lodash"
 import { useSelector } from "react-redux"
 import { getSelectedPhase } from "../../redux/atoms/competitions"
 import {
@@ -154,38 +153,36 @@ export const PhaseAthleteScoreTable = ({
 	]
 
 	const rows: GridRowsProp =
-		flatten(
-			athletes.scores.map((a: AthleteScoresWithAthleteInfo, i) => {
-				const runScores: Record<string, DetailScores> = {}
-				runCols.forEach((r, j) => {
-					const detailScores: DetailScores = {
-						locked: a.run_scores[j]?.locked,
-						didNotStart: a.run_scores[j]?.did_not_start,
-						meanScore: a.run_scores[j]?.mean_run_score || 0,
-						judgeScores:
-							a.run_scores[j]?.judge_scores.map((js) => ({
-								score: js.score_info.score,
-								judgeId: js.judge_id
-							})) ?? []
-					}
-					runScores[r.field] = detailScores
-				})
-
-				const formattedRow: GridValidRowModel = {
-					ranking: a.ranking ?? 0,
-					id: i,
-					bib: a.bib_number,
-					first_name: a.first_name,
-					last_name: a.last_name,
-					affiliation: a.affiliation ?? "",
-					reason: a.reason ?? "",
-					total_score: a.total_score?.toFixed(2) ?? 0,
-					...runScores
+		athletes.scores.map((a: AthleteScoresWithAthleteInfo, i) => {
+			const runScores: Record<string, DetailScores> = {}
+			runCols.forEach((r, j) => {
+				const detailScores: DetailScores = {
+					locked: a.run_scores[j]?.locked,
+					didNotStart: a.run_scores[j]?.did_not_start,
+					meanScore: a.run_scores[j]?.mean_run_score || 0,
+					judgeScores:
+						a.run_scores[j]?.judge_scores.map((js) => ({
+							score: js.score_info.score,
+							judgeId: js.judge_id
+						})) ?? []
 				}
-
-				return formattedRow
+				runScores[r.field] = detailScores
 			})
-		) || []
+
+			const formattedRow: GridValidRowModel = {
+				ranking: a.ranking ?? 0,
+				id: i,
+				bib: a.bib_number,
+				first_name: a.first_name,
+				last_name: a.last_name,
+				affiliation: a.affiliation ?? "",
+				reason: a.reason ?? "",
+				total_score: a.total_score?.toFixed(2) ?? 0,
+				...runScores
+			}
+
+			return formattedRow
+		}) || []
 
 	if (rows) {
 		return (

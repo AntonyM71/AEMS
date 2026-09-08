@@ -6,7 +6,6 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
-import { includes } from "lodash"
 import { Dispatch, SetStateAction, useState } from "react"
 import toast from "react-hot-toast"
 import { SCORE_FIELD_WIDTH } from "./EditMove"
@@ -24,7 +23,7 @@ export const ScoresheetBuilderHeader = ({
 }) => {
 	const [newBonus, setNewBonus] = useState<string>("")
 
-	const bonusAlreadyExists = includes(bonuses, newBonus)
+	const bonusAlreadyExists = bonuses.includes(newBonus)
 	const handleSubmit = () => {
 		if (!newBonus) {
 			toast.error("Please Add a bonus name")

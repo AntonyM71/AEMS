@@ -1,4 +1,3 @@
-import { flatten, groupBy, partition, sum, uniqBy } from "lodash"
 import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
 	directionType,
@@ -6,6 +5,7 @@ import {
 	scoredBonusType,
 	scoredMovesType
 } from "../components/roles/scribe/Interfaces"
+import { groupBy, uniqBy } from "./collections"
 
 export function calculateSingleJudgeRunScore(
 	scoredMoves: scoredMovesType[],
@@ -21,7 +21,7 @@ export function calculateSingleJudgeRunScore(
 		)
 		const moveData = availableMoves.filter((m) => m.id === id)
 
-		const scores: MoveScoreInfo[] = flatten(
+		const scores: MoveScoreInfo[] = (
 			moveData[0]?.direction.split("").map((d) => {
 				if (!moveData) {
 					return []
@@ -48,7 +48,7 @@ export function calculateSingleJudgeRunScore(
 					moveAvailableBonuses
 				)
 			}) || []
-		)
+		).flat()
 
 		return scores
 	})
@@ -66,9 +66,14 @@ export function calculateSingleJudgeRunScore(
 		if (am && am.length === 1) {
 			runScore = runScore + am[0].value
 		} else if (am && am.length > 1) {
-			const leftRightPartition = partition(am, (ami) =>
-				frontLeftDirectionValues.includes(ami.direction)
-			)
+			const leftRightPartition = [
+				am.filter((ami) =>
+					frontLeftDirectionValues.includes(ami.direction)
+				),
+				am.filter(
+					(ami) => !frontLeftDirectionValues.includes(ami.direction)
+				)
+			]
 
 			leftRightPartition.map((directionalScoredMoves) => {
 				const moveScore = directionalScoredMoves
@@ -103,7 +108,10 @@ export const calculateMoveScore = (
 
 	return {
 		baseMove: baseMove?.id ?? "",
-		value: sum([moveBaseScore, ...scoredBonusValues]),
+		value: [moveBaseScore, ...scoredBonusValues].reduce(
+			(runningTotal, score) => runningTotal + score,
+			0
+		),
 		direction: scoredMove.direction,
 		moveType: scoredMove.moveId
 	}

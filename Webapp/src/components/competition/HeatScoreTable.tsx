@@ -11,7 +11,6 @@ import {
 	GridRowHeightParams,
 	GridRowsProp
 } from "@mui/x-data-grid"
-import { flatten } from "lodash"
 import { useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedHeat } from "../../redux/atoms/competitions"
@@ -111,35 +110,33 @@ export const HeatAthleteScoreTable = ({
 		...runCols
 	]
 
-	const rows: GridRowsProp = flatten(
-		athletes.scores.map((a, i) => {
-			const runScores: Record<string, DetailScores> = {}
-			runCols.forEach((r, j) => {
-				const detailScores: DetailScores = {
-					locked: a.run_scores[j]?.locked,
-					didNotStart: a.run_scores[j]?.did_not_start,
-					meanScore: a.run_scores[j]?.mean_run_score || 0,
-					judgeScores:
-						a.run_scores[j]?.judge_scores.map((js) => ({
-							score: js.score_info.score,
-							judgeId: js.judge_id
-						})) ?? []
-				}
-
-				runScores[r.field] = detailScores
-			})
-
-			return {
-				id: i,
-				bib: a.bib_number,
-				first_name: a.first_name,
-				last_name: a.last_name,
-
-				affiliation: a.affiliation ?? "",
-				...runScores
+	const rows: GridRowsProp = athletes.scores.map((a, i) => {
+		const runScores: Record<string, DetailScores> = {}
+		runCols.forEach((r, j) => {
+			const detailScores: DetailScores = {
+				locked: a.run_scores[j]?.locked,
+				didNotStart: a.run_scores[j]?.did_not_start,
+				meanScore: a.run_scores[j]?.mean_run_score || 0,
+				judgeScores:
+					a.run_scores[j]?.judge_scores.map((js) => ({
+						score: js.score_info.score,
+						judgeId: js.judge_id
+					})) ?? []
 			}
+
+			runScores[r.field] = detailScores
 		})
-	)
+
+		return {
+			id: i,
+			bib: a.bib_number,
+			first_name: a.first_name,
+			last_name: a.last_name,
+
+			affiliation: a.affiliation ?? "",
+			...runScores
+		}
+	})
 
 	if (rows) {
 		return (
