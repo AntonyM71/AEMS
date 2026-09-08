@@ -37,8 +37,8 @@ const mergeState = (
 	const merged: Record<string, unknown> = {}
 	keys.forEach((key) => {
 		merged[key] = {
-			...((base as Record<string, object>)[key] ?? {}),
-			...((overrides as Record<string, object>)[key] ?? {})
+			...(base as Record<string, object>)[key],
+			...(overrides as Record<string, object>)[key]
 		}
 	})
 

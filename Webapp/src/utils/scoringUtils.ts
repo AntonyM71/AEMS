@@ -55,10 +55,7 @@ export function calculateSingleJudgeRunScore(
 
 	const highestScoredMove =
 		scoredMoveScores && scoredMoves.length
-			? scoredMoveScores
-					.flat()
-					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
+			? Math.max(0, ...scoredMoveScores.flat().map((a) => a.value))
 			: 0
 
 	let runScore = 0
@@ -75,12 +72,11 @@ export function calculateSingleJudgeRunScore(
 				)
 			]
 
-			leftRightPartition.map((directionalScoredMoves) => {
-				const moveScore = directionalScoredMoves
-					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
+			leftRightPartition.forEach((directionalScoredMoves) => {
 				if (directionalScoredMoves.length !== 0) {
-					runScore = runScore + moveScore
+					runScore =
+						runScore +
+						Math.max(0, ...directionalScoredMoves.map((a) => a.value))
 				}
 			})
 		}
@@ -88,9 +84,6 @@ export function calculateSingleJudgeRunScore(
 
 	return { score: runScore, highestMove: highestScoredMove }
 }
-
-const getMaximumScoredMoveFromArrayByValue = (prev: number, current: number) =>
-	prev > current ? prev : current
 
 export const calculateMoveScore = (
 	scoredMove: scoredMovesType,

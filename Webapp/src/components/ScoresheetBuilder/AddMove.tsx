@@ -22,9 +22,9 @@ export const AddNewMove = ({
 	})
 
 	useEffect(() => {
-		const listOfExistingBonuses = moveData.bonuses.map((b) => b.name)
+		const listOfExistingBonuses = new Set(moveData.bonuses.map((b) => b.name))
 		const newBonuses = bonuses.flatMap((b) => {
-			if (!listOfExistingBonuses.includes(b)) {
+			if (!listOfExistingBonuses.has(b)) {
 				return { name: b, id: v4(), score: 0 }
 			}
 
