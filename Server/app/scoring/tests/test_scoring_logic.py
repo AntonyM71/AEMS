@@ -29,7 +29,7 @@ def _tied_athlete(
     athlete_id: str,
     run_means: list[float],
     highest_move: float,
-    total_score: float = 50.0,
+    total_score: float | None = 50.0,
 ) -> AthleteScores:
     return AthleteScores(
         athlete_id=UUID(athlete_id),
@@ -2479,6 +2479,24 @@ class TestAthleteRankCalculation:
         assert got[UUID(non_starter_id)].ranking is None
         assert got[UUID(id_1)].ranking == 1
         assert got[UUID(id_2)].ranking == 1
+
+    def test_an_athlete_with_no_total_score_is_left_unranked(self) -> None:
+        # AthleteScores.total_score defaults to None when no score was
+        # computed. That athlete is unranked, like a non-starter - not
+        # lumped in with the genuine zero-scorers (total_score == 0.0).
+        no_score_id = "c7476320-6c48-11ee-b962-0242ac120001"
+        zero_id = "c7476320-6c48-11ee-b962-0242ac120002"
+        scores = [
+            _tied_athlete(no_score_id, [0.0], highest_move=0.0, total_score=None),
+            _tied_athlete(zero_id, [0.0], highest_move=0.0, total_score=0.0),
+        ]
+        bibs = {UUID(no_score_id): "1", UUID(zero_id): "2"}
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert got[UUID(no_score_id)].ranking is None
+        assert got[UUID(zero_id)].ranking == 1
+        assert got[UUID(zero_id)].reason is None
 
     def test_the_reason_falls_back_to_athlete_id_when_no_bibs_are_given(self) -> None:
         id_1 = "c7476320-6c48-11ee-b962-0242ac120001"

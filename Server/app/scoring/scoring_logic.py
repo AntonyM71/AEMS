@@ -385,7 +385,7 @@ def calculate_rank(
     )
 
     for s in sorted_athletes_scores:
-        if not check_athlete_started_at_least_one_ride(s):
+        if s.total_score is None or not check_athlete_started_at_least_one_ride(s):
             continue
 
         athletes_with_same_score = [
@@ -394,7 +394,8 @@ def calculate_rank(
         athletes_ranked_above = sum(
             1
             for a in sorted_athletes_scores
-            if (a.total_score or 0) > (s.total_score or 0)
+            if a.total_score is not None
+            and a.total_score > s.total_score
             and check_athlete_started_at_least_one_ride(a)
         )
 
