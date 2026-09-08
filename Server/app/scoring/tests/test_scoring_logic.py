@@ -2480,6 +2480,46 @@ class TestAthleteRankCalculation:
         assert got[UUID(id_1)].ranking == 1
         assert got[UUID(id_2)].ranking == 1
 
+    def test_a_non_starter_is_not_grouped_into_a_tie_with_a_zero_scorer(self) -> None:
+        # A paddler who DNS'd every run has total_score 0.0 (not None), the
+        # same value as a paddler who started but scored nothing. The
+        # non-starter must stay out of the real zero-scorer's tie group.
+        started_id = "c7476320-6c48-11ee-b962-0242ac120001"
+        non_starter_id = "c7476320-6c48-11ee-b962-0242ac120009"
+        non_starter = AthleteScores(
+            athlete_id=UUID(non_starter_id),
+            run_scores=[
+                RunScores(
+                    run_number=1,
+                    judge_scores=[
+                        JudgeScores(
+                            judge_id="j",
+                            score_info=AthleteScoreInfo(
+                                score=0.0, highest_scoring_move=0.0
+                            ),
+                        )
+                    ],
+                    mean_run_score=0.0,
+                    highest_scoring_move=0.0,
+                    locked=False,
+                    did_not_start=True,
+                )
+            ],
+            highest_scoring_move=0.0,
+            total_score=0.0,
+        )
+        scores = [
+            _tied_athlete(started_id, [0.0], highest_move=0.0, total_score=0.0),
+            non_starter,
+        ]
+        bibs = {UUID(started_id): "1", UUID(non_starter_id): "9"}
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert got[UUID(started_id)].ranking == 1
+        assert got[UUID(started_id)].reason is None
+        assert got[UUID(non_starter_id)].ranking is None
+
     def test_an_athlete_with_no_total_score_is_left_unranked(self) -> None:
         # AthleteScores.total_score defaults to None when no score was
         # computed. That athlete is unranked, like a non-starter - not

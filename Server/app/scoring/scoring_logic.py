@@ -389,7 +389,10 @@ def calculate_rank(
             continue
 
         athletes_with_same_score = [
-            item for item in sorted_athletes_scores if item.total_score == s.total_score
+            item
+            for item in sorted_athletes_scores
+            if item.total_score == s.total_score
+            and check_athlete_started_at_least_one_ride(item)
         ]
         athletes_ranked_above = sum(
             1
