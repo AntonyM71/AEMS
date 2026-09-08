@@ -2230,7 +2230,8 @@ class TestAthleteRankCalculation:
         want[0].reason = unresolved
         want[1].ranking = 1
         want[1].reason = unresolved
-        want[2].ranking = 2
+        # #3 and #4 are tied for 1st, so the next athlete is 3rd (gap after the tie).
+        want[2].ranking = 3
 
         got = calculate_rank(
             scores,
@@ -2258,6 +2259,42 @@ class TestAthleteRankCalculation:
         reasons = {a.athlete_id: a.reason for a in got}
         assert reasons[UUID(id_3)] == "Tie unresolved - athletes remain tied: #3, #4"
         assert reasons[UUID(id_4)] == "Tie unresolved - athletes remain tied: #3, #4"
+
+    def test_it_ranks_a_resolved_pair_above_a_lower_scoring_tied_pair(
+        self,
+    ) -> None:
+        # Issue #410: Freddie & Paul (215.0, separated by their best run) must
+        # sit at 1 and 2, and Brian & Ringo (200.0, fully tied) at 3 and 3 -
+        # not above the higher-scoring pair as the stale rank counter did.
+        freddie = "c7476320-6c48-11ee-b962-0242ac120001"
+        paul = "c7476320-6c48-11ee-b962-0242ac120002"
+        brian = "c7476320-6c48-11ee-b962-0242ac120003"
+        ringo = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(freddie, [30.0, 10.0], highest_move=9.0, total_score=50.0),
+            _tied_athlete(paul, [20.0, 20.0], highest_move=8.0, total_score=50.0),
+            _tied_athlete(brian, [20.0], highest_move=7.0, total_score=40.0),
+            _tied_athlete(ringo, [20.0], highest_move=7.0, total_score=40.0),
+        ]
+        bibs = {
+            UUID(freddie): "1",
+            UUID(paul): "2",
+            UUID(brian): "3",
+            UUID(ringo): "4",
+        }
+
+        got = {a.athlete_id: a for a in calculate_rank(scores, bib_numbers=bibs)}
+
+        assert got[UUID(freddie)].ranking == 1
+        assert got[UUID(paul)].ranking == 2
+        assert got[UUID(brian)].ranking == 3
+        assert got[UUID(ringo)].ranking == 3
+        assert got[UUID(freddie)].reason == (
+            "Tie resolved by highest scoring run: #1 (30.00), #2 (20.00)"
+        )
+        assert got[UUID(brian)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
 
 
 A = "c7476320-6c48-11ee-b962-0242ac120001"
