@@ -247,12 +247,12 @@ Restored byte-for-byte from pre-Pixi history and currently used only by
 
 ## R9. Repo-hygiene items noticed alongside this work
 
-- **The dev-server docs are wrong about Socket.IO.** `Server/README.md:44`,
+- **The dev-server docs are wrong about Socket.IO (FIXED).** `Server/README.md:44`,
   `CLAUDE.md:34`, `docs/smg.md:29` and `:166`, and
-  `.github/copilot-instructions.md:43` all say `uvicorn main:app`, which serves
-  FastAPI without Socket.IO mounted (`Server/main.py:163` only wraps it into
-  `socket_app`). `GET /socket.io/` then 404s and the broadcast controller
-  cannot connect. Should be `uvicorn main:socket_app --reload`.
+  `.github/copilot-instructions.md:43` incorrectly documented `uvicorn main:app`, which
+  serves FastAPI without Socket.IO mounted (`Server/main.py:164` wraps it into
+  `socket_app`). `GET /socket.io/` would then 404 and the broadcast controller
+  could not connect. This has been corrected to `uvicorn main:socket_app --reload`.
 - **`Webapp/tsconfig.tsbuildinfo` is tracked** despite being gitignored in three
   places (`Webapp/.gitignore:25`, `.gitignore:242`, `.gitignore:332`). Needs
   `git rm --cached`.
