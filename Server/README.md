@@ -41,7 +41,7 @@ We recommend using the devcontainer, but to work locally, we support [uv](https:
 3. Start the development server:
 
    ```bash
-   uvicorn main:app --reload
+   uvicorn main:socket_app --reload
    ```
 
 The API will be available at `http://localhost:8000`
