@@ -29,7 +29,7 @@
 		"next": "^15.4.6",
 		"pixi.js": "^8.17.0",
 		"prettier": "^2.8.3",
-		"react": "19.0.0",
+		"react": "19.2.5",
 		"react-dom": "19.0.0",
 		"react-hot-toast": "^2.6.0",
 		"react-redux": "^9.2.0",
