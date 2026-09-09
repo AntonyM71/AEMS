@@ -526,6 +526,56 @@ class TestAssemblePhaseScores:
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
         assert [s.ranking for s in got.scores] == [1, None]
 
+    def test_a_dns_entrant_with_no_scored_moves_is_bucketed_as_dns(self) -> None:
+        # _B never scored a move, so no AthleteScores reaches assemble - only
+        # run statuses, and every one is did_not_start. _B must land in the DNS
+        # bucket (after the unscored _C) with did_not_start runs in the payload,
+        # not sorted among the unscored competitors by bib.
+        run_statuses = [
+            RunStatus(
+                athlete_id=UUID(_B), run_number=1, locked=True, did_not_start=True
+            ),
+            RunStatus(
+                athlete_id=UUID(_B), run_number=2, locked=False, did_not_start=True
+            ),
+        ]
+
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [
+                _make_athlete(_A, bib=1),
+                _make_athlete(_B, bib=5),
+                _make_athlete(_C, bib=9),
+            ],
+            run_statuses,
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_C), UUID(_B)]
+        dns = got.scores[-1]
+        assert dns.ranking is None
+        assert [r.did_not_start for r in dns.run_scores] == [True, True]
+
+    def test_an_entrant_with_a_non_dns_run_status_stays_unscored(self) -> None:
+        # _B has a run status but it is not a DNS (e.g. a locked run) and there
+        # is no score - not a DNS, so _B stays in the unscored bucket.
+        run_statuses = [
+            RunStatus(
+                athlete_id=UUID(_B), run_number=1, locked=True, did_not_start=False
+            )
+        ]
+
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1), _make_athlete(_B, bib=5)],
+            run_statuses,
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
+        assert got.scores[-1].ranking is None
+        assert got.scores[-1].run_scores == []
+
     def test_a_full_phase_orders_ranked_then_unscored_then_dns(self) -> None:
         # A realistic field: a tie for 1st, two clear places, a tie for 5th,
         # a paddler who ran only one run, two who recorded nothing, and one

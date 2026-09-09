@@ -25,6 +25,7 @@ from app.scoring.scoring_logic import (
     PydanticRunStatus,
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
+    RunScores,
     calculate_heat_scores,
     calculate_rank,
     check_athlete_started_at_least_one_ride,
@@ -407,15 +408,10 @@ async def get_phase_scores(
 
 
 def _with_athlete_info(
-    score: AthleteScores | None, athlete: Athlete
+    score: AthleteScores, athlete: Athlete
 ) -> AthleteScoresWithAthleteInfo:
-    resolved = (
-        score
-        if score is not None
-        else AthleteScores(athlete_id=athlete.id, highest_scoring_move=0, run_scores=[])
-    )
     return AthleteScoresWithAthleteInfo(
-        **resolved.model_dump(exclude_none=True),
+        **score.model_dump(exclude_none=True),
         first_name=athlete.first_name,
         last_name=athlete.last_name,
         affiliation=athlete.affiliation,
@@ -423,28 +419,61 @@ def _with_athlete_info(
     )
 
 
+def _score_for_missing_athlete(
+    athlete_id: UUID, run_statuses: list[RunStatus]
+) -> AthleteScores:
+    """Stand-in score for an entrant with no scored moves: did-not-start runs
+    when every one of their run statuses says so, otherwise an empty run list
+    (present but scored nothing)."""
+    own_statuses = sorted(
+        (rs for rs in run_statuses if rs.athlete_id == athlete_id),
+        key=lambda rs: rs.run_number,
+    )
+    dns_runs = (
+        [
+            RunScores(
+                run_number=rs.run_number,
+                judge_scores=[],
+                mean_run_score=0,
+                highest_scoring_move=0,
+                locked=rs.locked,
+                did_not_start=True,
+            )
+            for rs in own_statuses
+        ]
+        if own_statuses and all(rs.did_not_start for rs in own_statuses)
+        else []
+    )
+    return AthleteScores(
+        athlete_id=athlete_id, highest_scoring_move=0, run_scores=dns_runs
+    )
+
+
 def assemble_phase_scores(
     phase_id: UUID | str,
     ranked_scores: list[AthleteScores],
     athletes: list[Athlete],
+    run_statuses: list[RunStatus] | None = None,
 ) -> PhaseScoresResponse:
     """Order a phase's athletes: ranked (by rank, then bib) first, then
     started-but-unranked and did-not-start athletes, each by bib.
 
     ``ranked_scores`` is the output of ``calculate_rank``; ``athletes`` is
     every athlete entered in the phase. An athlete with no scored moves is
-    represented with an empty run list and no ranking.
+    represented with an empty run list, or with did-not-start runs when every
+    one of their run statuses says so.
     """
+    run_statuses = run_statuses or []
     scores_by_athlete = {s.athlete_id: s for s in ranked_scores}
-    enriched = [
-        _with_athlete_info(scores_by_athlete.get(athlete.id), athlete)
-        for athlete in athletes
-    ]
 
     ranked: list[AthleteScoresWithAthleteInfo] = []
     started_unranked: list[AthleteScoresWithAthleteInfo] = []
     did_not_start: list[AthleteScoresWithAthleteInfo] = []
-    for athlete in enriched:
+    for entrant in athletes:
+        score = scores_by_athlete.get(entrant.id)
+        if score is None:
+            score = _score_for_missing_athlete(entrant.id, run_statuses)
+        athlete = _with_athlete_info(score, entrant)
         if not check_athlete_started_at_least_one_ride(athlete):
             did_not_start.append(athlete)
         elif athlete.ranking:
@@ -528,7 +557,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     athlete_scores_with_rank = calculate_rank(
         athlete_scores, bib_numbers={a.id: a.bib for a in athletes}
     )
-    return assemble_phase_scores(phase_id, athlete_scores_with_rank, athletes)
+    return assemble_phase_scores(
+        phase_id, athlete_scores_with_rank, athletes, run_statuses
+    )
 
 
 class RunStatusSchema(BaseModel):
