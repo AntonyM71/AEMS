@@ -5,9 +5,16 @@ from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
     ScoredMovesAndBonusesResponse,
+    assemble_phase_scores,
     check_run_is_locked,
     get_athlete_moves_and_bonuses,
     get_heat_info_logic,
+)
+from app.scoring.scoring_logic import (
+    AthleteScoreInfo,
+    AthleteScores,
+    JudgeScores,
+    RunScores,
 )
 from db.models import (
     Athlete,
@@ -285,3 +292,283 @@ def test_check_run_is_locked_returns_false_when_no_status(
 
     # Verify the result
     assert result is False
+
+
+PHASE_ID = "942e908e-b074-48b7-926a-59b9dd214dc7"
+_A = "c7476320-6c48-11ee-b962-0242ac120001"
+_B = "c7476320-6c48-11ee-b962-0242ac120002"
+_C = "c7476320-6c48-11ee-b962-0242ac120003"
+
+
+def _make_athlete(
+    athlete_id: str,
+    bib: int,
+    affiliation: str | None = None,
+) -> Athlete:
+    return Athlete(
+        id=UUID(athlete_id),
+        first_name="First",
+        last_name="Last",
+        affiliation=affiliation,
+        bib=str(bib),
+    )
+
+
+def _make_score(
+    athlete_id: str,
+    ranking: int | None,
+    dns_per_run: list[bool],
+) -> AthleteScores:
+    return AthleteScores(
+        athlete_id=UUID(athlete_id),
+        run_scores=[
+            RunScores(
+                run_number=i + 1,
+                judge_scores=[
+                    JudgeScores(
+                        judge_id="j",
+                        score_info=AthleteScoreInfo(
+                            score=10.0, highest_scoring_move=10.0
+                        ),
+                    )
+                ],
+                mean_run_score=10.0,
+                highest_scoring_move=10.0,
+                locked=False,
+                did_not_start=dns,
+            )
+            for i, dns in enumerate(dns_per_run)
+        ],
+        highest_scoring_move=10.0,
+        ranking=ranking,
+        total_score=50.0,
+    )
+
+
+class TestAssemblePhaseScores:
+    def test_a_single_scored_athlete_is_returned_with_its_rank(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1)],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A)]
+        assert got.scores[0].ranking == 1
+        assert got.scores[0].bib_number == 1
+        assert str(got.phase_id) == PHASE_ID
+
+    def test_a_scored_athlete_sorts_above_one_with_no_moves(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1), _make_athlete(_B, bib=2)],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
+        assert got.scores[0].ranking == 1
+        assert got.scores[1].ranking is None
+
+    def test_scored_then_no_moves_then_dns(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[False]),
+                _make_score(_C, ranking=None, dns_per_run=[True]),
+            ],
+            [
+                _make_athlete(_A, bib=1),
+                _make_athlete(_B, bib=2),
+                _make_athlete(_C, bib=3),
+            ],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B), UUID(_C)]
+        assert [s.ranking for s in got.scores] == [1, None, None]
+
+    def test_two_scored_athletes_then_a_dns(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[False]),
+                _make_score(_B, ranking=2, dns_per_run=[False]),
+                _make_score(_C, ranking=None, dns_per_run=[True]),
+            ],
+            [
+                _make_athlete(_A, bib=1),
+                _make_athlete(_B, bib=2),
+                _make_athlete(_C, bib=3),
+            ],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B), UUID(_C)]
+        assert [s.ranking for s in got.scores] == [1, 2, None]
+
+    def test_athletes_with_no_moves_are_ordered_by_bib(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [],
+            [
+                _make_athlete(_A, bib=3),
+                _make_athlete(_B, bib=1),
+                _make_athlete(_C, bib=2),
+            ],
+        )
+
+        assert [s.bib_number for s in got.scores] == [1, 2, 3]
+        assert all(s.ranking is None for s in got.scores)
+
+    def test_dns_athletes_are_ordered_by_bib(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=None, dns_per_run=[True]),
+                _make_score(_B, ranking=None, dns_per_run=[True]),
+                _make_score(_C, ranking=None, dns_per_run=[True]),
+            ],
+            [
+                _make_athlete(_A, bib=3),
+                _make_athlete(_B, bib=1),
+                _make_athlete(_C, bib=2),
+            ],
+        )
+
+        assert [s.bib_number for s in got.scores] == [1, 2, 3]
+
+    def test_athletes_sharing_a_rank_are_ordered_by_bib(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[False]),
+                _make_score(_B, ranking=1, dns_per_run=[False]),
+            ],
+            [_make_athlete(_A, bib=5), _make_athlete(_B, bib=2)],
+        )
+
+        assert [s.bib_number for s in got.scores] == [2, 5]
+        assert [s.ranking for s in got.scores] == [1, 1]
+
+    def test_a_shared_rank_keeps_the_gap_to_the_next_make_athlete(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[False]),
+                _make_score(_B, ranking=1, dns_per_run=[False]),
+                _make_score(_C, ranking=3, dns_per_run=[False]),
+            ],
+            [
+                _make_athlete(_A, bib=1),
+                _make_athlete(_B, bib=2),
+                _make_athlete(_C, bib=3),
+            ],
+        )
+
+        assert [s.ranking for s in got.scores] == [1, 1, 3]
+        assert [s.bib_number for s in got.scores] == [1, 2, 3]
+
+    def test_an_athlete_missing_from_the_scores_is_synthesised_with_its_bio(
+        self,
+    ) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1), _make_athlete(_B, bib=2)],
+        )
+
+        synthesised = next(s for s in got.scores if s.athlete_id == UUID(_B))
+        assert synthesised.ranking is None
+        assert synthesised.run_scores == []
+        assert synthesised.first_name == "First"
+        assert synthesised.bib_number == 2
+
+    def test_a_score_for_an_athlete_not_in_the_phase_is_dropped(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[False]),
+                _make_score(_B, ranking=2, dns_per_run=[False]),
+            ],
+            [_make_athlete(_A, bib=1)],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A)]
+
+    def test_an_empty_phase_returns_no_scores(self) -> None:
+        got = assemble_phase_scores(PHASE_ID, [], [])
+
+        assert got.scores == []
+        assert str(got.phase_id) == PHASE_ID
+
+    def test_affiliation_is_carried_into_the_response(self) -> None:
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1, affiliation="Team GB")],
+        )
+
+        assert got.scores[0].affiliation == "Team GB"
+
+    def test_an_athlete_who_started_only_some_runs_ranks_above_a_full_dns(
+        self,
+    ) -> None:
+        # _A ran only run 2; _B did not start any run. _A's bib is higher, so
+        # if _A were wrongly bucketed as DNS the two would swap (DNS sorts by
+        # bib).
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [
+                _make_score(_A, ranking=1, dns_per_run=[True, False]),
+                _make_score(_B, ranking=None, dns_per_run=[True, True]),
+            ],
+            [_make_athlete(_A, bib=9), _make_athlete(_B, bib=1)],
+        )
+
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
+        assert [s.ranking for s in got.scores] == [1, None]
+
+    def test_a_full_phase_orders_ranked_then_unscored_then_dns(self) -> None:
+        # A realistic field: a tie for 1st, two clear places, a tie for 5th,
+        # a paddler who ran only one run, two who recorded nothing, and one
+        # who did not start. Bibs are shuffled so every sort matters.
+        ids = [f"c7476320-6c48-11ee-b962-0242ac1200{n:02d}" for n in range(10, 19)]
+        first_a, first_b, third, fourth, fifth_a, fifth_b, blank_a, dns, blank_b = ids
+
+        athletes = [
+            _make_athlete(first_a, bib=4),
+            _make_athlete(first_b, bib=2),
+            _make_athlete(third, bib=7),
+            _make_athlete(fourth, bib=1),
+            _make_athlete(fifth_a, bib=9),
+            _make_athlete(fifth_b, bib=5),
+            _make_athlete(blank_a, bib=3),
+            _make_athlete(dns, bib=6),
+            _make_athlete(blank_b, bib=8),
+        ]
+        ranked_scores = [
+            _make_score(first_a, ranking=1, dns_per_run=[False, False]),
+            _make_score(first_b, ranking=1, dns_per_run=[False, False]),
+            _make_score(third, ranking=3, dns_per_run=[False, False]),
+            _make_score(fourth, ranking=4, dns_per_run=[True, False]),
+            _make_score(fifth_a, ranking=5, dns_per_run=[False, False]),
+            _make_score(fifth_b, ranking=5, dns_per_run=[False, False]),
+            _make_score(dns, ranking=None, dns_per_run=[True, True]),
+        ]
+
+        got = assemble_phase_scores(PHASE_ID, ranked_scores, athletes)
+
+        # ranked (by rank then bib), then no-moves (by bib), then DNS (by bib)
+        assert [s.athlete_id for s in got.scores] == [
+            UUID(first_b),  # rank 1, bib 2
+            UUID(first_a),  # rank 1, bib 4
+            UUID(third),  # rank 3
+            UUID(fourth),  # rank 4, ran one run - still ranked
+            UUID(fifth_b),  # rank 5, bib 5
+            UUID(fifth_a),  # rank 5, bib 9
+            UUID(blank_a),  # no moves, bib 3
+            UUID(blank_b),  # no moves, bib 8
+            UUID(dns),  # did not start, bib 6
+        ]
+        assert [s.ranking for s in got.scores] == [1, 1, 3, 4, 5, 5, None, None, None]
+        assert [s.bib_number for s in got.scores[:6]] == [2, 4, 7, 1, 5, 9]
+        assert got.scores[6].run_scores == []
+        assert got.scores[7].run_scores == []
