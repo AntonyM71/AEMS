@@ -1,6 +1,5 @@
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
-import { includes } from "lodash"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
@@ -23,9 +22,9 @@ export const AddNewMove = ({
 	})
 
 	useEffect(() => {
-		const listOfExistingBonuses = moveData.bonuses.map((b) => b.name)
+		const listOfExistingBonuses = new Set(moveData.bonuses.map((b) => b.name))
 		const newBonuses = bonuses.flatMap((b) => {
-			if (!includes(listOfExistingBonuses, b)) {
+			if (!listOfExistingBonuses.has(b)) {
 				return { name: b, id: v4(), score: 0 }
 			}
 

@@ -46,32 +46,19 @@ def setup_logging(
         cache_logger_on_first_use=True,
     )
 
-    json_log_renderer = structlog.processors.JSONRenderer()
-    json_formatter = structlog.stdlib.ProcessorFormatter(
-        # These run ONLY on `logging` entries that do NOT originate within
-        # structlog.
-        foreign_pre_chain=shared_processors,
-        # These run on ALL entries after the pre_chain is done.
-        processors=[
-            # Remove _record & _from_structlog.
-            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            json_log_renderer,
-        ],
-    )
+    def formatter_for(renderer: Processor) -> structlog.stdlib.ProcessorFormatter:
+        # foreign_pre_chain runs on `logging` entries that did not originate
+        # within structlog; the processors run on every entry afterwards.
+        return structlog.stdlib.ProcessorFormatter(
+            foreign_pre_chain=shared_processors,
+            processors=[
+                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                renderer,
+            ],
+        )
 
-    pretty_log_renderer = structlog.dev.ConsoleRenderer()
-
-    pretty_formatter = structlog.stdlib.ProcessorFormatter(
-        # These run ONLY on `logging` entries that do NOT originate within
-        # structlog.
-        foreign_pre_chain=shared_processors,
-        # These run on ALL entries after the pre_chain is done.
-        processors=[
-            # Remove _record & _from_structlog.
-            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            pretty_log_renderer,
-        ],
-    )
+    json_formatter = formatter_for(structlog.processors.JSONRenderer())
+    pretty_formatter = formatter_for(structlog.dev.ConsoleRenderer())
 
     handler = logging.StreamHandler()
     # Use OUR `ProcessorFormatter` to format all `logging` entries.

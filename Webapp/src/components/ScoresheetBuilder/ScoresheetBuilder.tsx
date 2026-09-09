@@ -1,6 +1,5 @@
 import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
-import _, { cloneDeep } from "lodash"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
@@ -10,6 +9,7 @@ import {
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../redux/services/aemsApi"
+import { uniqBy } from "../../utils/collections"
 import { AvailableMoveDirections } from "../roles/scribe/Interfaces"
 import { AddNewMove } from "./AddMove"
 import { EditDeleteMove } from "./EditDeleteMove"
@@ -59,7 +59,7 @@ export const ScoresheetMoves = ({
 			? [...bonusInfo.data].sort(sortBonuses)
 			: []
 		setNewBonusInfo((orderedBonuses as NewBonusInfo[]) || [])
-		const uniqueBonusNames = _.uniqBy(orderedBonuses || [], "name")
+		const uniqueBonusNames = uniqBy(orderedBonuses || [], "name")
 		const originalUniqueBonusNameList: string[] = []
 		uniqueBonusNames.forEach((b) => {
 			if (b?.name) {
@@ -202,13 +202,11 @@ export const ScoresheetMoves = ({
 				  )
 				: [])
 		])
-		setUniqueBonusNamesList(cloneDeep([...uniqueBonusNamesList, bonusName]))
+		setUniqueBonusNamesList([...uniqueBonusNamesList, bonusName])
 	}
 	const deleteBonusType = (deletedBonusName: string) => {
 		setUniqueBonusNamesList(
-			_.cloneDeep([
-				...uniqueBonusNamesList.filter((b) => b !== deletedBonusName)
-			])
+			uniqueBonusNamesList.filter((b) => b !== deletedBonusName)
 		)
 		setNewBonusInfo(newBonusInfo.filter((b) => b.name !== deletedBonusName))
 	}

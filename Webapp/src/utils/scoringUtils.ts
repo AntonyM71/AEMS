@@ -1,4 +1,3 @@
-import { flatten, groupBy, partition, sum, uniqBy } from "lodash"
 import { AvailableBonusType } from "../components/roles/scribe/InfoBar/ScoredMove"
 import {
 	directionType,
@@ -6,6 +5,7 @@ import {
 	scoredBonusType,
 	scoredMovesType
 } from "../components/roles/scribe/Interfaces"
+import { groupBy, uniqBy } from "./collections"
 
 export function calculateSingleJudgeRunScore(
 	scoredMoves: scoredMovesType[],
@@ -21,7 +21,7 @@ export function calculateSingleJudgeRunScore(
 		)
 		const moveData = availableMoves.filter((m) => m.id === id)
 
-		const scores: MoveScoreInfo[] = flatten(
+		const scores: MoveScoreInfo[] = (
 			moveData[0]?.direction.split("").map((d) => {
 				if (!moveData) {
 					return []
@@ -48,17 +48,14 @@ export function calculateSingleJudgeRunScore(
 					moveAvailableBonuses
 				)
 			}) || []
-		)
+		).flat()
 
 		return scores
 	})
 
 	const highestScoredMove =
 		scoredMoveScores && scoredMoves.length
-			? scoredMoveScores
-					.flat()
-					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
+			? Math.max(0, ...scoredMoveScores.flat().map((a) => a.value))
 			: 0
 
 	let runScore = 0
@@ -66,16 +63,20 @@ export function calculateSingleJudgeRunScore(
 		if (am && am.length === 1) {
 			runScore = runScore + am[0].value
 		} else if (am && am.length > 1) {
-			const leftRightPartition = partition(am, (ami) =>
-				frontLeftDirectionValues.includes(ami.direction)
-			)
+			const leftRightPartition = [
+				am.filter((ami) =>
+					frontLeftDirectionValues.includes(ami.direction)
+				),
+				am.filter(
+					(ami) => !frontLeftDirectionValues.includes(ami.direction)
+				)
+			]
 
-			leftRightPartition.map((directionalScoredMoves) => {
-				const moveScore = directionalScoredMoves
-					.map((a) => a.value)
-					?.reduce(getMaximumScoredMoveFromArrayByValue, 0)
+			leftRightPartition.forEach((directionalScoredMoves) => {
 				if (directionalScoredMoves.length !== 0) {
-					runScore = runScore + moveScore
+					runScore =
+						runScore +
+						Math.max(0, ...directionalScoredMoves.map((a) => a.value))
 				}
 			})
 		}
@@ -83,9 +84,6 @@ export function calculateSingleJudgeRunScore(
 
 	return { score: runScore, highestMove: highestScoredMove }
 }
-
-const getMaximumScoredMoveFromArrayByValue = (prev: number, current: number) =>
-	prev > current ? prev : current
 
 export const calculateMoveScore = (
 	scoredMove: scoredMovesType,
@@ -103,7 +101,10 @@ export const calculateMoveScore = (
 
 	return {
 		baseMove: baseMove?.id ?? "",
-		value: sum([moveBaseScore, ...scoredBonusValues]),
+		value: [moveBaseScore, ...scoredBonusValues].reduce(
+			(runningTotal, score) => runningTotal + score,
+			0
+		),
 		direction: scoredMove.direction,
 		moveType: scoredMove.moveId
 	}

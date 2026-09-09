@@ -75,7 +75,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 						variant={titleVariant}
 						sx={{ color: "text.primary" }}
 					>
-						{competitionData?.[0].name}
+						{competitionData[0].name}
 					</Typography>
 					<Box
 						sx={{
@@ -92,7 +92,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 								color: "text.primary"
 							}}
 						>
-							{`Event : ${eventData?.name}`}
+							{`Event : ${eventData.name}`}
 						</Typography>
 						<Typography
 							variant={detailVariant}
@@ -101,7 +101,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 								color: "text.primary"
 							}}
 						>
-							{`Phase : ${phaseData?.name}`}
+							{`Phase : ${phaseData.name}`}
 						</Typography>
 					</Box>
 				</Box>
@@ -121,7 +121,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 							color: "text.secondary"
 						}}
 					>
-						{`Runs : ${phaseData?.number_of_runs}`}
+						{`Runs : ${phaseData.number_of_runs}`}
 					</Typography>
 					<Typography
 						variant={detailVariant}
@@ -130,7 +130,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 							color: "text.secondary"
 						}}
 					>
-						{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
+						{`Scoring Runs : ${phaseData.number_of_runs_for_score}`}
 					</Typography>
 				</Box>
 			</Stack>

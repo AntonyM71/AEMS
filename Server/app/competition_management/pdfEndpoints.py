@@ -61,31 +61,17 @@ class HelveticaNeuePDF(FPDF):
 
 
 def sanitize_filename(filename: str) -> str:
+    """Make a user-supplied name safe to drop into a Content-Disposition header.
+
+    Removes control characters (CR/LF would allow header injection) and the
+    characters that are invalid in filenames or act as header-parameter
+    delimiters (`;`, `,`).
     """
-    Sanitize a filename for safe use in HTTP Content-Disposition headers and
-    across different operating systems.
-
-    Strips control characters (including CR/LF that could enable header
-    injection), removes leading/trailing whitespace and dots, replaces spaces
-    with underscores, and replaces characters that are invalid in filenames or
-    that are HTTP header-parameter delimiters (`;` and `,`).
-
-    Args:
-        filename: The filename to sanitize
-
-    Returns:
-        A sanitized filename safe for use in HTTP headers and file systems
-    """
-    # Strip control characters (ASCII 0-31 and 127), including CR (\r) and
-    # LF (\n) which could enable HTTP header injection via Content-Disposition
     filename = "".join(c for c in filename if ord(c) >= 32 and ord(c) != 127)
-    # Strip leading/trailing whitespace and dots
     filename = filename.strip(". ")
-    # Replace spaces with underscores
     filename = filename.replace(" ", "_")
-    # Remove or replace characters that are problematic in filenames or that
-    # are HTTP header-parameter delimiters (RFC 6266 / RFC 2616).
-    # ';' separates Content-Disposition parameters, ',' separates header values.
+    # `;` and `,` are Content-Disposition parameter/value delimiters (RFC 6266);
+    # the rest are invalid in filenames on common filesystems.
     invalid_chars = '<>:"/\\|?*;,'
     for char in invalid_chars:
         filename = filename.replace(char, "_")
