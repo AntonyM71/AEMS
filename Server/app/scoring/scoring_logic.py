@@ -379,22 +379,33 @@ def calculate_rank(
     sorted_athletes_scores = sorted(
         athlete_scores, key=lambda x: x.total_score or 0, reverse=True
     )
-    rank = 0
 
     for s in sorted_athletes_scores:
+        if s.total_score is None or not check_athlete_started_at_least_one_ride(s):
+            continue
+
         athletes_with_same_score = [
-            item for item in sorted_athletes_scores if item.total_score == s.total_score
+            item
+            for item in sorted_athletes_scores
+            if item.total_score == s.total_score
+            and check_athlete_started_at_least_one_ride(item)
         ]
-        if check_athlete_started_at_least_one_ride(s):
-            if len(athletes_with_same_score) == 1:
-                rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
-                s.ranking = rank
-            else:
-                rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
-                s.ranking = rank + rank_info.ranking + 1
-                s.reason = build_tie_break_reason(
-                    s.athlete_id, athletes_with_same_score, bib_numbers
-                )
+        athletes_ranked_above = sum(
+            1
+            for a in sorted_athletes_scores
+            if a.total_score is not None
+            and a.total_score > s.total_score
+            and check_athlete_started_at_least_one_ride(a)
+        )
+
+        if len(athletes_with_same_score) == 1:
+            s.ranking = athletes_ranked_above + 1
+        else:
+            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+            s.ranking = athletes_ranked_above + rank_info.ranking + 1
+            s.reason = build_tie_break_reason(
+                s.athlete_id, athletes_with_same_score, bib_numbers
+            )
 
     return sorted_athletes_scores
 
