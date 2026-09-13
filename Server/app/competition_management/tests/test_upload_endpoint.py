@@ -45,6 +45,12 @@ def test_number_of_runs_of_zero_is_rejected() -> None:
     assert response.status_code == 422
 
 
+def test_number_of_runs_for_score_of_zero_is_rejected() -> None:
+    response = _post({**VALID_FORM, "number_of_runs_for_score": "0"})
+
+    assert response.status_code == 422
+
+
 def test_number_of_runs_for_score_exceeding_number_of_runs_is_rejected() -> None:
     response = _post(
         {**VALID_FORM, "number_of_runs": "1", "number_of_runs_for_score": "2"}
