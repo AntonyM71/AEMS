@@ -2297,11 +2297,13 @@ class TestAthleteRankCalculation:
             "Tie resolved by highest scoring run: #3 (0.20), #4 (0.15)"
         )
 
-    def test_it_does_not_crash_on_a_mixed_run_count_tie(
+    def test_a_mixed_run_count_tie_shares_a_rank(
         self,
     ) -> None:
         # supported but discouraged: #3 ran once, #4 ran twice, and the two
-        # draw on every criterion once the missing run counts as 0.
+        # draw on every criterion once the missing run counts as 0. They must
+        # share a rank AND be reported as an unresolved tie - not one above
+        # the other.
         id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
         id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
@@ -2314,9 +2316,14 @@ class TestAthleteRankCalculation:
             bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
         )
 
-        reasons = {a.athlete_id: a.reason for a in got}
-        assert reasons[UUID(id_3)] == "Tie unresolved - athletes remain tied: #3, #4"
-        assert reasons[UUID(id_4)] == "Tie unresolved - athletes remain tied: #3, #4"
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == by_id[UUID(id_4)].ranking
+        assert by_id[UUID(id_3)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+        assert by_id[UUID(id_4)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
 
     def test_it_ranks_a_resolved_pair_above_a_lower_scoring_tied_pair(
         self,

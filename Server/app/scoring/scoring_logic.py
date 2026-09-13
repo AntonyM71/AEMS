@@ -471,14 +471,12 @@ def athletes_with_this_exact_score_after_tiebreak(
 
 
 def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
+    run_count = max(len(a.run_scores), len(this_athlete.run_scores))
     return (
         _scores_match(a.total_score, this_athlete.total_score)
         and a.highest_scoring_move == this_athlete.highest_scoring_move
-        and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
-        == [
-            get_nth_highest_score(i)(this_athlete)
-            for i, r in enumerate(this_athlete.run_scores)
-        ]
+        and [get_nth_highest_score(i)(a) for i in range(run_count)]
+        == [get_nth_highest_score(i)(this_athlete) for i in range(run_count)]
     )
 
 
