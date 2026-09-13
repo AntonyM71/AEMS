@@ -107,7 +107,18 @@ async def get_one_by_primary_key(
     return _build_phase_response(phase, join_foreign_table)
 
 
-@phase_router.patch("/{id}")
+@phase_router.patch(
+    "/{id}",
+    responses={
+        404: {"description": "Phase not found"},
+        422: {
+            "description": (
+                "number_of_runs and number_of_runs_for_score must be positive, "
+                "with number_of_runs_for_score no greater than number_of_runs."
+            )
+        },
+    },
+)
 async def partial_update_one_by_primary_key(
     id: UUID,
     phase_update: PhaseUpdate,
@@ -127,6 +138,9 @@ async def partial_update_one_by_primary_key(
     for field, value in update_data.items():
         setattr(phase, field, value)
 
+    if phase.number_of_runs is None or phase.number_of_runs_for_score is None:
+        msg = "number_of_runs and number_of_runs_for_score cannot be null"
+        raise HTTPException(status_code=422, detail=msg)
     if phase.number_of_runs_for_score > phase.number_of_runs:
         msg = "number_of_runs_for_score cannot exceed number_of_runs"
         raise HTTPException(status_code=422, detail=msg)
