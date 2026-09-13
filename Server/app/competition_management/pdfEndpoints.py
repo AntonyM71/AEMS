@@ -420,7 +420,7 @@ def build_heat_results_pdf_content(
 
 
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
-async def phase_pdf(
+def phase_pdf(
     phase_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> Response:
@@ -452,7 +452,7 @@ async def phase_pdf(
 
 
 @pdf_router.get("/heat_pdf", status_code=status.HTTP_200_OK)
-async def heat_pdf(
+def heat_pdf(
     heat_ids: list[str] = Query(None),
     db: Session = Depends(get_transaction_session),
 ) -> Response:
@@ -503,7 +503,7 @@ async def heat_pdf(
 
 
 @pdf_router.get("/heat_results_pdf", status_code=status.HTTP_200_OK)
-async def heat_results_pdf(
+def heat_results_pdf(
     heat_id: str = Query(None),
     db: Session = Depends(get_transaction_session),
 ) -> Response:
