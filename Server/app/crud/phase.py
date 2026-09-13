@@ -127,6 +127,10 @@ async def partial_update_one_by_primary_key(
     for field, value in update_data.items():
         setattr(phase, field, value)
 
+    if phase.number_of_runs_for_score > phase.number_of_runs:
+        msg = "number_of_runs_for_score cannot exceed number_of_runs"
+        raise HTTPException(status_code=422, detail=msg)
+
     db.commit()
     db.refresh(phase)
     return PhaseResponse.model_validate(phase)

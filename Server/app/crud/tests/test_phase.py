@@ -377,5 +377,74 @@ def test_patch_update_phase_not_found(
     data = response.json()
     assert data["detail"] == "Phase not found"
 
+
+def test_post_rejects_a_zero_number_of_runs(test_client: TestClient) -> None:
+    """A phase with no runs can silently break tie-ranking (a run count of
+    0 makes scoring fall back to per-athlete run counts) - reject it up
+    front rather than letting it into the database."""
+    phase_data = [
+        {
+            "event_id": "22222222-2222-2222-2222-222222222222",
+            "name": "New Phase",
+            "number_of_runs": 0,
+            "number_of_runs_for_score": 2,
+            "number_of_judges": 7,
+            "scoresheet": "33333333-3333-3333-3333-333333333333",
+        }
+    ]
+    response = test_client.post("/phase/", json=phase_data)
+
+    assert response.status_code == 422
+
+
+def test_post_rejects_more_scoring_runs_than_runs(test_client: TestClient) -> None:
+    """A phase can't count more runs towards a score than it has runs."""
+    phase_data = [
+        {
+            "event_id": "22222222-2222-2222-2222-222222222222",
+            "name": "New Phase",
+            "number_of_runs": 2,
+            "number_of_runs_for_score": 3,
+            "number_of_judges": 7,
+            "scoresheet": "33333333-3333-3333-3333-333333333333",
+        }
+    ]
+    response = test_client.post("/phase/", json=phase_data)
+
+    assert response.status_code == 422
+
+
+def test_patch_rejects_a_zero_number_of_runs(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(f"/phase/{phase_id}", json={"number_of_runs": 0})
+
+    assert response.status_code == 422
+    assert not mock_db_session.commit.called
+
+
+def test_patch_rejects_scoring_runs_that_exceed_the_existing_number_of_runs(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    """mock_phase has number_of_runs=2. Raising number_of_runs_for_score alone
+    to more than that must be rejected - the check has to see the merged
+    state, not just the fields in this request."""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(
+        f"/phase/{phase_id}", json={"number_of_runs_for_score": 5}
+    )
+
+    assert response.status_code == 422
+    assert not mock_db_session.commit.called
+
     # Verify commit was not called
     assert not mock_db_session.commit.called

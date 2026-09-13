@@ -17,6 +17,7 @@ from app.scoring.scoring_logic import (
     PydanticScoredMovesResponse,
     RunMoves,
     RunScores,
+    _ordinal,
     build_tie_break_reason,
     calculate_heat_scores,
     calculate_rank,
@@ -2239,11 +2240,70 @@ class TestAthleteRankCalculation:
         )
         assert got == want
 
-    def test_it_does_not_crash_on_a_mixed_run_count_tie(
+    def test_two_totals_equal_to_two_decimals_are_treated_as_a_tie(
+        self,
+    ) -> None:
+        # Same per-run scores for both, so they are tied on every criterion -
+        # only the raw total_score float differs by a ULP (0.1 + 0.2 ==
+        # 0.30000000000000004, not 0.3). calculate_rank must still call it a
+        # fully tied pair, not rank one a full place above the other.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [15.0, 15.0], highest_move=15.0, total_score=0.1 + 0.2),
+            _tied_athlete(id_4, [15.0, 15.0], highest_move=15.0, total_score=0.3),
+        ]
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == 1
+        assert by_id[UUID(id_4)].ranking == 1
+        assert by_id[UUID(id_3)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+        assert by_id[UUID(id_4)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+
+    def test_a_ulp_apart_total_tie_resolved_by_run_leaves_no_rank_gap(
+        self,
+    ) -> None:
+        # Totals tie to 2dp (0.1 + 0.2 vs 0.15 + 0.15) but their best runs
+        # differ, so the tiebreak engine resolves it - #3's better run wins.
+        # #4 must rank immediately below at 2, not 3: being matched into #3's
+        # tie group must not *also* count #3 as "ranked above" #4.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [0.1, 0.2], highest_move=0.2, total_score=0.1 + 0.2),
+            _tied_athlete(
+                id_4, [0.15, 0.15], highest_move=0.2, total_score=0.15 + 0.15
+            ),
+        ]
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == 1
+        assert by_id[UUID(id_4)].ranking == 2
+        assert by_id[UUID(id_3)].reason == (
+            "Tie resolved by highest scoring run: #3 (0.20), #4 (0.15)"
+        )
+
+    def test_a_mixed_run_count_tie_shares_a_rank(
         self,
     ) -> None:
         # supported but discouraged: #3 ran once, #4 ran twice, and the two
-        # draw on every criterion once the missing run counts as 0.
+        # draw on every criterion once the missing run counts as 0. They must
+        # share a rank AND be reported as an unresolved tie - not one above
+        # the other.
         id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
         id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
@@ -2256,9 +2316,14 @@ class TestAthleteRankCalculation:
             bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
         )
 
-        reasons = {a.athlete_id: a.reason for a in got}
-        assert reasons[UUID(id_3)] == "Tie unresolved - athletes remain tied: #3, #4"
-        assert reasons[UUID(id_4)] == "Tie unresolved - athletes remain tied: #3, #4"
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == by_id[UUID(id_4)].ranking
+        assert by_id[UUID(id_3)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+        assert by_id[UUID(id_4)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
 
     def test_it_ranks_a_resolved_pair_above_a_lower_scoring_tied_pair(
         self,
@@ -2538,6 +2603,47 @@ class TestAthleteRankCalculation:
         assert got[UUID(zero_id)].ranking == 1
         assert got[UUID(zero_id)].reason is None
 
+    def test_it_returns_an_empty_list_for_no_athletes(self) -> None:
+        assert calculate_rank([]) == []
+
+    def test_a_field_where_everyone_did_not_start_gets_no_rankings(self) -> None:
+        ids = [
+            "c7476320-6c48-11ee-b962-0242ac120001",
+            "c7476320-6c48-11ee-b962-0242ac120002",
+        ]
+        scores = [
+            AthleteScores(
+                athlete_id=UUID(i),
+                run_scores=[
+                    RunScores(
+                        run_number=1,
+                        judge_scores=[],
+                        mean_run_score=0.0,
+                        highest_scoring_move=0.0,
+                        locked=False,
+                        did_not_start=True,
+                    )
+                ],
+                highest_scoring_move=0.0,
+                total_score=0.0,
+            )
+            for i in ids
+        ]
+
+        got = calculate_rank(scores)
+
+        assert [a.ranking for a in got] == [None, None]
+
+    def test_a_single_athlete_field_ranks_that_athlete_first(self) -> None:
+        athlete_id = "c7476320-6c48-11ee-b962-0242ac120001"
+
+        got = calculate_rank(
+            [_tied_athlete(athlete_id, [25.0, 25.0], highest_move=25.0)]
+        )
+
+        assert got[0].ranking == 1
+        assert got[0].reason is None
+
     def test_the_reason_falls_back_to_athlete_id_when_no_bibs_are_given(self) -> None:
         id_1 = "c7476320-6c48-11ee-b962-0242ac120001"
         id_2 = "c7476320-6c48-11ee-b962-0242ac120002"
@@ -2559,6 +2665,29 @@ class TestAthleteRankCalculation:
 A = "c7476320-6c48-11ee-b962-0242ac120001"
 B = "c7476320-6c48-11ee-b962-0242ac120002"
 C = "c7476320-6c48-11ee-b962-0242ac120003"
+
+
+class TestOrdinal:
+    @pytest.mark.parametrize(
+        ("number", "expected"),
+        [
+            (1, "1st"),
+            (2, "2nd"),
+            (3, "3rd"),
+            (4, "4th"),
+            (11, "11th"),
+            (12, "12th"),
+            (13, "13th"),
+            (21, "21st"),
+            (22, "22nd"),
+            (23, "23rd"),
+            (111, "111th"),
+            (112, "112th"),
+            (113, "113th"),
+        ],
+    )
+    def test_it_formats_the_ordinal(self, number: int, expected: str) -> None:
+        assert _ordinal(number) == expected
 
 
 class TestBuildTieBreakReason:
@@ -2679,4 +2808,17 @@ class TestBuildTieBreakReason:
         assert build_tie_break_reason(UUID(B), tied, bibs) == unresolved
         assert build_tie_break_reason(UUID(cleared_id), tied, bibs) == (
             "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        )
+
+    def test_it_mixes_bib_and_uuid_labels_when_a_bib_is_missing(self) -> None:
+        tied = [
+            _tied_athlete(A, [30.0, 20.0], highest_move=10.0),
+            _tied_athlete(B, [25.0, 25.0], highest_move=10.0),
+        ]
+        # only A has a bib
+        bibs = {UUID(A): "7"}
+
+        assert build_tie_break_reason(UUID(A), tied, bibs) == (
+            f"Tie resolved by highest scoring run: #7 (30.00), "
+            f"athlete {UUID(B)} (25.00)"
         )
