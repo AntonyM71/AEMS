@@ -14,8 +14,10 @@ from app.scoring.customScoringEndpoints import (
     get_heat_info_logic,
     get_moves_from_server,
     on_run_status,
+    update_athlete_score,
 )
 from app.scoring.scoring_logic import (
+    AddUpdateScoredMovesRequest,
     AthleteScoreInfo,
     AthleteScores,
     JudgeScores,
@@ -690,3 +692,36 @@ async def test_on_run_status_persists_and_broadcasts(
         await on_run_status(sid="test-sid", data=payload)
 
     mock_emit.assert_awaited_once_with("run_status", payload, namespace="/run_status")
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_persists_and_broadcasts(
+    mock_db_session: Session,
+) -> None:
+    heat_id = str(uuid.uuid4())
+    athlete_id = str(uuid.uuid4())
+    judge_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    # one .filter() call with 4 conditions, then .first() -- see check_run_is_locked
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+    request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        patch(
+            "app.scoring.customScoringEndpoints.get_moves_from_server"
+        ) as mock_get_moves,
+    ):
+        mock_get_moves.return_value = {"heat_id": heat_id}
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert mock_db_session.commit.called
+    mock_emit.assert_awaited_once()

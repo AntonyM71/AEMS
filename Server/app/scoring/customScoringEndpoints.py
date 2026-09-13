@@ -133,6 +133,76 @@ class UpdatingLockedRunError(Exception):
     pass
 
 
+def _persist_athlete_score(
+    db: Session,
+    heat_id: str,
+    athlete_id: str,
+    run_number: str,
+    judge_id: str,
+    phase_id: str,
+    scored_moves_list: AddUpdateScoredMovesRequest,
+) -> "UpdatedRideMetaData":
+    with db.begin():
+        run_is_locked = check_run_is_locked(
+            db=db,
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            phase_id=phase_id,
+        )
+        if run_is_locked:
+            msg = "Score Update not processed as the run is locked"
+            raise UpdatingLockedRunError(msg)
+        scored_moves = (
+            db.query(ScoredMoves.id)
+            .filter(ScoredMoves.heat_id == heat_id)
+            .filter(ScoredMoves.athlete_id == athlete_id)
+            .filter(ScoredMoves.run_number == run_number)
+            .filter(ScoredMoves.judge_id == judge_id)
+        )
+
+        delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
+            ScoredBonuses.move_id.in_(scored_moves)
+        )
+        db.execute(delete_scored_bonuses_statement)
+        delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
+            ScoredMoves.id.in_(scored_moves)
+        )
+        db.execute(delete_scored_moves_statement)
+
+        db.bulk_save_objects(
+            [
+                ScoredMoves(
+                    **move.model_dump(),
+                    judge_id=judge_id,
+                    heat_id=heat_id,
+                    phase_id=phase_id,
+                    athlete_id=athlete_id,
+                    run_number=run_number,
+                )
+                for move in scored_moves_list.moves
+            ]
+        )
+        db.bulk_save_objects(
+            [
+                ScoredBonuses(
+                    **bonus.model_dump(),
+                    judge_id=judge_id,
+                )
+                for bonus in scored_moves_list.bonuses
+            ]
+        )
+
+        db.commit()
+        return UpdatedRideMetaData(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            judge_id=judge_id,
+            phase_id=phase_id,
+        )
+
+
 @scoring_router.post(
     "/addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}"
 )
@@ -146,73 +216,22 @@ async def update_athlete_score(
     db: Session = Depends(get_transaction_session),
 ) -> None:
     try:
-        with db.begin():
-            run_is_locked = check_run_is_locked(
-                db=db,
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                phase_id=phase_id,
-            )
-            if run_is_locked:
-                msg = "Score Update not processed as the run is locked"
-                raise UpdatingLockedRunError(  # noqa: TRY301
-                    msg
-                )
-            scored_moves = (
-                db.query(ScoredMoves.id)
-                .filter(ScoredMoves.heat_id == heat_id)
-                .filter(ScoredMoves.athlete_id == athlete_id)
-                .filter(ScoredMoves.run_number == run_number)
-                .filter(ScoredMoves.judge_id == judge_id)
-            )
-
-            delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
-                ScoredBonuses.move_id.in_(scored_moves)
-            )
-            db.execute(delete_scored_bonuses_statement)
-            delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
-                ScoredMoves.id.in_(scored_moves)
-            )
-            db.execute(delete_scored_moves_statement)
-
-            db.bulk_save_objects(
-                [
-                    ScoredMoves(
-                        **move.model_dump(),
-                        judge_id=judge_id,
-                        heat_id=heat_id,
-                        phase_id=phase_id,
-                        athlete_id=athlete_id,
-                        run_number=run_number,
-                    )
-                    for move in scored_moves_list.moves
-                ]
-            )
-            db.bulk_save_objects(
-                [
-                    ScoredBonuses(
-                        **bonus.model_dump(),
-                        judge_id=judge_id,
-                    )
-                    for bonus in scored_moves_list.bonuses
-                ]
-            )
-
-            db.commit()
-            websocket_message = UpdatedRideMetaData(
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                judge_id=judge_id,
-                phase_id=phase_id,
-            )
-            scored_data = await get_moves_from_server(websocket_message)
-            await sio.emit(
-                "current_scores",
-                scored_data,
-                namespace="/current_scores",
-            )
+        websocket_message = await anyio.to_thread.run_sync(
+            _persist_athlete_score,
+            db,
+            heat_id,
+            athlete_id,
+            run_number,
+            judge_id,
+            phase_id,
+            scored_moves_list,
+        )
+        scored_data = await get_moves_from_server(websocket_message)
+        await sio.emit(
+            "current_scores",
+            scored_data,
+            namespace="/current_scores",
+        )
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
