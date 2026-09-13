@@ -9,6 +9,7 @@ from io import BytesIO
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from httpx import Response
 
 from main import app
 
@@ -30,7 +31,7 @@ VALID_FORM = {
 }
 
 
-def _post(form: dict) -> object:
+def _post(form: dict) -> Response:
     return client.post(
         "/competition_management/upload",
         data=form,
