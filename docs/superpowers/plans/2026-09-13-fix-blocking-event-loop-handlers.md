@@ -762,9 +762,61 @@ Expected: all pass, no lint errors
 
 ---
 
+## Task 9: Tighten the performance regression thresholds
+
+**Grounding:** `Server/performance/test_key_endpoint_performance.py`'s `MEAN_THRESHOLD_SECONDS` (score_submission 50ms, score_calculation/csv_upload 250ms, pdf_generation 450ms) were set at ~3x the mean latency observed across two real Azure Pipelines runs of the *pre-fix*, event-loop-blocking implementation. Once Phase 3 lands, every one of these endpoints runs its blocking work in a thread instead of on the event loop — the *serial*, one-at-a-time latency this suite measures won't necessarily drop (threadpool dispatch has a small cost of its own, and these numbers were never about concurrency in the first place — see `test_event_loop_concurrency.py`, which stays threshold-free per its own exploratory-tool framing), but the thresholds should still be re-derived from real post-fix numbers rather than left pointing at the old, blocking-implementation baseline.
+
+**Files:**
+- Modify: `Server/performance/test_key_endpoint_performance.py:12-27` (`MEAN_THRESHOLD_SECONDS` and its comment)
+
+- [ ] **Step 1: Get real post-fix numbers from CI**
+
+Push Phase 3's final commit and let the `PerformanceTests` Azure Pipelines job run. Read the `benchmark: 4 tests` table from its log (or download the `performance-benchmarks` artifact's `benchmark-results.json`) for the new Mean value of each of the four tests. Do this for at least two separate CI runs, the same way the original thresholds were derived, so the new numbers account for CI jitter rather than one lucky/unlucky run.
+
+- [ ] **Step 2: Update `MEAN_THRESHOLD_SECONDS`**
+
+Replace the values and the comment above them in `test_key_endpoint_performance.py` with the new observed means and a threshold of ~3x the higher of the new runs, e.g.:
+
+```python
+# Mean-latency ceilings, in seconds -- generous "did this regress badly"
+# gates, not tight tracking (that's what benchmark-results.json is for).
+# Set from two real Azure Pipelines runs of this suite AFTER the
+# event-loop-blocking fix (docs/superpowers/plans/2026-09-13-fix-blocking-event-loop-handlers.md):
+#   score_submission:   <new mean 1>, <new mean 2>
+#   score_calculation:  <new mean 1>, <new mean 2>
+#   csv_upload:         <new mean 1>, <new mean 2>
+#   pdf_generation:     <new mean 1>, <new mean 2>
+# Threshold = ~3x the higher of the two observed means, to absorb shared
+# CI runner jitter.
+MEAN_THRESHOLD_SECONDS = {
+    "score_submission": <new threshold>,
+    "score_calculation": <new threshold>,
+    "csv_upload": <new threshold>,
+    "pdf_generation": <new threshold>,
+}
+```
+
+- [ ] **Step 3: Confirm the new thresholds pass**
+
+Run: `uv run python -m pytest performance/test_key_endpoint_performance.py --no-cov -v`
+Expected: PASS, all 4 tests, against the new thresholds.
+
+- [ ] **Step 4: Spot-check the concurrency improvement (informational, no assertion)**
+
+Run `python -m scripts.bench_event_loop.py "http://localhost:8000/phase_pdf/{phase_id}" --concurrent-requests 10 --serve` (and the equivalent for a scoring endpoint) and compare req/s against the pre-fix numbers recorded earlier in this conversation (~7.5 req/s for PDF generation at 10 concurrent, pre-fix). Expect a substantial jump now that these handlers no longer block the event loop. This is a sanity check, not a test — `test_event_loop_concurrency.py` stays assertion-free per its exploratory-tool framing (see the commit that clarified this).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add performance/test_key_endpoint_performance.py
+git commit -m "performance: re-baseline mean-latency thresholds after the event-loop fix"
+```
+
+---
+
 ## Self-Review
 
-**Spec coverage:** every handler identified in the reality-check investigation as doing blocking work on the event loop is covered — Phase 1 (3 PDF handlers), Phase 2 (7 scoring handlers/helpers: 5 Mechanism A + `get_moves_from_server` + `update_athlete_score`, plus the `on_run_status` socket handler), Phase 3 (27 remaining handlers across `crud/`, `scoresheetEndpoints.py`, `promote_phase`). The out-of-scope worker-scaling item is explicitly called out in Global Constraints so it isn't silently dropped or silently attempted.
+**Spec coverage:** every handler identified in the reality-check investigation as doing blocking work on the event loop is covered — Phase 1 (3 PDF handlers), Phase 2 (7 scoring handlers/helpers: 5 Mechanism A + `get_moves_from_server` + `update_athlete_score`, plus the `on_run_status` socket handler), Phase 3 (27 remaining handlers across `crud/`, `scoresheetEndpoints.py`, `promote_phase`), Task 9 (re-baselining the tracked performance suite's thresholds now that the underlying implementation has changed). The out-of-scope worker-scaling item is explicitly called out in Global Constraints so it isn't silently dropped or silently attempted.
 
 **Placeholder scan:** every task shows the actual before/after code, exact file:line citations, and exact commands. The one exception — Task 6's `...` inside `_persist_athlete_score`'s body — is flagged inline as "copy verbatim from the existing lines," which is the same pattern used successfully in Tasks 1 and 3's worked examples, not a vague placeholder.
 
