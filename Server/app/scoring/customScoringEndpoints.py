@@ -314,6 +314,10 @@ async def get_heat_scores(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
+    return calculate_heat_scores_response(heat_id=heat_id, db=db)
+
+
+def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
     pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
