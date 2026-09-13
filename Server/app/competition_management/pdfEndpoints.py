@@ -12,9 +12,9 @@ from app.scoring.customScoringEndpoints import (
     HeatInfoResponse,
     HeatScoresResponse,
     PhaseScoresResponse,
+    calculate_heat_scores_response,
     calculate_phase_scores,
     get_heat_info_logic,
-    get_heat_scores,
 )
 from db.client import get_transaction_session
 from db.models import Competition, Event, Heat, Phase
@@ -512,7 +512,7 @@ async def heat_results_pdf(
             return Response(
                 status_code=404, content="Please provide a list of Heat IDs"
             )
-        heat_scores = await get_heat_scores(heat_id=heat_id, db=db)
+        heat_scores = calculate_heat_scores_response(heat_id=heat_id, db=db)
 
         heat_info = db.query(Heat).filter(Heat.id == heat_id).one()
 

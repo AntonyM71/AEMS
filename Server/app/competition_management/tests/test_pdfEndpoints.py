@@ -278,7 +278,7 @@ async def test_heat_results_pdf_success(
 
     # Mock heat scores
     with patch(
-        "app.competition_management.pdfEndpoints.get_heat_scores"
+        "app.competition_management.pdfEndpoints.calculate_heat_scores_response"
     ) as mock_scores:
         mock_scores.return_value.scores = [
             AthleteScoresWithAthleteInfo(
