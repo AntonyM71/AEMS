@@ -372,6 +372,16 @@ def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool
     return not (dns_list and all(dns_list))
 
 
+def _scores_match(a: float, b: float) -> bool:
+    """True when two totals are equal to two decimal places.
+
+    ``total_score`` is a sum of ``round(mean, 2)`` run means, so two athletes
+    who genuinely tie can end up a float ULP apart. Compare at the precision
+    scores are reported to. Callers pass non-``None`` floats.
+    """
+    return round(a, 2) == round(b, 2)
+
+
 def calculate_rank(
     athlete_scores: list[AthleteScores],
     bib_numbers: dict[UUID, str] | None = None,
@@ -387,7 +397,8 @@ def calculate_rank(
         athletes_with_same_score = [
             item
             for item in sorted_athletes_scores
-            if item.total_score == s.total_score
+            if item.total_score is not None
+            and _scores_match(item.total_score, s.total_score)
             and check_athlete_started_at_least_one_ride(item)
         ]
         athletes_ranked_above = sum(
@@ -395,6 +406,7 @@ def calculate_rank(
             for a in sorted_athletes_scores
             if a.total_score is not None
             and a.total_score > s.total_score
+            and not _scores_match(a.total_score, s.total_score)
             and check_athlete_started_at_least_one_ride(a)
         )
 
@@ -461,7 +473,7 @@ def athletes_with_this_exact_score_after_tiebreak(
 
 def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
     return (
-        a.total_score == this_athlete.total_score
+        _scores_match(a.total_score, this_athlete.total_score)
         and a.highest_scoring_move == this_athlete.highest_scoring_move
         and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
         == [

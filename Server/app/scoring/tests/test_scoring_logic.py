@@ -2239,6 +2239,63 @@ class TestAthleteRankCalculation:
         )
         assert got == want
 
+    def test_two_totals_equal_to_two_decimals_are_treated_as_a_tie(
+        self,
+    ) -> None:
+        # Same per-run scores for both, so they are tied on every criterion -
+        # only the raw total_score float differs by a ULP (0.1 + 0.2 ==
+        # 0.30000000000000004, not 0.3). calculate_rank must still call it a
+        # fully tied pair, not rank one a full place above the other.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [15.0, 15.0], highest_move=15.0, total_score=0.1 + 0.2),
+            _tied_athlete(id_4, [15.0, 15.0], highest_move=15.0, total_score=0.3),
+        ]
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == 1
+        assert by_id[UUID(id_4)].ranking == 1
+        assert by_id[UUID(id_3)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+        assert by_id[UUID(id_4)].reason == (
+            "Tie unresolved - athletes remain tied: #3, #4"
+        )
+
+    def test_a_ulp_apart_total_tie_resolved_by_run_leaves_no_rank_gap(
+        self,
+    ) -> None:
+        # Totals tie to 2dp (0.1 + 0.2 vs 0.15 + 0.15) but their best runs
+        # differ, so the tiebreak engine resolves it - #3's better run wins.
+        # #4 must rank immediately below at 2, not 3: being matched into #3's
+        # tie group must not *also* count #3 as "ranked above" #4.
+        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+        scores = [
+            _tied_athlete(id_3, [0.1, 0.2], highest_move=0.2, total_score=0.1 + 0.2),
+            _tied_athlete(
+                id_4, [0.15, 0.15], highest_move=0.2, total_score=0.15 + 0.15
+            ),
+        ]
+
+        got = calculate_rank(
+            scores,
+            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
+        )
+
+        by_id = {a.athlete_id: a for a in got}
+        assert by_id[UUID(id_3)].ranking == 1
+        assert by_id[UUID(id_4)].ranking == 2
+        assert by_id[UUID(id_3)].reason == (
+            "Tie resolved by highest scoring run: #3 (0.20), #4 (0.15)"
+        )
+
     def test_it_does_not_crash_on_a_mixed_run_count_tie(
         self,
     ) -> None:
