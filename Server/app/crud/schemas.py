@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class EventNested(BaseModel):
@@ -185,17 +185,24 @@ class PhaseCreate(BaseModel):
     id: UUID | None = None
     event_id: UUID
     name: str
-    number_of_runs: int = 3
-    number_of_runs_for_score: int = 2
+    number_of_runs: int = Field(3, gt=0)
+    number_of_runs_for_score: int = Field(2, gt=0)
     number_of_judges: int = 3
     scoresheet: UUID
+
+    @model_validator(mode="after")
+    def _scoring_runs_fit_within_runs(self) -> "PhaseCreate":
+        if self.number_of_runs_for_score > self.number_of_runs:
+            msg = "number_of_runs_for_score cannot exceed number_of_runs"
+            raise ValueError(msg)
+        return self
 
 
 class PhaseUpdate(BaseModel):
     event_id: UUID | None = None
     name: str | None = None
-    number_of_runs: int | None = None
-    number_of_runs_for_score: int | None = None
+    number_of_runs: int | None = Field(None, gt=0)
+    number_of_runs_for_score: int | None = Field(None, gt=0)
     number_of_judges: int | None = None
     scoresheet: UUID | None = None
 
