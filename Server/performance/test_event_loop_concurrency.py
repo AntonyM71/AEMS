@@ -1,4 +1,8 @@
-"""Concurrency regression suite: do these endpoints block each other?
+"""Exploratory diagnostic: do these endpoints block each other?
+
+Not part of the tracked performance suite (test_key_endpoint_performance.py)
+and carries no speed assertions — this is a demonstration/diagnostic tool for
+the event-loop-blocking bug, not something to set regression thresholds on.
 
 test_key_endpoint_performance.py only ever times ONE call at a time —
 pytest-benchmark's `rounds` repeat serially, so a fully-blocking handler and
@@ -11,8 +15,8 @@ docs/superpowers/plans/2026-09-13-fix-blocking-event-loop-handlers.md is
 about. See also scripts/bench_event_loop.py for the same idea against a
 real running server.
 
-No hard speed assertions yet — these just print the observed req/s and
-assert correctness, until we have real CI numbers to set thresholds from.
+These just print the observed req/s and assert correctness (status codes) —
+that's it.
 
 Same DB/scoresheet requirements as test_key_endpoint_performance.py.
 """
