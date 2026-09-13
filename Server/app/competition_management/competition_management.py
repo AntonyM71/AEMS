@@ -54,7 +54,16 @@ class InvalidFileTypeError(Exception):
             ),
             "content": {
                 "application/json": {
-                    "schema": {"$ref": "#/components/schemas/HTTPValidationError"}
+                    "schema": {
+                        "anyOf": [
+                            {"$ref": "#/components/schemas/HTTPValidationError"},
+                            {
+                                "type": "object",
+                                "properties": {"detail": {"type": "string"}},
+                                "required": ["detail"],
+                            },
+                        ]
+                    }
                 }
             },
         },
