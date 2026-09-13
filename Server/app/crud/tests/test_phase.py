@@ -397,6 +397,42 @@ def test_post_rejects_a_zero_number_of_runs(test_client: TestClient) -> None:
     assert response.status_code == 422
 
 
+def test_post_rejects_a_zero_number_of_runs_for_score(
+    test_client: TestClient,
+) -> None:
+    """The gt=0 bound applies to number_of_runs_for_score independently of
+    number_of_runs, not just via the number_of_runs check."""
+    phase_data = [
+        {
+            "event_id": "22222222-2222-2222-2222-222222222222",
+            "name": "New Phase",
+            "number_of_runs": 3,
+            "number_of_runs_for_score": 0,
+            "number_of_judges": 7,
+            "scoresheet": "33333333-3333-3333-3333-333333333333",
+        }
+    ]
+    response = test_client.post("/phase/", json=phase_data)
+
+    assert response.status_code == 422
+
+
+def test_patch_rejects_a_zero_number_of_runs_for_score(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(
+        f"/phase/{phase_id}", json={"number_of_runs_for_score": 0}
+    )
+
+    assert response.status_code == 422
+    assert not mock_db_session.commit.called
+
+
 def test_post_rejects_more_scoring_runs_than_runs(test_client: TestClient) -> None:
     """A phase can't count more runs towards a score than it has runs."""
     phase_data = [
@@ -423,6 +459,23 @@ def test_patch_rejects_a_zero_number_of_runs(
 
     phase_id = str(mock_phase.id)
     response = test_client.patch(f"/phase/{phase_id}", json={"number_of_runs": 0})
+
+    assert response.status_code == 422
+    assert not mock_db_session.commit.called
+
+
+def test_patch_rejects_an_explicit_null_number_of_runs(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    """{"number_of_runs": null} is schema-valid (the field is Optional so
+    'omitted' has a default) but sets a NOT NULL column to None - must be a
+    422, not a crash comparing int > None."""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(f"/phase/{phase_id}", json={"number_of_runs": None})
 
     assert response.status_code == 422
     assert not mock_db_session.commit.called
