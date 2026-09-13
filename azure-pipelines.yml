@@ -11,7 +11,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync --dev
+          uv sync --dev --locked
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
       - script: |
@@ -49,7 +49,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync
+          uv sync --locked
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
 
@@ -86,7 +86,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync
+          uv sync --locked
         displayName: "Setup Timer Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Timer
       - script: |
@@ -170,7 +170,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync
+          uv sync --locked
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
 
