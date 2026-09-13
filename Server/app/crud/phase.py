@@ -107,7 +107,18 @@ async def get_one_by_primary_key(
     return _build_phase_response(phase, join_foreign_table)
 
 
-@phase_router.patch("/{id}")
+@phase_router.patch(
+    "/{id}",
+    responses={
+        404: {"description": "Phase not found"},
+        422: {
+            "description": (
+                "number_of_runs and number_of_runs_for_score must be positive, "
+                "with number_of_runs_for_score no greater than number_of_runs."
+            )
+        },
+    },
+)
 async def partial_update_one_by_primary_key(
     id: UUID,
     phase_update: PhaseUpdate,
