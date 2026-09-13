@@ -1,7 +1,12 @@
-"""Performance regression suite for the request types most exposed to
+"""Serial-latency regression suite for the request types most exposed to
 event-loop blocking: score calculations, PDF generation, score submission
 (needs immediate feedback for judges), and CSV competition upload. Excludes
 lightweight, non-time-critical CRUD (e.g. adding a heat/phase by hand).
+
+This only ever times ONE call at a time — see test_event_loop_concurrency.py
+for whether these endpoints block each other under concurrent load, which is
+the actual bug docs/superpowers/plans/2026-09-13-fix-blocking-event-loop-handlers.md
+is about.
 
 Runs against a REAL database — unlike Server/app/*/tests/, nothing here
 mocks db.client, so timings reflect actual query cost. Requires a migrated
@@ -9,7 +14,7 @@ dev/CI database and seeded scoresheets:
 
     alembic upgrade head
     python -m scripts.seed_scoresheets
-    uv run python -m pytest performance/ --benchmark-only
+    uv run python -m pytest performance/
 
 Never point this at a database with real competition data: the upload test
 creates a new competition on every one of its BENCHMARK_ROUNDS.

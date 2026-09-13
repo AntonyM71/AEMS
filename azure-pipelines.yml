@@ -64,7 +64,7 @@ jobs:
       - script: |
           CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
             $(Build.SourcesDirectory)/Server/.venv/bin/python -m pytest performance/ \
-            --benchmark-only --benchmark-json=benchmark-results.json --no-cov
+            --benchmark-json=benchmark-results.json --no-cov
         displayName: "Run Performance Benchmarks"
         workingDirectory: $(Build.SourcesDirectory)/Server
 
