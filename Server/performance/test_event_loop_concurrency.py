@@ -1,22 +1,12 @@
-"""Exploratory diagnostic: do these endpoints block each other?
+"""Does the event-loop-blocking fix actually stop these requests serializing?
 
-Not part of the tracked performance suite (test_key_endpoint_performance.py)
-and carries no speed assertions — this is a demonstration/diagnostic tool for
-the event-loop-blocking bug, not something to set regression thresholds on.
-
-test_key_endpoint_performance.py only ever times ONE call at a time —
-pytest-benchmark's `rounds` repeat serially, so a fully-blocking handler and
-a fully-async one look identical there. This file fires several requests at
-once with asyncio.gather against the real ASGI app (in-process over
-httpx.ASGITransport, no subprocess needed) so they genuinely share one event
-loop the way concurrent requests would in production — which is what the
-single-worker blocking-handler bug in
-docs/superpowers/plans/2026-09-13-fix-blocking-event-loop-handlers.md is
-about. See also scripts/bench_event_loop.py for the same idea against a
-real running server.
-
-These just print the observed req/s and assert correctness (status codes) —
-that's it.
+Unlike test_key_endpoint_performance.py, this fires requests concurrently
+(asyncio.gather over httpx.ASGITransport, in-process) so a blocking handler
+and a non-blocking one actually look different. Assertions compare a solo
+call's time against a concurrent batch's time rather than an absolute
+threshold, so they stay meaningful without CI-derived numbers. Some fail
+until the phase covering that endpoint lands — that's the intended signal,
+not a flaky test.
 
 Same DB/scoresheet requirements as test_key_endpoint_performance.py.
 """
@@ -39,6 +29,10 @@ from performance.test_key_endpoint_performance import (
 
 CONCURRENT_REQUESTS = 10
 
+# Concurrent batch must beat this fraction of N fully-serial calls; 1.0 is
+# fully serial, ~1/N is fully parallel. 0.5 has headroom without being loose.
+MAX_SERIAL_FRACTION = 0.5
+
 ClientCall = Callable[[httpx.AsyncClient], Awaitable[httpx.Response]]
 
 
@@ -52,6 +46,33 @@ async def _fire_concurrently(
         responses = await asyncio.gather(*(call(client) for call in calls))
         elapsed = time.perf_counter() - start
     return responses, elapsed
+
+
+async def _measure_solo(call: ClientCall) -> float:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        start = time.perf_counter()
+        response = await call(client)
+        elapsed = time.perf_counter() - start
+    assert response.status_code < 400, (
+        f"solo reference call failed: {response.status_code}"
+    )
+    return elapsed
+
+
+def _assert_not_serialized(
+    concurrent_elapsed: float, solo_elapsed: float, n: int
+) -> None:
+    serial_estimate = solo_elapsed * n
+    ceiling = serial_estimate * MAX_SERIAL_FRACTION
+    assert concurrent_elapsed < ceiling, (
+        f"{n} concurrent requests took {concurrent_elapsed:.3f}s -- expected "
+        f"under {ceiling:.3f}s ({MAX_SERIAL_FRACTION:.0%} of {n} fully-serial "
+        f"calls at {solo_elapsed:.3f}s each = {serial_estimate:.3f}s), "
+        "suggesting they serialized on the event loop instead of running "
+        "concurrently"
+    )
 
 
 def _report(name: str, elapsed: float, n: int) -> None:
@@ -84,13 +105,9 @@ def _make_score_submission_call(
 async def test_pdf_generation_does_not_block_score_submission(
     canned_phase: CannedPhase,
 ) -> None:
-    """The realistic scenario: a director generates one PDF while judges keep
-    submitting scores in the background. Firing 10 identical PDF requests at
-    once (the old version of this test) isn't realistic and is also
-    GIL-bound — fpdf2/font-subsetting is CPU-bound pure Python, so N threads
-    all doing that work don't parallelize with EACH OTHER regardless of the
-    event-loop fix. What the fix actually buys is this: unrelated light
-    requests no longer queue up behind the one heavy one."""
+    """10 identical PDF requests wouldn't show this fix: fpdf2/font-subsetting
+    is CPU-bound, so N threads doing that work contend on the GIL regardless.
+    One PDF alongside real traffic is the scenario that actually matters."""
     pdf_url = f"/phase_pdf/{canned_phase.phase_id}"
     judge_id = canned_phase.judge_ids[0]
     athlete_ids = canned_phase.athlete_ids[:CONCURRENT_REQUESTS]
@@ -122,34 +139,52 @@ async def test_pdf_generation_does_not_block_score_submission(
     )
     assert pdf_response.status_code == 200
     assert all(r.status_code == 200 for r in submission_responses)
+    # Fails until Phase 2 fixes update_athlete_score -- it still blocks the
+    # loop itself today, so submissions take about as long as the PDF.
+    assert submissions_elapsed < pdf_elapsed * MAX_SERIAL_FRACTION, (
+        f"{len(athlete_ids)} concurrent score submissions took "
+        f"{submissions_elapsed:.3f}s while the PDF was generating (took "
+        f"{pdf_elapsed:.3f}s total) -- expected them to finish in well under "
+        f"{MAX_SERIAL_FRACTION:.0%} of that "
+        f"({pdf_elapsed * MAX_SERIAL_FRACTION:.3f}s)"
+    )
 
 
 @pytest.mark.asyncio
 async def test_score_calculation_concurrency(canned_phase: CannedPhase) -> None:
+    """Fails until Phase 2 (Task 4) converts get_phase_scores off the event loop."""
     url = f"/getPhaseScores/{canned_phase.phase_id}"
-    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
+    solo_elapsed = await _measure_solo(lambda client: client.get(url))
 
+    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
     responses, elapsed = await _fire_concurrently(calls)
 
     _report("score_calculation", elapsed, CONCURRENT_REQUESTS)
     assert all(r.status_code == 200 for r in responses)
+    _assert_not_serialized(elapsed, solo_elapsed, CONCURRENT_REQUESTS)
 
 
 @pytest.mark.asyncio
 async def test_score_submission_concurrency(canned_phase: CannedPhase) -> None:
-    """A different athlete per concurrent submission — this tests whether one
-    judge's submission blocks another's, not DB write contention on one row."""
+    """A different athlete per submission -- tests cross-request blocking, not
+    DB write contention on one row. Fails until Phase 2 (Task 6) fixes this."""
     judge_id = canned_phase.judge_ids[0]
     athlete_ids = canned_phase.athlete_ids[:CONCURRENT_REQUESTS]
+    reference_athlete_id = canned_phase.athlete_ids[-1]
+
+    solo_elapsed = await _measure_solo(
+        _make_score_submission_call(canned_phase, reference_athlete_id, judge_id)
+    )
+
     calls = [
         _make_score_submission_call(canned_phase, athlete_id, judge_id)
         for athlete_id in athlete_ids
     ]
-
     responses, elapsed = await _fire_concurrently(calls)
 
     _report("score_submission", elapsed, len(athlete_ids))
     assert all(r.status_code == 200 for r in responses)
+    _assert_not_serialized(elapsed, solo_elapsed, len(athlete_ids))
 
 
 def _make_upload_call(scoresheet_name: str, csv_bytes: bytes) -> ClientCall:
@@ -173,6 +208,9 @@ def _make_upload_call(scoresheet_name: str, csv_bytes: bytes) -> ClientCall:
 
 @pytest.mark.asyncio
 async def test_csv_upload_concurrency(existing_scoresheet_name: str) -> None:
+    """No _assert_not_serialized: upload() is already non-blocking, but its
+    pandas parsing is CPU-bound enough (~0.7 concurrent/solo ratio measured)
+    that no fix would make a ratio assertion here reliably pass."""
     csv_bytes = _generate_competitors_csv(UPLOAD_ATHLETE_COUNT)
     calls = [
         _make_upload_call(existing_scoresheet_name, csv_bytes)
