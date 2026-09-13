@@ -3,6 +3,7 @@ import logging
 from math import inf
 from uuid import UUID
 
+import anyio.to_thread
 from fastapi import (
     APIRouter,
     Depends,
@@ -238,13 +239,9 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
     movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
 
 
-async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
-    """
-    Receives metadata for a scored ride and returns scored moves and bonuses as a dict.
-    Uses a transaction session context manager to ensure consistent session management.
-    """
+def _fetch_moves_and_bonuses_for_ride(metadata: UpdatedRideMetaData) -> dict:
     with transaction_session_context_manager() as db:
-        scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
+        scored_moves_and_bonuses = get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
             athlete_id=metadata.athlete_id,
             run_number=metadata.run_number,
@@ -260,6 +257,11 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
             phase_id=metadata.phase_id,
             judge_id=metadata.judge_id,
         ).model_dump(mode="json")
+
+
+async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
+    """Runs the blocking DB read in a worker thread so it doesn't stall the event loop."""
+    return await anyio.to_thread.run_sync(_fetch_moves_and_bonuses_for_ride, metadata)
 
 
 @scoring_router.get(
@@ -591,7 +593,7 @@ async def on_current_scores_disconnect(sid: str) -> None:
 @sio.on("run_status", namespace="/run_status")
 async def on_run_status(sid: str, data: dict) -> None:
     logging.info("Socket.IO /run_status: received message from %s", sid)
-    copy_message_to_db(json.dumps(data))
+    await anyio.to_thread.run_sync(copy_message_to_db, json.dumps(data))
     await sio.emit("run_status", data, namespace="/run_status")
 
 
