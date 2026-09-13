@@ -48,9 +48,15 @@ class InvalidFileTypeError(Exception):
     responses={
         422: {
             "description": (
-                "number_of_runs and number_of_runs_for_score must be positive, "
-                "with number_of_runs_for_score no greater than number_of_runs."
-            )
+                "Validation error. Includes number_of_runs and "
+                "number_of_runs_for_score must be positive, with "
+                "number_of_runs_for_score no greater than number_of_runs."
+            ),
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/HTTPValidationError"}
+                }
+            },
         },
     },
 )
