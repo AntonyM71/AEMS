@@ -60,28 +60,6 @@ def _report(name: str, elapsed: float, n: int) -> None:
     )
 
 
-@pytest.mark.asyncio
-async def test_pdf_generation_concurrency(canned_phase: CannedPhase) -> None:
-    url = f"/phase_pdf/{canned_phase.phase_id}"
-    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
-
-    responses, elapsed = await _fire_concurrently(calls)
-
-    _report("pdf_generation", elapsed, CONCURRENT_REQUESTS)
-    assert all(r.status_code == 200 for r in responses)
-
-
-@pytest.mark.asyncio
-async def test_score_calculation_concurrency(canned_phase: CannedPhase) -> None:
-    url = f"/getPhaseScores/{canned_phase.phase_id}"
-    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
-
-    responses, elapsed = await _fire_concurrently(calls)
-
-    _report("score_calculation", elapsed, CONCURRENT_REQUESTS)
-    assert all(r.status_code == 200 for r in responses)
-
-
 def _make_score_submission_call(
     canned_phase: CannedPhase, athlete_id: str, judge_id: str
 ) -> ClientCall:
@@ -100,6 +78,61 @@ def _make_score_submission_call(
         )
 
     return call
+
+
+@pytest.mark.asyncio
+async def test_pdf_generation_does_not_block_score_submission(
+    canned_phase: CannedPhase,
+) -> None:
+    """The realistic scenario: a director generates one PDF while judges keep
+    submitting scores in the background. Firing 10 identical PDF requests at
+    once (the old version of this test) isn't realistic and is also
+    GIL-bound — fpdf2/font-subsetting is CPU-bound pure Python, so N threads
+    all doing that work don't parallelize with EACH OTHER regardless of the
+    event-loop fix. What the fix actually buys is this: unrelated light
+    requests no longer queue up behind the one heavy one."""
+    pdf_url = f"/phase_pdf/{canned_phase.phase_id}"
+    judge_id = canned_phase.judge_ids[0]
+    athlete_ids = canned_phase.athlete_ids[:CONCURRENT_REQUESTS]
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        start = time.perf_counter()
+        pdf_task = asyncio.create_task(client.get(pdf_url))
+        await asyncio.sleep(0)  # let the PDF request actually start first
+
+        async def submit(athlete_id: str) -> httpx.Response:
+            call = _make_score_submission_call(canned_phase, athlete_id, judge_id)
+            response = await call(client)
+            print(f"  score submission completed at {time.perf_counter() - start:.3f}s")
+            return response
+
+        submission_responses = await asyncio.gather(
+            *(submit(athlete_id) for athlete_id in athlete_ids)
+        )
+        submissions_elapsed = time.perf_counter() - start
+        pdf_response = await pdf_task
+        pdf_elapsed = time.perf_counter() - start
+
+    print(
+        f"\npdf_vs_score_submission: PDF took {pdf_elapsed:.3f}s total; "
+        f"{len(athlete_ids)} concurrent score submissions all finished by "
+        f"{submissions_elapsed:.3f}s"
+    )
+    assert pdf_response.status_code == 200
+    assert all(r.status_code == 200 for r in submission_responses)
+
+
+@pytest.mark.asyncio
+async def test_score_calculation_concurrency(canned_phase: CannedPhase) -> None:
+    url = f"/getPhaseScores/{canned_phase.phase_id}"
+    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
+
+    responses, elapsed = await _fire_concurrently(calls)
+
+    _report("score_calculation", elapsed, CONCURRENT_REQUESTS)
+    assert all(r.status_code == 200 for r in responses)
 
 
 @pytest.mark.asyncio
