@@ -446,5 +446,68 @@ def test_patch_rejects_scoring_runs_that_exceed_the_existing_number_of_runs(
     assert response.status_code == 422
     assert not mock_db_session.commit.called
 
-    # Verify commit was not called
+
+def test_patch_rejects_lowering_number_of_runs_below_existing_scoring_runs(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    """mock_phase has number_of_runs_for_score=2. Lowering number_of_runs
+    alone below that must also be rejected - the merged-state check has to
+    catch both directions, not just a raised number_of_runs_for_score."""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(f"/phase/{phase_id}", json={"number_of_runs": 1})
+
+    assert response.status_code == 422
     assert not mock_db_session.commit.called
+
+
+def test_post_allows_scoring_runs_equal_to_number_of_runs(
+    test_client: TestClient, mock_db_session: Session
+) -> None:
+    """The bound is <=, not <: scoring every run is a normal setup."""
+
+    def mock_add(phase):  # noqa: ANN202, ANN001
+        phase.id = UUID("44444444-4444-4444-4444-444444444444")
+        return None
+
+    mock_db_session.add.side_effect = mock_add
+    mock_db_session.commit.return_value = None
+    mock_db_session.refresh.return_value = None
+
+    phase_data = [
+        {
+            "event_id": "22222222-2222-2222-2222-222222222222",
+            "name": "New Phase",
+            "number_of_runs": 3,
+            "number_of_runs_for_score": 3,
+            "number_of_judges": 7,
+            "scoresheet": "33333333-3333-3333-3333-333333333333",
+        }
+    ]
+    response = test_client.post("/phase/", json=phase_data)
+
+    assert response.status_code == 201
+
+
+def test_patch_allows_a_valid_run_count_change(
+    test_client: TestClient, mock_db_session: Session, mock_phase: Phase
+) -> None:
+    """A positive control: the merged-state check must not reject a run-count
+    patch that is actually still valid."""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = mock_phase
+    mock_db_session.execute.return_value = mock_result
+    mock_db_session.commit.return_value = None
+    mock_db_session.refresh.return_value = None
+
+    phase_id = str(mock_phase.id)
+    response = test_client.patch(
+        f"/phase/{phase_id}",
+        json={"number_of_runs": 4, "number_of_runs_for_score": 3},
+    )
+
+    assert response.status_code == 200
+    assert mock_db_session.commit.called
