@@ -32,7 +32,33 @@ from main import app
 BENCHMARK_ROUNDS = 10
 UPLOAD_ATHLETE_COUNT = 60
 
+# Mean-latency ceilings, in seconds -- generous "did this regress badly"
+# gates, not tight tracking (that's what benchmark-results.json is for).
+# Set from two real Azure Pipelines runs of this suite (not local dev
+# numbers, which run on different hardware):
+#   score_submission:   14.6ms, 10.7ms mean
+#   score_calculation:  65.9ms, 44.1ms mean (noisy: max hit 110-132ms)
+#   csv_upload:         68.8ms, 62.8ms mean
+#   pdf_generation:    123.2ms, 76.3ms mean
+# Threshold = ~3x the higher of the two observed means, to absorb shared
+# CI runner jitter. Tighten these once the event-loop-blocking fix lands.
+MEAN_THRESHOLD_SECONDS = {
+    "score_submission": 0.05,
+    "score_calculation": 0.25,
+    "csv_upload": 0.25,
+    "pdf_generation": 0.45,
+}
+
 client = TestClient(app)
+
+
+def _assert_mean_within(benchmark: BenchmarkFixture, name: str) -> None:
+    mean = benchmark.stats.stats.mean
+    threshold = MEAN_THRESHOLD_SECONDS[name]
+    assert mean < threshold, (
+        f"{name} mean latency {mean * 1000:.1f}ms exceeded the "
+        f"{threshold * 1000:.0f}ms regression ceiling"
+    )
 
 
 def test_score_calculation_performance(
@@ -46,6 +72,7 @@ def test_score_calculation_performance(
     )
     assert response.status_code == 200
     assert len(response.json()["scores"]) == len(canned_phase.athlete_ids)
+    _assert_mean_within(benchmark, "score_calculation")
 
 
 def test_pdf_generation_performance(
@@ -59,6 +86,7 @@ def test_pdf_generation_performance(
     )
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/pdf"
+    _assert_mean_within(benchmark, "pdf_generation")
 
 
 def test_score_submission_performance(
@@ -98,6 +126,7 @@ def test_score_submission_performance(
 
     response = benchmark.pedantic(submit_score, rounds=BENCHMARK_ROUNDS)
     assert response.status_code == 200
+    _assert_mean_within(benchmark, "score_submission")
 
 
 def _generate_competitors_csv(athlete_count: int) -> bytes:
@@ -136,3 +165,4 @@ def test_csv_upload_performance(
 
     response = benchmark.pedantic(upload_competition, rounds=BENCHMARK_ROUNDS)
     assert response.status_code == 201
+    _assert_mean_within(benchmark, "csv_upload")
