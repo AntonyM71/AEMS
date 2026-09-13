@@ -372,14 +372,15 @@ def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool
     return not (dns_list and all(dns_list))
 
 
-def _scores_match(a: float, b: float) -> bool:
+def _scores_match(a: float | None, b: float) -> bool:
     """True when two totals are equal to two decimal places.
 
     ``total_score`` is a sum of ``round(mean, 2)`` run means, so two athletes
     who genuinely tie can end up a float ULP apart. Compare at the precision
-    scores are reported to. Callers pass non-``None`` floats.
+    scores are reported to. ``a`` may be ``None`` (an athlete with no score
+    never matches); ``b`` is the current athlete's total, always non-``None``.
     """
-    return round(a, 2) == round(b, 2)
+    return a is not None and round(a, 2) == round(b, 2)
 
 
 def calculate_rank(
@@ -397,16 +398,14 @@ def calculate_rank(
         athletes_with_same_score = [
             item
             for item in sorted_athletes_scores
-            if item.total_score is not None
-            and _scores_match(item.total_score, s.total_score)
+            if _scores_match(item.total_score, s.total_score)
             and check_athlete_started_at_least_one_ride(item)
         ]
         athletes_ranked_above = sum(
             1
             for a in sorted_athletes_scores
             if a.total_score is not None
-            and a.total_score > s.total_score
-            and not _scores_match(a.total_score, s.total_score)
+            and round(a.total_score, 2) > round(s.total_score, 2)
             and check_athlete_started_at_least_one_ride(a)
         )
 
