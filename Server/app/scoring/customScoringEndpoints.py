@@ -67,7 +67,7 @@ class HeatInfoResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}",
 )
-async def get_heat_info(
+def get_heat_info(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatInfoResponse]:
@@ -117,7 +117,7 @@ class PhaseResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}/phase",
 )
-async def get_heat_phases(
+def get_heat_phases(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[PhaseResponse]:
@@ -265,7 +265,7 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}",
 )
-async def get_athlete_moves_and_bonuses(
+def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: int,
@@ -310,7 +310,7 @@ class PhaseScoresResponse(BaseModel):
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
 )
-async def get_heat_scores(
+def get_heat_scores(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
@@ -404,7 +404,7 @@ def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresRespo
 @scoring_router.get(
     "/getPhaseScores/{phase_id}",
 )
-async def get_phase_scores(
+def get_phase_scores(
     phase_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> PhaseScoresResponse:

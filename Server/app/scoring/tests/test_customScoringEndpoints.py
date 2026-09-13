@@ -155,8 +155,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(
     assert result is False
 
 
-@pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
+def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     # Create mock data for database models
     mock_db_moves = [
         ScoredMoves(
@@ -192,7 +191,7 @@ async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     mock_db_session.query.reset_mock()
 
     # Call the function
-    result = await get_athlete_moves_and_bonuses(
+    result = get_athlete_moves_and_bonuses(
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -210,8 +209,7 @@ async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
 
 
-@pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonuses_without_judge_id(
+def test_get_athlete_moves_and_bonuses_without_judge_id(
     mock_db_session: Session,
 ) -> None:
     # Create mock data for database models
@@ -256,7 +254,7 @@ async def test_get_athlete_moves_and_bonuses_without_judge_id(
     bonuses_query.filter.return_value.all.return_value = mock_db_bonuses
 
     # Call the function without judge_id
-    result = await get_athlete_moves_and_bonuses(
+    result = get_athlete_moves_and_bonuses(
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
