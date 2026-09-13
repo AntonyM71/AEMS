@@ -302,6 +302,8 @@ import anyio.to_thread
 
 Add to `test_customScoringEndpoints.py` (this exercises the function as it behaves *today*, so it must pass before Step 3's rewrite and continue passing after):
 
+`get_moves_from_server` opens its own session via `with transaction_session_context_manager() as db:` (`customScoringEndpoints.py:246`) rather than through FastAPI's `Depends(get_transaction_session)` — the autouse `mock_db_session` fixture (`app/conftest.py:16`) patches `db.client.get_transaction_session`, which `transaction_session_context_manager` reaches via `yield from get_transaction_session()` (`db/client.py:44-47`); patching the function that gets `yield from`-ed with a plain `MagicMock` makes it non-iterable in the right way and raises `RuntimeError: generator didn't yield` (verified locally). Patch `transaction_session_context_manager` itself instead, at its import site in `customScoringEndpoints`, and configure its `__enter__`/`__exit__` directly — that's the actual `with`-statement protocol being used here:
+
 ```python
 @pytest.mark.asyncio
 async def test_get_moves_from_server_returns_moves_and_metadata(
@@ -318,10 +320,19 @@ async def test_get_moves_from_server_returns_moves_and_metadata(
         judge_id=judge_id,
         phase_id=phase_id,
     )
-    mock_db_session.query.return_value.filter.return_value.filter.return_value.filter.return_value.all.return_value = []
+    # get_athlete_moves_and_bonuses (customScoringEndpoints.py:268-297) chains
+    # 3 unconditional filters plus a 4th since judge_id is truthy here, then .all()
+    mock_db_session.query.return_value.filter.return_value.filter.return_value.filter.return_value.filter.return_value.all.return_value = []
+    # the bonuses query has exactly one .filter() before .all()
     mock_db_session.query.return_value.filter.return_value.all.return_value = []
 
-    result = await get_moves_from_server(metadata)
+    with patch(
+        "app.scoring.customScoringEndpoints.transaction_session_context_manager"
+    ) as mock_context_manager:
+        mock_context_manager.return_value.__enter__.return_value = mock_db_session
+        mock_context_manager.return_value.__exit__.return_value = None
+
+        result = await get_moves_from_server(metadata)
 
     assert result["heat_id"] == heat_id
     assert result["athlete_id"] == athlete_id
@@ -329,7 +340,7 @@ async def test_get_moves_from_server_returns_moves_and_metadata(
     assert result["movesAndBonuses"]["bonuses"] == []
 ```
 
-(Add `import uuid` at the top of the test file if not already present, and import `UpdatedRideMetaData`/`get_moves_from_server` from `app.scoring.customScoringEndpoints` alongside the existing imports.)
+(Add `import uuid` and `from unittest.mock import patch` at the top of the test file if not already present, and import `UpdatedRideMetaData`/`get_moves_from_server` from `app.scoring.customScoringEndpoints` alongside the existing imports.)
 
 - [ ] **Step 3: Run it to confirm it passes against today's implementation**
 
@@ -405,12 +416,15 @@ Expected: PASS, including `test_get_moves_from_server_returns_moves_and_metadata
 
 Add to `test_customScoringEndpoints.py`:
 
+`copy_message_to_db` also opens its own session via `transaction_session_context_manager()` (`customScoringEndpoints.py:606`) — same patch as above applies. Its query (`customScoringEndpoints.py:607-616`) is a *single* `.filter(...)` call with four AND'd conditions as separate arguments, terminated with `.first()`, not four chained `.filter()` calls ending in `.one_or_none()`:
+
 ```python
 @pytest.mark.asyncio
 async def test_on_run_status_persists_and_broadcasts(
     mock_db_session: Session,
 ) -> None:
     payload = {
+        "id": str(uuid.uuid4()),
         "heat_id": str(uuid.uuid4()),
         "athlete_id": str(uuid.uuid4()),
         "phase_id": str(uuid.uuid4()),
@@ -418,9 +432,17 @@ async def test_on_run_status_persists_and_broadcasts(
         "did_not_start": False,
         "locked": False,
     }
-    mock_db_session.query.return_value.filter.return_value.filter.return_value.filter.return_value.one_or_none.return_value = None
+    # one .filter() call with 4 conditions, then .first() -- see copy_message_to_db
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
 
-    with patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit:
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        patch(
+            "app.scoring.customScoringEndpoints.transaction_session_context_manager"
+        ) as mock_context_manager,
+    ):
+        mock_context_manager.return_value.__enter__.return_value = mock_db_session
+        mock_context_manager.return_value.__exit__.return_value = None
         mock_emit.return_value = None
         await on_run_status(sid="test-sid", data=payload)
 
@@ -429,7 +451,7 @@ async def test_on_run_status_persists_and_broadcasts(
     )
 ```
 
-(Add `from unittest.mock import patch` to the test file's imports if not already present, alongside `on_run_status` and `RunStatusSchema`/whatever model is needed for the mocked query chain — match the mock chain to whatever `copy_message_to_db`'s actual query shape is at `customScoringEndpoints.py:604-610`.)
+(Add `from unittest.mock import patch` to the test file's imports if not already present, alongside `on_run_status` and `RunStatusSchema`/whatever model is needed for the payload.)
 
 Run: `uv run python -m pytest app/scoring/tests/test_customScoringEndpoints.py::test_on_run_status_persists_and_broadcasts -v` — expect PASS against today's implementation first.
 
@@ -476,6 +498,8 @@ git commit -m "scoring: run pure-read handlers in the threadpool, offload blocki
 
 - [ ] **Step 1: Write a characterization test for the current behavior**
 
+`check_run_is_locked` (`customScoringEndpoints.py:640-652`) is a single `.filter(...)` call with four conditions, terminated with `.first()` — not four chained `.filter()`s ending in `.one_or_none()`. Since `db` is passed directly here (not via `transaction_session_context_manager`), no context-manager patch is needed for this test, only the corrected query shape:
+
 ```python
 @pytest.mark.asyncio
 async def test_update_athlete_score_persists_and_broadcasts(
@@ -485,7 +509,8 @@ async def test_update_athlete_score_persists_and_broadcasts(
     athlete_id = str(uuid.uuid4())
     judge_id = str(uuid.uuid4())
     phase_id = str(uuid.uuid4())
-    mock_db_session.query.return_value.filter.return_value.filter.return_value.filter.return_value.filter.return_value.one_or_none.return_value = None
+    # one .filter() call with 4 conditions, then .first() -- see check_run_is_locked
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
     request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
 
     with (
@@ -510,7 +535,7 @@ async def test_update_athlete_score_persists_and_broadcasts(
 ```
 
 Run: `uv run python -m pytest app/scoring/tests/test_customScoringEndpoints.py::test_update_athlete_score_persists_and_broadcasts -v`
-Expected: PASS against today's implementation (adjust the mocked query chain's filter-call depth if it doesn't match `check_run_is_locked`'s actual query shape — check `customScoringEndpoints.py`'s `check_run_is_locked` definition for the exact chain and mirror the existing `test_check_run_is_locked_returns_true_when_locked` test's mock setup).
+Expected: PASS against today's implementation.
 
 - [ ] **Step 2: Extract the blocking body into `_persist_athlete_score`**
 

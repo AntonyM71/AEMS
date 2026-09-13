@@ -8,7 +8,7 @@ dev or CI database, never one with real competition data.
 
 import random
 from dataclasses import dataclass
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Session
 
@@ -35,6 +35,9 @@ DIRECTIONS = ["L", "R", "F", "B", "S"]
 JUDGE_IDS = ["bench-judge-1", "bench-judge-2", "bench-judge-3"]
 NUMBER_OF_RUNS = 3
 PHASE_NAME = "Bench Phase"
+# Fixed, reserved id -- not a name -- so this can never mistake a real phase for
+# ours (a real Phase.id is a random uuid4 and would essentially never collide).
+BENCH_PHASE_ID = UUID("00000000-0000-4000-8000-0000000eb0c4")
 
 
 @dataclass
@@ -74,10 +77,12 @@ def _existing_canned_phase(db: Session, phase: Phase) -> CannedPhase:
 def ensure_canned_phase(db: Session) -> CannedPhase:
     """Reuse the bench phase a previous call created, or create one.
 
-    Matches on PHASE_NAME rather than "any existing phase" so this never
-    picks up real data already sitting in a dev/CI database.
+    Matches on the fixed BENCH_PHASE_ID rather than Phase.name or "any
+    existing phase" — a name could coincidentally match a real phase in a
+    dev/CI database, and reusing that would delete and overwrite its real
+    scores. A pinned id can't coincidentally collide.
     """
-    existing_phase = db.query(Phase).filter(Phase.name == PHASE_NAME).first()
+    existing_phase = db.query(Phase).filter(Phase.id == BENCH_PHASE_ID).first()
     if existing_phase is not None:
         return _existing_canned_phase(db, existing_phase)
 
@@ -85,7 +90,7 @@ def ensure_canned_phase(db: Session) -> CannedPhase:
     event = Event(id=uuid4(), competition_id=competition.id, name="Bench Event")
     scoresheet = ScoreSheet(id=uuid4(), name="Bench Scoresheet")
     phase = Phase(
-        id=uuid4(),
+        id=BENCH_PHASE_ID,
         event_id=event.id,
         name=PHASE_NAME,
         scoresheet=scoresheet.id,

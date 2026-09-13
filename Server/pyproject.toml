@@ -35,9 +35,8 @@ extend-immutable-calls = [
     "fastapi.params.Query",
 ]
 [tool.pytest.ini_options]
-addopts = ["--cov=.", "--cov-report=term-missing"]
+addopts = ["--cov=.", "--cov-report=term-missing", "--ignore=performance"]
 pythonpath = ["."]
-testpaths = ["app"]
 [tool.coverage.run]
 omit = ["*/tests/*"]
 
