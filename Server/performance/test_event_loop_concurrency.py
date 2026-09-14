@@ -1,20 +1,21 @@
-"""Does the event-loop-blocking fix actually stop these requests serializing?
+"""Guards the event-loop fix: a heavy request must not stall other requests.
 
-Unlike test_key_endpoint_performance.py, this fires requests concurrently
-(asyncio.gather over httpx.ASGITransport, in-process) so a blocking handler
-and a non-blocking one actually look different. Assertions compare a solo
-call's time against a concurrent batch's time rather than an absolute
-threshold, so they stay meaningful without CI-derived numbers. Some fail
-until the phase covering that endpoint lands — that's the intended signal,
-not a flaky test.
+For each heavy endpoint, fire it alongside one light request and check the light
+one did not have to wait. If a handler does its blocking work on the event loop
+rather than in FastAPI's threadpool, nothing else can run until it finishes, so
+the light request is dragged out to finish alongside the heavy one.
 
-Same DB/scoresheet requirements as test_key_endpoint_performance.py.
+The light request is a judge loading an athlete's existing scores. It is real
+traffic, and it is light enough that its share of a heavy request's duration is
+a meaningful signal.
+
+Same DB and scoresheet requirements as test_key_endpoint_performance.py.
 """
 
 import asyncio
+import statistics
 import time
-from collections.abc import Awaitable, Callable
-from io import BytesIO
+from typing import Any
 from uuid import uuid4
 
 import httpx
@@ -22,202 +23,149 @@ import pytest
 
 from db.canned_data import CannedPhase
 from main import app
-from performance.test_key_endpoint_performance import (
-    UPLOAD_ATHLETE_COUNT,
-    _generate_competitors_csv,
-)
 
-CONCURRENT_REQUESTS = 10
+# A blocked event loop pins this fraction at 1.0, because the light request
+# cannot finish ahead of the heavy one it is stuck behind. That holds on any
+# hardware, so only the passing side varies. Measured over 40 runs the score
+# calculations, the tightest cases, sit at a median of 0.35 with a p90 of 0.37.
+MAX_HEAVY_FRACTION = 0.80
 
-# Concurrent batch must beat this fraction of N fully-serial calls; 1.0 is
-# fully serial, ~1/N is fully parallel. 0.5 has headroom without being loose.
-MAX_SERIAL_FRACTION = 0.5
+# Occasional runs spike towards 0.72 from scheduling noise. Taking the median of
+# a few attempts removes that tail without weakening what is being asserted.
+REPEATS = 3
 
-ClientCall = Callable[[httpx.AsyncClient], Awaitable[httpx.Response]]
-
-
-async def _fire_concurrently(
-    calls: list[ClientCall],
-) -> tuple[list[httpx.Response], float]:
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
-    ) as client:
-        start = time.perf_counter()
-        responses = await asyncio.gather(*(call(client) for call in calls))
-        elapsed = time.perf_counter() - start
-    return responses, elapsed
+Request = tuple[str, str, dict[str, Any]]
 
 
-async def _measure_solo(call: ClientCall) -> float:
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
-    ) as client:
-        start = time.perf_counter()
-        response = await call(client)
-        elapsed = time.perf_counter() - start
-    assert response.status_code < 400, (
-        f"solo reference call failed: {response.status_code}"
-    )
-    return elapsed
-
-
-def _assert_not_serialized(
-    concurrent_elapsed: float, solo_elapsed: float, n: int
-) -> None:
-    serial_estimate = solo_elapsed * n
-    ceiling = serial_estimate * MAX_SERIAL_FRACTION
-    assert concurrent_elapsed < ceiling, (
-        f"{n} concurrent requests took {concurrent_elapsed:.3f}s -- expected "
-        f"under {ceiling:.3f}s ({MAX_SERIAL_FRACTION:.0%} of {n} fully-serial "
-        f"calls at {solo_elapsed:.3f}s each = {serial_estimate:.3f}s), "
-        "suggesting they serialized on the event loop instead of running "
-        "concurrently"
-    )
-
-
-def _report(name: str, elapsed: float, n: int) -> None:
-    print(
-        f"\n{name}: {n} concurrent requests in {elapsed:.3f}s -> {n / elapsed:.1f} req/s"
-    )
-
-
-def _make_score_submission_call(
-    canned_phase: CannedPhase, athlete_id: str, judge_id: str
-) -> ClientCall:
-    payload = {
-        "moves": [
-            {"id": str(uuid4()), "move_id": canned_phase.move_ids[0], "direction": "F"}
-        ],
-        "bonuses": [],
-    }
-
-    async def call(client: httpx.AsyncClient) -> httpx.Response:
-        return await client.post(
-            f"/addUpdateAthleteScore/{canned_phase.heat_id}/{athlete_id}/0/{judge_id}",
-            params={"phase_id": canned_phase.phase_id},
-            json=payload,
-        )
-
-    return call
-
-
-@pytest.mark.asyncio
-async def test_pdf_generation_does_not_block_score_submission(
-    canned_phase: CannedPhase,
-) -> None:
-    """10 identical PDF requests wouldn't show this fix: fpdf2/font-subsetting
-    is CPU-bound, so N threads doing that work contend on the GIL regardless.
-    One PDF alongside real traffic is the scenario that actually matters."""
-    pdf_url = f"/phase_pdf/{canned_phase.phase_id}"
-    judge_id = canned_phase.judge_ids[0]
-    athlete_ids = canned_phase.athlete_ids[:CONCURRENT_REQUESTS]
-
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
-    ) as client:
-        start = time.perf_counter()
-        pdf_task = asyncio.create_task(client.get(pdf_url))
-        await asyncio.sleep(0)  # let the PDF request actually start first
-
-        async def submit(athlete_id: str) -> httpx.Response:
-            call = _make_score_submission_call(canned_phase, athlete_id, judge_id)
-            response = await call(client)
-            print(f"  score submission completed at {time.perf_counter() - start:.3f}s")
-            return response
-
-        submission_responses = await asyncio.gather(
-            *(submit(athlete_id) for athlete_id in athlete_ids)
-        )
-        submissions_elapsed = time.perf_counter() - start
-        pdf_response = await pdf_task
-        pdf_elapsed = time.perf_counter() - start
-
-    print(
-        f"\npdf_vs_score_submission: PDF took {pdf_elapsed:.3f}s total; "
-        f"{len(athlete_ids)} concurrent score submissions all finished by "
-        f"{submissions_elapsed:.3f}s"
-    )
-    assert pdf_response.status_code == 200
-    assert all(r.status_code == 200 for r in submission_responses)
-    # Fails until Phase 2 fixes update_athlete_score -- it still blocks the
-    # loop itself today, so submissions take about as long as the PDF.
-    assert submissions_elapsed < pdf_elapsed * MAX_SERIAL_FRACTION, (
-        f"{len(athlete_ids)} concurrent score submissions took "
-        f"{submissions_elapsed:.3f}s while the PDF was generating (took "
-        f"{pdf_elapsed:.3f}s total) -- expected them to finish in well under "
-        f"{MAX_SERIAL_FRACTION:.0%} of that "
-        f"({pdf_elapsed * MAX_SERIAL_FRACTION:.3f}s)"
-    )
-
-
-@pytest.mark.asyncio
-async def test_score_calculation_concurrency(canned_phase: CannedPhase) -> None:
-    """Fails until Phase 2 (Task 4) converts get_phase_scores off the event loop."""
-    url = f"/getPhaseScores/{canned_phase.phase_id}"
-    solo_elapsed = await _measure_solo(lambda client: client.get(url))
-
-    calls = [(lambda client: client.get(url)) for _ in range(CONCURRENT_REQUESTS)]
-    responses, elapsed = await _fire_concurrently(calls)
-
-    _report("score_calculation", elapsed, CONCURRENT_REQUESTS)
-    assert all(r.status_code == 200 for r in responses)
-    _assert_not_serialized(elapsed, solo_elapsed, CONCURRENT_REQUESTS)
-
-
-@pytest.mark.asyncio
-async def test_score_submission_concurrency(canned_phase: CannedPhase) -> None:
-    """A different athlete per submission -- tests cross-request blocking, not
-    DB write contention on one row. Fails until Phase 2 (Task 6) fixes this."""
-    judge_id = canned_phase.judge_ids[0]
-    athlete_ids = canned_phase.athlete_ids[:CONCURRENT_REQUESTS]
-    reference_athlete_id = canned_phase.athlete_ids[-1]
-
-    solo_elapsed = await _measure_solo(
-        _make_score_submission_call(canned_phase, reference_athlete_id, judge_id)
-    )
-
-    calls = [
-        _make_score_submission_call(canned_phase, athlete_id, judge_id)
-        for athlete_id in athlete_ids
+def _submission_payload(
+    canned_phase: CannedPhase, move_count: int, bonus_count: int
+) -> dict[str, Any]:
+    moves = [
+        {
+            "id": str(uuid4()),
+            "move_id": canned_phase.move_ids[i % len(canned_phase.move_ids)],
+            "direction": "F",
+        }
+        for i in range(move_count)
     ]
-    responses, elapsed = await _fire_concurrently(calls)
+    bonuses = [
+        {
+            "id": str(uuid4()),
+            "bonus_id": canned_phase.bonus_ids[i % len(canned_phase.bonus_ids)],
+            "move_id": moves[i]["id"],
+        }
+        for i in range(min(bonus_count, move_count))
+    ]
+    return {"moves": moves, "bonuses": bonuses}
 
-    _report("score_submission", elapsed, len(athlete_ids))
-    assert all(r.status_code == 200 for r in responses)
-    _assert_not_serialized(elapsed, solo_elapsed, len(athlete_ids))
+
+def _probe_request(canned_phase: CannedPhase) -> Request:
+    """A judge opening an athlete's existing scores."""
+    athlete_id = canned_phase.athlete_ids[1]
+    return (
+        "GET",
+        f"/getAthleteMovesAndBonuses/{canned_phase.heat_id}/{athlete_id}/0",
+        {"params": {"judge_id": canned_phase.judge_ids[0]}},
+    )
 
 
-def _make_upload_call(scoresheet_name: str, csv_bytes: bytes) -> ClientCall:
-    async def call(client: httpx.AsyncClient) -> httpx.Response:
-        return await client.post(
-            "/competition_management/upload",
-            data={
-                "competition_name": f"Bench Competition {uuid4()}",
-                "scoresheet_name": scoresheet_name,
-                "number_of_runs": "3",
-                "number_of_runs_for_score": "2",
-                "number_of_judges": "3",
-                "random_heats": "false",
-                "number_of_random_heats": "0",
+def _heavy_request(name: str, canned_phase: CannedPhase) -> Request:
+    heat_id = canned_phase.heat_id
+    phase_id = canned_phase.phase_id
+    if name == "phase_pdf":
+        return ("GET", f"/phase_pdf/{phase_id}", {})
+    if name == "heat_pdf":
+        return ("GET", "/heat_pdf", {"params": {"heat_ids": [heat_id]}})
+    if name == "heat_results_pdf":
+        return ("GET", "/heat_results_pdf", {"params": {"heat_id": heat_id}})
+    if name == "get_phase_scores":
+        return ("GET", f"/getPhaseScores/{phase_id}", {})
+    if name == "get_heat_scores":
+        return ("GET", f"/getHeatScores/{heat_id}", {})
+    if name == "score_submission":
+        # A full run's worth of moves, not one. A single-move submission is so
+        # short that the probe is most of its duration and the signal vanishes.
+        athlete_id = canned_phase.athlete_ids[0]
+        judge_id = canned_phase.judge_ids[0]
+        return (
+            "POST",
+            f"/addUpdateAthleteScore/{heat_id}/{athlete_id}/0/{judge_id}",
+            {
+                "params": {"phase_id": phase_id},
+                "json": _submission_payload(canned_phase, move_count=20, bonus_count=8),
             },
-            files={"file": ("competitors.csv", BytesIO(csv_bytes), "text/csv")},
         )
+    msg = f"unknown heavy endpoint: {name}"
+    raise ValueError(msg)
 
-    return call
+
+async def _probe_fraction_of(
+    client: httpx.AsyncClient, heavy: Request, probe: Request
+) -> float:
+    """What fraction of the heavy request's duration the probe took to finish."""
+    heavy_method, heavy_url, heavy_kwargs = heavy
+    probe_method, probe_url, probe_kwargs = probe
+
+    # Both timings come from this one mark. Reading the clock after an await
+    # would leave the heavy request's blocking window outside the measurement
+    # and hide exactly what this test exists to catch.
+    start = time.perf_counter()
+    heavy_task = asyncio.create_task(
+        client.request(heavy_method, heavy_url, **heavy_kwargs)
+    )
+    # create_task only schedules the heavy request, it does not start it.
+    # Without this yield the probe reaches the server first and the heavy
+    # request is not yet in flight.
+    await asyncio.sleep(0)
+    probe_response = await client.request(probe_method, probe_url, **probe_kwargs)
+    probe_finished_at = time.perf_counter() - start
+    heavy_response = await heavy_task
+    heavy_finished_at = time.perf_counter() - start
+
+    assert heavy_response.status_code == 200, (
+        f"{heavy_url} returned {heavy_response.status_code}"
+    )
+    assert probe_response.status_code == 200, (
+        f"{probe_url} returned {probe_response.status_code}"
+    )
+    return probe_finished_at / heavy_finished_at
 
 
+@pytest.mark.parametrize(
+    "heavy_endpoint",
+    [
+        "phase_pdf",
+        "heat_pdf",
+        "heat_results_pdf",
+        "get_phase_scores",
+        "get_heat_scores",
+        "score_submission",
+    ],
+)
 @pytest.mark.asyncio
-async def test_csv_upload_concurrency(existing_scoresheet_name: str) -> None:
-    """No _assert_not_serialized: upload() is already non-blocking, but its
-    pandas parsing is CPU-bound enough (~0.7 concurrent/solo ratio measured)
-    that no fix would make a ratio assertion here reliably pass."""
-    csv_bytes = _generate_competitors_csv(UPLOAD_ATHLETE_COUNT)
-    calls = [
-        _make_upload_call(existing_scoresheet_name, csv_bytes)
-        for _ in range(CONCURRENT_REQUESTS)
-    ]
+async def test_heavy_endpoint_does_not_delay_other_requests(
+    heavy_endpoint: str, canned_phase: CannedPhase, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # pdfEndpoints skips real font loading under pytest, which halves a PDF's
+    # cost and with it the margin these assertions depend on.
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
 
-    responses, elapsed = await _fire_concurrently(calls)
+    heavy = _heavy_request(heavy_endpoint, canned_phase)
+    probe = _probe_request(canned_phase)
 
-    _report("csv_upload", elapsed, CONCURRENT_REQUESTS)
-    assert all(r.status_code == 201 for r in responses)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        fractions = [
+            await _probe_fraction_of(client, heavy, probe) for _ in range(REPEATS)
+        ]
+
+    fraction = statistics.median(fractions)
+    print(f"\n{heavy_endpoint}: probe finished at {fraction:.0%} of the heavy request")
+    assert fraction < MAX_HEAVY_FRACTION, (
+        f"while {heavy_endpoint} was running, a light request took "
+        f"{fraction:.0%} of its duration to complete. Anything near 100% means "
+        "the light request waited for it, so blocking work is running on the "
+        "event loop instead of in FastAPI's threadpool. A handler that only "
+        "does blocking work should be a plain def, not an async def."
+    )
