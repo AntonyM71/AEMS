@@ -118,7 +118,16 @@ if "{phase_id}" in target_url:
 
 server_process = None
 if args.serve:
-    server_process = start_server(urlsplit(target_url).port or 8000)
+    # Defaulting to 8000 here would start a healthy server on 8000 while the
+    # requests went to the url's scheme default, port 80.
+    serve_port = urlsplit(target_url).port
+    if serve_port is None:
+        msg = (
+            "--serve needs an explicit port in the url, "
+            "e.g. http://localhost:8000/phase_pdf/{phase_id}"
+        )
+        raise SystemExit(msg)
+    server_process = start_server(serve_port)
 
 try:
     asyncio.run(fire(target_url, args.concurrent_requests))
