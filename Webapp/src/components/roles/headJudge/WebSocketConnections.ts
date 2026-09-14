@@ -15,9 +15,8 @@ const socketConfig = (): {
 		? window.location.origin
 		: `http://localhost:${process.env.NEXT_PUBLIC_SERVER_PORT ?? "8000"}`
 
-	// The server runs several Gunicorn workers which do not share Engine.IO
-	// session state, so a polling handshake would send its follow-up requests to
-	// a worker that has never seen the session.
+	// Workers don't share Engine.IO session state, so polling handshakes
+	// send follow-up requests to workers that never saw the session.
 	return {
 		origin,
 		options: { path, reconnection: true, transports: ["websocket"] }
