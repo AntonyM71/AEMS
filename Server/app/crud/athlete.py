@@ -13,7 +13,7 @@ athlete_router = APIRouter(prefix="/athlete", tags=["athlete"])
 
 
 @athlete_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     athletes: list[AthleteCreate],
     db: Annotated[Session, Depends(get_transaction_session)],
 ) -> list[AthleteResponse]:
@@ -35,7 +35,7 @@ async def insert_many(
 
 
 @athlete_router.patch("/{id}")
-async def partial_update_one_by_primary_key(
+def partial_update_one_by_primary_key(
     id: UUID,
     athlete_update: AthleteUpdate,
     db: Annotated[Session, Depends(get_transaction_session)],

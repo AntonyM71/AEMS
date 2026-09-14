@@ -3,6 +3,7 @@ import logging
 from math import inf
 from uuid import UUID
 
+import anyio.to_thread
 from fastapi import (
     APIRouter,
     Depends,
@@ -67,7 +68,7 @@ class HeatInfoResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}",
 )
-async def get_heat_info(
+def get_heat_info(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatInfoResponse]:
@@ -117,7 +118,7 @@ class PhaseResponse(BaseModel):
 @scoring_router.get(
     "/getHeatInfo/{heat_id}/phase",
 )
-async def get_heat_phases(
+def get_heat_phases(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[PhaseResponse]:
@@ -130,6 +131,76 @@ async def get_heat_phases(
 
 class UpdatingLockedRunError(Exception):
     pass
+
+
+def _persist_athlete_score(
+    db: Session,
+    heat_id: str,
+    athlete_id: str,
+    run_number: str,
+    judge_id: str,
+    phase_id: str,
+    scored_moves_list: AddUpdateScoredMovesRequest,
+) -> "UpdatedRideMetaData":
+    with db.begin():
+        run_is_locked = check_run_is_locked(
+            db=db,
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            phase_id=phase_id,
+        )
+        if run_is_locked:
+            msg = "Score Update not processed as the run is locked"
+            raise UpdatingLockedRunError(msg)
+        scored_moves = (
+            db.query(ScoredMoves.id)
+            .filter(ScoredMoves.heat_id == heat_id)
+            .filter(ScoredMoves.athlete_id == athlete_id)
+            .filter(ScoredMoves.run_number == run_number)
+            .filter(ScoredMoves.judge_id == judge_id)
+        )
+
+        delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
+            ScoredBonuses.move_id.in_(scored_moves)
+        )
+        db.execute(delete_scored_bonuses_statement)
+        delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
+            ScoredMoves.id.in_(scored_moves)
+        )
+        db.execute(delete_scored_moves_statement)
+
+        db.bulk_save_objects(
+            [
+                ScoredMoves(
+                    **move.model_dump(),
+                    judge_id=judge_id,
+                    heat_id=heat_id,
+                    phase_id=phase_id,
+                    athlete_id=athlete_id,
+                    run_number=run_number,
+                )
+                for move in scored_moves_list.moves
+            ]
+        )
+        db.bulk_save_objects(
+            [
+                ScoredBonuses(
+                    **bonus.model_dump(),
+                    judge_id=judge_id,
+                )
+                for bonus in scored_moves_list.bonuses
+            ]
+        )
+
+        db.commit()
+        return UpdatedRideMetaData(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            judge_id=judge_id,
+            phase_id=phase_id,
+        )
 
 
 @scoring_router.post(
@@ -145,73 +216,22 @@ async def update_athlete_score(
     db: Session = Depends(get_transaction_session),
 ) -> None:
     try:
-        with db.begin():
-            run_is_locked = check_run_is_locked(
-                db=db,
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                phase_id=phase_id,
-            )
-            if run_is_locked:
-                msg = "Score Update not processed as the run is locked"
-                raise UpdatingLockedRunError(  # noqa: TRY301
-                    msg
-                )
-            scored_moves = (
-                db.query(ScoredMoves.id)
-                .filter(ScoredMoves.heat_id == heat_id)
-                .filter(ScoredMoves.athlete_id == athlete_id)
-                .filter(ScoredMoves.run_number == run_number)
-                .filter(ScoredMoves.judge_id == judge_id)
-            )
-
-            delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
-                ScoredBonuses.move_id.in_(scored_moves)
-            )
-            db.execute(delete_scored_bonuses_statement)
-            delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
-                ScoredMoves.id.in_(scored_moves)
-            )
-            db.execute(delete_scored_moves_statement)
-
-            db.bulk_save_objects(
-                [
-                    ScoredMoves(
-                        **move.model_dump(),
-                        judge_id=judge_id,
-                        heat_id=heat_id,
-                        phase_id=phase_id,
-                        athlete_id=athlete_id,
-                        run_number=run_number,
-                    )
-                    for move in scored_moves_list.moves
-                ]
-            )
-            db.bulk_save_objects(
-                [
-                    ScoredBonuses(
-                        **bonus.model_dump(),
-                        judge_id=judge_id,
-                    )
-                    for bonus in scored_moves_list.bonuses
-                ]
-            )
-
-            db.commit()
-            websocket_message = UpdatedRideMetaData(
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                judge_id=judge_id,
-                phase_id=phase_id,
-            )
-            scored_data = await get_moves_from_server(websocket_message)
-            await sio.emit(
-                "current_scores",
-                scored_data,
-                namespace="/current_scores",
-            )
+        websocket_message = await anyio.to_thread.run_sync(
+            _persist_athlete_score,
+            db,
+            heat_id,
+            athlete_id,
+            run_number,
+            judge_id,
+            phase_id,
+            scored_moves_list,
+        )
+        scored_data = await get_moves_from_server(websocket_message)
+        await sio.emit(
+            "current_scores",
+            scored_data,
+            namespace="/current_scores",
+        )
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -238,13 +258,9 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
     movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
 
 
-async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
-    """
-    Receives metadata for a scored ride and returns scored moves and bonuses as a dict.
-    Uses a transaction session context manager to ensure consistent session management.
-    """
+def _fetch_moves_and_bonuses_for_ride(metadata: UpdatedRideMetaData) -> dict:
     with transaction_session_context_manager() as db:
-        scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
+        scored_moves_and_bonuses = get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
             athlete_id=metadata.athlete_id,
             run_number=metadata.run_number,
@@ -262,10 +278,15 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
         ).model_dump(mode="json")
 
 
+async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
+    """Runs the blocking DB read in a worker thread so it doesn't stall the event loop."""
+    return await anyio.to_thread.run_sync(_fetch_moves_and_bonuses_for_ride, metadata)
+
+
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}",
 )
-async def get_athlete_moves_and_bonuses(
+def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: int,
@@ -310,10 +331,14 @@ class PhaseScoresResponse(BaseModel):
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
 )
-async def get_heat_scores(
+def get_heat_scores(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
+    return calculate_heat_scores_response(heat_id=heat_id, db=db)
+
+
+def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
     pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
@@ -400,7 +425,7 @@ async def get_heat_scores(
 @scoring_router.get(
     "/getPhaseScores/{phase_id}",
 )
-async def get_phase_scores(
+def get_phase_scores(
     phase_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> PhaseScoresResponse:
@@ -587,7 +612,7 @@ async def on_current_scores_disconnect(sid: str) -> None:
 @sio.on("run_status", namespace="/run_status")
 async def on_run_status(sid: str, data: dict) -> None:
     logging.info("Socket.IO /run_status: received message from %s", sid)
-    copy_message_to_db(json.dumps(data))
+    await anyio.to_thread.run_sync(copy_message_to_db, json.dumps(data))
     await sio.emit("run_status", data, namespace="/run_status")
 
 

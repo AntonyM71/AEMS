@@ -125,7 +125,7 @@ class AthleteIDandRank(BaseModel):
 
 
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)
-async def promote_phase(
+def promote_phase(
     request_body: Annotated[NewPhaseInfo, Body(embed=True)],
     db: Session = Depends(get_transaction_session),
 ) -> Response:

@@ -139,7 +139,7 @@ async def root() -> dict[str, str]:
 
 
 @app.get("/health", tags=["health"])
-async def health_check(db: Session = Depends(get_transaction_session)) -> dict:
+def health_check(db: Session = Depends(get_transaction_session)) -> dict:
     try:
         # Execute a simple query to check the database connection
         result = db.execute(text("SELECT 1"))

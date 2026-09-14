@@ -35,7 +35,7 @@ extend-immutable-calls = [
     "fastapi.params.Query",
 ]
 [tool.pytest.ini_options]
-addopts = ["--cov=.", "--cov-report=term-missing"]
+addopts = ["--cov=.", "--cov-report=term-missing", "--ignore=performance"]
 pythonpath = ["."]
 [tool.coverage.run]
 omit = ["*/tests/*"]
@@ -66,6 +66,7 @@ dependencies = [
     "pytest>=9.0.3,<10.0",  # Keep pytest 8.x
     "pytest-cov>=6.0.0,<7.0",
     "pytest-asyncio>=1.0.0,<2.0",  # Upgraded from 0.25.3
+    "pytest-benchmark>=5.0.0,<6.0",
     "structlog",
     "rich",  # structlog uses it for pretty dev-console tracebacks
     "openpyxl",

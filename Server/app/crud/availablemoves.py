@@ -18,7 +18,7 @@ availablemoves_router = APIRouter(prefix="/availablemoves", tags=["availablemove
 
 
 @availablemoves_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     sheet_id____list: list[UUID] | None = Query(None, alias="sheet_id____list"),

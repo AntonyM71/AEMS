@@ -18,7 +18,7 @@ run_status_router = APIRouter(prefix="/run_status", tags=["run_status"])
 
 
 @run_status_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     heat_id____list: list[UUID] | None = Query(None, alias="heat_id____list"),
