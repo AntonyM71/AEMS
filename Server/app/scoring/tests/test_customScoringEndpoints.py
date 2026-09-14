@@ -1,5 +1,7 @@
+import asyncio
+import time
 import uuid
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
@@ -692,6 +694,46 @@ async def test_on_run_status_persists_and_broadcasts(
         await on_run_status(sid="test-sid", data=payload)
 
     mock_emit.assert_awaited_once_with("run_status", payload, namespace="/run_status")
+
+
+@pytest.mark.asyncio
+async def test_on_run_status_keeps_the_event_loop_free_while_writing() -> None:
+    """The test above passes whether or not the DB write is offloaded, so it
+    would not notice a revert to calling copy_message_to_db on the loop."""
+    write_duration_seconds = 0.3
+    loop_ticks = 0
+    stop = asyncio.Event()
+
+    async def count_loop_ticks() -> None:
+        nonlocal loop_ticks
+        while not stop.is_set():
+            await asyncio.sleep(0.005)
+            loop_ticks += 1
+
+    ticker = asyncio.create_task(count_loop_ticks())
+    await asyncio.sleep(0.02)
+    loop_ticks = 0
+
+    def slow_write(_data: str) -> None:
+        time.sleep(write_duration_seconds)
+
+    with (
+        patch("app.scoring.customScoringEndpoints.copy_message_to_db", slow_write),
+        patch("app.scoring.customScoringEndpoints.sio.emit", new=AsyncMock()),
+    ):
+        await on_run_status(sid="test-sid", data={"anything": True})
+
+    stop.set()
+    await ticker
+
+    # Blocking the loop scores 0-1 ticks; offloading to a worker thread scores
+    # roughly write_duration/0.005, measured at 60.
+    assert loop_ticks > 5, (
+        f"the event loop only advanced {loop_ticks} times while a "
+        f"{write_duration_seconds}s database write ran, so on_run_status is "
+        "doing that write on the event loop instead of handing it to a worker "
+        "thread with anyio.to_thread.run_sync"
+    )
 
 
 @pytest.mark.asyncio
