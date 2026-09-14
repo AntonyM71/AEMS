@@ -32,21 +32,37 @@ from main import app
 BENCHMARK_ROUNDS = 10
 UPLOAD_ATHLETE_COUNT = 60
 
-# Mean-latency ceilings, in seconds -- generous "did this regress badly"
-# gates, not tight tracking (that's what benchmark-results.json is for).
-# Set from two real Azure Pipelines runs of this suite (not local dev
-# numbers, which run on different hardware):
-#   score_submission:   14.6ms, 10.7ms mean
-#   score_calculation:  65.9ms, 44.1ms mean (noisy: max hit 110-132ms)
-#   csv_upload:         68.8ms, 62.8ms mean
-#   pdf_generation:    123.2ms, 76.3ms mean
-# Threshold = ~3x the higher of the two observed means, to absorb shared
-# CI runner jitter. Tighten these once the event-loop-blocking fix lands.
+# Mean-latency ceilings, in seconds -- "did this regress badly" gates, not
+# tight tracking (that's what benchmark-results.json is for).
+#
+# Set from three real Azure Pipelines runs of this suite, not local dev
+# numbers, which run on different hardware. The third run is the first taken
+# after the event-loop-blocking fix landed:
+#   score_submission:   14.6ms, 10.7ms, 10.0ms mean
+#   score_calculation:  65.9ms, 44.1ms, 52.1ms mean (noisy: max hit 110-144ms)
+#   csv_upload:         68.8ms, 62.8ms, 67.2ms mean
+#   pdf_generation:    123.2ms, 76.3ms, 76.5ms mean
+#
+# Serial latency is deliberately unchanged by that fix: moving a handler to a
+# worker thread stops it blocking other requests, it does not make the request
+# itself faster. So these numbers reproduce the earlier ones, which is the
+# evidence the refactor added no overhead.
+#
+# Threshold = 2.5x the worst mean of the three, rounded up. The previous gate
+# left five to six times headroom and would only have caught a catastrophic
+# regression.
+#
+# Not 2x, which these numbers alone would support: the same code is about
+# twice as slow on a devcontainer as on the CI agent (pdf_generation means
+# 133-147ms locally against 76-123ms in CI), and CI agent speed itself varies
+# by around 1.6x between runs. 2x left only 1.6x headroom on the slower
+# machine, and a gate that fails on a slow agent gets ignored rather than
+# investigated. 2.5x keeps roughly 2x margin on the slowest hardware measured.
 MEAN_THRESHOLD_SECONDS = {
-    "score_submission": 0.05,
-    "score_calculation": 0.25,
-    "csv_upload": 0.25,
-    "pdf_generation": 0.45,
+    "score_submission": 0.04,
+    "score_calculation": 0.17,
+    "csv_upload": 0.18,
+    "pdf_generation": 0.31,
 }
 
 client = TestClient(app)
