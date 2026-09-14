@@ -170,7 +170,6 @@ class HeatResponse(BaseModel):
     id: UUID
     competition_id: UUID
     name: str
-    competition_foreign: list[CompetitionNested] | None = None
     athleteheat_foreign: list[AthleteHeatNested] | None = None
 
     model_config = ConfigDict(from_attributes=True)

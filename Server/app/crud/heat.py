@@ -12,7 +12,6 @@ from app.crud.query_helpers import (
 )
 from app.crud.schemas import (
     AthleteHeatNested,
-    CompetitionNested,
     HeatCreate,
     HeatResponse,
     HeatUpdate,
@@ -28,11 +27,8 @@ _HEAT_SORTABLE = {"name": Heat.name, "competition_id": Heat.competition_id}
 def _apply_heat_joins(
     query: Select[tuple[Heat]], join_foreign_table: list[str] | None
 ) -> Select[tuple[Heat]]:
-    if join_foreign_table:
-        if "competition" in join_foreign_table:
-            query = query.options(selectinload(Heat.competition))
-        if "athleteheat" in join_foreign_table:
-            query = query.options(selectinload(Heat.athletes))
+    if join_foreign_table and "athleteheat" in join_foreign_table:
+        query = query.options(selectinload(Heat.athletes))
     return query
 
 
@@ -44,15 +40,10 @@ def _build_heat_response(
         "competition_id": heat.competition_id,
         "name": heat.name,
     }
-    if join_foreign_table:
-        if "competition" in join_foreign_table and heat.competition:
-            response_data["competition_foreign"] = [
-                CompetitionNested.model_validate(heat.competition)
-            ]
-        if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
-            response_data["athleteheat_foreign"] = [
-                AthleteHeatNested.model_validate(ah) for ah in heat.athletes
-            ]
+    if join_foreign_table and "athleteheat" in join_foreign_table:
+        response_data["athleteheat_foreign"] = [
+            AthleteHeatNested.model_validate(ah) for ah in heat.athletes
+        ]
     return HeatResponse(**response_data)
 
 
