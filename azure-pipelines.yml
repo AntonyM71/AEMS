@@ -194,10 +194,18 @@ jobs:
       - script: |
           CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
             REDIS_URL=redis://localhost:6379/0 \
+            $(Build.SourcesDirectory)/Server/.venv/bin/gunicorn main:socket_app \
+            -w 4 -k uvicorn.workers.UvicornWorker \
+            -b 0.0.0.0:8000 --log-level warning &
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            REDIS_URL=redis://localhost:6379/0 \
             $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:socket_app \
-            --host 0.0.0.0 --port 8000 --log-level warning &
+            --host 0.0.0.0 --port 8001 --log-level warning &
           for i in $(seq 1 30); do
             curl -sf http://localhost:8000/health && break || sleep 2
+          done
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8001/health && break || sleep 2
           done
         displayName: "Start Backend"
         workingDirectory: $(Build.SourcesDirectory)/Server
@@ -233,7 +241,7 @@ jobs:
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
       - script: |
-          FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 npx playwright test
+          FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 SECOND_BACKEND_URL=http://localhost:8001 npx playwright test
         displayName: "Run E2E Tests"
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
@@ -246,7 +254,6 @@ jobs:
         condition: succeededOrFailed()
 
       - script: |
-          docker stop postgres-e2e && docker rm postgres-e2e
-          docker stop redis-e2e && docker rm redis-e2e
+          docker rm -f postgres-e2e redis-e2e || true
         displayName: "Stop Services"
         condition: always()
