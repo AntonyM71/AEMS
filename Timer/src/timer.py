@@ -161,6 +161,7 @@ def run_socketio_loop() -> None:
                     namespace="/timer",
                     socketio_path=SIO_PATH,
                     wait_timeout=10,
+                    transports=["websocket"],
                 )
                 logging.info(
                     "Connected to Socket.IO server at %s (namespace=/timer)",
