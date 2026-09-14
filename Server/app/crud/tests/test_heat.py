@@ -60,8 +60,7 @@ def test_get_many_heats_no_filters(
 def test_get_many_heats_with_unknown_join_foreign_table(
     test_client: TestClient, mock_db_session: Session, mock_heat: Heat
 ) -> None:
-    """Test GET /heat/?join_foreign_table=competition returns heat data instead
-    of raising, since the heat model has no competition relationship to join"""
+    """Ignores an unknown join_foreign_table value instead of raising"""
     mock_result = MagicMock()
     mock_result.scalars.return_value.all.return_value = [mock_heat]
     mock_db_session.execute.return_value = mock_result
