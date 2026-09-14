@@ -12,7 +12,7 @@ athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
 
 
 @athleteheat_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     athlete_heats: list[AthleteHeatCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[AthleteHeatResponse]:
@@ -37,7 +37,7 @@ async def insert_many(
 
 
 @athleteheat_router.patch("/{id}")
-async def partial_update_one_by_primary_key(
+def partial_update_one_by_primary_key(
     id: UUID,
     athlete_heat_update: AthleteHeatUpdate,
     db: Session = Depends(get_transaction_session),

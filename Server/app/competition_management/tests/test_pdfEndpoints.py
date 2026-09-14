@@ -66,8 +66,7 @@ def mock_heat() -> MagicMock:
     )
 
 
-@pytest.mark.asyncio
-async def test_phase_pdf_success(
+def test_phase_pdf_success(
     mock_db_session: Session,
     sample_phase_id: str,
     mock_competition: MagicMock,
@@ -86,7 +85,7 @@ async def test_phase_pdf_success(
         mock_calc.return_value.scores = []
         mock_calc.return_value.phase_id = sample_phase_id
 
-        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
+        response = phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
         assert response.status_code == 200, (
             f"phase_pdf should return HTTP 200, got {response.status_code}"
@@ -104,24 +103,20 @@ async def test_phase_pdf_success(
         )
 
 
-@pytest.mark.asyncio
-async def test_phase_pdf_db_error(
-    mock_db_session: Session, sample_phase_id: str
-) -> None:
+def test_phase_pdf_db_error(mock_db_session: Session, sample_phase_id: str) -> None:
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
+        phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
     assert exc_info.value.status_code == 500, (
         f"phase_pdf DB error should raise HTTP 500, got {exc_info.value.status_code}"
     )
 
 
-@pytest.mark.asyncio
-async def test_heat_pdf_success(
+def test_heat_pdf_success(
     mock_db_session: Session, mock_competition: MagicMock
 ) -> None:
     # Create a heat ID and mock heat with matching ID
@@ -160,7 +155,7 @@ async def test_heat_pdf_success(
             )
         ]
 
-        response = await heat_pdf(heat_ids=[heat_id], db=mock_db_session)
+        response = heat_pdf(heat_ids=[heat_id], db=mock_db_session)
 
         assert response.status_code == 200, (
             f"heat_pdf should return HTTP 200, got {response.status_code}"
@@ -178,9 +173,8 @@ async def test_heat_pdf_success(
         )
 
 
-@pytest.mark.asyncio
-async def test_heat_pdf_no_ids() -> None:
-    response = await heat_pdf(heat_ids=[], db=MagicMock())
+def test_heat_pdf_no_ids() -> None:
+    response = heat_pdf(heat_ids=[], db=MagicMock())
     assert response.status_code == 404, (
         f"heat_pdf with no IDs should return HTTP 404, got {response.status_code}"
     )
@@ -189,13 +183,12 @@ async def test_heat_pdf_no_ids() -> None:
     )
 
 
-@pytest.mark.asyncio
-async def test_heat_pdf_not_found(
+def test_heat_pdf_not_found(
     mock_db_session: Session, sample_heat_ids: list[str]
 ) -> None:
     mock_db_session.query.return_value.where.return_value.order_by.return_value.all.return_value = []
 
-    response = await heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
+    response = heat_pdf(heat_ids=sample_heat_ids, db=mock_db_session)
     assert response.status_code == 404, (
         f"heat_pdf with unknown IDs should return HTTP 404, got {response.status_code}"
     )
@@ -204,8 +197,7 @@ async def test_heat_pdf_not_found(
     )
 
 
-@pytest.mark.asyncio
-async def test_heat_pdf_multiple_heats(
+def test_heat_pdf_multiple_heats(
     mock_db_session: Session, mock_competition: MagicMock
 ) -> None:
     """Test heat PDF with multiple heats uses count-based filename"""
@@ -246,7 +238,7 @@ async def test_heat_pdf_multiple_heats(
             )
         ]
 
-        response = await heat_pdf(heat_ids=heat_ids, db=mock_db_session)
+        response = heat_pdf(heat_ids=heat_ids, db=mock_db_session)
 
         assert response.status_code == 200, (
             f"heat_pdf with multiple heats should return HTTP 200, got {response.status_code}"
@@ -264,8 +256,7 @@ async def test_heat_pdf_multiple_heats(
         )
 
 
-@pytest.mark.asyncio
-async def test_heat_results_pdf_success(
+def test_heat_results_pdf_success(
     mock_db_session: Session, mock_competition: MagicMock, mock_heat: MagicMock
 ) -> None:
     heat_id = str(uuid.uuid4())
@@ -278,7 +269,7 @@ async def test_heat_results_pdf_success(
 
     # Mock heat scores
     with patch(
-        "app.competition_management.pdfEndpoints.get_heat_scores"
+        "app.competition_management.pdfEndpoints.calculate_heat_scores_response"
     ) as mock_scores:
         mock_scores.return_value.scores = [
             AthleteScoresWithAthleteInfo(
@@ -304,7 +295,7 @@ async def test_heat_results_pdf_success(
             )
         ]
 
-        response = await heat_results_pdf(heat_id=heat_id, db=mock_db_session)
+        response = heat_results_pdf(heat_id=heat_id, db=mock_db_session)
 
         assert response.status_code == 200, (
             f"heat_results_pdf should return HTTP 200, got {response.status_code}"
@@ -322,9 +313,8 @@ async def test_heat_results_pdf_success(
         )
 
 
-@pytest.mark.asyncio
-async def test_heat_results_pdf_no_id() -> None:
-    response = await heat_results_pdf(heat_id="", db=MagicMock())
+def test_heat_results_pdf_no_id() -> None:
+    response = heat_results_pdf(heat_id="", db=MagicMock())
     assert response.status_code == 404, (
         f"heat_results_pdf with no ID should return HTTP 404, got {response.status_code}"
     )
@@ -333,23 +323,21 @@ async def test_heat_results_pdf_no_id() -> None:
     )
 
 
-@pytest.mark.asyncio
-async def test_heat_results_pdf_error(mock_db_session: Session) -> None:
+def test_heat_results_pdf_error(mock_db_session: Session) -> None:
     heat_id = str(uuid.uuid4())
     mock_db_session.query.return_value.filter.return_value.one.side_effect = Exception(
         "Database error"
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await heat_results_pdf(heat_id=heat_id, db=mock_db_session)
+        heat_results_pdf(heat_id=heat_id, db=mock_db_session)
 
     assert exc_info.value.status_code == 500, (
         f"heat_results_pdf DB error should raise HTTP 500, got {exc_info.value.status_code}"
     )
 
 
-@pytest.mark.asyncio
-async def test_pdf_content_structure(
+def test_pdf_content_structure(
     mock_db_session: Session,
     sample_phase_id: str,
     mock_competition: MagicMock,
@@ -397,7 +385,7 @@ async def test_pdf_content_structure(
         mock_event.__str__ = MagicMock(return_value="Test Event")
         mock_phase.__str__ = MagicMock(return_value="Test Phase")
 
-        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
+        response = phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
         pdf_content = response.body
 
         # Verify that the mock objects were used correctly
@@ -443,7 +431,9 @@ def test_sanitize_filename() -> None:
         'Leading/trailing dots should be stripped: "...Test File..." -> "Test_File"'
     )
 
-    assert sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1", (
+    assert (
+        sanitize_filename("Test Event 2024 - Phase 1") == "Test_Event_2024_-_Phase_1"
+    ), (
         'Hyphens and digits should be preserved: "Test Event 2024 - Phase 1" -> "Test_Event_2024_-_Phase_1"'
     )
 
@@ -474,19 +464,19 @@ def test_sanitize_filename() -> None:
     )
 
     assert sanitize_filename("Test;Filename") == "Test_Filename", (
-        'Semicolon (Content-Disposition parameter separator) should become underscore: '
+        "Semicolon (Content-Disposition parameter separator) should become underscore: "
         '"Test;Filename" -> "Test_Filename"'
     )
     assert sanitize_filename("heat; type=injection") == "heat__type=injection", (
-        'Semicolons and surrounding spaces should become underscores: '
+        "Semicolons and surrounding spaces should become underscores: "
         '"heat; type=injection" -> "heat__type=injection"'
     )
     assert sanitize_filename("Test,Filename") == "Test_Filename", (
-        'Comma (HTTP header-value separator) should become underscore: '
+        "Comma (HTTP header-value separator) should become underscore: "
         '"Test,Filename" -> "Test_Filename"'
     )
     assert sanitize_filename("CompA,CompB") == "CompA_CompB", (
-        'Comma between competition names should become underscore: '
+        "Comma between competition names should become underscore: "
         '"CompA,CompB" -> "CompA_CompB"'
     )
     assert sanitize_filename("heat;a,b") == "heat_a_b", (
@@ -494,8 +484,7 @@ def test_sanitize_filename() -> None:
     )
 
 
-@pytest.mark.asyncio
-async def test_phase_pdf_dns_athlete(
+def test_phase_pdf_dns_athlete(
     mock_db_session: Session,
     sample_phase_id: str,
     mock_competition: MagicMock,
@@ -540,7 +529,7 @@ async def test_phase_pdf_dns_athlete(
         mock_calc.return_value.phase_id = sample_phase_id
         mock_calc.return_value.scores = [dns_athlete]
 
-        response = await phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
+        response = phase_pdf(phase_id=sample_phase_id, db=mock_db_session)
 
         assert response.status_code == 200, (
             f"phase_pdf with DNS athlete should return HTTP 200, got {response.status_code}"
@@ -564,8 +553,7 @@ async def test_phase_pdf_dns_athlete(
         )
 
 
-@pytest.mark.asyncio
-async def test_heat_pdf_exception(
+def test_heat_pdf_exception(
     mock_db_session: Session,
 ) -> None:
     """Test heat_pdf raises HTTPException when an unexpected error occurs"""
@@ -575,7 +563,7 @@ async def test_heat_pdf_exception(
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await heat_pdf(heat_ids=[heat_id], db=mock_db_session)
+        heat_pdf(heat_ids=[heat_id], db=mock_db_session)
 
     assert exc_info.value.status_code == 500, (
         f"heat_pdf DB error should raise HTTP 500, got {exc_info.value.status_code}"

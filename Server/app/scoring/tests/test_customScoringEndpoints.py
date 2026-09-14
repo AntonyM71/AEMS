@@ -1,3 +1,5 @@
+import uuid
+from unittest.mock import patch
 from uuid import UUID
 
 import pytest
@@ -5,12 +7,17 @@ from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
     ScoredMovesAndBonusesResponse,
+    UpdatedRideMetaData,
     assemble_phase_scores,
     check_run_is_locked,
     get_athlete_moves_and_bonuses,
     get_heat_info_logic,
+    get_moves_from_server,
+    on_run_status,
+    update_athlete_score,
 )
 from app.scoring.scoring_logic import (
+    AddUpdateScoredMovesRequest,
     AthleteScoreInfo,
     AthleteScores,
     JudgeScores,
@@ -155,8 +162,7 @@ def test_check_run_is_locked_returns_false_when_not_locked(
     assert result is False
 
 
-@pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
+def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     # Create mock data for database models
     mock_db_moves = [
         ScoredMoves(
@@ -192,7 +198,7 @@ async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     mock_db_session.query.reset_mock()
 
     # Call the function
-    result = await get_athlete_moves_and_bonuses(
+    result = get_athlete_moves_and_bonuses(
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -210,8 +216,7 @@ async def test_get_athlete_moves_and_bonuses(mock_db_session: Session) -> None:
     assert result.bonuses[0].bonus_id == mock_db_bonuses[0].bonus_id
 
 
-@pytest.mark.asyncio
-async def test_get_athlete_moves_and_bonuses_without_judge_id(
+def test_get_athlete_moves_and_bonuses_without_judge_id(
     mock_db_session: Session,
 ) -> None:
     # Create mock data for database models
@@ -256,7 +261,7 @@ async def test_get_athlete_moves_and_bonuses_without_judge_id(
     bonuses_query.filter.return_value.all.return_value = mock_db_bonuses
 
     # Call the function without judge_id
-    result = await get_athlete_moves_and_bonuses(
+    result = get_athlete_moves_and_bonuses(
         heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
         athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
         run_number="1",
@@ -273,6 +278,41 @@ async def test_get_athlete_moves_and_bonuses_without_judge_id(
     assert result.moves[1].id == mock_db_moves[1].id
     assert result.moves[1].move_id == mock_db_moves[1].move_id
     assert result.bonuses[0].id == mock_db_bonuses[0].id
+
+
+@pytest.mark.asyncio
+async def test_get_moves_from_server_returns_moves_and_metadata(
+    mock_db_session: Session,
+) -> None:
+    heat_id = str(uuid.uuid4())
+    athlete_id = str(uuid.uuid4())
+    judge_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    metadata = UpdatedRideMetaData(
+        heat_id=heat_id,
+        athlete_id=athlete_id,
+        run_number=1,
+        judge_id=judge_id,
+        phase_id=phase_id,
+    )
+    # get_athlete_moves_and_bonuses chains 3 unconditional filters plus a 4th
+    # since judge_id is truthy here, then .all()
+    mock_db_session.query.return_value.filter.return_value.filter.return_value.filter.return_value.filter.return_value.all.return_value = []
+    # the bonuses query has exactly one .filter() before .all()
+    mock_db_session.query.return_value.filter.return_value.all.return_value = []
+
+    with patch(
+        "app.scoring.customScoringEndpoints.transaction_session_context_manager"
+    ) as mock_context_manager:
+        mock_context_manager.return_value.__enter__.return_value = mock_db_session
+        mock_context_manager.return_value.__exit__.return_value = None
+
+        result = await get_moves_from_server(metadata)
+
+    assert result["heat_id"] == heat_id
+    assert result["athlete_id"] == athlete_id
+    assert result["movesAndBonuses"]["moves"] == []
+    assert result["movesAndBonuses"]["bonuses"] == []
 
 
 def test_check_run_is_locked_returns_false_when_no_status(
@@ -622,3 +662,66 @@ class TestAssemblePhaseScores:
         assert [s.bib_number for s in got.scores[:6]] == [2, 4, 7, 1, 5, 9]
         assert got.scores[6].run_scores == []
         assert got.scores[7].run_scores == []
+
+
+@pytest.mark.asyncio
+async def test_on_run_status_persists_and_broadcasts(
+    mock_db_session: Session,
+) -> None:
+    payload = {
+        "id": str(uuid.uuid4()),
+        "heat_id": str(uuid.uuid4()),
+        "athlete_id": str(uuid.uuid4()),
+        "phase_id": str(uuid.uuid4()),
+        "run_number": 1,
+        "did_not_start": False,
+        "locked": False,
+    }
+    # one .filter() call with 4 conditions, then .first() -- see copy_message_to_db
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        patch(
+            "app.scoring.customScoringEndpoints.transaction_session_context_manager"
+        ) as mock_context_manager,
+    ):
+        mock_context_manager.return_value.__enter__.return_value = mock_db_session
+        mock_context_manager.return_value.__exit__.return_value = None
+        mock_emit.return_value = None
+        await on_run_status(sid="test-sid", data=payload)
+
+    mock_emit.assert_awaited_once_with("run_status", payload, namespace="/run_status")
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_persists_and_broadcasts(
+    mock_db_session: Session,
+) -> None:
+    heat_id = str(uuid.uuid4())
+    athlete_id = str(uuid.uuid4())
+    judge_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    # one .filter() call with 4 conditions, then .first() -- see check_run_is_locked
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+    request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        patch(
+            "app.scoring.customScoringEndpoints.get_moves_from_server"
+        ) as mock_get_moves,
+    ):
+        mock_get_moves.return_value = {"heat_id": heat_id}
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert mock_db_session.commit.called
+    mock_emit.assert_awaited_once()

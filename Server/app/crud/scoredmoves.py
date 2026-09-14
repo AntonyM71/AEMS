@@ -11,7 +11,7 @@ scoredmoves_router = APIRouter(prefix="/scoredmoves", tags=["scoredmoves"])
 
 
 @scoredmoves_router.delete("/")
-async def delete_many(
+def delete_many(
     db: Session = Depends(get_transaction_session),
     heat_id____list: list[UUID] | None = Query(None, alias="heat_id____list"),
     athlete_id____list: list[UUID] | None = Query(None, alias="athlete_id____list"),

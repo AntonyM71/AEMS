@@ -11,7 +11,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync --dev
+          uv sync --dev --locked
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
       - script: |
@@ -31,13 +31,62 @@ jobs:
         displayName: "Publish Python Test Results"
         condition: succeededOrFailed()
 
+  - job: PerformanceTests
+    displayName: "Performance Benchmarks"
+    steps:
+      - script: |
+          docker run -d --name postgres-performance \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=postgres \
+            -p 5432:5432 \
+            postgres:17
+          for i in $(seq 1 30); do
+            docker exec postgres-performance pg_isready -U postgres && break || sleep 2
+          done
+        displayName: "Start PostgreSQL"
+
+      - script: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv
+          uv sync --locked
+        displayName: "Setup Python Environment"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/alembic upgrade head
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/python -m scripts.seed_scoresheets
+        displayName: "Setup Database"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - script: |
+          CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres \
+            $(Build.SourcesDirectory)/Server/.venv/bin/python -m pytest performance/ \
+            --benchmark-json=benchmark-results.json --no-cov -s
+        displayName: "Run Performance Benchmarks"
+        workingDirectory: $(Build.SourcesDirectory)/Server
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: "$(Build.SourcesDirectory)/Server/benchmark-results.json"
+          artifact: "performance-benchmarks"
+        displayName: "Publish Benchmark Results"
+        condition: succeededOrFailed()
+
+      - script: |
+          docker stop postgres-performance && docker rm postgres-performance
+        displayName: "Stop Services"
+        condition: always()
+
   - job: Timer
     displayName: "Timer Build & Test"
     steps:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync
+          uv sync --locked
         displayName: "Setup Timer Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Timer
       - script: |
@@ -121,7 +170,7 @@ jobs:
       - script: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
-          uv sync
+          uv sync --locked
         displayName: "Setup Python Environment"
         workingDirectory: $(Build.SourcesDirectory)/Server
 
