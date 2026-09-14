@@ -7,6 +7,7 @@ ENV UVICORN_PORT 8000
 ENV PORT 3000
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
+ENV REDIS_URL redis://redis:6379/0
 #
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
