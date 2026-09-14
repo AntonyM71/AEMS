@@ -39,7 +39,7 @@ def _build_phase_response(
 
 
 @phase_router.get("/{id}")
-async def get_one_by_primary_key(
+def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
     event_id____list: list[UUID] | None = Query(None, alias="event_id____list"),
@@ -119,7 +119,7 @@ async def get_one_by_primary_key(
         },
     },
 )
-async def partial_update_one_by_primary_key(
+def partial_update_one_by_primary_key(
     id: UUID,
     phase_update: PhaseUpdate,
     db: Session = Depends(get_transaction_session),
@@ -151,7 +151,7 @@ async def partial_update_one_by_primary_key(
 
 
 @phase_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     phases: list[PhaseCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[PhaseResponse]:

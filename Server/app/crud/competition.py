@@ -59,7 +59,7 @@ def _build_event_response(
 
 
 @competition_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     name____list: list[str] | None = Query(None, alias="name____list"),
@@ -97,7 +97,7 @@ async def get_many(
 
 
 @competition_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     competitions: list[CompetitionCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[CompetitionResponse]:
@@ -119,7 +119,7 @@ async def insert_many(
 
 
 @competition_router.patch("/{id}")
-async def partial_update_one_by_primary_key(
+def partial_update_one_by_primary_key(
     id: UUID,
     competition_update: CompetitionUpdate,
     db: Session = Depends(get_transaction_session),
@@ -143,7 +143,7 @@ async def partial_update_one_by_primary_key(
 
 
 @competition_router.get("/{competition__pk__id}/event")
-async def get_many_by_pk_from_event(
+def get_many_by_pk_from_event(
     competition__pk__id: UUID,
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),

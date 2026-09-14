@@ -57,7 +57,7 @@ def _build_heat_response(
 
 
 @heat_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     competition_id____list: list[UUID] | None = Query(
@@ -91,7 +91,7 @@ async def get_many(
 
 
 @heat_router.get("/{id}")
-async def get_one_by_primary_key(
+def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
     join_foreign_table: list[str] | None = Query(None),
@@ -110,7 +110,7 @@ async def get_one_by_primary_key(
 
 
 @heat_router.patch("/{id}")
-async def partial_update_one_by_primary_key(
+def partial_update_one_by_primary_key(
     id: UUID,
     heat_update: HeatUpdate,
     db: Session = Depends(get_transaction_session),
@@ -135,7 +135,7 @@ async def partial_update_one_by_primary_key(
 
 
 @heat_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     heats: list[HeatCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatResponse]:

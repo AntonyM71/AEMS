@@ -61,7 +61,7 @@ def _build_event_dict(
 
 
 @event_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     competition_id____list: list[UUID] | None = Query(
@@ -97,7 +97,7 @@ async def get_many(
 
 
 @event_router.get("/{id}")
-async def get_one_by_primary_key(
+def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
     join_foreign_table: list[str] | None = Query(None, alias="join_foreign_table"),
@@ -116,7 +116,7 @@ async def get_one_by_primary_key(
 
 
 @event_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     events: list[EventCreateRequest],
     db: Session = Depends(get_transaction_session),
 ) -> list[EventResponse]:
@@ -138,7 +138,7 @@ async def insert_many(
 
 
 @event_router.get("/{event_pk_id}/phase")
-async def get_many_by_pk_from_phase(
+def get_many_by_pk_from_phase(
     event_pk_id: UUID,
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),

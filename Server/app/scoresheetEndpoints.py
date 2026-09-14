@@ -132,7 +132,7 @@ def _delete_removed(db: Session, existing: dict, ids_to_remove: list[UUID]) -> N
         }
     },
 )
-async def add_update_scoresheet(
+def add_update_scoresheet(
     scoresheet_id: str,
     scoresheet: AddUpdateScoresheetRequest,
     db: Session = Depends(get_transaction_session),

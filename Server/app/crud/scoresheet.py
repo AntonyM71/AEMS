@@ -17,7 +17,7 @@ scoresheet_router = APIRouter(prefix="/scoresheet", tags=["scoresheet"])
 
 
 @scoresheet_router.get("/")
-async def get_many(
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
     name____list: list[str] | None = Query(None, alias="name____list"),
@@ -45,7 +45,7 @@ async def get_many(
 
 
 @scoresheet_router.post("/", status_code=201)
-async def insert_many(
+def insert_many(
     scoresheets: list[ScoreSheetCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[ScoreSheetResponse]:
