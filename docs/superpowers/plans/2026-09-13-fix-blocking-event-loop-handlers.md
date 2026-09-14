@@ -803,7 +803,7 @@ Expected: PASS, all 4 tests, against the new thresholds.
 
 - [ ] **Step 4: Spot-check the concurrency improvement (informational, no assertion)**
 
-Run `python -m scripts.bench_event_loop.py "http://localhost:8000/phase_pdf/{phase_id}" --concurrent-requests 10 --serve` (and the equivalent for a scoring endpoint) and compare req/s against the pre-fix numbers recorded earlier in this conversation (~7.5 req/s for PDF generation at 10 concurrent, pre-fix). Expect a substantial jump now that these handlers no longer block the event loop. This is a sanity check, not a test — `test_event_loop_concurrency.py` stays assertion-free per its exploratory-tool framing (see the commit that clarified this).
+Run `python -m scripts.bench_event_loop "http://localhost:8000/phase_pdf/{phase_id}" --concurrent-requests 10 --serve` (and the equivalent for a scoring endpoint) and compare req/s against the pre-fix numbers recorded earlier in this conversation (~7.5 req/s for PDF generation at 10 concurrent, pre-fix). Expect a substantial jump now that these handlers no longer block the event loop. This is a sanity check, not a test — `test_event_loop_concurrency.py` stays assertion-free per its exploratory-tool framing (see the commit that clarified this).
 
 - [ ] **Step 5: Commit**
 
