@@ -4,6 +4,8 @@ import Select, { SelectChangeEvent } from "@mui/material/Select"
 import TextField from "@mui/material/TextField"
 import { AvailableMoveDirections } from "../roles/scribe/Interfaces"
 
+export const SCORE_FIELD_WIDTH = 76
+
 export const EditMove = ({
 	moveData,
 	setMoveData
@@ -17,6 +19,7 @@ export const EditMove = ({
 				error={!moveData.name}
 				label="Name"
 				variant="outlined"
+				size="small"
 				fullWidth
 				data-testid="name-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
@@ -32,6 +35,7 @@ export const EditMove = ({
 			<Select
 				label="Direction"
 				variant="outlined"
+				size="small"
 				fullWidth
 				onChange={(event: SelectChangeEvent<string>): void => {
 					const newMoveData = {
@@ -50,12 +54,13 @@ export const EditMove = ({
 				<MenuItem value="S">Single</MenuItem>
 			</Select>
 		</Grid>
-		<Grid size={1}>
+		<Grid size="auto">
 			<TextField
 				error={!moveData.flScore.toString()}
 				label="F/L"
 				variant="outlined"
-				fullWidth
+				size="small"
+				sx={{ width: SCORE_FIELD_WIDTH }}
 				data-testid="fl-field"
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
@@ -66,12 +71,13 @@ export const EditMove = ({
 				value={moveData.flScore}
 			/>
 		</Grid>
-		<Grid size={1}>
+		<Grid size="auto">
 			<TextField
 				error={!moveData.rbScore.toString()}
 				label="B/R"
 				variant="outlined"
-				fullWidth
+				size="small"
+				sx={{ width: SCORE_FIELD_WIDTH }}
 				disabled={moveData.direction === "S"}
 				onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
 					setMoveData({
@@ -83,12 +89,13 @@ export const EditMove = ({
 			/>
 		</Grid>
 		{moveData.bonuses.map((b, i) => (
-			<Grid key={b.id} size={1}>
+			<Grid key={b.id} size="auto">
 				<TextField
 					error={!moveData.bonuses[i].score.toString()}
 					label={`${b.name}`}
 					variant="outlined"
-					fullWidth
+					size="small"
+					sx={{ width: SCORE_FIELD_WIDTH }}
 					data-testid={`${b.name.toLowerCase()}-field`}
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>

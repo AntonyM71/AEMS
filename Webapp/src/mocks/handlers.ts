@@ -75,14 +75,8 @@ export const handlers = [
 	http.get("/api/availablemoves", ({ request }) => {
 		const url = new URL(request.url)
 		const idList = url.searchParams.get("idList")?.split(",")
-		const idListComparisonOperator = url.searchParams.get(
-			"idListComparisonOperator"
-		)
 
-		if (
-			idListComparisonOperator === "Equal" &&
-			idList?.includes("test-move-1")
-		) {
+		if (idList?.includes("test-move-1")) {
 			return HttpResponse.json([
 				{
 					id: "test-move-1",
@@ -100,14 +94,8 @@ export const handlers = [
 	http.get("/api/availablebonuses", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const moveIdList = url.searchParams.get("moveIdList")?.split(",")
-		const moveIdListComparisonOperator = url.searchParams.get(
-			"moveIdListComparisonOperator"
-		)
 
-		if (
-			moveIdListComparisonOperator === "Equal" &&
-			moveIdList?.includes("test-move-1")
-		) {
+		if (moveIdList?.includes("test-move-1")) {
 			return HttpResponse.json([
 				{
 					id: "available-bonus-1",
@@ -150,16 +138,9 @@ export const handlers = [
 	http.get("/api/event", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList[]")
-		const competitionIdListComparisonOperator = url.searchParams.get(
-			"competitionIdListComparisonOperator"
-		)
 		const joinForeignTable = url.searchParams.get("joinForeignTable[]")
 
-		if (
-			competitionIdList === "1" &&
-			competitionIdListComparisonOperator === "Equal" &&
-			joinForeignTable === "phase"
-		) {
+		if (competitionIdList === "1" && joinForeignTable === "phase") {
 			return HttpResponse.json([
 				{
 					id: "1",
@@ -176,6 +157,13 @@ export const handlers = [
 
 		return new HttpResponse(null, { status: 404 })
 	}),
+	http.get("/api/event/:id", ({ params }) =>
+		HttpResponse.json({
+			id: params.id,
+			name: "Test Event",
+			competition_id: "1"
+		})
+	),
 	http.post("/api/event", async ({ request }) => {
 		const body = await request.json()
 
@@ -184,11 +172,8 @@ export const handlers = [
 	http.get("/api/heat", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList")
-		const competitionIdListComparisonOperator = url.searchParams.get(
-			"competitionIdListComparisonOperator"
-		)
 
-		if (!competitionIdList || !competitionIdListComparisonOperator) {
+		if (!competitionIdList) {
 			return HttpResponse.json([])
 		}
 
@@ -213,17 +198,6 @@ export const handlers = [
 					number_of_runs: 2
 				}
 			])
-		}
-
-		// For test cases that expect errors
-		if (
-			competitionIdList?.includes("2") &&
-			competitionIdListComparisonOperator === "Equal"
-		) {
-			return HttpResponse.json(
-				{ message: "Internal server error" },
-				{ status: 500 }
-			)
 		}
 
 		return HttpResponse.json([])
@@ -331,5 +305,41 @@ export const handlers = [
 				...body.addUpdateScoresheetRequest
 			})
 		}
-	)
+	),
+	http.get("/api/getHeatInfo/:heatId/phase", () =>
+		HttpResponse.json([
+			{
+				id: "phase-1",
+				event_id: "event-1",
+				name: "Test Phase",
+				number_of_runs: 3,
+				number_of_runs_for_score: 2,
+				number_of_judges: 3,
+				scoresheet: "sheet-1"
+			}
+		])
+	),
+	http.get("/api/getHeatInfo/:heatId", ({ params }) =>
+		HttpResponse.json([
+			{
+				athlete_heat_id: "ah-1",
+				heat_id: params.heatId,
+				athlete_id: "athlete-1",
+				phase_id: "phase-1",
+				number_of_runs: 3,
+				number_of_runs_for_score: 2,
+				scoresheet: "sheet-1",
+				first_name: "John",
+				last_name: "Smith",
+				affiliation: "GBR",
+				bib: "42",
+				event_name: "Test Event"
+			}
+		])
+	),
+	http.get(
+		"/api/getAthleteMovesAndBonuses/:heatId/:athleteId/:runNumber",
+		() => HttpResponse.json({ moves: [], bonuses: [] })
+	),
+	http.get("/api/run_status/", () => HttpResponse.json([]))
 ]

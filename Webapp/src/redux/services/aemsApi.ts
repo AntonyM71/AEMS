@@ -1,16 +1,6 @@
 import { emptySplitApi as api } from "./emptyApi"
 const injectedRtkApi = api.injectEndpoints({
 	endpoints: (build) => ({
-		uploadCompetitionManagementUploadPost: build.mutation<
-			UploadCompetitionManagementUploadPostApiResponse,
-			UploadCompetitionManagementUploadPostApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/competition_management/upload`,
-				method: "POST",
-				body: queryArg.bodyUploadCompetitionManagementUploadPost
-			})
-		}),
 		promotePhaseCompetitionManagementPromotePhasePost: build.mutation<
 			PromotePhaseCompetitionManagementPromotePhasePostApiResponse,
 			PromotePhaseCompetitionManagementPromotePhasePostApiArg
@@ -18,7 +8,7 @@ const injectedRtkApi = api.injectEndpoints({
 			query: (queryArg) => ({
 				url: `/competition_management/promote_phase`,
 				method: "POST",
-				body: queryArg.newPhaseInfo
+				body: queryArg.bodyPromotePhaseCompetitionManagementPromotePhasePost
 			})
 		}),
 		getHeatInfoGetHeatInfoHeatIdGet: build.query<
@@ -113,7 +103,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/competition/`,
 				params: {
 					id____list: queryArg.idList,
-					name____str: queryArg.nameStr,
 					name____list: queryArg.nameList,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
@@ -139,11 +128,7 @@ const injectedRtkApi = api.injectEndpoints({
 			query: (queryArg) => ({
 				url: `/competition/${queryArg.id}`,
 				method: "PATCH",
-				params: {
-					name: queryArg.name,
-					name____str: queryArg.nameStr,
-					name____list: queryArg.nameList
-				}
+				body: queryArg.competitionUpdate
 			})
 		}),
 		getManyByPkFromEventCompetitionCompetitionPkIdEventGet: build.query<
@@ -154,7 +139,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/competition/${queryArg.competitionPkId}/event`,
 				params: {
 					id____list: queryArg.idList,
-					name____str: queryArg.nameStr,
 					name____list: queryArg.nameList,
 					join_foreign_table: queryArg.joinForeignTable
 				}
@@ -168,17 +152,8 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/event/`,
 				params: {
 					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
 					competition_id____list: queryArg.competitionIdList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
 					name____list: queryArg.nameList,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____str: queryArg.nameStr,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns,
@@ -202,37 +177,7 @@ const injectedRtkApi = api.injectEndpoints({
 		>({
 			query: (queryArg) => ({
 				url: `/event/${queryArg.id}`,
-				params: {
-					competition_id____list: queryArg.competitionIdList,
-					name____str: queryArg.nameStr,
-					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
-			})
-		}),
-		getManyWithForeignTreeEventGetManyWithForeignTreeGet: build.query<
-			GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiResponse,
-			GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/event/get_many_with_foreign_tree/`,
-				params: {
-					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
-					competition_id____list: queryArg.competitionIdList,
-					competition_id____list_____comparison_operator:
-						queryArg.competitionIdListComparisonOperator,
-					name____list: queryArg.nameList,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
-					name____str: queryArg.nameStr,
-					name____str_____matching_pattern:
-						queryArg.nameStrMatchingPattern,
-					limit: queryArg.limit,
-					offset: queryArg.offset,
-					order_by_columns: queryArg.orderByColumns
-				}
+				params: { join_foreign_table: queryArg.joinForeignTable }
 			})
 		}),
 		getManyByPkFromPhaseEventEventPkIdPhaseGet: build.query<
@@ -270,8 +215,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/phase/${queryArg.id}`,
 				params: {
 					event_id____list: queryArg.eventIdList,
-					name____str: queryArg.nameStr,
-					name____list: queryArg.nameList,
 					number_of_runs____from: queryArg.numberOfRunsFrom,
 					number_of_runs____to: queryArg.numberOfRunsTo,
 					number_of_runs____list: queryArg.numberOfRunsList,
@@ -318,7 +261,6 @@ const injectedRtkApi = api.injectEndpoints({
 				params: {
 					id____list: queryArg.idList,
 					competition_id____list: queryArg.competitionIdList,
-					name____str: queryArg.nameStr,
 					name____list: queryArg.nameList,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
@@ -343,12 +285,7 @@ const injectedRtkApi = api.injectEndpoints({
 		>({
 			query: (queryArg) => ({
 				url: `/heat/${queryArg.id}`,
-				params: {
-					competition_id____list: queryArg.competitionIdList,
-					name____str: queryArg.nameStr,
-					name____list: queryArg.nameList,
-					join_foreign_table: queryArg.joinForeignTable
-				}
+				params: { join_foreign_table: queryArg.joinForeignTable }
 			})
 		}),
 		partialUpdateOneByPrimaryKeyHeatIdPatch: build.mutation<
@@ -378,17 +315,7 @@ const injectedRtkApi = api.injectEndpoints({
 			query: (queryArg) => ({
 				url: `/athlete/${queryArg.id}`,
 				method: "PATCH",
-				body: queryArg.athleteUpdate,
-				params: {
-					first_name____str: queryArg.firstNameStr,
-					first_name____list: queryArg.firstNameList,
-					last_name____str: queryArg.lastNameStr,
-					last_name____list: queryArg.lastNameList,
-					affiliation____str: queryArg.affiliationStr,
-					affiliation____list: queryArg.affiliationList,
-					bib____str: queryArg.bibStr,
-					bib____list: queryArg.bibList
-				}
+				body: queryArg.athleteUpdate
 			})
 		}),
 		getManyScoresheetGet: build.query<
@@ -399,7 +326,6 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/scoresheet/`,
 				params: {
 					id____list: queryArg.idList,
-					name____str: queryArg.nameStr,
 					name____list: queryArg.nameList,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
@@ -425,33 +351,20 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/availablemoves/`,
 				params: {
 					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
 					sheet_id____list: queryArg.sheetIdList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
 					name____str: queryArg.nameStr,
-					name____str_____comparison_operator:
-						queryArg.nameStrComparisonOperator,
 					name____list: queryArg.nameList,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
 					fl_score____from: queryArg.flScoreFrom,
 					fl_score____to: queryArg.flScoreTo,
 					fl_score____list: queryArg.flScoreList,
-					fl_score____list_____comparison_operator:
-						queryArg.flScoreListComparisonOperator,
 					rb_score____from: queryArg.rbScoreFrom,
 					rb_score____to: queryArg.rbScoreTo,
 					rb_score____list: queryArg.rbScoreList,
-					rb_score____list_____comparison_operator:
-						queryArg.rbScoreListComparisonOperator,
+					display_order____from: queryArg.displayOrderFrom,
+					display_order____to: queryArg.displayOrderTo,
+					display_order____list: queryArg.displayOrderList,
 					direction____str: queryArg.directionStr,
-					direction____str_____comparison_operator:
-						queryArg.directionStrComparisonOperator,
 					direction____list: queryArg.directionList,
-					direction____list_____comparison_operator:
-						queryArg.directionListComparisonOperator,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns
@@ -466,30 +379,16 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/availablebonuses/`,
 				params: {
 					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
 					sheet_id____list: queryArg.sheetIdList,
-					sheet_id____list_____comparison_operator:
-						queryArg.sheetIdListComparisonOperator,
 					move_id____list: queryArg.moveIdList,
-					move_id____list_____comparison_operator:
-						queryArg.moveIdListComparisonOperator,
 					name____str: queryArg.nameStr,
-					name____str_____comparison_operator:
-						queryArg.nameStrComparisonOperator,
 					name____list: queryArg.nameList,
-					name____list_____comparison_operator:
-						queryArg.nameListComparisonOperator,
 					score____from: queryArg.scoreFrom,
 					score____to: queryArg.scoreTo,
 					score____list: queryArg.scoreList,
-					score____list_____comparison_operator:
-						queryArg.scoreListComparisonOperator,
 					display_order____from: queryArg.displayOrderFrom,
 					display_order____to: queryArg.displayOrderTo,
 					display_order____list: queryArg.displayOrderList,
-					display_order____list_____comparison_operator:
-						queryArg.displayOrderListComparisonOperator,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns
@@ -542,28 +441,14 @@ const injectedRtkApi = api.injectEndpoints({
 				url: `/run_status/`,
 				params: {
 					id____list: queryArg.idList,
-					id____list_____comparison_operator:
-						queryArg.idListComparisonOperator,
 					heat_id____list: queryArg.heatIdList,
-					heat_id____list_____comparison_operator:
-						queryArg.heatIdListComparisonOperator,
 					run_number____from: queryArg.runNumberFrom,
 					run_number____to: queryArg.runNumberTo,
 					run_number____list: queryArg.runNumberList,
-					run_number____list_____comparison_operator:
-						queryArg.runNumberListComparisonOperator,
 					phase_id____list: queryArg.phaseIdList,
-					phase_id____list_____comparison_operator:
-						queryArg.phaseIdListComparisonOperator,
 					athlete_id____list: queryArg.athleteIdList,
-					athlete_id____list_____comparison_operator:
-						queryArg.athleteIdListComparisonOperator,
 					locked____list: queryArg.lockedList,
-					locked____list_____comparison_operator:
-						queryArg.lockedListComparisonOperator,
 					did_not_start____list: queryArg.didNotStartList,
-					did_not_start____list_____comparison_operator:
-						queryArg.didNotStartListComparisonOperator,
 					limit: queryArg.limit,
 					offset: queryArg.offset,
 					order_by_columns: queryArg.orderByColumns
@@ -583,15 +468,10 @@ const injectedRtkApi = api.injectEndpoints({
 	overrideExisting: false
 })
 export { injectedRtkApi as aemsApi }
-export type UploadCompetitionManagementUploadPostApiResponse =
-	/** status 200 Successful Response */ any
-export type UploadCompetitionManagementUploadPostApiArg = {
-	bodyUploadCompetitionManagementUploadPost: BodyUploadCompetitionManagementUploadPost
-}
 export type PromotePhaseCompetitionManagementPromotePhasePostApiResponse =
 	/** status 200 Successful Response */ any
 export type PromotePhaseCompetitionManagementPromotePhasePostApiArg = {
-	newPhaseInfo: NewPhaseInfo
+	bodyPromotePhaseCompetitionManagementPromotePhasePost: BodyPromotePhaseCompetitionManagementPromotePhasePost
 }
 export type GetHeatInfoGetHeatInfoHeatIdGetApiResponse =
 	/** status 200 Successful Response */ HeatInfoResponse[]
@@ -620,8 +500,8 @@ export type GetAthleteMovesAndBonusesGetAthleteMovesAndBonusesHeatIdAthleteIdRun
 	{
 		heatId: string
 		athleteId: string
-		runNumber: string
-		judgeId?: string
+		runNumber: number
+		judgeId?: string | null
 	}
 export type GetHeatScoresGetHeatScoresHeatIdGetApiResponse =
 	/** status 200 Successful Response */ HeatScoresResponse
@@ -657,13 +537,12 @@ export type HeatResultsPdfHeatResultsPdfGetApiArg = {
 export type GetManyCompetitionGetApiResponse =
 	/** status 200 Successful Response */ CompetitionResponse[]
 export type GetManyCompetitionGetApiArg = {
-	idList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
-	joinForeignTable?: string[]
+	idList?: string[] | null
+	nameList?: string[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type InsertManyCompetitionPostApiResponse =
 	/** status 201 Successful Response */ CompetitionResponse[]
@@ -674,34 +553,26 @@ export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiResponse =
 	/** status 200 Successful Response */ CompetitionResponse
 export type PartialUpdateOneByPrimaryKeyCompetitionIdPatchApiArg = {
 	id: string
-	name: string
-	nameStr?: string[]
-	nameList?: string[]
+	competitionUpdate: CompetitionUpdate
 }
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiResponse =
 	/** status 200 Successful Response */ EventResponse[]
 export type GetManyByPkFromEventCompetitionCompetitionPkIdEventGetApiArg = {
 	competitionPkId: string
-	idList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	joinForeignTable?: string[]
+	idList?: string[] | null
+	nameList?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type GetManyEventGetApiResponse =
 	/** status 200 Successful Response */ EventResponse[]
 export type GetManyEventGetApiArg = {
-	idList?: string[]
-	idListComparisonOperator?: string
-	competitionIdList?: string[]
-	competitionIdListComparisonOperator?: string
-	nameList?: string[]
-	nameListComparisonOperator?: string
-	nameStr?: string
-	nameStrMatchingPattern?: string
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
-	joinForeignTable?: string[]
+	idList?: string[] | null
+	competitionIdList?: string[] | null
+	nameList?: string[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type InsertManyEventPostApiResponse =
 	/** status 201 Successful Response */ EventResponse[]
@@ -712,63 +583,43 @@ export type GetOneByPrimaryKeyEventIdGetApiResponse =
 	/** status 200 Successful Response */ EventResponse
 export type GetOneByPrimaryKeyEventIdGetApiArg = {
 	id: string
-	competitionIdList?: string[]
-	nameStr?: string
-	nameList?: string[]
-	joinForeignTable?: string[]
-}
-export type GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiResponse =
-	/** status 200 Successful Response */ EventResponse[]
-export type GetManyWithForeignTreeEventGetManyWithForeignTreeGetApiArg = {
-	idList?: string[]
-	idListComparisonOperator?: string
-	competitionIdList?: string[]
-	competitionIdListComparisonOperator?: string
-	nameList?: string[]
-	nameListComparisonOperator?: string
-	nameStr?: string
-	nameStrMatchingPattern?: string
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
+	joinForeignTable?: string[] | null
 }
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiResponse =
 	/** status 200 Successful Response */ PhaseResponse2[]
 export type GetManyByPkFromPhaseEventEventPkIdPhaseGetApiArg = {
 	eventPkId: string
-	idList?: string[]
-	nameStr?: string
-	nameList?: string[]
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesList?: number[]
-	scoresheetList?: string[]
-	joinForeignTable?: string[]
+	idList?: string[] | null
+	nameStr?: string | null
+	nameList?: string[] | null
+	numberOfRunsFrom?: number | null
+	numberOfRunsTo?: number | null
+	numberOfRunsList?: number[] | null
+	numberOfRunsForScoreFrom?: number | null
+	numberOfRunsForScoreTo?: number | null
+	numberOfRunsForScoreList?: number[] | null
+	numberOfJudgesFrom?: number | null
+	numberOfJudgesTo?: number | null
+	numberOfJudgesList?: number[] | null
+	scoresheetList?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type GetOneByPrimaryKeyPhaseIdGetApiResponse =
 	/** status 200 Successful Response */ PhaseResponse2
 export type GetOneByPrimaryKeyPhaseIdGetApiArg = {
 	id: string
-	eventIdList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	numberOfRunsFrom?: number
-	numberOfRunsTo?: number
-	numberOfRunsList?: number[]
-	numberOfRunsForScoreFrom?: number
-	numberOfRunsForScoreTo?: number
-	numberOfRunsForScoreList?: number[]
-	numberOfJudgesFrom?: number
-	numberOfJudgesTo?: number
-	numberOfJudgesList?: number[]
-	scoresheetList?: string[]
-	joinForeignTable?: string[]
+	eventIdList?: string[] | null
+	numberOfRunsFrom?: number | null
+	numberOfRunsTo?: number | null
+	numberOfRunsList?: number[] | null
+	numberOfRunsForScoreFrom?: number | null
+	numberOfRunsForScoreTo?: number | null
+	numberOfRunsForScoreList?: number[] | null
+	numberOfJudgesFrom?: number | null
+	numberOfJudgesTo?: number | null
+	numberOfJudgesList?: number[] | null
+	scoresheetList?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type PartialUpdateOneByPrimaryKeyPhaseIdPatchApiResponse =
 	/** status 200 Successful Response */ PhaseResponse2
@@ -784,14 +635,13 @@ export type InsertManyPhasePostApiArg = {
 export type GetManyHeatGetApiResponse =
 	/** status 200 Successful Response */ HeatResponse[]
 export type GetManyHeatGetApiArg = {
-	idList?: string[]
-	competitionIdList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
-	joinForeignTable?: string[]
+	idList?: string[] | null
+	competitionIdList?: string[] | null
+	nameList?: string[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
+	joinForeignTable?: string[] | null
 }
 export type InsertManyHeatPostApiResponse =
 	/** status 201 Successful Response */ HeatResponse[]
@@ -802,10 +652,7 @@ export type GetOneByPrimaryKeyHeatIdGetApiResponse =
 	/** status 200 Successful Response */ HeatResponse
 export type GetOneByPrimaryKeyHeatIdGetApiArg = {
 	id: string
-	competitionIdList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	joinForeignTable?: string[]
+	joinForeignTable?: string[] | null
 }
 export type PartialUpdateOneByPrimaryKeyHeatIdPatchApiResponse =
 	/** status 200 Successful Response */ HeatResponse
@@ -822,25 +669,16 @@ export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiResponse =
 	/** status 200 Successful Response */ AthleteResponse
 export type PartialUpdateOneByPrimaryKeyAthleteIdPatchApiArg = {
 	id: string
-	firstNameStr?: string[]
-	firstNameList?: string[]
-	lastNameStr?: string[]
-	lastNameList?: string[]
-	affiliationStr?: string[]
-	affiliationList?: string[]
-	bibStr?: string[]
-	bibList?: string[]
 	athleteUpdate: AthleteUpdate
 }
 export type GetManyScoresheetGetApiResponse =
 	/** status 200 Successful Response */ ScoreSheetResponse[]
 export type GetManyScoresheetGetApiArg = {
-	idList?: string[]
-	nameStr?: string[]
-	nameList?: string[]
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
+	idList?: string[] | null
+	nameList?: string[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
 }
 export type InsertManyScoresheetPostApiResponse =
 	/** status 201 Successful Response */ ScoreSheetResponse[]
@@ -850,60 +688,50 @@ export type InsertManyScoresheetPostApiArg = {
 export type GetManyAvailablemovesGetApiResponse =
 	/** status 200 Successful Response */ AvailableMovesResponse[]
 export type GetManyAvailablemovesGetApiArg = {
-	idList?: string[]
-	idListComparisonOperator?: string
-	sheetIdList?: string[]
-	sheetIdListComparisonOperator?: string
-	nameStr?: string[]
-	nameStrComparisonOperator?: string
-	nameList?: string[]
-	nameListComparisonOperator?: string
-	flScoreFrom?: number
-	flScoreTo?: number
-	flScoreList?: number[]
-	flScoreListComparisonOperator?: string
-	rbScoreFrom?: number
-	rbScoreTo?: number
-	rbScoreList?: number[]
-	rbScoreListComparisonOperator?: string
-	directionStr?: string[]
-	directionStrComparisonOperator?: string
-	directionList?: string[]
-	directionListComparisonOperator?: string
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
+	idList?: string[] | null
+	sheetIdList?: string[] | null
+	nameStr?: string[] | null
+	nameList?: string[] | null
+	flScoreFrom?: number | null
+	flScoreTo?: number | null
+	flScoreList?: number[] | null
+	rbScoreFrom?: number | null
+	rbScoreTo?: number | null
+	rbScoreList?: number[] | null
+	displayOrderFrom?: number | null
+	displayOrderTo?: number | null
+	displayOrderList?: number[] | null
+	directionStr?: string[] | null
+	directionList?: string[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
 }
 export type GetManyAvailablebonusesGetApiResponse =
 	/** status 200 Successful Response */ AvailableBonusesResponse[]
 export type GetManyAvailablebonusesGetApiArg = {
-	idList?: string[]
-	idListComparisonOperator?: string
-	sheetIdList?: string[]
-	sheetIdListComparisonOperator?: string
-	moveIdList?: string[]
-	moveIdListComparisonOperator?: string
-	nameStr?: string[]
-	nameStrComparisonOperator?: string
-	nameList?: string[]
-	nameListComparisonOperator?: string
-	scoreFrom?: number
-	scoreTo?: number
-	scoreList?: number[]
-	scoreListComparisonOperator?: string
-	displayOrderFrom?: number
-	displayOrderTo?: number
-	displayOrderList?: number[]
-	displayOrderListComparisonOperator?: string
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
+	idList?: string[] | null
+	sheetIdList?: string[] | null
+	moveIdList?: string[] | null
+	nameStr?: string[] | null
+	nameList?: string[] | null
+	scoreFrom?: number | null
+	scoreTo?: number | null
+	scoreList?: number[] | null
+	displayOrderFrom?: number | null
+	displayOrderTo?: number | null
+	displayOrderList?: number[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
 }
 export type DeleteManyScoredmovesDeleteApiResponse =
-	/** status 200 Successful Response */ object
+	/** status 200 Successful Response */ {
+		[key: string]: any
+	}
 export type DeleteManyScoredmovesDeleteApiArg = {
-	heatIdList?: string[]
-	athleteIdList?: string[]
+	heatIdList?: string[] | null
+	athleteIdList?: string[] | null
 }
 export type InsertManyAthleteheatPostApiResponse =
 	/** status 201 Successful Response */ AthleteHeatResponse[]
@@ -914,65 +742,57 @@ export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiResponse =
 	/** status 200 Successful Response */ AthleteHeatResponse
 export type PartialUpdateOneByPrimaryKeyAthleteheatIdPatchApiArg = {
 	id: string
-	athleteIdList?: string[]
-	heatIdList?: string[]
-	phaseIdList?: string[]
+	athleteIdList?: string[] | null
+	heatIdList?: string[] | null
+	phaseIdList?: string[] | null
 	athleteHeatUpdate: AthleteHeatUpdate
 }
 export type GetManyRunStatusGetApiResponse =
 	/** status 200 Successful Response */ RunStatusResponse[]
 export type GetManyRunStatusGetApiArg = {
-	idList?: string[]
-	idListComparisonOperator?: string
-	heatIdList?: string[]
-	heatIdListComparisonOperator?: string
-	runNumberFrom?: number
-	runNumberTo?: number
-	runNumberList?: number[]
-	runNumberListComparisonOperator?: string
-	phaseIdList?: string[]
-	phaseIdListComparisonOperator?: string
-	athleteIdList?: string[]
-	athleteIdListComparisonOperator?: string
-	lockedList?: boolean[]
-	lockedListComparisonOperator?: string
-	didNotStartList?: boolean[]
-	didNotStartListComparisonOperator?: string
-	limit?: number
-	offset?: number
-	orderByColumns?: string[]
+	idList?: string[] | null
+	heatIdList?: string[] | null
+	runNumberFrom?: number | null
+	runNumberTo?: number | null
+	runNumberList?: number[] | null
+	phaseIdList?: string[] | null
+	athleteIdList?: string[] | null
+	lockedList?: boolean[] | null
+	didNotStartList?: boolean[] | null
+	limit?: number | null
+	offset?: number | null
+	orderByColumns?: string[] | null
 }
-export type RootGetApiResponse = /** status 200 Successful Response */ any
+export type RootGetApiResponse = /** status 200 Successful Response */ {
+	[key: string]: string
+}
 export type RootGetApiArg = void
 export type HealthCheckHealthGetApiResponse =
-	/** status 200 Successful Response */ any
+	/** status 200 Successful Response */ {
+		[key: string]: any
+	}
 export type HealthCheckHealthGetApiArg = void
 export type ValidationError = {
-	loc: string[]
+	loc: (string | number)[]
 	msg: string
 	type: string
+	input?: any
+	ctx?: object
 }
 export type HttpValidationError = {
 	detail?: ValidationError[]
-}
-export type BodyUploadCompetitionManagementUploadPost = {
-	competition_name: string
-	scoresheet_name: string
-	number_of_runs: number
-	number_of_runs_for_score: number
-	number_of_judges: number
-	random_heats: boolean
-	number_of_random_heats: number
-	file: Blob
 }
 export type NewPhaseInfo = {
 	new_heat_names: string[]
 	phase_id: string
 	new_phase_name: string
 	number_of_paddlers: number
-	number_of_runs?: number
-	number_of_runs_for_score?: number
-	number_of_judges?: number
+	number_of_runs?: number | null
+	number_of_runs_for_score?: number | null
+	number_of_judges?: number | null
+}
+export type BodyPromotePhaseCompetitionManagementPromotePhasePost = {
+	request_body: NewPhaseInfo
 }
 export type HeatInfoResponse = {
 	athlete_heat_id: string
@@ -984,9 +804,9 @@ export type HeatInfoResponse = {
 	scoresheet: string
 	first_name: string
 	last_name: string
-	affiliation?: string
+	affiliation?: string | null
 	bib: string
-	last_phase_rank?: number
+	last_phase_rank?: number | null
 	event_name: string
 }
 export type PhaseResponse = {
@@ -1052,13 +872,13 @@ export type AthleteScoresWithAthleteInfo = {
 	athlete_id: string
 	run_scores: RunScores[]
 	highest_scoring_move: number
-	ranking?: number
-	reason?: string
-	total_score?: number
-	last_phase_rank?: number
+	ranking?: number | null
+	reason?: string | null
+	total_score?: number | null
+	last_phase_rank?: number | null
 	first_name: string
 	last_name: string
-	affiliation?: string
+	affiliation?: string | null
 	bib_number: number
 }
 export type HeatScoresResponse = {
@@ -1076,6 +896,7 @@ export type PydanticAvailableMoves = {
 	fl_score: number
 	rb_score: number
 	direction: "LR" | "FB" | "S"
+	display_order?: number | null
 }
 export type PydanticAvailableBonuses = {
 	id: string
@@ -1083,7 +904,7 @@ export type PydanticAvailableBonuses = {
 	move_id: string
 	name: string
 	score: number
-	display_order?: number
+	display_order?: number | null
 }
 export type AddUpdateScoresheetRequest = {
 	moves?: PydanticAvailableMoves[]
@@ -1097,11 +918,14 @@ export type EventNested = {
 export type CompetitionResponse = {
 	id: string
 	name: string
-	event_foreign?: EventNested[]
+	event_foreign?: EventNested[] | null
 }
 export type CompetitionCreate = {
-	id?: string
+	id?: string | null
 	name: string
+}
+export type CompetitionUpdate = {
+	name?: string | null
 }
 export type CompetitionNested = {
 	id: string
@@ -1120,11 +944,11 @@ export type EventResponse = {
 	id: string
 	competition_id: string
 	name: string
-	competition_foreign?: CompetitionNested[]
-	phase_foreign?: PhaseNested[]
+	competition_foreign?: CompetitionNested[] | null
+	phase_foreign?: PhaseNested[] | null
 }
 export type EventCreateRequest = {
-	id?: string
+	id?: string | null
 	competition_id: string
 	name: string
 }
@@ -1136,18 +960,18 @@ export type PhaseResponse2 = {
 	number_of_runs_for_score: number
 	number_of_judges: number
 	scoresheet: string
-	event_foreign?: EventNested[]
+	event_foreign?: EventNested[] | null
 }
 export type PhaseUpdate = {
-	event_id?: string
-	name?: string
-	number_of_runs?: number
-	number_of_runs_for_score?: number
-	number_of_judges?: number
-	scoresheet?: string
+	event_id?: string | null
+	name?: string | null
+	number_of_runs?: number | null
+	number_of_runs_for_score?: number | null
+	number_of_judges?: number | null
+	scoresheet?: string | null
 }
 export type PhaseCreate = {
-	id?: string
+	id?: string | null
 	event_id: string
 	name: string
 	number_of_runs?: number
@@ -1164,44 +988,44 @@ export type HeatResponse = {
 	id: string
 	competition_id: string
 	name: string
-	competition_foreign?: CompetitionNested[]
-	athleteheat_foreign?: AthleteHeatNested[]
+	competition_foreign?: CompetitionNested[] | null
+	athleteheat_foreign?: AthleteHeatNested[] | null
 }
 export type HeatCreate = {
-	id?: string
+	id?: string | null
 	competition_id: string
 	name: string
 }
 export type HeatUpdate = {
-	competition_id?: string
-	name?: string
+	competition_id?: string | null
+	name?: string | null
 }
 export type AthleteResponse = {
 	id: string
 	first_name: string
 	last_name: string
-	affiliation?: string
+	affiliation?: string | null
 	bib: string
 }
 export type AthleteCreate = {
-	id?: string
+	id?: string | null
 	first_name: string
 	last_name: string
-	affiliation?: string
+	affiliation?: string | null
 	bib: string
 }
 export type AthleteUpdate = {
-	first_name?: string
-	last_name?: string
-	affiliation?: string
-	bib?: string
+	first_name?: string | null
+	last_name?: string | null
+	affiliation?: string | null
+	bib?: string | null
 }
 export type ScoreSheetResponse = {
 	id: string
 	name: string
 }
 export type ScoreSheetCreate = {
-	id?: string
+	id?: string | null
 	name: string
 }
 export type AvailableMovesResponse = {
@@ -1211,6 +1035,7 @@ export type AvailableMovesResponse = {
 	fl_score: number
 	rb_score: number
 	direction: string
+	display_order?: number | null
 }
 export type AvailableBonusesResponse = {
 	id: string
@@ -1218,7 +1043,7 @@ export type AvailableBonusesResponse = {
 	move_id: string
 	name: string
 	score: number
-	display_order?: number
+	display_order?: number | null
 }
 export type AthleteHeatResponse = {
 	id: string
@@ -1227,21 +1052,21 @@ export type AthleteHeatResponse = {
 	phase_id: string
 }
 export type AthleteHeatCreate = {
-	id?: string
+	id?: string | null
 	athlete_id: string
 	heat_id: string
 	phase_id: string
-	last_phase_rank?: number
+	last_phase_rank?: number | null
 }
 export type AthleteHeatUpdate = {
-	athlete_id?: string
-	heat_id?: string
-	phase_id?: string
-	last_phase_rank?: number
+	athlete_id?: string | null
+	heat_id?: string | null
+	phase_id?: string | null
+	last_phase_rank?: number | null
 }
 export type RunStatusResponse = {
 	id: string
-	heat_id?: string
+	heat_id?: string | null
 	run_number: number
 	phase_id: string
 	athlete_id: string
@@ -1249,7 +1074,6 @@ export type RunStatusResponse = {
 	did_not_start: boolean
 }
 export const {
-	useUploadCompetitionManagementUploadPostMutation,
 	usePromotePhaseCompetitionManagementPromotePhasePostMutation,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
@@ -1268,7 +1092,6 @@ export const {
 	useGetManyEventGetQuery,
 	useInsertManyEventPostMutation,
 	useGetOneByPrimaryKeyEventIdGetQuery,
-	useGetManyWithForeignTreeEventGetManyWithForeignTreeGetQuery,
 	useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation,

@@ -374,7 +374,6 @@ export const AddAthletesToHeat = (props: {
 	const { data, isSuccess } = useGetManyEventGetQuery(
 		{
 			competitionIdList: [selectedCompetition],
-			competitionIdListComparisonOperator: "Equal",
 			joinForeignTable: ["phase"]
 		},
 		{ refetchOnMountOrArgChange: true }

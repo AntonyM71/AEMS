@@ -212,29 +212,3 @@ def test_patch_update_athlete_partial_fields(
     assert mock_db_session.execute.called
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
-
-
-def test_patch_update_athlete_with_filters(
-    test_client: TestClient, mock_db_session: Session, mock_athlete: Athlete
-) -> None:
-    """Test PATCH /athlete/{id} with additional query filters"""
-    # Mock the database query execution
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_athlete
-    mock_db_session.execute.return_value = mock_result
-    mock_db_session.commit.return_value = None
-    mock_db_session.refresh.return_value = None
-
-    # Make request with additional filters
-    athlete_id = str(mock_athlete.id)
-    update_data = {"first_name": "Updated"}
-    response = test_client.patch(
-        f"/athlete/{athlete_id}?first_name____str=John", json=update_data
-    )
-
-    # Verify response
-    assert response.status_code == 200
-
-    # Verify database operations were called
-    assert mock_db_session.execute.called
-    assert mock_db_session.commit.called

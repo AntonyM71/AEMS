@@ -109,9 +109,11 @@ describe("CompetitionSelector", () => {
 		// Open the select dropdown
 		fireEvent.mouseDown(selectElement)
 
-		// Wait for options to be rendered
-		await screen.findByText("Competition 1")
-		await screen.findByText("Competition 2")
+		// Wait for options to be rendered and assert they are in the document
+		const competition1 = await screen.findByText("Competition 1")
+		const competition2 = await screen.findByText("Competition 2")
+		expect(competition1).toBeInTheDocument()
+		expect(competition2).toBeInTheDocument()
 	})
 
 	it("updates selected competition when user selects an option", async () => {

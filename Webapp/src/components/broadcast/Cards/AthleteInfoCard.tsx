@@ -79,7 +79,7 @@ export const AthleteInfo = ({
 						hyphens: "auto"
 					}}
 				>
-					{overlayControlState.selectedAthlete?.last_name.toUpperCase()}
+					{overlayControlState.selectedAthlete?.last_name?.toUpperCase()}
 				</Typography>
 			</Grid2>
 			<Grid2 size={3}>

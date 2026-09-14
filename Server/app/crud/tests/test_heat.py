@@ -143,18 +143,18 @@ def test_get_many_heats_with_competition_id_filter(
     )
 
 
-def test_get_many_heats_with_name_str_filter(
+def test_get_many_heats_with_name_list_filter(
     test_client: TestClient, mock_db_session: Session, mock_heat: Heat
 ) -> None:
-    """Test GET /heat/ with name____str filter"""
+    """Test GET /heat/ with name____list filter"""
     # Mock the database query execution
     mock_result = MagicMock()
     mock_result.scalars.return_value.all.return_value = [mock_heat]
     mock_db_session.execute.return_value = mock_result
 
-    # Make request with name____str filter
+    # Make request with name____list filter
     filter_name = mock_heat.name
-    response = test_client.get(f"/heat/?name____str={filter_name}")
+    response = test_client.get(f"/heat/?name____list={filter_name}")
 
     # Verify exact response
     assert response.status_code == 200
@@ -184,25 +184,6 @@ def test_get_many_heats_with_name_str_filter(
     assert filter_name in filter_values, (
         f"Expected {filter_name} in filter values, got {filter_values}"
     )
-
-
-def test_get_many_heats_with_name_list_filter(
-    test_client: TestClient, mock_db_session: Session, mock_heat: Heat
-) -> None:
-    """Test GET /heat/ with name____list filter"""
-    # Mock the database query execution
-    mock_result = MagicMock()
-    mock_result.scalars.return_value.all.return_value = [mock_heat]
-    mock_db_session.execute.return_value = mock_result
-
-    # Make request with name____list filter
-    response = test_client.get("/heat/?name____list=Heat 1&name____list=Heat 2")
-
-    # Verify exact response
-    assert response.status_code == 200
-
-    # Verify database calls
-    assert mock_db_session.execute.called
 
 
 def test_get_many_heats_with_pagination(
@@ -326,28 +307,6 @@ def test_get_one_heat_by_id_not_found(
     assert mock_db_session.execute.called
 
 
-def test_get_one_heat_with_filters(
-    test_client: TestClient, mock_db_session: Session, mock_heat: Heat
-) -> None:
-    """Test GET /heat/{id} with additional filters"""
-    # Mock the database query execution
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_heat
-    mock_db_session.execute.return_value = mock_result
-
-    # Make request with additional filters
-    heat_id = str(mock_heat.id)
-    response = test_client.get(
-        f"/heat/{heat_id}?competition_id____list={mock_heat.competition_id!s}"
-    )
-
-    # Verify exact response
-    assert response.status_code == 200
-
-    # Verify database calls
-    assert mock_db_session.execute.called
-
-
 def test_post_insert_many_heats(
     test_client: TestClient, mock_db_session: Session
 ) -> None:
@@ -414,17 +373,21 @@ def test_patch_update_heat_by_id(
     assert mock_db_session.execute.call_count == 1
     assert mock_db_session.commit.called
     assert mock_db_session.refresh.called
-    
+
     # Verify query filters by ID
     call_args = mock_db_session.execute.call_args
     query = call_args[0][0]
     whereclause = query.whereclause
-    
+
     # Assert we're filtering on the correct column
-    assert str(whereclause.left).endswith(".id"), f"Expected filtering on .id column, got {whereclause.left}"
-    
+    assert str(whereclause.left).endswith(".id"), (
+        f"Expected filtering on .id column, got {whereclause.left}"
+    )
+
     # Assert we're using the correct operator (eq for equality)
-    assert whereclause.operator.__name__ == "eq", f"Expected eq operator, got {whereclause.operator.__name__}"
+    assert whereclause.operator.__name__ == "eq", (
+        f"Expected eq operator, got {whereclause.operator.__name__}"
+    )
 
 
 def test_patch_update_heat_not_found(
@@ -445,4 +408,3 @@ def test_patch_update_heat_not_found(
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Heat not found"
-

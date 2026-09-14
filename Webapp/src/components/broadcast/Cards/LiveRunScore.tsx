@@ -7,7 +7,10 @@ import {
 	useGetManyAvailablebonusesGetQuery,
 	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
-import { useAthleteMovesAndBonusesStreamQuery } from "../../../redux/services/streamingApi"
+import {
+	useAthleteMovesAndBonusesStreamQuery,
+	useRunStatusStreamQuery
+} from "../../../redux/services/streamingApi"
 import { OverlayControlState } from "../../Interfaces"
 import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
@@ -44,42 +47,42 @@ export const SubscribedFinalScore = ({
 		Record<string, number>
 	>({})
 
-	const scoresheet = overlayControlState.selectedAthlete?.scoresheet
-	const selectedHeat = overlayControlState.selectedHeat
-	const selectedAthleteId = overlayControlState?.selectedAthlete?.id ?? ""
-	const selectedRun = overlayControlState.selectedRun
+	const { selectedHeat, selectedRun } = overlayControlState
+	const selectedAthlete = overlayControlState.selectedAthlete
+	const scoresheet = selectedAthlete?.scoresheet
+	const selectedAthleteId = selectedAthlete?.id ?? ""
+	const sheetIdList = [scoresheet ?? ""]
+	const canQuery = Boolean(selectedHeat && selectedAthleteId)
 
 	const availableMoves = useGetManyAvailablemovesGetQuery(
-		{
-			sheetIdListComparisonOperator: "Equal",
-			sheetIdList: [scoresheet ?? ""]
-		},
+		{ sheetIdList },
 		{ skip: !scoresheet }
 	)
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
-		{
-			sheetIdListComparisonOperator: "Equal",
-			sheetIdList: [scoresheet ?? ""]
-		},
+		{ sheetIdList },
 		{ skip: !scoresheet }
 	)
 	const { data: phaseData } = useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
 		{ heatId: selectedHeat },
 		{ skip: !selectedHeat }
 	)
-	const maxJudges =
-		(phaseData &&
-			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
+	const maxJudges = Math.max(
+		...(phaseData ?? []).map((p) => p.number_of_judges),
 		1
-
-	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
-		{
-			heatId: selectedHeat,
-			athleteId: selectedAthleteId,
-			runNumber: selectedRun
-		},
-		{ skip: !selectedHeat || !selectedAthleteId }
 	)
+
+	const streamArgs = {
+		heatId: selectedHeat,
+		athleteId: selectedAthleteId,
+		runNumber: selectedRun
+	}
+	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
+		streamArgs,
+		{ skip: !canQuery }
+	)
+	const { data: runStatus } = useRunStatusStreamQuery(streamArgs, {
+		skip: !canQuery
+	})
 
 	useEffect(() => {
 		if (!streamMoveData) {
@@ -108,11 +111,13 @@ export const SubscribedFinalScore = ({
 		setAllJudgeScores(newScores)
 	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
+	const status = runStatus ?? { locked: false, did_not_start: false }
+
 	return (
 		<FinalScore
 			allJudgeScores={allJudgeScores}
-			locked={false}
-			did_not_start={false}
+			locked={status.locked}
+			did_not_start={status.did_not_start}
 			textSize={textSize}
 			direction="row"
 		/>

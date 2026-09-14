@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from itertools import groupby
 from typing import Literal
 from uuid import UUID
 
@@ -7,8 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 def all_equal(iterable: list) -> bool:
-    g = groupby(iterable)
-    return next(g, True) and not next(g, False)
+    return len({*iterable}) <= 1
 
 
 class PydanticScoredMoves(BaseModel):
@@ -124,21 +122,17 @@ def calculate_run_score(
 def check_moves_have_same_run_judge_athlete_heat(
     scored_moves: list[PydanticScoredMovesResponse],
 ) -> None:
-    if not all_equal([sm.judge_id for sm in scored_moves]):
-        msg = "Move List contains moves from different judges"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.run_number for sm in scored_moves]):
-        msg = "Move List contains moves from different run_numbers"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.athlete_id for sm in scored_moves]):
-        msg = "Move List contains moves from different athlete_ids"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.heat_id for sm in scored_moves]):
-        msg = "Move List contains moves from different heat_ids"
-        raise MixedUpScoresheetExceptionError(msg)
-    if not all_equal([sm.phase_id for sm in scored_moves]):
-        msg = "Move List contains moves from different phase_ids"
-        raise MixedUpScoresheetExceptionError(msg)
+    fields = [
+        ("judge_id", "different judges"),
+        ("run_number", "different run_numbers"),
+        ("athlete_id", "different athlete_ids"),
+        ("heat_id", "different heat_ids"),
+        ("phase_id", "different phase_ids"),
+    ]
+    for attr, label in fields:
+        if not all_equal([getattr(sm, attr) for sm in scored_moves]):
+            msg = f"Move List contains moves from {label}"
+            raise MixedUpScoresheetExceptionError(msg)
 
 
 def make_move_string(move: PydanticScoredMoveWithBonus) -> str:
@@ -256,20 +250,20 @@ def organise_moves_by_athlete_run_judge(
 ) -> list[AthleteMoves]:
     resp: list[AthleteMoves] = []
 
-    unique_athletes = list(set(move.athlete_id for move in moves))
+    unique_athletes = list({move.athlete_id for move in moves})
     unique_athletes.sort()
     for athlete in unique_athletes:
         this_athlete_moves = [m for m in moves if m.athlete_id == athlete]
         if number_of_runs:
             unique_runs = list(range(0, number_of_runs))
         else:
-            unique_runs = list(set(m.run_number for m in this_athlete_moves))
+            unique_runs = list({m.run_number for m in this_athlete_moves})
         unique_runs.sort()
         run_moves_list: list[RunMoves] = []
         for run in unique_runs:
             this_run_noves = [m for m in this_athlete_moves if m.run_number == run]
 
-            unique_judges = list(set(m.judge_id for m in this_run_noves))
+            unique_judges = list({m.judge_id for m in this_run_noves})
             unique_judges.sort()
             judge_moves_list: list[JudgeMoves] = []
             for judge in unique_judges:
@@ -375,31 +369,54 @@ class RankInfo(BaseModel):
 def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool:
     dns_list = [a.did_not_start for a in athlete_info.run_scores]
 
-    if len(dns_list) == 0:
-        return True
-    if all(dns_list):
-        return False
-    return True
+    return not (dns_list and all(dns_list))
 
 
-def calculate_rank(athlete_scores: list[AthleteScores]) -> list[AthleteScores]:
+def _scores_match(a: float | None, b: float) -> bool:
+    """True when two totals are equal to two decimal places.
+
+    ``total_score`` is a sum of ``round(mean, 2)`` run means, so two athletes
+    who genuinely tie can end up a float ULP apart. Compare at the precision
+    scores are reported to. ``a`` may be ``None`` (an athlete with no score
+    never matches); ``b`` is the current athlete's total, always non-``None``.
+    """
+    return a is not None and round(a, 2) == round(b, 2)
+
+
+def calculate_rank(
+    athlete_scores: list[AthleteScores],
+    bib_numbers: dict[UUID, str] | None = None,
+) -> list[AthleteScores]:
     sorted_athletes_scores = sorted(
         athlete_scores, key=lambda x: x.total_score or 0, reverse=True
     )
-    rank = 0
 
     for s in sorted_athletes_scores:
+        if s.total_score is None or not check_athlete_started_at_least_one_ride(s):
+            continue
+
         athletes_with_same_score = [
-            item for item in sorted_athletes_scores if item.total_score == s.total_score
+            item
+            for item in sorted_athletes_scores
+            if _scores_match(item.total_score, s.total_score)
+            and check_athlete_started_at_least_one_ride(item)
         ]
-        if check_athlete_started_at_least_one_ride(s):
-            if len(athletes_with_same_score) == 1:
-                rank = max([a.ranking or 0 for a in sorted_athletes_scores]) + 1
-                s.ranking = rank
-            else:
-                rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
-                s.ranking = rank + rank_info.ranking + 1
-                s.reason = f"TieBreak: {rank_info.reason}"
+        athletes_ranked_above = sum(
+            1
+            for a in sorted_athletes_scores
+            if a.total_score is not None
+            and round(a.total_score, 2) > round(s.total_score, 2)
+            and check_athlete_started_at_least_one_ride(a)
+        )
+
+        if len(athletes_with_same_score) == 1:
+            s.ranking = athletes_ranked_above + 1
+        else:
+            rank_info = calculate_tied_rank(s.athlete_id, athletes_with_same_score)
+            s.ranking = athletes_ranked_above + rank_info.ranking + 1
+            s.reason = build_tie_break_reason(
+                s.athlete_id, athletes_with_same_score, bib_numbers
+            )
 
     return sorted_athletes_scores
 
@@ -408,20 +425,9 @@ def calculate_tied_rank(
     athlete_id: UUID, athlete_scores: list[AthleteScores]
 ) -> RankInfo:
     number_of_runs = max(len(a.run_scores) for a in athlete_scores)
-    # Sorts done in inverse order to preserve lower-precedence sorts in the event of ties.
-    # First sort by highest scored move
-    sorted_athlete_score = sorted(
-        athlete_scores,
-        key=lambda x: x.highest_scoring_move,
-        reverse=True,
+    sorted_athlete_score = _resolve_tie_order(
+        athlete_scores, _tie_break_criteria(number_of_runs)
     )
-
-    # Sort by dropped rides
-    for i in range(1, number_of_runs + 1):
-        sorted_athlete_score.sort(
-            key=get_nth_highest_score(index=number_of_runs - i),
-            reverse=True,
-        )
     if (
         len(
             fully_tied_athletes := athletes_with_this_exact_score_after_tiebreak(
@@ -434,7 +440,12 @@ def calculate_tied_rank(
             ranking=min(
                 [
                     sorted_athlete_score.index(
-                        next(filter(lambda n: n.athlete_id == a, sorted_athlete_score))
+                        next(
+                            filter(
+                                lambda n, a=a: n.athlete_id == a,
+                                sorted_athlete_score,
+                            )
+                        )
                     )
                     for a in fully_tied_athletes
                 ]
@@ -460,17 +471,13 @@ def athletes_with_this_exact_score_after_tiebreak(
 
 
 def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
-    if (
-        a.total_score == this_athlete.total_score
+    run_count = max(len(a.run_scores), len(this_athlete.run_scores))
+    return (
+        _scores_match(a.total_score, this_athlete.total_score)
         and a.highest_scoring_move == this_athlete.highest_scoring_move
-        and [get_nth_highest_score(i)(a) for i, r in enumerate(a.run_scores)]
-        == [
-            get_nth_highest_score(i)(this_athlete)
-            for i, r in enumerate(this_athlete.run_scores)
-        ]
-    ):
-        return True
-    return False
+        and [get_nth_highest_score(i)(a) for i in range(run_count)]
+        == [get_nth_highest_score(i)(this_athlete) for i in range(run_count)]
+    )
 
 
 def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:
@@ -484,3 +491,92 @@ def get_nth_highest_score(index: int) -> Callable[[AthleteScores], float]:
             return 0
 
     return get_highest_score_for_n
+
+
+def _ordinal(number: int) -> str:
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
+def _athlete_label(athlete_id: UUID, bib_numbers: dict[UUID, str] | None) -> str:
+    if bib_numbers and athlete_id in bib_numbers:
+        return f"#{bib_numbers[athlete_id]}"
+    return f"athlete {athlete_id}"
+
+
+def _tie_break_criteria(
+    number_of_runs: int,
+) -> list[tuple[str, Callable[[AthleteScores], float]]]:
+    criteria: list[tuple[str, Callable[[AthleteScores], float]]] = [
+        (
+            "highest scoring run"
+            if position == 0
+            else f"{_ordinal(position + 1)} highest scoring run",
+            get_nth_highest_score(position),
+        )
+        for position in range(number_of_runs)
+    ]
+    criteria.append(("highest scoring move", lambda a: a.highest_scoring_move))
+    return criteria
+
+
+def _resolve_tie_order(
+    tied_athletes: list[AthleteScores],
+    criteria: list[tuple[str, Callable[[AthleteScores], float]]],
+) -> list[AthleteScores]:
+    """Order a tied group by the ICF tie-breakers, best first.
+
+    Sorts are applied lowest-precedence first so the stable sort leaves the
+    highest-precedence criterion dominant. This is the single sort used both to
+    assign ranks (``calculate_tied_rank``) and to explain them
+    (``build_tie_break_reason``).
+    """
+    ordered = list(tied_athletes)
+    for _criterion, value_of in reversed(criteria):
+        ordered.sort(key=value_of, reverse=True)
+    return ordered
+
+
+def build_tie_break_reason(
+    athlete_id: UUID,
+    tied_athletes: list[AthleteScores],
+    bib_numbers: dict[UUID, str] | None,
+) -> str:
+    number_of_runs = max(len(a.run_scores) for a in tied_athletes)
+    criteria = _tie_break_criteria(number_of_runs)
+    resolved_order = _resolve_tie_order(tied_athletes, criteria)
+    position = next(
+        i for i, a in enumerate(resolved_order) if a.athlete_id == athlete_id
+    )
+    this_athlete = resolved_order[position]
+
+    # Athletes this athlete draws with on every criterion (0-padding a shorter
+    # run list) — the ones no tie-breaker can separate.
+    still_tied = [
+        a
+        for a in resolved_order
+        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
+    ]
+    if len(still_tied) > 1:
+        remaining = ", ".join(
+            _athlete_label(a.athlete_id, bib_numbers) for a in still_tied
+        )
+        return f"Tie unresolved - athletes remain tied: {remaining}"
+
+    rival = (
+        resolved_order[position - 1] if position > 0 else resolved_order[position + 1]
+    )
+    for criterion, value_of in criteria:
+        if value_of(this_athlete) != value_of(rival):
+            pair = sorted([this_athlete, rival], key=value_of, reverse=True)
+            compared = ", ".join(
+                f"{_athlete_label(a.athlete_id, bib_numbers)} ({value_of(a):.2f})"
+                for a in pair
+            )
+            return f"Tie resolved by {criterion}: {compared}"
+
+    msg = "rival draws on every criterion yet is not in still_tied"
+    raise AssertionError(msg)

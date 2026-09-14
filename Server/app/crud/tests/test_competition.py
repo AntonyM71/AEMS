@@ -97,17 +97,17 @@ def test_get_many_competitions_with_id_filter(
     )
 
 
-def test_get_many_competitions_with_name_str_filter(
+def test_get_many_competitions_with_name_list_filter(
     test_client: TestClient, mock_db_session: Session, mock_competition: Competition
 ) -> None:
-    """Test GET /competition/ with name____str filter"""
+    """Test GET /competition/ with name____list filter"""
     # Mock the database query execution
     mock_result = MagicMock()
     mock_result.scalars.return_value.all.return_value = [mock_competition]
     mock_db_session.execute.return_value = mock_result
 
-    # Make request with name____str filter
-    response = test_client.get(f"/competition/?name____str={mock_competition.name}")
+    # Make request with name____list filter
+    response = test_client.get(f"/competition/?name____list={mock_competition.name}")
 
     # Verify exact response
     assert response.status_code == 200
@@ -138,27 +138,6 @@ def test_get_many_competitions_with_name_str_filter(
     assert filter_name in filter_values, (
         f"Expected {filter_name} in filter values, got {filter_values}"
     )
-
-
-def test_get_many_competitions_with_name_list_filter(
-    test_client: TestClient, mock_db_session: Session, mock_competition: Competition
-) -> None:
-    """Test GET /competition/ with name____list filter"""
-    # Mock the database query execution
-    mock_result = MagicMock()
-    mock_result.scalars.return_value.all.return_value = [mock_competition]
-    mock_db_session.execute.return_value = mock_result
-
-    # Make request with name____list filter
-    response = test_client.get(
-        "/competition/?name____list=Test Competition&name____list=Other"
-    )
-
-    # Verify exact response
-    assert response.status_code == 200
-
-    # Verify database calls
-    assert mock_db_session.execute.called
 
 
 def test_get_many_competitions_with_pagination(

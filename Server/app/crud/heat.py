@@ -1,9 +1,15 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.crud.query_helpers import (
+    apply_in_filters,
+    apply_ordering,
+    apply_pagination,
+)
 from app.crud.schemas import (
     AthleteHeatNested,
     CompetitionNested,
@@ -16,124 +22,24 @@ from db.models import Heat
 
 heat_router = APIRouter(prefix="/heat", tags=["heat"])
 
+_HEAT_SORTABLE = {"name": Heat.name, "competition_id": Heat.competition_id}
 
-@heat_router.get("/", response_model=list[HeatResponse])
-async def get_many(
-    db: Session = Depends(get_transaction_session),
-    id____list: list[UUID] | None = Query(None, alias="id____list"),
-    competition_id____list: list[UUID] | None = Query(
-        None, alias="competition_id____list"
-    ),
-    name____str: list[str] | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
-    limit: int | None = Query(None),
-    offset: int | None = Query(None),
-    order_by_columns: list[str] | None = Query(None),
-    join_foreign_table: list[str] | None = Query(None),
-) -> list[HeatResponse]:
-    """Get many heats"""
-    query = select(Heat)
 
-    # Apply filters
-    if id____list:
-        query = query.where(Heat.id.in_(id____list))
-
-    if competition_id____list:
-        query = query.where(Heat.competition_id.in_(competition_id____list))
-
-    if name____str:
-        query = query.where(Heat.name.in_(name____str))
-
-    if name____list:
-        query = query.where(Heat.name.in_(name____list))
-
-    # Apply joins if requested
+def _apply_heat_joins(
+    query: Select[tuple[Heat]], join_foreign_table: list[str] | None
+) -> Select[tuple[Heat]]:
     if join_foreign_table:
         if "competition" in join_foreign_table:
             query = query.options(selectinload(Heat.competition))
         if "athleteheat" in join_foreign_table:
             query = query.options(selectinload(Heat.athletes))
-
-    # Apply ordering
-    if order_by_columns:
-        for order_col in order_by_columns:
-            if "name" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Heat.name.desc())
-                else:
-                    query = query.order_by(Heat.name.asc())
-            elif "competition_id" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Heat.competition_id.desc())
-                else:
-                    query = query.order_by(Heat.competition_id.asc())
-
-    # Apply pagination
-    if offset is not None:
-        query = query.offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
-
-    result = db.execute(query)
-    heats = result.scalars().all()
-
-    heat_responses = []
-    for heat in heats:
-        response_data = {
-            "id": heat.id,
-            "competition_id": heat.competition_id,
-            "name": heat.name,
-        }
-        if join_foreign_table:
-            if "competition" in join_foreign_table and heat.competition:
-                response_data["competition_foreign"] = [
-                    CompetitionNested.model_validate(heat.competition)
-                ]
-            if "athleteheat" in join_foreign_table and hasattr(heat, "athletes"):
-                response_data["athleteheat_foreign"] = [
-                    AthleteHeatNested.model_validate(ah) for ah in heat.athletes
-                ]
-        heat_responses.append(HeatResponse(**response_data))
-
-    return heat_responses
+    return query
 
 
-@heat_router.get("/{id}", response_model=HeatResponse)
-async def get_one_by_primary_key(
-    id: UUID,
-    db: Session = Depends(get_transaction_session),
-    competition_id____list: list[UUID] | None = Query(
-        None, alias="competition_id____list"
-    ),
-    name____str: list[str] | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
-    join_foreign_table: list[str] | None = Query(None),
+def _build_heat_response(
+    heat: Heat, join_foreign_table: list[str] | None
 ) -> HeatResponse:
-    """Get one heat by primary key"""
-    query = select(Heat).where(Heat.id == id)
-
-    # Apply additional filters if provided
-    if competition_id____list:
-        query = query.where(Heat.competition_id.in_(competition_id____list))
-    if name____str:
-        query = query.where(Heat.name.in_(name____str))
-    if name____list:
-        query = query.where(Heat.name.in_(name____list))
-
-    # Apply joins if requested
-    if join_foreign_table:
-        if "competition" in join_foreign_table:
-            query = query.options(selectinload(Heat.competition))
-        if "athleteheat" in join_foreign_table:
-            query = query.options(selectinload(Heat.athletes))
-
-    result = db.execute(query)
-    heat = result.scalar_one_or_none()
-
-    if not heat:
-        raise HTTPException(status_code=404, detail="Heat not found")
-
-    response_data = {
+    response_data: dict[str, Any] = {
         "id": heat.id,
         "competition_id": heat.competition_id,
         "name": heat.name,
@@ -147,12 +53,64 @@ async def get_one_by_primary_key(
             response_data["athleteheat_foreign"] = [
                 AthleteHeatNested.model_validate(ah) for ah in heat.athletes
             ]
-
     return HeatResponse(**response_data)
 
 
-@heat_router.patch("/{id}", response_model=HeatResponse)
-async def partial_update_one_by_primary_key(
+@heat_router.get("/")
+def get_many(
+    db: Session = Depends(get_transaction_session),
+    id____list: list[UUID] | None = Query(None, alias="id____list"),
+    competition_id____list: list[UUID] | None = Query(
+        None, alias="competition_id____list"
+    ),
+    name____list: list[str] | None = Query(None, alias="name____list"),
+    limit: int | None = Query(None),
+    offset: int | None = Query(None),
+    order_by_columns: list[str] | None = Query(None),
+    join_foreign_table: list[str] | None = Query(None),
+) -> list[HeatResponse]:
+    """Get many heats"""
+    query = select(Heat)
+
+    query = apply_in_filters(
+        query,
+        [
+            (Heat.id, id____list),
+            (Heat.competition_id, competition_id____list),
+            (Heat.name, name____list),
+        ],
+    )
+    query = _apply_heat_joins(query, join_foreign_table)
+    query = apply_ordering(query, order_by_columns, _HEAT_SORTABLE)
+    query = apply_pagination(query, limit, offset)
+
+    result = db.execute(query)
+    heats = result.scalars().all()
+
+    return [_build_heat_response(heat, join_foreign_table) for heat in heats]
+
+
+@heat_router.get("/{id}")
+def get_one_by_primary_key(
+    id: UUID,
+    db: Session = Depends(get_transaction_session),
+    join_foreign_table: list[str] | None = Query(None),
+) -> HeatResponse:
+    """Get one heat by primary key"""
+    query = select(Heat).where(Heat.id == id)
+    query = _apply_heat_joins(query, join_foreign_table)
+
+    result = db.execute(query)
+    heat = result.scalar_one_or_none()
+
+    if not heat:
+        raise HTTPException(status_code=404, detail="Heat not found")
+
+    return _build_heat_response(heat, join_foreign_table)
+
+
+@heat_router.patch("/{id}")
+def partial_update_one_by_primary_key(
     id: UUID,
     heat_update: HeatUpdate,
     db: Session = Depends(get_transaction_session),
@@ -176,8 +134,8 @@ async def partial_update_one_by_primary_key(
     return HeatResponse.from_orm(heat)
 
 
-@heat_router.post("/", response_model=list[HeatResponse], status_code=201)
-async def insert_many(
+@heat_router.post("/", status_code=201)
+def insert_many(
     heats: list[HeatCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatResponse]:

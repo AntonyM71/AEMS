@@ -3,7 +3,6 @@ import {
 	combineReducers,
 	configureStore
 } from "@reduxjs/toolkit"
-import { cloneDeep } from "lodash"
 import { rtkQueryErrorLogger } from "../utils/rtkQueryHelper"
 import { competitionsReducer } from "./atoms/competitions"
 import { scoringReducer } from "./atoms/scoring"
@@ -21,7 +20,7 @@ export const setupStore = (
 ): EnhancedStore<RootState> =>
 	configureStore({
 		reducer: rootReducer,
-		preloadedState: cloneDeep(preloadedState),
+		preloadedState: structuredClone(preloadedState),
 		middleware: (getDefaultMiddleware) =>
 			getDefaultMiddleware()
 				.concat(emptySplitApi.middleware)

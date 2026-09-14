@@ -31,6 +31,66 @@ const emitSockets: {
 // only clear the registry when the last subscriber disconnects.
 const runStatusSockets = new Set<Socket>()
 
+type EmitQueryResult =
+	| { data: null }
+	| { error: { status: "CUSTOM_ERROR"; error: string } }
+
+// Emit `event` on a short-lived socket opened only for this call and
+// disconnected as soon as the payload is sent (or the connection fails).
+const emitViaTemporarySocket = (
+	connect: () => Socket,
+	event: string,
+	payload: unknown
+): Promise<void> =>
+	new Promise<void>((resolve, reject) => {
+		const socket = connect()
+		function doEmit() {
+			socket.off("connect_error", onConnectError)
+			socket.emit(event, payload)
+			socket.disconnect()
+			resolve()
+		}
+		function onConnectError(err: Error) {
+			socket.off("connect", doEmit)
+			socket.disconnect()
+			reject(err)
+		}
+		if (socket.connected) {
+			doEmit()
+		} else {
+			socket.once("connect", doEmit)
+			socket.once("connect_error", onConnectError)
+		}
+	})
+
+// Reuse activeSocket while it is still connected, otherwise fall back to a
+// temporary socket. Shared by the run_status and broadcast_control mutations.
+const emitWithSocketReuse = async (
+	activeSocket: Socket | null,
+	connect: () => Socket,
+	event: string,
+	payload: unknown
+): Promise<EmitQueryResult> => {
+	if (activeSocket?.connected) {
+		activeSocket.emit(event, payload)
+
+		return { data: null }
+	}
+
+	try {
+		await emitViaTemporarySocket(connect, event, payload)
+
+		return { data: null }
+	} catch (error) {
+		return {
+			error: {
+				status: "CUSTOM_ERROR" as const,
+				error: String(error)
+			}
+		}
+	}
+}
+
 export const streamingApi = emptySplitApi.injectEndpoints({
 	endpoints: (build) => ({
 		timerStream: build.query<number, void>({
@@ -209,99 +269,23 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 		}),
 
 		emitRunStatus: build.mutation<null, RunStatus>({
-			queryFn: async (runStatusData) => {
-				// Reuse the socket from an active runStatusStream if available.
-				const activeSocket = emitSockets.run_status
-				if (activeSocket?.connected) {
-					activeSocket.emit("run_status", runStatusData)
-
-					return { data: null }
-				}
-
-				// Fallback: open a temporary socket for this emit only.
-				try {
-					await new Promise<void>((resolve, reject) => {
-						const socket = connectWebRunStatusSocket()
-						function doEmit() {
-							socket.off("connect_error", onConnectError)
-							socket.emit("run_status", runStatusData)
-							socket.disconnect()
-							resolve()
-						}
-						function onConnectError(err: Error) {
-							socket.off("connect", doEmit)
-							socket.disconnect()
-							reject(err)
-						}
-						if (socket.connected) {
-							doEmit()
-						} else {
-							socket.once("connect", doEmit)
-							socket.once("connect_error", onConnectError)
-						}
-					})
-
-					return { data: null }
-				} catch (error) {
-					return {
-						error: {
-							status: "CUSTOM_ERROR" as const,
-							error: String(error)
-						}
-					}
-				}
-			}
+			queryFn: (runStatusData) =>
+				emitWithSocketReuse(
+					emitSockets.run_status,
+					connectWebRunStatusSocket,
+					"run_status",
+					runStatusData
+				)
 		}),
 
 		emitBroadcastControl: build.mutation<null, OverlayControlState>({
-			queryFn: async (overlayControlState) => {
-				// Reuse the socket from an active broadcastControlStream if available.
-				const activeSocket = emitSockets.broadcast_control
-				if (activeSocket?.connected) {
-					activeSocket.emit(
-						"broadcast_control",
-						overlayControlState
-					)
-
-					return { data: null }
-				}
-
-				// Fallback: open a temporary socket for this emit only.
-				try {
-					await new Promise<void>((resolve, reject) => {
-						const socket = connectBroadcastControlSocket()
-						function doEmit() {
-							socket.off("connect_error", onConnectError)
-							socket.emit(
-								"broadcast_control",
-								overlayControlState
-							)
-							socket.disconnect()
-							resolve()
-						}
-						function onConnectError(err: Error) {
-							socket.off("connect", doEmit)
-							socket.disconnect()
-							reject(err)
-						}
-						if (socket.connected) {
-							doEmit()
-						} else {
-							socket.once("connect", doEmit)
-							socket.once("connect_error", onConnectError)
-						}
-					})
-
-					return { data: null }
-				} catch (error) {
-					return {
-						error: {
-							status: "CUSTOM_ERROR" as const,
-							error: String(error)
-						}
-					}
-				}
-			}
+			queryFn: (overlayControlState) =>
+				emitWithSocketReuse(
+					emitSockets.broadcast_control,
+					connectBroadcastControlSocket,
+					"broadcast_control",
+					overlayControlState
+				)
 		})
 	}),
 	overrideExisting: false

@@ -119,6 +119,52 @@ describe("ScoredMove", () => {
 		expect(store.getState().score.scoredMoves).toHaveLength(0)
 		expect(store.getState().score.scoredBonuses).toHaveLength(0)
 	})
+	it("renders and scores an available bonus for the move", async () => {
+		const mockBonusResponse = [
+			{
+				id: "bonus-def-1",
+				sheet_id: "test-id",
+				move_id: "test-move-1",
+				name: "Huge",
+				score: 50
+			}
+		]
+		server.use(
+			http.get("/api/availablebonuses", () =>
+				HttpResponse.json(mockBonusResponse)
+			)
+		)
+
+		const { store } = renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={[]}
+			/>
+		)
+
+		expect(await screen.findByText("Test Move")).toBeInTheDocument()
+
+		const bonusChip = await screen.findByTestId(
+			"scored-remove-scored-move-1-bonus-def-1"
+		)
+		expect(bonusChip).toHaveTextContent("H")
+
+		// BonusChip's own toggle behavior is covered by BonusChip.test.tsx;
+		// this asserts ScoredMove correctly fetches and wires up the
+		// available bonus for this move so a click reaches the store.
+		fireEvent.click(bonusChip)
+
+		await waitFor(() => {
+			expect(store.getState().score.scoredBonuses).toEqual([
+				expect.objectContaining({
+					moveId: "scored-move-1",
+					bonusId: "bonus-def-1"
+				})
+			])
+		})
+	})
+
 	it("does not show remove button when actions are disabled", async () => {
 		renderWithProviders(
 			<ScoredMove

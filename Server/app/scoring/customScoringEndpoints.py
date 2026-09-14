@@ -3,13 +3,13 @@ import logging
 from math import inf
 from uuid import UUID
 
+import anyio.to_thread
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
     status,
 )
-from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 from sqlalchemy.orm import Session
 
@@ -26,6 +26,7 @@ from app.scoring.scoring_logic import (
     PydanticRunStatus,
     PydanticScoredBonusesResponse,
     PydanticScoredMovesResponse,
+    RunScores,
     calculate_heat_scores,
     calculate_rank,
     check_athlete_started_at_least_one_ride,
@@ -66,10 +67,8 @@ class HeatInfoResponse(BaseModel):
 
 @scoring_router.get(
     "/getHeatInfo/{heat_id}",
-    response_class=ORJSONResponse,
-    response_model=list[HeatInfoResponse],
 )
-async def get_heat_info(
+def get_heat_info(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[HeatInfoResponse]:
@@ -118,10 +117,8 @@ class PhaseResponse(BaseModel):
 
 @scoring_router.get(
     "/getHeatInfo/{heat_id}/phase",
-    response_class=ORJSONResponse,
-    response_model=list[PhaseResponse],
 )
-async def get_heat_phases(
+def get_heat_phases(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> list[PhaseResponse]:
@@ -134,6 +131,76 @@ async def get_heat_phases(
 
 class UpdatingLockedRunError(Exception):
     pass
+
+
+def _persist_athlete_score(
+    db: Session,
+    heat_id: str,
+    athlete_id: str,
+    run_number: str,
+    judge_id: str,
+    phase_id: str,
+    scored_moves_list: AddUpdateScoredMovesRequest,
+) -> "UpdatedRideMetaData":
+    with db.begin():
+        run_is_locked = check_run_is_locked(
+            db=db,
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            phase_id=phase_id,
+        )
+        if run_is_locked:
+            msg = "Score Update not processed as the run is locked"
+            raise UpdatingLockedRunError(msg)
+        scored_moves = (
+            db.query(ScoredMoves.id)
+            .filter(ScoredMoves.heat_id == heat_id)
+            .filter(ScoredMoves.athlete_id == athlete_id)
+            .filter(ScoredMoves.run_number == run_number)
+            .filter(ScoredMoves.judge_id == judge_id)
+        )
+
+        delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
+            ScoredBonuses.move_id.in_(scored_moves)
+        )
+        db.execute(delete_scored_bonuses_statement)
+        delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
+            ScoredMoves.id.in_(scored_moves)
+        )
+        db.execute(delete_scored_moves_statement)
+
+        db.bulk_save_objects(
+            [
+                ScoredMoves(
+                    **move.model_dump(),
+                    judge_id=judge_id,
+                    heat_id=heat_id,
+                    phase_id=phase_id,
+                    athlete_id=athlete_id,
+                    run_number=run_number,
+                )
+                for move in scored_moves_list.moves
+            ]
+        )
+        db.bulk_save_objects(
+            [
+                ScoredBonuses(
+                    **bonus.model_dump(),
+                    judge_id=judge_id,
+                )
+                for bonus in scored_moves_list.bonuses
+            ]
+        )
+
+        db.commit()
+        return UpdatedRideMetaData(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=run_number,
+            judge_id=judge_id,
+            phase_id=phase_id,
+        )
 
 
 @scoring_router.post(
@@ -149,73 +216,22 @@ async def update_athlete_score(
     db: Session = Depends(get_transaction_session),
 ) -> None:
     try:
-        with db.begin():
-            run_is_locked = check_run_is_locked(
-                db=db,
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                phase_id=phase_id,
-            )
-            if run_is_locked:
-                msg = "Score Update not processed as the run is locked"
-                raise UpdatingLockedRunError(  # noqa: TRY301
-                    msg
-                )
-            scored_moves = (
-                db.query(ScoredMoves.id)
-                .filter(ScoredMoves.heat_id == heat_id)
-                .filter(ScoredMoves.athlete_id == athlete_id)
-                .filter(ScoredMoves.run_number == run_number)
-                .filter(ScoredMoves.judge_id == judge_id)
-            )
-
-            delete_scored_bonuses_statement = ScoredBonuses.__table__.delete().where(
-                ScoredBonuses.move_id.in_(scored_moves)
-            )
-            db.execute(delete_scored_bonuses_statement)
-            delete_scored_moves_statement = ScoredMoves.__table__.delete().where(
-                ScoredMoves.id.in_(scored_moves)
-            )
-            db.execute(delete_scored_moves_statement)
-
-            db.bulk_save_objects(
-                [
-                    ScoredMoves(
-                        **move.model_dump(),
-                        judge_id=judge_id,
-                        heat_id=heat_id,
-                        phase_id=phase_id,
-                        athlete_id=athlete_id,
-                        run_number=run_number,
-                    )
-                    for move in scored_moves_list.moves
-                ]
-            )
-            db.bulk_save_objects(
-                [
-                    ScoredBonuses(
-                        **bonus.model_dump(),
-                        judge_id=judge_id,
-                    )
-                    for bonus in scored_moves_list.bonuses
-                ]
-            )
-
-            db.commit()
-            websocket_message = UpdatedRideMetaData(
-                heat_id=heat_id,
-                athlete_id=athlete_id,
-                run_number=run_number,
-                judge_id=judge_id,
-                phase_id=phase_id,
-            )
-            scored_data = await get_moves_from_server(websocket_message)
-            await sio.emit(
-                "current_scores",
-                scored_data,
-                namespace="/current_scores",
-            )
+        websocket_message = await anyio.to_thread.run_sync(
+            _persist_athlete_score,
+            db,
+            heat_id,
+            athlete_id,
+            run_number,
+            judge_id,
+            phase_id,
+            scored_moves_list,
+        )
+        scored_data = await get_moves_from_server(websocket_message)
+        await sio.emit(
+            "current_scores",
+            scored_data,
+            namespace="/current_scores",
+        )
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -242,13 +258,9 @@ class ScoredMovesAndBonusesResponseWithMetaData(UpdatedRideMetaData):
     movesAndBonuses: ScoredMovesAndBonusesResponse  # noqa: N815
 
 
-async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
-    """
-    Receives metadata for a scored ride and returns scored moves and bonuses as a dict.
-    Uses a transaction session context manager to ensure consistent session management.
-    """
+def _fetch_moves_and_bonuses_for_ride(metadata: UpdatedRideMetaData) -> dict:
     with transaction_session_context_manager() as db:
-        scored_moves_and_bonuses = await get_athlete_moves_and_bonuses(
+        scored_moves_and_bonuses = get_athlete_moves_and_bonuses(
             heat_id=metadata.heat_id,
             athlete_id=metadata.athlete_id,
             run_number=metadata.run_number,
@@ -266,12 +278,15 @@ async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
         ).model_dump(mode="json")
 
 
+async def get_moves_from_server(metadata: UpdatedRideMetaData) -> dict:
+    """Runs the blocking DB read in a worker thread so it doesn't stall the event loop."""
+    return await anyio.to_thread.run_sync(_fetch_moves_and_bonuses_for_ride, metadata)
+
+
 @scoring_router.get(
     "/getAthleteMovesAndBonuses/{heat_id}/{athlete_id}/{run_number}",
-    response_class=ORJSONResponse,
-    response_model=ScoredMovesAndBonusesResponse,
 )
-async def get_athlete_moves_and_bonuses(
+def get_athlete_moves_and_bonuses(
     heat_id: str,
     athlete_id: str,
     run_number: int,
@@ -315,13 +330,15 @@ class PhaseScoresResponse(BaseModel):
 
 @scoring_router.get(
     "/getHeatScores/{heat_id}",
-    response_class=ORJSONResponse,
-    response_model=HeatScoresResponse,
 )
-async def get_heat_scores(
+def get_heat_scores(
     heat_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> HeatScoresResponse:
+    return calculate_heat_scores_response(heat_id=heat_id, db=db)
+
+
+def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresResponse:
     moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
     run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
     pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
@@ -407,14 +424,96 @@ async def get_heat_scores(
 
 @scoring_router.get(
     "/getPhaseScores/{phase_id}",
-    response_class=ORJSONResponse,
-    response_model=PhaseScoresResponse,
 )
-async def get_phase_scores(
+def get_phase_scores(
     phase_id: str,
     db: Session = Depends(get_transaction_session),
 ) -> PhaseScoresResponse:
     return calculate_phase_scores(phase_id=phase_id, db=db)
+
+
+def _with_athlete_info(
+    score: AthleteScores, athlete: Athlete
+) -> AthleteScoresWithAthleteInfo:
+    return AthleteScoresWithAthleteInfo(
+        **score.model_dump(exclude_none=True),
+        first_name=athlete.first_name,
+        last_name=athlete.last_name,
+        affiliation=athlete.affiliation,
+        bib_number=athlete.bib,
+    )
+
+
+def _score_for_missing_athlete(
+    athlete_id: UUID, run_statuses: list[RunStatus]
+) -> AthleteScores:
+    """Stand-in score for an entrant with no scored moves: did-not-start runs
+    when every one of their run statuses says so, otherwise an empty run list
+    (present but scored nothing)."""
+    own_statuses = sorted(
+        (rs for rs in run_statuses if rs.athlete_id == athlete_id),
+        key=lambda rs: rs.run_number,
+    )
+    dns_runs = (
+        [
+            RunScores(
+                run_number=rs.run_number,
+                judge_scores=[],
+                mean_run_score=0,
+                highest_scoring_move=0,
+                locked=rs.locked,
+                did_not_start=True,
+            )
+            for rs in own_statuses
+        ]
+        if own_statuses and all(rs.did_not_start for rs in own_statuses)
+        else []
+    )
+    return AthleteScores(
+        athlete_id=athlete_id, highest_scoring_move=0, run_scores=dns_runs
+    )
+
+
+def assemble_phase_scores(
+    phase_id: UUID | str,
+    ranked_scores: list[AthleteScores],
+    athletes: list[Athlete],
+    run_statuses: list[RunStatus] | None = None,
+) -> PhaseScoresResponse:
+    """Order a phase's athletes: ranked (by rank, then bib) first, then
+    started-but-unranked and did-not-start athletes, each by bib.
+
+    ``ranked_scores`` is the output of ``calculate_rank``; ``athletes`` is
+    every athlete entered in the phase. An athlete with no scored moves is
+    represented with an empty run list, or with did-not-start runs when every
+    one of their run statuses says so.
+    """
+    run_statuses = run_statuses or []
+    scores_by_athlete = {s.athlete_id: s for s in ranked_scores}
+
+    ranked: list[AthleteScoresWithAthleteInfo] = []
+    started_unranked: list[AthleteScoresWithAthleteInfo] = []
+    did_not_start: list[AthleteScoresWithAthleteInfo] = []
+    for entrant in athletes:
+        score = scores_by_athlete.get(entrant.id)
+        if score is None:
+            score = _score_for_missing_athlete(entrant.id, run_statuses)
+        athlete = _with_athlete_info(score, entrant)
+        if not check_athlete_started_at_least_one_ride(athlete):
+            did_not_start.append(athlete)
+        elif athlete.ranking:
+            ranked.append(athlete)
+        else:
+            started_unranked.append(athlete)
+
+    ranked.sort(key=lambda a: (a.ranking, a.bib_number))
+    started_unranked.sort(key=lambda a: a.bib_number)
+    did_not_start.sort(key=lambda a: a.bib_number)
+
+    return PhaseScoresResponse(
+        phase_id=phase_id,
+        scores=[*ranked, *started_unranked, *did_not_start],
+    )
 
 
 def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
@@ -480,51 +579,11 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         scoring_runs=phase.number_of_runs_for_score,
     )
 
-    athlete_scores_with_info: list[AthleteScoresWithAthleteInfo] = []
-    athlete_scores_with_rank = calculate_rank(athlete_scores)
-    for a_info in athletes:
-        athlete_score = [
-            a for a in athlete_scores_with_rank if a.athlete_id == a_info.id
-        ]
-
-        athlete_scores_with_info.append(
-            AthleteScoresWithAthleteInfo(
-                **athlete_score[0].model_dump(exclude_none=True)
-                if len(athlete_score) != 0
-                else (
-                    AthleteScores(
-                        athlete_id=a_info.id,
-                        highest_scoring_move=0,
-                        run_scores=[],
-                    ).model_dump(exclude_none=True)
-                ),
-                first_name=a_info.first_name,
-                last_name=a_info.last_name,
-                bib_number=a_info.bib,
-            )
-        )
-    dns_athletes = [
-        a
-        for a in athlete_scores_with_info
-        if (not check_athlete_started_at_least_one_ride(a))
-    ]
-
-    starting_athletes = [
-        a
-        for a in athlete_scores_with_info
-        if check_athlete_started_at_least_one_ride(a)
-    ]
-    athletes_with_scores = [a for a in starting_athletes if a.ranking]
-    athletes_without_scores = [a for a in starting_athletes if not a.ranking]
-
-    athletes_with_scores.sort(key=lambda x: x.ranking or 999)
-    athletes_without_scores.sort(key=lambda x: int(x.bib_number))
-    dns_athletes.sort(key=lambda x: int(x.bib_number))
-
-    # Add in specific category for DNS athletes
-    return PhaseScoresResponse(
-        phase_id=phase_id,
-        scores=[*athletes_with_scores, *athletes_without_scores, *dns_athletes],
+    athlete_scores_with_rank = calculate_rank(
+        athlete_scores, bib_numbers={a.id: a.bib for a in athletes}
+    )
+    return assemble_phase_scores(
+        phase_id, athlete_scores_with_rank, athletes, run_statuses
     )
 
 
@@ -553,7 +612,7 @@ async def on_current_scores_disconnect(sid: str) -> None:
 @sio.on("run_status", namespace="/run_status")
 async def on_run_status(sid: str, data: dict) -> None:
     logging.info("Socket.IO /run_status: received message from %s", sid)
-    copy_message_to_db(json.dumps(data))
+    await anyio.to_thread.run_sync(copy_message_to_db, json.dumps(data))
     await sio.emit("run_status", data, namespace="/run_status")
 
 
@@ -616,6 +675,4 @@ def check_run_is_locked(
         )
         .first()
     )
-    if existing_run_status and existing_run_status.locked:
-        return True
-    return False
+    return bool(existing_run_status and existing_run_status.locked)

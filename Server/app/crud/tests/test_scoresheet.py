@@ -125,7 +125,7 @@ def test_get_many_scoresheets_with_name_filter(
 
     # Make request with name filter
     filter_name = "Test ScoreSheet"
-    response = test_client.get(f"/scoresheet/?name____str={filter_name}")
+    response = test_client.get(f"/scoresheet/?name____list={filter_name}")
 
     # Verify response
     assert response.status_code == 200

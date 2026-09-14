@@ -5,7 +5,6 @@ import {
 	scoredMovesType
 } from "../../components/roles/scribe/Interfaces"
 import { RootState } from "../store"
-export const isTest = false
 
 export interface ScoringStateType {
 	selectedPaddler: number

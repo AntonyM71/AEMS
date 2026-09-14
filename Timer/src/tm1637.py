@@ -221,8 +221,8 @@ class TM1637(object):
                     seg2 = self.encode_digit(int(num-(int(intval/10)*10)))
 
                 try:
-                    seg3 = self.encode_digit(int(str(num).split('.')[1][0])) # will fail if there is no decimal point
-                except:
+                    seg3 = self.encode_digit(int(str(num).split('.')[1][0]))
+                except (IndexError, ValueError):  # no decimal point in num
                     seg3 = self.encode_digit(0)
             segments = [seg1, seg2, seg3, _SEGMENTS[38]] # segments and degree character
             segments[1] |= 0x80  # colon as decimal

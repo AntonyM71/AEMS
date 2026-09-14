@@ -1,9 +1,9 @@
 import Box from "@mui/material/Box"
 import Divider from "@mui/material/Divider"
-import Grid2 from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
+import { useThemeProps } from "@mui/material/styles"
 import { useSelector } from "react-redux"
 import {
 	getSelectedCompetition,
@@ -15,26 +15,27 @@ import {
 	useGetOneByPrimaryKeyEventIdGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
-import { OverlayControlState } from "../../Interfaces"
-import SlidingModal from "../SlidingModal"
+import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
+import { AemsEventTitleThemeProps } from "../themeAugmentation"
 
-export const EventTitleModal = ({
-	overlayControlState,
-	size
-}: {
-	overlayControlState: OverlayControlState
-	size?: number
-}) => (
-	<SlidingModal
-		direction="up"
-		show={overlayControlState.showEventTitle}
-		size={size}
-	>
+export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
+	<FullscreenPixiOverlay configName="eventTitle" isVisible={isVisible}>
 		<EventTitle />
-	</SlidingModal>
+	</FullscreenPixiOverlay>
 )
 
-export const EventTitle = () => {
+// One layout for both surfaces. The overlay's theme positions the two text
+// groups absolutely over its background art and picks the smaller type scale;
+// the arena's theme leaves them in normal flow inside a dark panel.
+export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
+	const {
+		titleVariant = "h1",
+		detailVariant = "h4",
+		headingSx = {},
+		runsSx = {},
+		stackSpacing = 2
+	} = useThemeProps({ props: inProps, name: "AemsEventTitle" })
+
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const { data: competitionData } = useGetManyCompetitionGetQuery(
 		{
@@ -57,51 +58,82 @@ export const EventTitle = () => {
 		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
 	)
 	if (!competitionData || !phaseData || !eventData) {
-		return <></>
+		return null
 	}
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				height: "100%"
-				// width: "100%"
-			}}
-		>
-			<Paper sx={{ padding: "2em", justify: "center", width: "100%" }}>
-				<Stack spacing={2}>
-					<Grid2 container spacing={4} direction="column">
-						<Grid2>
-							<Typography variant="h1">
-								{competitionData?.[0].name}
-							</Typography>
-						</Grid2>
-						<Grid2>
-							<Divider />
-						</Grid2>
-						<Grid2>
-							<Grid2 container spacing={2} alignItems="center">
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Event : ${eventData?.name}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Phase : ${phaseData?.name}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">{`Runs : ${phaseData?.number_of_runs}`}</Typography>
-								</Grid2>
-								<Grid2 size={12}>
-									<Typography variant="h4">
-										{`Scoring Runs : ${phaseData?.number_of_runs_for_score}`}
-									</Typography>
-								</Grid2>
-							</Grid2>
-						</Grid2>
-					</Grid2>
-				</Stack>
-			</Paper>
-		</Box>
+		<Paper className="AemsEventTitle-root">
+			<Stack spacing={stackSpacing}>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						...headingSx
+					}}
+				>
+					<Typography
+						variant={titleVariant}
+						sx={{ color: "text.primary" }}
+					>
+						{competitionData[0].name}
+					</Typography>
+					<Box
+						sx={{
+							display: "flex",
+							gap: "0.7rem",
+							flexWrap: "wrap",
+							paddingTop: "0.5em"
+						}}
+					>
+						<Typography
+							variant={detailVariant}
+							sx={{
+								textTransform: "uppercase",
+								color: "text.primary"
+							}}
+						>
+							{`Event : ${eventData.name}`}
+						</Typography>
+						<Typography
+							variant={detailVariant}
+							sx={{
+								textTransform: "uppercase",
+								color: "text.primary"
+							}}
+						>
+							{`Phase : ${phaseData.name}`}
+						</Typography>
+					</Box>
+				</Box>
+				<Divider />
+				<Box
+					sx={{
+						display: "flex",
+						gap: "0.75rem",
+						flexWrap: "wrap",
+						...runsSx
+					}}
+				>
+					<Typography
+						variant={detailVariant}
+						sx={{
+							textTransform: "uppercase",
+							color: "text.secondary"
+						}}
+					>
+						{`Runs : ${phaseData.number_of_runs}`}
+					</Typography>
+					<Typography
+						variant={detailVariant}
+						sx={{
+							textTransform: "uppercase",
+							color: "text.secondary"
+						}}
+					>
+						{`Scoring Runs : ${phaseData.number_of_runs_for_score}`}
+					</Typography>
+				</Box>
+			</Stack>
+		</Paper>
 	)
 }

@@ -11,7 +11,6 @@ export const SlidingImageCard = ({
 	<SlidingWrapper
 		show={overlayControlState.showImageCard}
 		direction="down"
-		gridSize={1}
 	>
 		<Paper>
 			<CardMedia

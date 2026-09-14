@@ -37,7 +37,6 @@ import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 import { RefreshButton } from "./RefreshIconButton"
 import { SelectScoresheet } from "./ScoresheetSelector"
 
-
 const PhasesSelector = ({
 	showDetailed = false
 }: {
@@ -112,9 +111,12 @@ const PhasesSelector = ({
 					)}
 					<Grid size={12}>
 						<FormControl fullWidth={true}>
-							<InputLabel>Select Phase</InputLabel>
+							<InputLabel id="phase-select-label">
+								Select Phase
+							</InputLabel>
 
 							<Select
+								labelId="phase-select-label"
 								data-testid="phase-select"
 								value={selectedPhase}
 								onChange={onSelect}
@@ -124,14 +126,14 @@ const PhasesSelector = ({
 								}
 								endAdornment={
 									showDetailed && selectedPhase ? (
-										<IconButton
-											aria-label="toggle password visibility"
-											onClick={() => setOpen(true)}
-										>
-											<Tooltip title="Edit Selected Phase">
+										<Tooltip title="Edit Selected Phase">
+											<IconButton
+												aria-label="Edit selected phase"
+												onClick={() => setOpen(true)}
+											>
 												<EditNoteIcon />
-											</Tooltip>
-										</IconButton>
+											</IconButton>
+										</Tooltip>
 									) : undefined
 								}
 							>
@@ -216,7 +218,6 @@ const EditPhaseDialog = ({
 		</Dialog>
 	)
 }
-
 
 const AddPhase = ({
 	refetch,
@@ -312,7 +313,7 @@ const AddPhase = ({
 			<Grid size={12}>
 				<TextField
 					error={!phaseName}
-					label="New Phase"
+					label={existingPhaseData ? "Phase name" : "New Phase"}
 					variant="outlined"
 					fullWidth
 					data-testid="edit-phase-name-input"
@@ -360,9 +361,7 @@ const AddPhase = ({
 					data-testid="number-of-runs-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
-					): void =>
-						setNumberOfRuns(event.target.value as unknown as number)
-					}
+					): void => setNumberOfRuns(Number(event.target.value))}
 					value={numberOfRuns}
 				/>
 			</Grid>
@@ -381,9 +380,7 @@ const AddPhase = ({
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
 					): void =>
-						setNumberOfScoringRuns(
-							event.target.value as unknown as number
-						)
+						setNumberOfScoringRuns(Number(event.target.value))
 					}
 					value={numberOfScoringRuns}
 				/>
@@ -397,11 +394,7 @@ const AddPhase = ({
 					data-testid="number-of-judges-input"
 					onChange={(
 						event: React.ChangeEvent<HTMLInputElement>
-					): void =>
-						setNumberOfJudges(
-							event.target.value as unknown as number
-						)
-					}
+					): void => setNumberOfJudges(Number(event.target.value))}
 					value={numberOfJudges}
 				/>
 			</Grid>

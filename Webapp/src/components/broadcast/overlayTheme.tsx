@@ -1,8 +1,12 @@
 import { createTheme } from "@mui/material/styles"
-import type {} from "@mui/x-data-grid/themeAugmentation"
+import "@mui/x-data-grid/themeAugmentation"
+import "./themeAugmentation"
 const icfLightBlue = "rgb(28, 154, 215)"
 const icfDarkBlue = "rgb(12, 40, 80)"
 const icfWhite = "#f8f9fc"
+// Shared by the table and its card so they stay registered with the same
+// width of background artwork.
+const scoreboardCardMaxWidth = 1150
 
 export const lightTheme = createTheme({
 	palette: {
@@ -16,16 +20,21 @@ export const lightTheme = createTheme({
 
 		background: {
 			default: "rgba(20, 20, 20, 0.6)", // Semi-transparent dark background
-			paper: "rgba(30, 30, 30, 0.5)" // Slightly lighter for elevation
+			paper: "transparent"
 		},
 
 		text: {
-			primary: icfWhite,
-			secondary: "rgba(255, 255, 255, 0.7)" // Slightly muted secondary text
+			// Card headings sit on dark artwork; body copy and table rows sit
+			// on the light scoreboard panels.
+			primary: "white",
+			secondary: icfDarkBlue
 		}
 	},
 	typography: {
 		fontFamily: "'Roboto', sans-serif",
+		allVariants: {
+			color: icfDarkBlue
+		},
 		h1: {
 			fontSize: "3.5rem", // Largest for TV
 			fontWeight: 700,
@@ -74,6 +83,126 @@ export const lightTheme = createTheme({
 		}
 	},
 	components: {
+		// Geometry the overlay Cards used to hardcode inline. It lives here so
+		// the same components can be dropped into the arena's theme instead.
+		AemsBasicTable: {
+			defaultProps: {
+				pageLimit: 8,
+				padEmptyRows: true
+			}
+		},
+		AemsHeatSummary: {
+			defaultProps: {
+				titleAlign: "flex-end",
+				spacerHeight: 85
+			}
+		},
+		AemsPhaseResults: {
+			defaultProps: {
+				titleAlign: "flex-end",
+				spacerHeight: 23,
+				detailRows: "split"
+			}
+		},
+		MuiStack: {
+			styleOverrides: {
+				root: {
+					// The two phase-detail lines are pinned to the bands of the
+					// background frame they sit in.
+					"&.AemsPhaseDetails-names": { height: 54, minHeight: 54 },
+					"&.AemsPhaseDetails-runs": { height: 60, minHeight: 60 }
+				}
+			}
+		},
+		AemsEventTitle: {
+			defaultProps: {
+				titleVariant: "h2",
+				detailVariant: "h5",
+				// Both groups are positioned absolutely against the frame, so the
+				// Stack must add no spacing — otherwise its sibling margin nudges
+				// the run-count group down off its band.
+				stackSpacing: 0,
+				headingSx: {
+					position: "absolute",
+					left: "27%",
+					top: "53%",
+					maxWidth: "72%",
+					gap: "0.35rem"
+				},
+				runsSx: {
+					position: "absolute",
+					left: "43%",
+					top: "76%",
+					maxWidth: "60%"
+				}
+			}
+		},
+		MuiTable: {
+			styleOverrides: {
+				root: {
+					borderCollapse: "separate",
+					maxWidth: scoreboardCardMaxWidth,
+					minWidth: 500,
+					margin: "0 auto",
+					borderRadius: 12,
+					"& .MuiTableRow-root": {
+						borderBottom: "none"
+					}
+				}
+			}
+		},
+		MuiTableCell: {
+			styleOverrides: {
+				root: {
+					// The blue rule under each row is part of the overlay's
+					// scoreboard artwork; head and footer opt out below.
+					borderBottom: "1px solid #1976d2",
+					height: 61,
+					padding: 0,
+					margin: 0,
+					fontSize: 20,
+					// Body rows previously took their weight from the body1
+					// Typography they were wrapped in; keep it now the wrapper is
+					// gone. Head and footer raise this to bold below.
+					fontWeight: 500,
+					lineHeight: "61px",
+					color: icfDarkBlue
+				}
+			}
+		},
+		MuiTableRow: {
+			styleOverrides: {
+				root: {
+					borderBottom: "none",
+					height: 61
+				}
+			}
+		},
+		MuiTableHead: {
+			styleOverrides: {
+				root: {
+					"& .MuiTableCell-root": {
+						fontWeight: "bold",
+						borderBottom: "none"
+					}
+				}
+			}
+		},
+		MuiTableFooter: {
+			styleOverrides: {
+				root: {
+					// rowHeight 61 + 30px clearance for the frame's bottom bar.
+					"& .MuiTableRow-root": { height: 91 },
+					"& .MuiTableCell-root": {
+						color: "white",
+						textAlign: "right",
+						fontWeight: "bold",
+						letterSpacing: 1,
+						borderBottom: "none"
+					}
+				}
+			}
+		},
 		MuiGrid: {
 			styleOverrides: {
 				root: {
@@ -87,25 +216,32 @@ export const lightTheme = createTheme({
 		MuiPaper: {
 			styleOverrides: {
 				root: {
-					backgroundColor: "rgba(30, 30, 30, 0.7)", // Transparent glassy effect
+					backgroundColor: "transparent",
 					position: "relative",
 					padding: "1em", // Add some margin for spacing
 
 					overflow: "hidden", // Ensures the blur effect stays contained
 
-					backgroundImage: `
-						linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0.8) 100%)
-					`,
+					// The scoreboard cards are capped to the width of their
+					// background frame; the event title fills the screen so its
+					// absolutely-positioned groups resolve against the viewport.
+					"&.AemsTableCard-root": { maxWidth: scoreboardCardMaxWidth },
+					"&.AemsEventTitle-root": {
+						width: "100%",
+						height: "100%",
+						maxWidth: "none",
+						padding: 0,
+						pointerEvents: "none",
+						// The old root was a plain Box; a Paper would otherwise
+						// clip the absolutely-positioned title groups at the
+						// frame edge.
+						overflow: "visible"
+					},
 
-					// Inset shadow for inward shadow effect
-					boxShadow: `
-						inset 0 0 24px 8px rgba(0,0,0,0.3),
-						inset 0 0 8px 2px rgba(255,255,255,0.08)
-					`,
-
-					borderRadius: "9px", // Smooth rounded corners
-					borderImage:
-						"linear-gradient(transparent, rgba(255,255,255,0.2)) 2" // Light reflection
+					backgroundImage: "none",
+					boxShadow: "none",
+					border: "none",
+					borderImage: "none"
 				}
 			}
 		},
@@ -113,7 +249,9 @@ export const lightTheme = createTheme({
 		MuiModal: {
 			styleOverrides: {
 				root: {
-					backgroundColor: "rgba(0, 0, 0, 0)", // Fully transparent
+					backgroundColor: "transparent",
+					boxShadow: "none",
+					border: "none",
 					outline: "none",
 					"&:focus-visible": {
 						outline: "none"
@@ -134,25 +272,24 @@ export const lightTheme = createTheme({
 			styleOverrides: {
 				root: {
 					border: "none",
-					height: "2px",
-					background:
-						// eslint-disable-next-line max-len
-						"linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.15) 100%)",
-					opacity: 0.8,
-					boxShadow:
-						"0 1px 8px 0 rgba(0,0,0,0.18), 0 0.5px 0px 0 rgba(255,255,255,0.12)"
+					height: 0,
+					background: "transparent",
+					opacity: 0,
+					boxShadow: "none"
 				}
 			}
 		},
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					// Aero Glass style dark glow around white text
-					textShadow: `
-						0 1px 6px rgba(0,0,0,0.85),
-						0 0px 12px rgba(0,0,0,0.55),
-						0 2px 4px rgba(0,0,0,0.65)
-					`
+					color: icfDarkBlue,
+					// The heat name sits inside the frame's top-right title box.
+					"&.AemsHeatSummary-title": {
+						fontWeight: 700,
+						paddingRight: 32,
+						paddingTop: 8,
+						textShadow: "0 2px 8px rgba(0,0,0,0.4)"
+					}
 				}
 			}
 		}

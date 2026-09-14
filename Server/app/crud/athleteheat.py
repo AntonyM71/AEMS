@@ -11,8 +11,8 @@ from db.models import AthleteHeat
 athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
 
 
-@athleteheat_router.post("/", response_model=list[AthleteHeatResponse], status_code=201)
-async def insert_many(
+@athleteheat_router.post("/", status_code=201)
+def insert_many(
     athlete_heats: list[AthleteHeatCreate],
     db: Session = Depends(get_transaction_session),
 ) -> list[AthleteHeatResponse]:
@@ -31,12 +31,13 @@ async def insert_many(
         db.refresh(athlete_heat)
 
     return [
-        AthleteHeatResponse.model_validate(athlete_heat) for athlete_heat in db_athlete_heats
+        AthleteHeatResponse.model_validate(athlete_heat)
+        for athlete_heat in db_athlete_heats
     ]
 
 
-@athleteheat_router.patch("/{id}", response_model=AthleteHeatResponse)
-async def partial_update_one_by_primary_key(
+@athleteheat_router.patch("/{id}")
+def partial_update_one_by_primary_key(
     id: UUID,
     athlete_heat_update: AthleteHeatUpdate,
     db: Session = Depends(get_transaction_session),

@@ -7,9 +7,10 @@ export default function Score() {
 				the same heat, it should work, but will be painful to use
 			</ul>
 			<ul>
-				- Tiebreak engine doesn't give a detailled breakdown of why yet,
-				but will present a different message ("Fully Tied") if things
-				are a complete tie.
+				- Tiebreaks now show which criterion decided the result and
+				the athletes' bib numbers and values, e.g. "Tie resolved by
+				highest scoring run: #12 (85.00), #7 (80.00)". A complete tie
+				shows "Tie unresolved - athletes remain tied".
 			</ul>
 			<ul>
 				- Once a scoresheet has been used in a competition, it is not

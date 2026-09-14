@@ -15,9 +15,7 @@ describe("Score Page", () => {
 			)
 		).toBeInTheDocument()
 		expect(
-			screen.getByText(
-				/Tiebreak engine doesn't give a detailled breakdown/
-			)
+			screen.getByText(/Tiebreaks now show which criterion decided/)
 		).toBeInTheDocument()
 		expect(
 			screen.getByText(/Once a scoresheet has been used in a competition/)

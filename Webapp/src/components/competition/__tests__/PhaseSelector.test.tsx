@@ -8,7 +8,6 @@ import {
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { toast } from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
@@ -126,7 +125,7 @@ describe("PhaseSelector", () => {
 	})
 
 	it("should display phases when data is loaded", async () => {
-		const user = userEvent.setup()
+		const user = userEvent.setup({ delay: null })
 		render(
 			<Provider store={store}>
 				<PhaseSelector />
@@ -150,7 +149,7 @@ describe("PhaseSelector", () => {
 	})
 
 	it("should allow selecting a phase", async () => {
-		const user = userEvent.setup()
+		const user = userEvent.setup({ delay: null })
 		render(
 			<Provider store={store}>
 				<PhaseSelector />
@@ -193,9 +192,21 @@ describe("PhaseSelector", () => {
 		).toBeInTheDocument()
 	})
 
-	it.skip("should allow adding a new phase", async () => {
-		const user = userEvent.setup()
-		jest.clearAllMocks()
+	it("adds a new phase and shows it in the selector", async () => {
+		const user = userEvent.setup({ delay: null })
+		const phases = [...mockPhases]
+		server.use(
+			http.get("/api/event/:eventPkId/phase", () =>
+				HttpResponse.json(phases)
+			),
+			http.post("/api/phase/", async ({ request }) => {
+				const created = (await request.json()) as PhasePostBody[]
+				const withId = { id: "new-phase-id", ...created[0] }
+				phases.push(withId)
+
+				return HttpResponse.json([withId], { status: 201 })
+			})
+		)
 
 		render(
 			<Provider store={store}>
@@ -203,81 +214,71 @@ describe("PhaseSelector", () => {
 			</Provider>
 		)
 
-		// Wait for loading state to finish and form to be ready
 		await screen.findByText("Add New Phase")
 
-		// Fill in phase name
-		const nameInput = screen.getByTestId("edit-phase-name-input")
-		await user.type(nameInput, "Test Phase")
-
-		// Fill in required fields
-		const scoresheetSelect = screen.getByLabelText("Scoresheet")
-		await user.click(scoresheetSelect)
-		const scoresheetOption = await screen.findByText("Scoresheet 1")
-		await user.click(scoresheetOption)
-
-		// Fill in number fields
-		const runsInput = screen.getByTestId("number-of-runs-input")
-		fireEvent.change(runsInput, { target: { value: 3 } })
-
-		const scoringRunsInput = screen.getByTestId(
-			"number-of-scoring-runs-input"
-		)
-		fireEvent.change(scoringRunsInput, { target: { value: 2 } })
-
-		const judgesInput = screen.getByTestId("number-of-judges-input")
-		fireEvent.change(judgesInput, { target: { value: 3 } })
-
-		// Submit button should be enabled
-		const submitButton = screen.getByTestId("submit-phase-button")
-		expect(submitButton).toBeEnabled()
-
-		// Submit and verify success
-		await user.click(submitButton)
-		await new Promise((resolve) => setTimeout(resolve, 0))
-		expect(toast.success).toHaveBeenCalledWith("Success")
-	})
-
-	it.skip("should show error when scoring runs exceed total runs", async () => {
-		const user = userEvent.setup()
-		render(
-			<Provider store={store}>
-				<PhaseSelector showDetailed={true} />
-			</Provider>
+		await user.type(
+			screen.getByRole("textbox", { name: "New Phase" }),
+			"Semi Final"
 		)
 
-		// Wait for loading state to finish and form to be ready
-		await screen.findByText("Add New Phase")
-
-		// Fill in phase name
-		const nameInput = screen.getByTestId("edit-phase-name-input")
-		await user.type(nameInput, "Test Phase")
-
-		// Set total runs to 2
-		const runsInput = screen.getByTestId("number-of-runs-input")
-		await user.clear(runsInput)
-		await user.type(runsInput, "2")
-
-		// Set scoring runs to 3 (more than total runs)
-		const scoringRunsInput = screen.getByTestId(
-			"number-of-scoring-runs-input"
+		const scoresheet = screen.getByRole("combobox", { name: "Scoresheet" })
+		await user.click(scoresheet)
+		await user.click(
+			await screen.findByRole("option", { name: "Scoresheet 1" })
 		)
-		await user.clear(scoringRunsInput)
-		await user.type(scoringRunsInput, "3")
 
-		// Verify error message is shown
+		const addButton = screen.getByRole("button", { name: "Add Phase" })
+		await waitFor(() => expect(addButton).toBeEnabled(), { timeout: 3000 })
+		await user.click(addButton)
+
+		await waitFor(
+			() => expect(phases).toHaveLength(mockPhases.length + 1),
+			{ timeout: 3000 }
+		)
+		await user.click(screen.getByRole("combobox", { name: "Select Phase" }))
 		expect(
-			screen.getByText(
-				"Cannot have more scoring runs per paddler than total runs (2)"
+			await screen.findByRole(
+				"option",
+				{ name: "Semi Final" },
+				{ timeout: 3000 }
 			)
 		).toBeInTheDocument()
-
-		// Verify submit button is disabled
-		const submitButton = screen.getByTestId("submit-phase-button")
-		expect(submitButton).toBeDisabled()
 	})
 
-	it.skip("should render empty state when no event is selected", () => {
+	it("warns when scoring runs exceed total runs and clears the warning once fixed", async () => {
+		render(
+			<Provider store={store}>
+				<PhaseSelector showDetailed={true} />
+			</Provider>
+		)
+
+		await screen.findByText("Add New Phase")
+
+		const totalRuns = screen.getByRole("spinbutton", {
+			name: "Number of Runs"
+		})
+		const scoringRuns = screen.getByRole("spinbutton", {
+			name: "Number of Scoring Runs"
+		})
+		const warning =
+			"Cannot have more scoring runs per paddler than total runs (9)"
+
+		// 9 total, 10 scoring — a string comparison would read "10" < "9" and
+		// miss this; the component must compare numbers.
+		fireEvent.change(totalRuns, { target: { value: "9" } })
+		fireEvent.change(scoringRuns, { target: { value: "10" } })
+
+		expect(await screen.findByText(warning)).toBeInTheDocument()
+		expect(screen.getByRole("button", { name: "Add Phase" })).toBeDisabled()
+
+		fireEvent.change(totalRuns, { target: { value: "10" } })
+
+		await waitFor(() =>
+			expect(screen.queryByText(warning)).not.toBeInTheDocument()
+		)
+	})
+
+	it("renders nothing when no event is selected", () => {
 		store = configureStore({
 			reducer: {
 				[aemsApi.reducerPath]: aemsApi.reducer,
@@ -311,11 +312,27 @@ describe("PhaseSelector", () => {
 		).not.toBeInTheDocument()
 	})
 
-	it.skip("should allow editing an existing phase", async () => {
-		const user = userEvent.setup()
-		jest.clearAllMocks()
+	it("edits an existing phase and shows the new name in the selector", async () => {
+		const user = userEvent.setup({ delay: null })
+		const phases = mockPhases.map((p) => ({ ...p }))
+		server.use(
+			http.get("/api/event/:eventPkId/phase", () =>
+				HttpResponse.json(phases)
+			),
+			http.get("/api/phase/:id", ({ params }) =>
+				HttpResponse.json(phases.find((p) => p.id === params.id))
+			),
+			http.patch("/api/phase/:id", async ({ params, request }) => {
+				const update = (await request.json()) as PhasePatchBody
+				const target = phases.find((p) => p.id === params.id)
+				if (target && update.name) {
+					target.name = update.name
+				}
 
-		// Set up store with a selected phase
+				return HttpResponse.json({ id: params.id, ...update })
+			})
+		)
+
 		store = configureStore({
 			reducer: {
 				[aemsApi.reducerPath]: aemsApi.reducer,
@@ -342,63 +359,33 @@ describe("PhaseSelector", () => {
 			</Provider>
 		)
 
-		// Wait for loading state to finish
 		await screen.findByText("Select Phase")
 
-		// Click edit button
-		const editButton = screen.getByLabelText("toggle password visibility")
-		await user.click(editButton)
+		await user.click(
+			screen.getByRole("button", { name: "Edit selected phase" })
+		)
 
-		// Wait for dialog to open and load phase data
 		const dialog = await screen.findByRole("dialog")
-		expect(dialog).toBeInTheDocument()
 		expect(
 			within(dialog).getByTestId("edit-phase-dialog-title")
 		).toHaveTextContent("Edit Phase")
 
-		// Verify existing phase data is loaded
 		const nameInput = within(dialog).getByRole("textbox", {
-			name: "New Phase"
+			name: "Phase name"
 		})
 		expect(nameInput).toHaveValue("Phase 1")
+		expect(
+			within(dialog).getByRole("spinbutton", { name: "Number of Runs" })
+		).toHaveValue(3)
 
-		const runsInput = within(dialog).getByRole("spinbutton", {
-			name: "Number of Runs"
-		})
-		expect(runsInput).toHaveValue(3)
-
-		// Edit phase name
 		await user.clear(nameInput)
-		await user.type(nameInput, "Updated Phase 1")
-
-		// Mock the refetch functions and API endpoints
-		const mockRefetch = jest.fn().mockResolvedValue(undefined)
-		const mockRefetchPhaseInfo = jest.fn().mockResolvedValue(undefined)
-		server.use(
-			http.get("/api/phase/:id", async ({ params }) => {
-				await mockRefetchPhaseInfo()
-
-				return HttpResponse.json(
-					mockPhases.find((p) => p.id === params.id)
-				)
-			}),
-			http.get("/api/event/:eventPkId/phase", async () => {
-				await mockRefetch()
-
-				return HttpResponse.json(mockPhases)
-			})
+		await user.type(nameInput, "Grand Final")
+		await user.click(
+			within(dialog).getByRole("button", { name: "Edit Phase" })
 		)
 
-		// Submit changes
-		const submitButton = within(dialog).getByTestId("submit-phase-button")
-		await user.click(submitButton)
-
-		await waitFor(() => {
-			expect(toast.success).toHaveBeenCalledWith("Success")
-		})
-		expect(mockRefetch).toHaveBeenCalled()
-		await waitFor(() => {
-			expect(mockRefetchPhaseInfo).toHaveBeenCalled()
-		})
+		expect(
+			await screen.findByText("Grand Final", undefined, { timeout: 3000 })
+		).toBeInTheDocument()
 	})
 })

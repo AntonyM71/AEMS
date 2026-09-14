@@ -1,3 +1,8 @@
+# Holds the SonarQube CLI's file-backed keychain (see SONARQUBE_CLI_KEYCHAIN_FILE
+# in the Dockerfile). Created here, not at build time, because /workspaces is a
+# bind mount that only exists once the container is running.
+mkdir -p /workspaces/.sonar
+
 echo "Installing npm packages..."
 (cd Webapp && npm install)
 echo "Setting up Python virtual environment..."

@@ -2,7 +2,7 @@ cd Server
 python -m scripts.buildOpenApiJson
 cd ../Webapp
 pwd
-npx @rtk-query/codegen-openapi src/redux/services/example_api.json
+npx @rtk-query/codegen-openapi src/redux/services/openapi-config.js
 
 if sed --version 2>/dev/null | grep -q GNU; then
     SED_CMD="sed -i"

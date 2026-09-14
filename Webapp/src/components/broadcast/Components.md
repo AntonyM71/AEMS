@@ -31,6 +31,46 @@ kanban
 
 ```
 
+## Animation Wrapper
+
+### PixiFrameSequenceOverlay
+
+A reusable wrapper that renders a PNG frame sequence as a GPU-accelerated background using Pixi.js and layers child React broadcast components above it.
+
+**File**: `PixiFrameSequenceOverlay.tsx`
+
+**Props**:
+
+| Prop                 | Type               | Required | Default            | Description                                                 |
+| -------------------- | ------------------ | -------- | ------------------ | ----------------------------------------------------------- |
+| `configName`         | `string`           | No       |                    | Config key appended to the config endpoint URL              |
+| `configEndpointBase` | `string`           | No       | `"/componentInfo"` | Base endpoint used to fetch config JSON                     |
+| `basePath`           | `string`           | No       |                    | Local fallback base path if config endpoint is not used     |
+| `frameCount`         | `number`           | No       |                    | Local fallback total number of frames                       |
+| `holdImage`          | `number \| string` | No       |                    | Local fallback hold frame index or filename suffix          |
+| `isVisible`          | `boolean`          | Yes      |                    | Drives intro (on true) and outro (on false)                 |
+| `children`           | `ReactNode`        | No       |                    | Broadcast overlay component to layer above the animation    |
+| `fps`                | `number`           | No       | `30`               | Playback rate in frames per second                          |
+| `fileNamePrefix`     | `string`           | No       | `"frame_"`         | Prefix for each frame filename                              |
+| `fileNamePadding`    | `number`           | No       | `4`                | Zero-pad width for frame numbers (e.g. `4` → `0001`)        |
+| `fileExtension`      | `string`           | No       | `"png"`            | File extension for frame images                             |
+| `frameUrls`          | `string[]`         | No       |                    | Override with explicit frame URL list (skips path building) |
+| `onExitComplete`     | `() => void`       | No       |                    | Callback fired when the outro sequence finishes             |
+
+**Playback lifecycle**:
+
+1. All frames are preloaded into GPU textures before playback starts.
+2. When `isVisible` becomes `true`: plays frames `0 → holdImage` (intro).
+3. Holds on `holdImage` frame while `isVisible` remains `true`.
+4. When `isVisible` becomes `false`: plays frames `holdImage+1 → end` (outro).
+5. `onExitComplete` is called and the canvas is hidden.
+
+When `configName` is provided, the component fetches `{configEndpointBase}/{configName}` and resolves frame URLs from the returned config `path` (or `frameUrls`) before preloading textures. Local path props remain available as fallback.
+
+**Example**: `Cards/AthleteCardWithAnimation.tsx`
+
+---
+
 ## Features
 
 ### Modals

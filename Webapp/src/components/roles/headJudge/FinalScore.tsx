@@ -4,7 +4,9 @@ import Typography from "@mui/material/Typography"
 import { Variant } from "@mui/material/styles/createTypography"
 import { makeLockedScoreStyle } from "../../competition/HeatScoreTable"
 const calculateAverage = (numbers: number[]): number =>
-	numbers.reduce((acc, curr) => acc + curr, 0) / numbers.length
+	numbers.length
+		? numbers.reduce((acc, curr) => acc + curr, 0) / numbers.length
+		: 0
 
 export const FinalScoreLogic = ({
 	allJudgeScores,

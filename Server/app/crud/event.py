@@ -1,9 +1,16 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.crud.query_helpers import (
+    apply_in_filters,
+    apply_ordering,
+    apply_pagination,
+    apply_range_filters,
+)
 from app.crud.schemas import (
     CompetitionNested,
     EventCreateRequest,
@@ -16,28 +23,51 @@ from db.models import Event, Phase
 
 event_router = APIRouter(prefix="/event", tags=["event"])
 
+_EVENT_SORTABLE = {"name": Event.name, "competition_id": Event.competition_id}
 
-@event_router.get("/", response_model=list[EventResponse])
-async def get_many(
+
+def _apply_event_joins(
+    query: Select[tuple[Event]], join_foreign_table: list[str] | None
+) -> Select[tuple[Event]]:
+    if join_foreign_table:
+        if "phase" in join_foreign_table:
+            query = query.options(selectinload(Event.phases))
+        if "competition" in join_foreign_table:
+            query = query.options(selectinload(Event.competition))
+    return query
+
+
+def _build_event_dict(
+    event: Event, join_foreign_table: list[str] | None
+) -> dict[str, Any]:
+    """Build the response dict for an Event, including requested foreign keys."""
+    event_dict: dict[str, Any] = {
+        "id": event.id,
+        "competition_id": event.competition_id,
+        "name": event.name,
+    }
+
+    if join_foreign_table:
+        if "competition" in join_foreign_table and event.competition:
+            event_dict["competition_foreign"] = [
+                CompetitionNested.model_validate(event.competition)
+            ]
+        if "phase" in join_foreign_table and event.phases:
+            event_dict["phase_foreign"] = [
+                PhaseNested.model_validate(p) for p in event.phases
+            ]
+
+    return event_dict
+
+
+@event_router.get("/")
+def get_many(
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
-    id____list_____comparison_operator: str | None = Query(
-        None, alias="id____list_____comparison_operator"
-    ),
     competition_id____list: list[UUID] | None = Query(
         None, alias="competition_id____list"
     ),
-    competition_id____list_____comparison_operator: str | None = Query(
-        None, alias="competition_id____list_____comparison_operator"
-    ),
     name____list: list[str] | None = Query(None, alias="name____list"),
-    name____list_____comparison_operator: str | None = Query(
-        None, alias="name____list_____comparison_operator"
-    ),
-    name____str: str | None = Query(None, alias="name____str"),
-    name____str_____matching_pattern: str | None = Query(
-        None, alias="name____str_____matching_pattern"
-    ),
     limit: int | None = Query(None),
     offset: int | None = Query(None),
     order_by_columns: list[str] | None = Query(None),
@@ -45,110 +75,36 @@ async def get_many(
 ) -> list[EventResponse]:
     """Get many events"""
     query = select(Event)
-
-    # Apply joins if requested
-    if join_foreign_table:
-        if "phase" in join_foreign_table:
-            query = query.options(selectinload(Event.phases))
-        if "competition" in join_foreign_table:
-            query = query.options(selectinload(Event.competition))
-
-    # Apply filters
-    if id____list:
-        query = query.where(Event.id.in_(id____list))
-
-    if competition_id____list:
-        query = query.where(Event.competition_id.in_(competition_id____list))
-
-    if name____list:
-        query = query.where(Event.name.in_(name____list))
-
-    if name____str:
-        if name____str_____matching_pattern == "case_insensitive":
-            query = query.where(Event.name.ilike(f"%{name____str}%"))
-        elif name____str_____matching_pattern == "case_sensitive":
-            query = query.where(Event.name.like(f"%{name____str}%"))
-        else:
-            query = query.where(Event.name == name____str)
-
-    # Apply ordering
-    if order_by_columns:
-        for order_col in order_by_columns:
-            if "name" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.name.desc())
-                else:
-                    query = query.order_by(Event.name.asc())
-            elif "competition_id" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.competition_id.desc())
-                else:
-                    query = query.order_by(Event.competition_id.asc())
-
-    # Apply pagination
-    if offset:
-        query = query.offset(offset)
-    if limit:
-        query = query.limit(limit)
+    query = _apply_event_joins(query, join_foreign_table)
+    query = apply_in_filters(
+        query,
+        [
+            (Event.id, id____list),
+            (Event.competition_id, competition_id____list),
+            (Event.name, name____list),
+        ],
+    )
+    query = apply_ordering(query, order_by_columns, _EVENT_SORTABLE)
+    query = apply_pagination(query, limit, offset)
 
     result = db.execute(query)
     events = result.scalars().all()
 
-    # Convert to response format with _foreign suffix
-    response_data = []
-    for event in events:
-        event_dict = {
-            "id": event.id,
-            "competition_id": event.competition_id,
-            "name": event.name,
-        }
-
-        # Add foreign relationships as lists (matching autogen behavior)
-        if join_foreign_table:
-            if "competition" in join_foreign_table and event.competition:
-                event_dict["competition_foreign"] = [
-                    CompetitionNested.model_validate(event.competition)
-                ]
-            if "phase" in join_foreign_table and event.phases:
-                event_dict["phase_foreign"] = [
-                    PhaseNested.model_validate(p) for p in event.phases
-                ]
-
-        response_data.append(EventResponse(**event_dict))
-
-    return response_data
+    return [
+        EventResponse(**_build_event_dict(event, join_foreign_table))
+        for event in events
+    ]
 
 
-@event_router.get("/{id}", response_model=EventResponse)
-async def get_one_by_primary_key(
+@event_router.get("/{id}")
+def get_one_by_primary_key(
     id: UUID,
     db: Session = Depends(get_transaction_session),
-    competition_id____list: list[UUID] | None = Query(
-        None, alias="competition_id____list"
-    ),
-    name____str: str | None = Query(None, alias="name____str"),
-    name____list: list[str] | None = Query(None, alias="name____list"),
     join_foreign_table: list[str] | None = Query(None, alias="join_foreign_table"),
 ) -> EventResponse:
-    """Get one event by id with optional filtering and foreign keys"""
+    """Get one event by id, optionally joining foreign tables"""
     query = select(Event).where(Event.id == id)
-
-    # Apply joins if requested
-    if join_foreign_table:
-        if "phase" in join_foreign_table:
-            query = query.options(selectinload(Event.phases))
-        if "competition" in join_foreign_table:
-            query = query.options(selectinload(Event.competition))
-
-    # Apply additional filters if provided
-    if competition_id____list:
-        query = query.where(Event.competition_id.in_(competition_id____list))
-
-    if name____list:
-        query = query.where(Event.name.in_(name____list))
-
-    if name____str:
-        query = query.where(Event.name == name____str)
+    query = _apply_event_joins(query, join_foreign_table)
 
     result = db.execute(query)
     event = result.scalar_one_or_none()
@@ -156,113 +112,11 @@ async def get_one_by_primary_key(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    event_dict = {
-        "id": event.id,
-        "competition_id": event.competition_id,
-        "name": event.name,
-    }
-
-    # Add foreign relationships if requested
-    if join_foreign_table:
-        if "phase" in join_foreign_table and event.phases:
-            event_dict["phase_foreign"] = [
-                PhaseNested.model_validate(p) for p in event.phases
-            ]
-        if "competition" in join_foreign_table and event.competition:
-            event_dict["competition_foreign"] = [
-                CompetitionNested.model_validate(event.competition)
-            ]
-
-    return EventResponse(**event_dict)
+    return EventResponse(**_build_event_dict(event, join_foreign_table))
 
 
-@event_router.get("/get_many_with_foreign_tree/", response_model=list[EventResponse])
-async def get_many_with_foreign_tree(
-    db: Session = Depends(get_transaction_session),
-    id____list: list[UUID] | None = Query(None, alias="id____list"),
-    id____list_____comparison_operator: str | None = Query(
-        None, alias="id____list_____comparison_operator"
-    ),
-    competition_id____list: list[UUID] | None = Query(
-        None, alias="competition_id____list"
-    ),
-    competition_id____list_____comparison_operator: str | None = Query(
-        None, alias="competition_id____list_____comparison_operator"
-    ),
-    name____list: list[str] | None = Query(None, alias="name____list"),
-    name____list_____comparison_operator: str | None = Query(
-        None, alias="name____list_____comparison_operator"
-    ),
-    name____str: str | None = Query(None, alias="name____str"),
-    name____str_____matching_pattern: str | None = Query(
-        None, alias="name____str_____matching_pattern"
-    ),
-    limit: int | None = Query(None),
-    offset: int | None = Query(None),
-    order_by_columns: list[str] | None = Query(None),
-) -> list[EventResponse]:
-    """Get many events with competition foreign key"""
-    query = select(Event).options(selectinload(Event.competition))
-
-    # Apply filters
-    if id____list:
-        query = query.where(Event.id.in_(id____list))
-
-    if competition_id____list:
-        query = query.where(Event.competition_id.in_(competition_id____list))
-
-    if name____list:
-        query = query.where(Event.name.in_(name____list))
-
-    if name____str:
-        if name____str_____matching_pattern == "case_insensitive":
-            query = query.where(Event.name.ilike(f"%{name____str}%"))
-        elif name____str_____matching_pattern == "case_sensitive":
-            query = query.where(Event.name.like(f"%{name____str}%"))
-        else:
-            query = query.where(Event.name == name____str)
-
-    # Apply ordering
-    if order_by_columns:
-        for order_col in order_by_columns:
-            if "name" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.name.desc())
-                else:
-                    query = query.order_by(Event.name.asc())
-            elif "competition_id" in order_col.lower():
-                if "desc" in order_col.lower():
-                    query = query.order_by(Event.competition_id.desc())
-                else:
-                    query = query.order_by(Event.competition_id.asc())
-
-    # Apply pagination
-    if offset is not None:
-        query = query.offset(offset)
-    if limit is not None:
-        query = query.limit(limit)
-
-    result = db.execute(query)
-    events = result.scalars().all()
-
-    # Convert to response format with competition_foreign as list
-    response_data = []
-    for event in events:
-        event_dict = {
-            "id": event.id,
-            "competition_id": event.competition_id,
-            "name": event.name,
-            "competition_foreign": [CompetitionNested.model_validate(event.competition)]
-            if event.competition
-            else None,
-        }
-        response_data.append(EventResponse(**event_dict))
-
-    return response_data
-
-
-@event_router.post("/", response_model=list[EventResponse], status_code=201)
-async def insert_many(
+@event_router.post("/", status_code=201)
+def insert_many(
     events: list[EventCreateRequest],
     db: Session = Depends(get_transaction_session),
 ) -> list[EventResponse]:
@@ -283,8 +137,8 @@ async def insert_many(
     return [EventResponse.model_validate(event) for event in db_events]
 
 
-@event_router.get("/{event_pk_id}/phase", response_model=list[PhaseResponse])
-async def get_many_by_pk_from_phase(
+@event_router.get("/{event_pk_id}/phase")
+def get_many_by_pk_from_phase(
     event_pk_id: UUID,
     db: Session = Depends(get_transaction_session),
     id____list: list[UUID] | None = Query(None, alias="id____list"),
@@ -317,61 +171,43 @@ async def get_many_by_pk_from_phase(
     """Get all phases for a specific event"""
     query = select(Phase).where(Phase.event_id == event_pk_id)
 
-    # Apply joins if requested
-    if join_foreign_table:
-        if "event" in join_foreign_table:
-            query = query.options(selectinload(Phase.event))
-
-    # Apply additional filters
-    if id____list:
-        query = query.where(Phase.id.in_(id____list))
+    if join_foreign_table and "event" in join_foreign_table:
+        query = query.options(selectinload(Phase.event))
 
     if name____str:
         query = query.where(Phase.name == name____str)
 
-    if name____list:
-        query = query.where(Phase.name.in_(name____list))
-
-    if number_of_runs____from is not None:
-        query = query.where(Phase.number_of_runs >= number_of_runs____from)
-
-    if number_of_runs____to is not None:
-        query = query.where(Phase.number_of_runs <= number_of_runs____to)
-
-    if number_of_runs____list:
-        query = query.where(Phase.number_of_runs.in_(number_of_runs____list))
-
-    if number_of_runs_for_score____from is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score >= number_of_runs_for_score____from
-        )
-
-    if number_of_runs_for_score____to is not None:
-        query = query.where(
-            Phase.number_of_runs_for_score <= number_of_runs_for_score____to
-        )
-
-    if number_of_runs_for_score____list:
-        query = query.where(
-            Phase.number_of_runs_for_score.in_(number_of_runs_for_score____list)
-        )
-
-    if number_of_judges____from is not None:
-        query = query.where(Phase.number_of_judges >= number_of_judges____from)
-
-    if number_of_judges____to is not None:
-        query = query.where(Phase.number_of_judges <= number_of_judges____to)
-
-    if number_of_judges____list:
-        query = query.where(Phase.number_of_judges.in_(number_of_judges____list))
-
-    if scoresheet____list:
-        query = query.where(Phase.scoresheet.in_(scoresheet____list))
+    query = apply_in_filters(
+        query,
+        [
+            (Phase.id, id____list),
+            (Phase.name, name____list),
+            (Phase.number_of_runs, number_of_runs____list),
+            (Phase.number_of_runs_for_score, number_of_runs_for_score____list),
+            (Phase.number_of_judges, number_of_judges____list),
+            (Phase.scoresheet, scoresheet____list),
+        ],
+    )
+    query = apply_range_filters(
+        query,
+        [
+            (Phase.number_of_runs, number_of_runs____from, number_of_runs____to),
+            (
+                Phase.number_of_runs_for_score,
+                number_of_runs_for_score____from,
+                number_of_runs_for_score____to,
+            ),
+            (
+                Phase.number_of_judges,
+                number_of_judges____from,
+                number_of_judges____to,
+            ),
+        ],
+    )
 
     result = db.execute(query)
     phases = result.scalars().all()
 
-    # Convert to response format
     response_data = []
     for phase in phases:
         phase_dict = {
@@ -384,7 +220,6 @@ async def get_many_by_pk_from_phase(
             "scoresheet": phase.scoresheet,
         }
 
-        # Add event foreign relationship if requested
         if join_foreign_table and "event" in join_foreign_table and phase.event:
             phase_dict["event_foreign"] = [
                 {

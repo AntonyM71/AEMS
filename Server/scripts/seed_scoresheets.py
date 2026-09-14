@@ -44,9 +44,16 @@ for file in scoresheet_files:
 
                 # print(data)
 
-                for move in data:
+                pydantic_moves = [SeedMoveData(**move) for move in data]
+                move_order = {
+                    name: index
+                    for index, name in enumerate(
+                        sorted((m.Move for m in pydantic_moves), key=str.lower)
+                    )
+                }
+
+                for pydantic_move in pydantic_moves:
                     move_id = uuid4()
-                    pydantic_move = SeedMoveData(**move)
                     # print(pydantic_move)
                     db.bulk_save_objects(
                         [
@@ -59,6 +66,7 @@ for file in scoresheet_files:
                                 rb_score=pydantic_move.ReverseValue
                                 if pydantic_move.ReverseValue
                                 else pydantic_move.Value,
+                                display_order=move_order[pydantic_move.Move],
                             )
                         ]
                     )

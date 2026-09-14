@@ -43,17 +43,45 @@ class InvalidFileTypeError(Exception):
     """Raised when the file type does not match what is expected"""
 
 
-@competition_management_router.post("/upload")
+@competition_management_router.post(
+    "/upload",
+    responses={
+        422: {
+            "description": (
+                "Validation error. Includes number_of_runs and "
+                "number_of_runs_for_score must be positive, with "
+                "number_of_runs_for_score no greater than number_of_runs."
+            ),
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "anyOf": [
+                            {"$ref": "#/components/schemas/HTTPValidationError"},
+                            {
+                                "type": "object",
+                                "properties": {"detail": {"type": "string"}},
+                                "required": ["detail"],
+                            },
+                        ]
+                    }
+                }
+            },
+        },
+    },
+)
 def upload(
     competition_name: str = Form(...),
     scoresheet_name: str = Form(...),
-    number_of_runs: int = Form(...),
-    number_of_runs_for_score: int = Form(...),
+    number_of_runs: int = Form(..., gt=0),
+    number_of_runs_for_score: int = Form(..., gt=0),
     number_of_judges: int = Form(...),
     random_heats: bool = Form(...),  # noqa: FBT001
     number_of_random_heats: int = Form(...),
     file: UploadFile = File(...),  # noqa: B008
 ) -> Response:
+    if number_of_runs_for_score > number_of_runs:
+        msg = "number_of_runs_for_score cannot exceed number_of_runs"
+        raise HTTPException(status_code=422, detail=msg)
     if file.filename.endswith(".xlsx"):
         sheets_dict = pd.read_excel(BytesIO(file.file.read()), sheet_name=None)
         competitors_df = pd.concat(sheets_dict.values(), ignore_index=True)
@@ -97,8 +125,8 @@ class AthleteIDandRank(BaseModel):
 
 
 @competition_management_router.post("/promote_phase", status_code=status.HTTP_200_OK)
-async def promote_phase(
-    request_body: Annotated[NewPhaseInfo, Body(embed=True)] = None,
+def promote_phase(
+    request_body: Annotated[NewPhaseInfo, Body(embed=True)],
     db: Session = Depends(get_transaction_session),
 ) -> Response:
     with db.begin():

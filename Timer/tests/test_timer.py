@@ -110,8 +110,7 @@ class TestGetShortStatus:
 
     def test_unknown_status_returns_unk(self) -> None:
         # Intentionally passing an invalid status to test the fallback "UNK" path.
-        assert timer.get_short_status(
-            "bogus") == "UNK"  # type: ignore[arg-type]
+        assert timer.get_short_status("bogus") == "UNK"  # type: ignore[arg-type]
 
 
 # ===========================================================================
@@ -200,27 +199,33 @@ class TestUpdateBuzzer:
 
 
 class TestSendTimerUpdate:
-    def test_queues_message_when_socketio_enabled(self) -> None:
-        timer.ENABLE_WEBSOCKET = True
+    def test_queues_message_when_socketio_enabled(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "ENABLE_WEBSOCKET", True)
         timer.send_timer_update("running", 30.0)
         assert not timer.message_queue.empty()
         item = timer.message_queue.get_nowait()
         assert item.status == "running"
         assert item.time_remaining == 30
 
-    def test_skips_queue_when_socketio_disabled(self) -> None:
-        timer.ENABLE_WEBSOCKET = False
+    def test_skips_queue_when_socketio_disabled(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "ENABLE_WEBSOCKET", False)
         timer.send_timer_update("running", 30.0)
         assert timer.message_queue.empty()
 
-    def test_time_remaining_none_uses_zero(self) -> None:
-        timer.ENABLE_WEBSOCKET = True
+    def test_time_remaining_none_uses_zero(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "ENABLE_WEBSOCKET", True)
         timer.send_timer_update("finished", None)
         item = timer.message_queue.get_nowait()
         assert item.time_remaining == 0
 
-    def test_status_queued_correctly(self) -> None:
-        timer.ENABLE_WEBSOCKET = True
+    def test_status_queued_correctly(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(timer, "ENABLE_WEBSOCKET", True)
         statuses: tuple[timer.StatusLiteral, ...] = (
             "started",
             "running",
@@ -239,8 +244,10 @@ class TestSendTimerUpdate:
 
 
 class TestStartCancelTimer:
-    def test_start_timer_sets_running_true(self) -> None:
-        timer.timer_running = False
+    def test_start_timer_sets_running_true(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "timer_running", False)
         with patch("timer.threading.Thread") as mock_thread_cls:
             mock_thread = MagicMock()
             mock_thread_cls.return_value = mock_thread
@@ -248,21 +255,27 @@ class TestStartCancelTimer:
             assert timer.timer_running is True
             mock_thread.start.assert_called_once()
 
-    def test_start_timer_does_nothing_if_already_running(self) -> None:
-        timer.timer_running = True
+    def test_start_timer_does_nothing_if_already_running(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "timer_running", True)
         with patch("timer.threading.Thread") as mock_thread_cls:
             timer.start_timer()
             mock_thread_cls.assert_not_called()
 
-    def test_cancel_timer_clears_running_flag(self) -> None:
-        timer.timer_running = True
+    def test_cancel_timer_clears_running_flag(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "timer_running", True)
         with patch("timer.send_timer_update") as mock_update:
             timer.cancel_timer()
             assert timer.timer_running is False
             mock_update.assert_called_once_with("cancelled", 0)
 
-    def test_cancel_timer_does_nothing_if_not_running(self) -> None:
-        timer.timer_running = False
+    def test_cancel_timer_does_nothing_if_not_running(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(timer, "timer_running", False)
         with patch("timer.send_timer_update") as mock_update:
             timer.cancel_timer()
             mock_update.assert_not_called()
@@ -277,9 +290,12 @@ class TestRunTimerPhase:
     @patch("timer.send_timer_update")
     @patch("timer.time.sleep")
     def test_phase_completes_when_timer_running(
-        self, mock_sleep: MagicMock, mock_update: MagicMock
+        self,
+        mock_sleep: MagicMock,
+        mock_update: MagicMock,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        timer.timer_running = True
+        monkeypatch.setattr(timer, "timer_running", True)
         elapsed, _last_sec, completed = timer.run_timer_phase(
             duration=0.1,
             elapsed_time=0.0,
@@ -293,9 +309,12 @@ class TestRunTimerPhase:
     @patch("timer.send_timer_update")
     @patch("timer.time.sleep")
     def test_phase_exits_immediately_when_cancelled(
-        self, mock_sleep: MagicMock, mock_update: MagicMock
+        self,
+        mock_sleep: MagicMock,
+        mock_update: MagicMock,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        timer.timer_running = False
+        monkeypatch.setattr(timer, "timer_running", False)
         elapsed, last_sec, completed = timer.run_timer_phase(
             duration=10.0,
             elapsed_time=5.0,
@@ -310,11 +329,14 @@ class TestRunTimerPhase:
     @patch("timer.send_timer_update")
     @patch("timer.time.sleep")
     def test_sends_update_at_each_whole_second(
-        self, mock_sleep: MagicMock, mock_update: MagicMock
+        self,
+        mock_sleep: MagicMock,
+        mock_update: MagicMock,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Running two full seconds should trigger two 'running' updates
         (plus the initial one at phase start)."""
-        timer.timer_running = True
+        monkeypatch.setattr(timer, "timer_running", True)
         # duration=2.0 with SLEEP_INTERVAL=0.05 means 40 loop iterations
         _elapsed, last_sec, completed = timer.run_timer_phase(
             duration=2.0,
@@ -370,7 +392,8 @@ class TestProcessMessageQueueSync:
         timer.process_message_queue_sync(sio_client)
 
         sio_client.emit.assert_called_once_with(
-            "timer", {"status": "running", "time_remaining": 25})
+            "timer", {"status": "running", "time_remaining": 25}
+        )
 
     def test_does_nothing_when_queue_is_empty(self) -> None:
         sio_client = MagicMock()
@@ -398,8 +421,8 @@ class TestProcessMessageQueueSync:
 
 
 class TestStartSocketIOThread:
-    def test_starts_thread_when_none(self) -> None:
-        timer.socketio_thread = None
+    def test_starts_thread_when_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(timer, "socketio_thread", None)
         with patch("timer.threading.Thread") as mock_thread_cls:
             mock_thread = MagicMock()
             mock_thread.is_alive.return_value = False
@@ -407,10 +430,12 @@ class TestStartSocketIOThread:
             timer.start_socketio_thread()
             mock_thread.start.assert_called_once()
 
-    def test_does_not_start_second_thread_when_alive(self) -> None:
+    def test_does_not_start_second_thread_when_alive(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         mock_thread = MagicMock()
         mock_thread.is_alive.return_value = True
-        timer.socketio_thread = mock_thread
+        monkeypatch.setattr(timer, "socketio_thread", mock_thread)
         with patch("timer.threading.Thread") as mock_thread_cls:
             timer.start_socketio_thread()
             mock_thread_cls.assert_not_called()

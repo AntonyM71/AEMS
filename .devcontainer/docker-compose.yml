@@ -6,6 +6,9 @@ services:
     env_file:
       - .env
 
+    # Required by the docker-in-docker feature so dockerd can run inside the devcontainer.
+    privileged: true
+
     volumes:
       - ../..:/workspaces:cached
 

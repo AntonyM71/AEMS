@@ -4,18 +4,27 @@ import TableCell from "@mui/material/TableCell"
 import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
-import Typography from "@mui/material/Typography"
+import { useThemeProps } from "@mui/material/styles"
 import { useEffect, useState } from "react"
+import { AemsBasicTableThemeProps } from "../themeAugmentation"
 
-export const BasicTable = ({
-	data,
-	pageLimit,
-	pageChangeTime
-}: {
+interface BasicTableProps extends AemsBasicTableThemeProps {
 	data: Record<string, any>[]
-	pageLimit: number
 	pageChangeTime: number
-}) => {
+}
+
+// Sizing, colour and borders all come from the active theme (MuiTable*), and the
+// paging geometry from its AemsBasicTable defaultProps — so this renders as a
+// frame-aligned broadcast scoreboard under overlayTheme and as an elastic dark
+// table under arenaTheme, with no branching here.
+export const BasicTable = (inProps: BasicTableProps) => {
+	const {
+		data,
+		pageChangeTime,
+		pageLimit = 10,
+		padEmptyRows = false
+	} = useThemeProps({ props: inProps, name: "AemsBasicTable" })
+
 	const [currentPage, setCurrentPage] = useState(0)
 
 	// Calculate the total number of pages
@@ -41,87 +50,47 @@ export const BasicTable = ({
 		return <></>
 	}
 
-	return (
-		<Table
-			sx={{
-				// display: "flex",
-				flexDirection: "column",
-				height: "100%", // Make the table fill its parent
-				minWidth: 650,
+	// The overlay pads short pages so the table stays registered with its
+	// background frame; the arena lets the table shrink to its content.
+	const emptyRows = padEmptyRows
+		? Math.max(pageLimit - paginatedData.length, 0)
+		: 0
+	const emptyRowKeys = Array.from(
+		{ length: emptyRows },
+		(_, rowNumber) =>
+			`empty-row-${currentPage}-${paginatedData.length + rowNumber}`
+	)
 
-				boxShadow: "0 4px 24px 0 rgba(0,0,0,0.18)"
-			}}
-			aria-label="simple table"
-		>
+	return (
+		<Table aria-label="simple table">
 			<TableHead>
-				<TableRow
-					sx={{
-						backgroundImage:
-							"linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(40, 40, 40, 0.5) 100%)",
-						borderBottom: "2px solid rgba(255, 255, 255, 0.2)"
-					}}
-				>
+				<TableRow>
 					{Object.keys(data[0]).map((k) => (
-						<TableCell
-							key={k}
-							sx={{
-								fontWeight: "bold",
-								textShadow: `
-								0 1px 6px rgba(0,0,0,0.85),
-								0 0px 12px rgba(0,0,0,0.55),
-								0 2px 4px rgba(0,0,0,0.65)
-							`
-							}}
-						>
-							<Typography>{k}</Typography>
-						</TableCell>
+						<TableCell key={k}>{k}</TableCell>
 					))}
 				</TableRow>
 			</TableHead>
 			<TableBody>
-				{paginatedData.map((row, i) => (
-					<TableRow
-						key={`${Object.values(row).join("-")}`}
-						sx={{
-							background: i % 2 ? "rgba(255, 255, 255, 0.1)" : ""
-						}}
-					>
+				{paginatedData.map((row) => (
+					<TableRow key={`${Object.values(row).join("-")}`}>
 						{Object.keys(row).map((d) => (
-							<TableCell
-								key={d}
-								sx={{
-									textShadow: `
-									0 1px 6px rgba(0,0,0,0.85),
-									0 0px 12px rgba(0,0,0,0.55),
-									0 2px 4px rgba(0,0,0,0.65)
-								`
-								}}
-							>
-								<Typography>{String(row[d] ?? "")}</Typography>
+							<TableCell key={d}>
+								{String(row[d] ?? "")}
 							</TableCell>
+						))}
+					</TableRow>
+				))}
+				{emptyRowKeys.map((emptyRowKey) => (
+					<TableRow key={emptyRowKey}>
+						{Object.keys(data[0]).map((k) => (
+							<TableCell key={k} />
 						))}
 					</TableRow>
 				))}
 			</TableBody>
 			<TableFooter>
-				<TableRow
-					sx={{
-						background: "rgba(40, 40, 40, 0.6)",
-						borderTop: "2px solid rgba(255, 255, 255, 0.2)"
-					}}
-				>
-					<TableCell
-						sx={{
-							fontWeight: "bold",
-							textAlign: "right",
-							textShadow: `
-							0 1px 6px rgba(0,0,0,0.85),
-							0 0px 12px rgba(0,0,0,0.55),
-							0 2px 4px rgba(0,0,0,0.65)
-						`
-						}}
-						colSpan={Object.keys(data[0]).length}
-					>
+				<TableRow>
+					<TableCell colSpan={Object.keys(data[0]).length}>
 						{`Page: ${currentPage + 1}/${totalPages}`}
 					</TableCell>
 				</TableRow>
