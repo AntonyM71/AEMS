@@ -23,6 +23,7 @@ Usage:
 
 import argparse
 import asyncio
+import socket
 import subprocess
 import time
 from collections import Counter
@@ -42,7 +43,21 @@ def ensure_canned_phase_id() -> str:
 
 
 def start_server(port: int) -> subprocess.Popen[bytes]:
-    """Start `uvicorn main:socket_app` (logs suppressed) and wait until it accepts connections."""
+    """Start `uvicorn main:socket_app` (logs suppressed) and wait until it accepts connections.
+
+    Refuses to start if the port is already taken. Otherwise the readiness check
+    below would be answered by whatever is already listening, and the benchmark
+    would silently measure that instead, leaving its own uvicorn dead and the
+    foreign server running afterwards.
+    """
+    with socket.socket() as probe:
+        if probe.connect_ex(("localhost", port)) == 0:
+            msg = (
+                f"Port {port} is already in use. Stop whatever is listening "
+                "there, or benchmark it directly without --serve."
+            )
+            raise RuntimeError(msg)
+
     process = subprocess.Popen(
         ["uvicorn", "main:socket_app", "--port", str(port)],
         stdout=subprocess.DEVNULL,
@@ -51,6 +66,9 @@ def start_server(port: int) -> subprocess.Popen[bytes]:
     deadline = time.monotonic() + SERVER_STARTUP_TIMEOUT_SECONDS
     with httpx.Client() as client:
         while time.monotonic() < deadline:
+            if process.poll() is not None:
+                msg = f"uvicorn exited with status {process.returncode} during startup"
+                raise RuntimeError(msg)
             try:
                 client.get(f"http://localhost:{port}/docs", timeout=1)
             except httpx.TransportError:

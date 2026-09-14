@@ -764,7 +764,7 @@ Expected: all pass, no lint errors
 
 ## Task 9: Tighten the performance regression thresholds
 
-**Grounding:** `Server/performance/test_key_endpoint_performance.py`'s `MEAN_THRESHOLD_SECONDS` (score_submission 50ms, score_calculation/csv_upload 250ms, pdf_generation 450ms) were set at ~3x the mean latency observed across two real Azure Pipelines runs of the *pre-fix*, event-loop-blocking implementation. Once Phase 3 lands, every one of these endpoints runs its blocking work in a thread instead of on the event loop — the *serial*, one-at-a-time latency this suite measures won't necessarily drop (threadpool dispatch has a small cost of its own, and these numbers were never about concurrency in the first place — see `test_event_loop_concurrency.py`, which stays threshold-free per its own exploratory-tool framing), but the thresholds should still be re-derived from real post-fix numbers rather than left pointing at the old, blocking-implementation baseline.
+**Grounding:** `Server/performance/test_key_endpoint_performance.py`'s `MEAN_THRESHOLD_SECONDS` (score_submission 50ms, score_calculation/csv_upload 250ms, pdf_generation 450ms) were set at ~3x the mean latency observed across two real Azure Pipelines runs of the *pre-fix*, event-loop-blocking implementation. Once Phase 3 lands, every one of these endpoints runs its blocking work in a thread instead of on the event loop — the *serial*, one-at-a-time latency this suite measures won't necessarily drop (threadpool dispatch has a small cost of its own, and these numbers were never about concurrency in the first place — concurrency is covered separately by `test_event_loop_concurrency.py`, which asserts a relative duration: a light request must finish within `MAX_HEAVY_FRACTION` of the heavy one it runs alongside), but the thresholds should still be re-derived from real post-fix numbers rather than left pointing at the old, blocking-implementation baseline.
 
 **Files:**
 - Modify: `Server/performance/test_key_endpoint_performance.py:12-27` (`MEAN_THRESHOLD_SECONDS` and its comment)
@@ -803,7 +803,7 @@ Expected: PASS, all 4 tests, against the new thresholds.
 
 - [ ] **Step 4: Spot-check the concurrency improvement (informational, no assertion)**
 
-Run `python -m scripts.bench_event_loop "http://localhost:8000/phase_pdf/{phase_id}" --concurrent-requests 10 --serve` (and the equivalent for a scoring endpoint) and compare req/s against the pre-fix numbers recorded earlier in this conversation (~7.5 req/s for PDF generation at 10 concurrent, pre-fix). Expect a substantial jump now that these handlers no longer block the event loop. This is a sanity check, not a test — `test_event_loop_concurrency.py` stays assertion-free per its exploratory-tool framing (see the commit that clarified this).
+Run `python -m scripts.bench_event_loop "http://localhost:8000/phase_pdf/{phase_id}" --concurrent-requests 10 --serve` (and the equivalent for a scoring endpoint) and compare req/s against the pre-fix numbers recorded earlier in this conversation (~7.5 req/s for PDF generation at 10 concurrent, pre-fix). Expect a substantial jump now that these handlers no longer block the event loop. This is a manual throughput check; it complements the automated assertion in `test_event_loop_concurrency.py` rather than replacing it.
 
 - [ ] **Step 5: Commit**
 
