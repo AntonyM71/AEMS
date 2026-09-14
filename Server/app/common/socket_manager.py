@@ -1,9 +1,11 @@
-import logging
 import os
 
+import redis
 import socketio
 
-logger = logging.getLogger("app.common.socket_manager")
+IN_MEMORY = "memory"
+_REDIS_SCHEMES = ("redis://", "rediss://", "unix://")
+_TIMEOUT_SECONDS = 2
 
 _cors_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
 _parsed_origins = [
@@ -16,17 +18,54 @@ socketio_cors_allowed_origins: list[str] | str = (
     _parsed_origins if _parsed_origins else "*"
 )
 
-# When a REDIS_URL is available, use the Redis pub/sub adapter so that
-# Socket.IO messages are shared across all worker processes.  Fall back to
-# the default in-memory manager for local development and testing where no
-# Redis server is configured.
-_redis_url = os.getenv("REDIS_URL")
-_client_manager = socketio.AsyncRedisManager(_redis_url) if _redis_url else None
+
+def _configured_redis_url() -> str | None:
+    """The Redis URL to use, or None when in-memory was asked for by name."""
+    url = os.getenv("REDIS_URL")
+    if url == IN_MEMORY:
+        return None
+    if not url or not url.startswith(_REDIS_SCHEMES):
+        msg = (
+            f"REDIS_URL must be a redis:// URL, or {IN_MEMORY!r} to select the "
+            f"in-memory manager, which is only correct for a single worker. "
+            f"Got: {url!r}"
+        )
+        raise ValueError(msg)
+    return url
+
+
+def get_client_manager() -> socketio.AsyncRedisManager | None:
+    """None selects the in-memory manager, which does not share across workers."""
+    url = _configured_redis_url()
+    if url is None:
+        return None
+    # Without these, an unreachable Redis blocks emit for the kernel's TCP retry
+    # budget, stalling the score submission the emit is part of.
+    return socketio.AsyncRedisManager(
+        url,
+        redis_options={
+            "socket_connect_timeout": _TIMEOUT_SECONDS,
+            "socket_timeout": _TIMEOUT_SECONDS,
+        },
+    )
+
+
+def redis_is_reachable() -> bool:
+    """True when Redis answers, and when in-memory was configured deliberately."""
+    url = _configured_redis_url()
+    if url is None:
+        return True
+    try:
+        redis.Redis.from_url(url, socket_connect_timeout=_TIMEOUT_SECONDS).ping()
+    except redis.RedisError:
+        return False
+    return True
+
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=socketio_cors_allowed_origins,
-    client_manager=_client_manager,
+    client_manager=get_client_manager(),
     logger=False,
     engineio_logger=False,
 )

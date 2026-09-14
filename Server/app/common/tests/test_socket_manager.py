@@ -1,48 +1,76 @@
-"""Unit tests for socket_manager — verifies that the Redis client manager is
-wired correctly based on the REDIS_URL environment variable.
-"""
+"""Unit tests for how socket_manager reads REDIS_URL."""
 
-import importlib
 import os
-import types
 from unittest.mock import MagicMock, patch
 
+import pytest
 import socketio
 
+from app.common.socket_manager import IN_MEMORY, get_client_manager, redis_is_reachable
 
-def _reload_socket_manager() -> types.ModuleType:
-    """Reload app.common.socket_manager so env-var changes take effect."""
-    import app.common.socket_manager as sm
-
-    importlib.reload(sm)
-    return sm
+REDIS_URL = "redis://localhost:6379/0"
+TIMEOUTS = {"socket_connect_timeout": 2, "socket_timeout": 2}
 
 
-def test_no_redis_url_uses_in_memory_manager() -> None:
-    """Without REDIS_URL, client_manager should be None (in-memory)."""
-    env = {k: v for k, v in os.environ.items() if k != "REDIS_URL"}
-    with patch.dict(os.environ, env, clear=True):
-        sm = _reload_socket_manager()
-    assert sm._client_manager is None
-    assert isinstance(sm.sio, socketio.AsyncServer)
+def test_sentinel_selects_the_in_memory_manager() -> None:
+    with patch.dict(os.environ, {"REDIS_URL": IN_MEMORY}):
+        assert get_client_manager() is None
 
 
-def test_redis_url_creates_async_redis_manager() -> None:
-    """When REDIS_URL is set, an AsyncRedisManager should be created."""
-    mock_manager = MagicMock(spec=socketio.AsyncRedisManager)
-    with patch.dict(os.environ, {"REDIS_URL": "redis://localhost:6379/0"}):
-        with patch("socketio.AsyncRedisManager", return_value=mock_manager) as mock_cls:
-            sm = _reload_socket_manager()
-            mock_cls.assert_called_once_with("redis://localhost:6379/0")
-    assert sm._client_manager is mock_manager
+def test_redis_url_builds_a_manager_with_timeouts() -> None:
+    with (
+        patch.dict(os.environ, {"REDIS_URL": REDIS_URL}),
+        patch("socketio.AsyncRedisManager") as mock_manager,
+    ):
+        get_client_manager()
+
+    mock_manager.assert_called_once_with(REDIS_URL, redis_options=TIMEOUTS)
 
 
-def test_sio_uses_client_manager_when_redis_url_set() -> None:
-    """The AsyncServer should receive the Redis client manager."""
-    mock_manager = MagicMock(spec=socketio.AsyncRedisManager)
-    with patch.dict(os.environ, {"REDIS_URL": "redis://localhost:6379/0"}):
-        with patch("socketio.AsyncRedisManager", return_value=mock_manager):
-            with patch("socketio.AsyncServer") as mock_server_cls:
-                _reload_socket_manager()
-                call_kwargs = mock_server_cls.call_args.kwargs
-                assert call_kwargs.get("client_manager") is mock_manager
+def test_unset_redis_url_is_rejected() -> None:
+    with patch.dict(os.environ):
+        os.environ.pop("REDIS_URL", None)
+        with pytest.raises(ValueError, match="REDIS_URL"):
+            get_client_manager()
+
+
+@pytest.mark.parametrize("value", ["", "localhost:6379", "http://localhost:6379"])
+def test_malformed_redis_url_is_rejected(value: str) -> None:
+    with (
+        patch.dict(os.environ, {"REDIS_URL": value}),
+        pytest.raises(ValueError, match="REDIS_URL"),
+    ):
+        get_client_manager()
+
+
+def test_sentinel_is_always_reachable() -> None:
+    with patch.dict(os.environ, {"REDIS_URL": IN_MEMORY}):
+        assert redis_is_reachable() is True
+
+
+def test_reachable_when_redis_answers() -> None:
+    client = MagicMock()
+    with (
+        patch.dict(os.environ, {"REDIS_URL": REDIS_URL}),
+        patch("redis.Redis.from_url", return_value=client),
+    ):
+        assert redis_is_reachable() is True
+    client.ping.assert_called_once_with()
+
+
+def test_unreachable_when_redis_raises() -> None:
+    import redis
+
+    client = MagicMock()
+    client.ping.side_effect = redis.RedisError("down")
+    with (
+        patch.dict(os.environ, {"REDIS_URL": REDIS_URL}),
+        patch("redis.Redis.from_url", return_value=client),
+    ):
+        assert redis_is_reachable() is False
+
+
+def test_sio_is_a_real_async_server() -> None:
+    from app.common import socket_manager
+
+    assert isinstance(socket_manager.sio, socketio.AsyncServer)
