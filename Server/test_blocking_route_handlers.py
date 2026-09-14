@@ -5,11 +5,8 @@ FastAPI only moves a route handler to its threadpool when the handler is a plain
 blocking queries on the event loop, where nothing else can run until it
 finishes.
 
-This is the cheap, broad counterpart to
-performance/test_event_loop_concurrency.py. That one times real requests against
-the handful of heavy endpoints where a stall is actually painful. This one needs
-no database and no timing, and covers every route at once, including the many
-light endpoints that are individually too fast to time reliably.
+Needs no database and no timing, so it covers every route at once, including the
+light endpoints that are too fast to time reliably.
 """
 
 import inspect
@@ -31,18 +28,10 @@ EXPLICITLY_OFFLOADED = frozenset(
 )
 
 
-def _resolves_a_database_session(
-    dependant: Dependant, seen: set[int] | None = None
-) -> bool:
-    seen = seen if seen is not None else set()
-    if id(dependant) in seen:
-        return False
-    seen.add(id(dependant))
+def _resolves_a_database_session(dependant: Dependant) -> bool:
     if dependant.call is get_transaction_session:
         return True
-    return any(
-        _resolves_a_database_session(sub, seen) for sub in dependant.dependencies
-    )
+    return any(_resolves_a_database_session(sub) for sub in dependant.dependencies)
 
 
 def _routes_doing_database_work_on_the_event_loop() -> set[str]:
