@@ -7,17 +7,17 @@
 
 ## Overview
 
-AEMS is a comprehensive competition management system designed specifically for freestyle kayaking events. From intimate local competitions to full-scale ICF international championships, AEMS delivers professional-grade scoring, real-time results, and seamless competition workflows.
+AEMS manages freestyle kayaking competitions, from local club events to full ICF international championships, handling scoring, real-time results, and competition workflow.
 
 ### Why AEMS?
 
-**Built for the Kayaking Community** - Developed in partnership with competition organizers and judges, AEMS understands the unique challenges of freestyle kayaking events.
+**Built for the Kayaking Community** - Developed with competition organizers and judges, so it fits how freestyle kayaking events actually run.
 
-**Competition-Tested** - Successfully deployed at numerous competitions, from local club events to international championships.
+**Competition-Tested** - Deployed at competitions from local club events to international championships.
 
-**Touch-First Design** - Optimized for tablets and touchscreen devices, making scoring fast and intuitive for judges and scribes.
+**Touch-First Design** - Built for tablets and touchscreens, so judges and scribes can score fast.
 
-**Network Resilient** - Designed for competition venues with unreliable connectivity. Operates on local networks without internet dependency.
+**Network Resilient** - Runs on the venue's local network, with no internet connection required.
 
 ### Key Features
 
@@ -38,17 +38,17 @@ AEMS is a comprehensive competition management system designed specifically for 
 ### Real-Time Competition Management
 - **Live Scoring Dashboard** - Head judges see all scores as they're entered
 - **Automatic Calculations** - Instant heat results and phase progressions
-- **Visual Score Tracking** - Clear, intuitive interfaces for all user roles
+- **Visual Score Tracking** - Interfaces built for every user role
 
 ### Professional Documentation
 - **Official Heat Sheets** - Print-ready PDF results for athletes and officials
-- **Competition Reports** - Comprehensive phase and final results
+- **Competition Reports** - Phase summaries and final results
 - **Data Export** - CSV exports for record keeping and analysis
 
 ### Network Resilience
 - **Offline-First Architecture** - No internet required for competition operation
-- **Automatic Reconnection** - Graceful handling of network interruptions
-- **Local Data Persistence** - Scores saved locally until network restoration
+- **Automatic Reconnection** - Reconnects on its own after a network drop
+- **Local Data Persistence** - Scores save locally until the network returns
 
 ### Professional Event Integration
 - **Hardware Timing Control** - Precise 45-second timing with GPIO integration
@@ -61,7 +61,7 @@ AEMS is a comprehensive competition management system designed specifically for 
 Perfect for clubs and organizers comfortable with technical setup:
 - Complete source code available on GitHub
 - Docker-based deployment for easy installation
-- Comprehensive documentation and setup guides
+- Documentation and setup guides
 - Community support through GitHub issues
 
 ### Professional Support Services
@@ -69,10 +69,10 @@ Perfect for clubs and organizers comfortable with technical setup:
 **Competition-Ready Deployment** - Let us handle the technical details while you focus on running your event.
 
 #### What's Included:
-- **Pre-Event Setup** - Complete system configuration and testing
+- **Pre-Event Setup** - Configuration and testing before your event
 - **On-Site Technical Support** - Dedicated technician throughout your event
 - **Hardware Consultation** - Recommendations for tablets, networking equipment
-- **Custom Configuration** - Tailored scoring systems for your competition format
+- **Custom Configuration** - Scoring setup matched to your competition format
 - **Training Session** - Hands-on training for judges and event staff
 - **Post-Event Analysis** - Results validation and data archival
 
@@ -101,7 +101,7 @@ Perfect for clubs and organizers comfortable with technical setup:
 ### Minimal Setup (Club Events)
 - Touchscreen laptop with Docker runtime
 - Modern web browser (Chrome/Firefox/Safari)
-- SSD recommended for optimal performance
+- SSD recommended for faster load times
 
 ### Professional Setup (Championships)
 - Server machine (laptop or dedicated hardware)
@@ -129,7 +129,7 @@ Perfect for clubs and organizers comfortable with technical setup:
 
 ## Open Source Commitment
 
-The core scoring functionality of AEMS remains **completely free and open source**. Our professional services support continued development and maintenance of the platform, ensuring it stays current with competition needs and technological advances.
+The core scoring functionality of AEMS stays **free and open source**. Professional services fund that development, so the platform keeps pace with competitions and technology.
 
 ### Contributing
 - 🐛 **Bug Reports** - Help us improve through [GitHub Issues](https://github.com/AntonyM71/AEMS/issues)
