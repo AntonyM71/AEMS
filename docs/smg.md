@@ -39,7 +39,7 @@
 > System architecture is discussed in [the architecture documentation](architecture.md)
 
 AEMS follows a modern containerized architecture with:
-- FastAPI backend with WebSocket support
+- FastAPI backend with Socket.IO support
 - React frontend with real-time updates
 - PostgreSQL database with SQLAlchemy ORM
 - Nginx reverse proxy for production
@@ -81,7 +81,7 @@ Key user journeys to test manually:
 3. **Network Resilience**
    - Disconnect/reconnect during scoring
    - Verify data synchronization
-   - Test WebSocket reconnection
+   - Test Socket.IO reconnection
 
 4. **PDF Generation**
    - Generate heat results
@@ -181,7 +181,7 @@ npm run prettierfix     # Format code
 uv venv && source .venv/bin/activate  # Create and activate virtual environment
 uv sync                                # Install dependencies
 python timer.py                        # Run timer application
-python fake_timer.py                   # Test WebSocket client
+python fake_timer.py                   # Test Socket.IO client
 ```
 
 ## Deployment
@@ -208,7 +208,7 @@ For competition officials and end users:
 2. Add tests for new features
 3. Update documentation for new functionality
 4. Test network resilience for real-time features
-5. Ensure WebSocket reconnection works properly
+5. Ensure Socket.IO reconnection works properly
 6. Test on touch devices when possible
 
 ## Troubleshooting
@@ -216,15 +216,15 @@ For competition officials and end users:
 ### Common Development Issues
 
 1. **Database connection errors**: Ensure PostgreSQL is running and migrations applied
-2. **WebSocket connection failed**: Check CORS settings and port configuration
+2. **Socket.IO connection failed**: Check CORS settings and port configuration
 3. **Build failures**: Verify all dependencies installed and virtual environment activated
 4. **Tests failing**: Ensure test database is set up and seeded properly
 
 ### Network Issues in Competition
 
 1. **Device can't connect**: Check WiFi credentials and signal strength
-2. **Scores not updating**: Verify WebSocket connection status in UI
+2. **Scores not updating**: Verify Socket.IO connection status in UI
 3. **Connection drops**: Ensure devices have adequate power
 4. **Slow performance**: Check router placement and network interference
 
-See [WebSocket Resilience Guide](websocket-resilience.md) for detailed network troubleshooting.
+See the [Network Topology Guide](deployment/network-topology.md#troubleshooting) for detailed network troubleshooting.

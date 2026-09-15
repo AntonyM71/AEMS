@@ -4,7 +4,8 @@
 
 Our team has traditionally used pip as the primary package manager for Python projects. While it has been effective, we have identified several issues and limitations with pip that prompt a reevaluation of our package management approach.
 
-##Decision:
+## Decision:
+
 We have decided to transition from pip to uv as our primary package manager for Python projects.
 
 ## Rationale:
