@@ -9,12 +9,16 @@ const SECOND_BACKEND_URL =
 const CLIENT_COUNT = 6
 const DELIVERY_TIMEOUT_MS = 15000
 
-const connectToCurrentScores = async (origin: string): Promise<Socket> => {
+const connectToCurrentScores = async (
+	origin: string,
+	sockets: Socket[]
+): Promise<Socket> => {
 	const socket = io(`${origin}/current_scores`, {
 		path: "/socket.io/",
 		transports: ["websocket"],
 		reconnection: false
 	})
+	sockets.push(socket)
 	await new Promise<void>((resolve, reject) => {
 		socket.once("connect", () => resolve())
 		socket.once("connect_error", reject)
@@ -58,15 +62,18 @@ test.describe("cross-worker broadcast", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		const onPrimary = await connectToCurrentScores(BACKEND_URL)
-		const onSecondary = await connectToCurrentScores(SECOND_BACKEND_URL)
+		const sockets: Socket[] = []
 		try {
+			await connectToCurrentScores(BACKEND_URL, sockets)
+			const onSecondary = await connectToCurrentScores(
+				SECOND_BACKEND_URL,
+				sockets
+			)
 			const delivered = nextCurrentScores(onSecondary)
 			await postEmptyScore(request, data)
 			await delivered
 		} finally {
-			onPrimary.close()
-			onSecondary.close()
+			sockets.forEach((socket) => socket.close())
 		}
 	})
 
@@ -74,12 +81,13 @@ test.describe("cross-worker broadcast", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		const sockets = await Promise.all(
-			Array.from({ length: CLIENT_COUNT }, () =>
-				connectToCurrentScores(BACKEND_URL)
-			)
-		)
+		const sockets: Socket[] = []
 		try {
+			await Promise.all(
+				Array.from({ length: CLIENT_COUNT }, () =>
+					connectToCurrentScores(BACKEND_URL, sockets)
+				)
+			)
 			const delivered = sockets.map(nextCurrentScores)
 			await postEmptyScore(request, data)
 			await Promise.all(delivered)
