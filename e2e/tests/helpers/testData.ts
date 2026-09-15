@@ -13,13 +13,8 @@ export interface TestData {
 }
 
 /**
- * Creates the minimal set of entities needed for websocket E2E tests:
- * competition -> event -> phase (with seeded icf_2025 scoresheet) -> athlete -> heat -> athlete-heat
- *
- * Each test calls this independently so tests are fully isolated and a run
- * locked in one test cannot affect another.
- *
- * Returns names (for UI navigation) and IDs (for direct REST API calls).
+ * Creates a competition -> event -> phase (seeded icf_2025 scoresheet) ->
+ * athlete -> heat -> athlete-heat, named uniquely so concurrent calls don't collide.
  */
 export async function setupTestData(
 	request: APIRequestContext

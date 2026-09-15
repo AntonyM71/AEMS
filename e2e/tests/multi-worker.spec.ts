@@ -27,19 +27,24 @@ const connectToCurrentScores = async (
 	return socket
 }
 
-const nextCurrentScores = (socket: Socket): Promise<void> =>
+const nextCurrentScores = (socket: Socket, data: TestData): Promise<void> =>
 	new Promise((resolve, reject) => {
-		const timer = setTimeout(
-			() =>
-				reject(
-					new Error(`no current_scores within ${DELIVERY_TIMEOUT_MS}ms`)
-				),
-			DELIVERY_TIMEOUT_MS
-		)
-		socket.once("current_scores", () => {
+		const onScore = (payload: { heat_id: string; athlete_id: string }) => {
+			if (
+				payload.heat_id !== data.heatId ||
+				payload.athlete_id !== data.athleteId
+			) {
+				return
+			}
 			clearTimeout(timer)
+			socket.off("current_scores", onScore)
 			resolve()
-		})
+		}
+		const timer = setTimeout(() => {
+			socket.off("current_scores", onScore)
+			reject(new Error(`no current_scores within ${DELIVERY_TIMEOUT_MS}ms`))
+		}, DELIVERY_TIMEOUT_MS)
+		socket.on("current_scores", onScore)
 	})
 
 /**
@@ -69,7 +74,7 @@ test.describe("cross-worker broadcast", () => {
 				SECOND_BACKEND_URL,
 				sockets
 			)
-			const delivered = nextCurrentScores(onSecondary)
+			const delivered = nextCurrentScores(onSecondary, data)
 			await postEmptyScore(request, data)
 			await delivered
 		} finally {
@@ -88,7 +93,9 @@ test.describe("cross-worker broadcast", () => {
 					connectToCurrentScores(BACKEND_URL, sockets)
 				)
 			)
-			const delivered = sockets.map(nextCurrentScores)
+			const delivered = sockets.map((socket) =>
+				nextCurrentScores(socket, data)
+			)
 			await postEmptyScore(request, data)
 			await Promise.all(delivered)
 		} finally {

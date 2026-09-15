@@ -55,7 +55,11 @@ def redis_is_reachable() -> bool:
     if url is None:
         return True
     try:
-        redis.Redis.from_url(url, socket_connect_timeout=_TIMEOUT_SECONDS).ping()
+        redis.Redis.from_url(
+            url,
+            socket_connect_timeout=_TIMEOUT_SECONDS,
+            socket_timeout=_TIMEOUT_SECONDS,
+        ).ping()
     except redis.RedisError:
         return False
     return True

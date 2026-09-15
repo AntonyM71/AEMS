@@ -44,6 +44,9 @@ We recommend using the devcontainer, but to work locally, we support [uv](https:
    uvicorn main:socket_app --reload
    ```
 
+   `REDIS_URL` must be set (a real `redis://` URL, or `memory` for local dev without
+   Redis) or the server fails to start; rebuild an existing devcontainer to pick up `.devcontainer/.env`'s `REDIS_URL`.
+
 The API will be available at `http://localhost:8000`
 API documentation at `http://localhost:8000/docs`
 
