@@ -1,5 +1,10 @@
 # AEMS (Athlete and Event Management System)
 
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=AntonyM71_AEMS&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=AntonyM71_AEMS)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=AntonyM71_AEMS&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=AntonyM71_AEMS)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=AntonyM71_AEMS&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=AntonyM71_AEMS)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=AntonyM71_AEMS&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=AntonyM71_AEMS)
+
 ## Overview
 
 AEMS is a comprehensive competition management system designed specifically for freestyle kayaking events. From intimate local competitions to full-scale ICF international championships, AEMS delivers professional-grade scoring, real-time results, and seamless competition workflows.
@@ -16,17 +21,17 @@ AEMS is a comprehensive competition management system designed specifically for 
 
 ### Key Features
 
-✅ **Multi-Judge Scoring System** - Support for ICF-standard judging panels with real-time score aggregation
-✅ **Live Score Tracking** - Instant updates across all devices with WebSocket technology
-✅ **Professional PDF Reports** - Generate heat results, phase summaries, and final rankings
-✅ **CSV Data Import** - Seamless integration with registration systems
-✅ **Offline Operation** - Works on local networks without internet connectivity
-✅ **Touch-Optimized Interface** - Designed for tablet devices used by judges
-✅ **Automatic Backup & Recovery** - Built-in data protection and recovery systems
-✅ **Role-Based Access** - Separate interfaces for Head Judges, Scribes, and Administrators
-✅ **Hardware Timing Integration** - Bespoke timing boxes with Raspberry Pi integration for precise timing control
-✅ **Arena Display Screens** - Live competition data feeds for spectator displays and venue screens
-✅ **Broadcast Overlay Support** - Real-time data feeds for live streaming and broadcast integration
+- ✅ **Multi-Judge Scoring System** - Support for ICF-standard judging panels with real-time score aggregation
+- ✅ **Live Score Tracking** - Instant updates across all devices with WebSocket technology
+- ✅ **Professional PDF Reports** - Generate heat results, phase summaries, and final rankings
+- ✅ **CSV Data Import** - Seamless integration with registration systems
+- ✅ **Offline Operation** - Works on local networks without internet connectivity
+- ✅ **Touch-Optimized Interface** - Designed for tablet devices used by judges
+- ✅ **Automatic Backup & Recovery** - Built-in data protection and recovery systems
+- ✅ **Role-Based Access** - Separate interfaces for Head Judges, Scribes, and Administrators
+- ✅ **Hardware Timing Integration** - Bespoke timing boxes with Raspberry Pi integration for precise timing control
+- ✅ **Arena Display Screens** - Live competition data feeds for spectator displays and venue screens
+- ✅ **Broadcast Overlay Support** - Real-time data feeds for live streaming and broadcast integration
 
 ## System Showcase
 
