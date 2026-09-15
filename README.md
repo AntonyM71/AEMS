@@ -24,36 +24,14 @@ AEMS manages freestyle kayaking competitions, from local club events to full ICF
 - ✅ **Multi-Judge Scoring System** - Support for ICF-standard judging panels with real-time score aggregation
 - ✅ **Live Score Tracking** - Instant updates across all devices with WebSocket technology
 - ✅ **Professional PDF Reports** - Generate heat results, phase summaries, and final rankings
-- ✅ **CSV Data Import** - Seamless integration with registration systems
-- ✅ **Offline Operation** - Works on local networks without internet connectivity
+- ✅ **CSV Data Import & Export** - Imports from registration systems; exports for record keeping and analysis
+- ✅ **Offline Operation** - Works on local networks without internet connectivity, and reconnects on its own after a network drop
 - ✅ **Touch-Optimized Interface** - Designed for tablet devices used by judges
 - ✅ **Automatic Backup & Recovery** - Built-in data protection and recovery systems
 - ✅ **Role-Based Access** - Separate interfaces for Head Judges, Scribes, and Administrators
 - ✅ **Hardware Timing Integration** - Bespoke timing boxes with Raspberry Pi integration for precise timing control
 - ✅ **Arena Display Screens** - Live competition data feeds for spectator displays and venue screens
 - ✅ **Broadcast Overlay Support** - Real-time data feeds for live streaming and broadcast integration
-
-## System Showcase
-
-### Real-Time Competition Management
-- **Live Scoring Dashboard** - Head judges see all scores as they're entered
-- **Automatic Calculations** - Instant heat results and phase progressions
-- **Visual Score Tracking** - Interfaces built for every user role
-
-### Professional Documentation
-- **Official Heat Sheets** - Print-ready PDF results for athletes and officials
-- **Competition Reports** - Phase summaries and final results
-- **Data Export** - CSV exports for record keeping and analysis
-
-### Network Resilience
-- **Offline-First Architecture** - No internet required for competition operation
-- **Automatic Reconnection** - Reconnects on its own after a network drop
-- **Local Data Persistence** - Scores save locally until the network returns
-
-### Professional Event Integration
-- **Hardware Timing Control** - Precise 45-second timing with GPIO integration
-- **Live Arena Displays** - Real-time scores and standings for spectators
-- **Broadcast Data Feeds** - Integration with streaming platforms and live coverage
 
 ## Deployment Options
 
