@@ -55,12 +55,16 @@ C4Context
 
     System(aems, "AEMS", "Provides scoring, real-time results, and competition workflow for freestyle kayaking events")
     System_Ext(registration, "External Registration System", "Provides initial competition data as CSV")
+    System_Ext(broadcastMgmt, "Broadcast Management System", "Live stream production software (e.g. OBS) compositing the AEMS overlay")
+    System_Ext(arenaScreen, "Arena Screen Hardware", "Venue display screens showing live scores to spectators")
 
     Rel(admin, aems, "Manages competitions and uploads CSV data using")
     Rel(judge, aems, "Inputs scores using")
     Rel(aems, headJudge, "Provides judges' scores to")
     Rel(aems, athlete, "Generates PDF outputs for")
     Rel(registration, aems, "Provides initial athlete & event data to", "CSV")
+    Rel(aems, broadcastMgmt, "Provides broadcast overlay data to")
+    Rel(aems, arenaScreen, "Provides live scoreboard screens to")
 
     UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
@@ -70,8 +74,9 @@ The system context diagram shows the key users and their interactions with AEMS:
 - **Head Judge**: Manages competition setup, reviews scores, generates reports
 - **Judge/Scribe**: Inputs scores for athletes using touch interface
 - **Athlete**: Views results and receives PDF outputs
-- **Display Devices**: Show real-time results to spectators
 - **External Registration System**: Provides initial competition data via CSV
+- **Broadcast Management System**: Composites the AEMS broadcast overlay into a live stream (e.g. OBS, via the `/Broadcast/Overlay` page as a browser source)
+- **Arena Screen Hardware**: Venue display screens driven by the `/Arena` page, showing live scores to spectators
 
 ### Business Context
 
@@ -115,6 +120,8 @@ C4Container
     Person(judge, "Judge / Head Judge")
     Person(athlete, "Athlete")
     System_Ext(registration, "External Registration System")
+    System_Ext(broadcastMgmt, "Broadcast Management System")
+    System_Ext(arenaScreen, "Arena Screen Hardware")
 
     System_Boundary(aems, "AEMS") {
         Container(webApp, "React Web Application", "Next.js, TypeScript", "Role-based UI, real-time scoring, touch-optimized")
@@ -133,13 +140,15 @@ C4Container
     Rel(api, database, "Reads from and writes to", "SQL")
     Rel(registration, api, "Provides data to", "CSV file upload")
     Rel(api, athlete, "Generates PDF outputs for")
+    Rel(webApp, broadcastMgmt, "Renders overlay for", "Browser source, /Broadcast/Overlay")
+    Rel(webApp, arenaScreen, "Renders scoreboard for", "Browser/kiosk display, /Arena")
 
     UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
 
 The container diagram shows the high-level technical components:
 
-- **Web Application**: React/TypeScript frontend with real-time updates
+- **Web Application**: React/TypeScript frontend with real-time updates. Also renders the `/Broadcast/Overlay` page (a browser source for the Broadcast Management System) and the `/Arena` page (driving Arena Screen Hardware)
 - **API Server**: FastAPI backend with Socket.IO support
 - **Database**: PostgreSQL database with audit logging
 - **Reverse Proxy**: Nginx for request routing and static file serving
