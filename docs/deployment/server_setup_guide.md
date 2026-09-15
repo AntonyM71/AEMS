@@ -1,10 +1,8 @@
 # Server Setup Guide
 
-Welcome to the Server Setup Guide! This document will walk you through the steps required to set up your server environment. The guide includes instructions for installing Windows Subsystem for Linux (WSL), configuring WSL networking settings, and assigning a static IP address to your server.
+This guide covers installing Windows Subsystem for Linux (WSL), configuring its networking, and assigning your server a static IP address.
 
-Let's get started!
-
-> If you don't need to use the laptop for anything else, you might want to consider using a install of a linux distribution such as Ubuntu
+> If you don't need the laptop for anything else, consider installing a Linux distribution such as Ubuntu directly instead.
 
 ## Installing WSL on Windows
 
@@ -160,14 +158,29 @@ To configure the timing box, you'll need to:
 5. Run the setup script:
    ```bash
    cd Timer
-   chmod +x setup_pi.sh
-   ./setup_pi.sh
+   bash install_timer.sh
    ```
+
+This registers the timer as a systemd service (`timer.service`) that starts on boot.
 
 The timing box should now be configured and ready for use.
 
-If the server is not set up on 192.168.0.28, then the evnironment variable `ENV123` can be set using
+If the server is not at 192.168.0.28, set the `SOCKETIO_URL` environment variable to point the timer at the right address, then reload and restart the service:
 
 ```bash
+sudo systemctl edit timer.service
+```
 
+Add:
+
+```ini
+[Service]
+Environment=SOCKETIO_URL=http://<server-ip>:81
+```
+
+Then apply it:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart timer.service
 ```

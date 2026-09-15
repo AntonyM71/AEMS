@@ -10,7 +10,7 @@ This document outlines the complete workflow for managing a freestyle kayaking c
 - Set up network topology (see [Network Topology Guide](../deployment/network-topology.md))
 - Start AEMS on server laptop: `docker compose up`
 - Connect all judge tablets to network
-- Test WebSocket connections on all devices
+- Test Socket.IO connections on all devices
 
 ### 2. Competition Data Import
 - Receive athlete registration data (CSV format)
@@ -48,7 +48,7 @@ This document outlines the complete workflow for managing a freestyle kayaking c
 ### 6. Real-Time Updates
 - All connected devices receive live score updates
 - Competition status displayed on result screens
-- WebSocket connections maintain synchronization
+- Socket.IO connections maintain synchronization
 
 ## Results and Documentation
 

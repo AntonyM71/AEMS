@@ -24,7 +24,7 @@ While Python may not offer the low-level precision of C or Rust for timing opera
 
 ### Ease of WebSocket Integration:
 
-Python simplifies WebSocket integration, which is essential for our project. Libraries such as and allow us to handle real-time communication efficiently with minimal complexity compared to C or Rust.
+Python simplifies WebSocket integration, which is essential for our project. Mature, well-documented libraries let us handle real-time communication with minimal complexity compared to C or Rust.
 
 ## Consequences:
 
