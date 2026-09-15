@@ -886,9 +886,8 @@ const nextCurrentScores = (socket: Socket): Promise<void> =>
 	})
 
 /**
- * Posts an empty score, which the webapp does when a judge clears their moves.
- * The endpoint emits current_scores regardless of the moves it persisted, and
- * these tests assert on delivery rather than on the score itself.
+ * Posts an empty score, which the webapp does when a judge clears all their moves.
+ * The endpoint emits current_scores regardless, and these tests assert on delivery.
  */
 const postEmptyScore = async (
 	request: APIRequestContext,
