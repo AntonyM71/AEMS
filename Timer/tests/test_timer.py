@@ -14,6 +14,7 @@ import pytest
 
 # conftest.py has already injected all the necessary sys.modules mocks.
 import timer
+from tests import conftest
 
 
 # ---------------------------------------------------------------------------
@@ -439,3 +440,27 @@ class TestStartSocketIOThread:
         with patch("timer.threading.Thread") as mock_thread_cls:
             timer.start_socketio_thread()
             mock_thread_cls.assert_not_called()
+
+
+# ===========================================================================
+# run_socketio_loop() transport
+# ===========================================================================
+
+
+class TestSocketIOTransport:
+    def test_connects_over_websocket_only(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Gunicorn workers do not share Engine.IO sessions, so polling breaks."""
+
+        def stop_after_first_pass(_client: object) -> None:
+            monkeypatch.setattr(timer, "socketio_running", False)
+
+        monkeypatch.setattr(timer, "process_message_queue_sync", stop_after_first_pass)
+        monkeypatch.setattr(timer, "socketio_running", True)
+
+        timer.run_socketio_loop()
+
+        assert conftest._FakeSimpleClient.last_connect_kwargs["transports"] == [
+            "websocket"
+        ]

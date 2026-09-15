@@ -34,6 +34,9 @@
    npm start                             # Start development server
    ```
 
+   `REDIS_URL` must be set (a real `redis://` URL, or `memory` for local dev without
+   Redis) or the backend fails to start; rebuild an existing devcontainer to pick up `.devcontainer/.env`'s `REDIS_URL`.
+
 ## System Architecture
 
 > System architecture is discussed in [the architecture documentation](architecture.md)
@@ -161,6 +164,9 @@ uvicorn main:socket_app --reload       # Start development server
 uv run python -m pytest               # Run tests
 ruff check . && ruff format .         # Lint and format code
 ```
+
+`REDIS_URL` must be set (a real `redis://` URL, or `memory` for local dev without
+Redis) or the server fails to start; rebuild an existing devcontainer to pick up `.devcontainer/.env`'s `REDIS_URL`.
 
 #### Frontend (Webapp/)
 

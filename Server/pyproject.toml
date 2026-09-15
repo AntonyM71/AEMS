@@ -53,6 +53,9 @@ dependencies = [
     "alembic>=1.18.0,<2.0",  # Upgraded from 1.14.1
     "psycopg2",
     "gunicorn>=25.0.0,<26.0",  # Upgraded from 23.0.0
+    # Floor is load-bearing: pre-8.1 redis-py applies socket_timeout to the
+    # pub/sub listen loop, causing reconnect cycles that silently drop broadcasts.
+    "redis>=8.1,<9.0",
     "fastapi",
     "pandas[performance]",
     "uvicorn[standard]>=0.40.0,<1.0",  # Upgraded from 0.19.0
