@@ -201,12 +201,17 @@ jobs:
             REDIS_URL=redis://localhost:6379/0 \
             $(Build.SourcesDirectory)/Server/.venv/bin/uvicorn main:socket_app \
             --host 0.0.0.0 --port 8001 --log-level warning &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:8000/health && break || sleep 2
-          done
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:8001/health && break || sleep 2
-          done
+          wait_for_healthy() {
+            local url="$1"
+            for i in $(seq 1 30); do
+              curl -sf "$url" | grep -q '"healthy"' && return 0
+              sleep 2
+            done
+            echo "$url did not report healthy" >&2
+            return 1
+          }
+          wait_for_healthy http://localhost:8000/health || exit 1
+          wait_for_healthy http://localhost:8001/health || exit 1
         displayName: "Start Backend"
         workingDirectory: $(Build.SourcesDirectory)/Server
 
