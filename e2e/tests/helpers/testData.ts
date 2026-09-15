@@ -1,5 +1,5 @@
 import { expect, type APIRequestContext } from "@playwright/test"
-import { randomUUID } from "crypto"
+import { randomUUID } from "node:crypto"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
 

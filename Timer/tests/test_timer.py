@@ -454,10 +454,10 @@ class TestSocketIOTransport:
         """Gunicorn workers do not share Engine.IO sessions, so polling breaks."""
 
         def stop_after_first_pass(_client: object) -> None:
-            timer.socketio_running = False
+            monkeypatch.setattr(timer, "socketio_running", False)
 
         monkeypatch.setattr(timer, "process_message_queue_sync", stop_after_first_pass)
-        timer.socketio_running = True
+        monkeypatch.setattr(timer, "socketio_running", True)
 
         timer.run_socketio_loop()
 

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
-import { randomUUID } from "crypto"
+import { randomUUID } from "node:crypto"
 import { setupTestData } from "./helpers/testData"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
