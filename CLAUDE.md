@@ -135,6 +135,10 @@ Don't write: commented-out code (delete it — git has the history), changelog/a
 
 Keep what you do write true — fix or delete a comment in the same change that makes it stop matching the code. And write it like prose: active voice, positive form, concrete, no needless words.
 
+## Spec-Driven Development (OpenSpec)
+
+Behavior changes go through [OpenSpec](https://github.com/Fission-AI/OpenSpec), not straight to code. Propose a change (`/opsx:propose` in Claude Code, `$openspec-propose` in Codex, `/opsx-propose` in GitHub Copilot), which writes a proposal, a spec delta under `openspec/changes/<name>/specs/`, and a task list; get it reviewed; implement via `/opsx:apply`; then `/opsx:archive` to merge the delta into the canonical spec under `openspec/specs/`. This supersedes the older ad-hoc `docs/superpowers/specs` + `docs/superpowers/plans` workflow (removed — its still-relevant content was folded into `openspec/specs/` and new ADRs) — `openspec/specs/` is now the source of truth for what the system must do. ADRs in [docs/decisions/](docs/decisions/) are unaffected: they record *why* a past decision was made, OpenSpec records *what* the system does now — don't duplicate one in the other.
+
 ## Working Rules
 
 - Use the devcontainer ([.devcontainer/](.devcontainer/)) when possible.
