@@ -81,7 +81,7 @@ Replacing the `broadcaster` pub/sub library with direct Socket.IO namespace emis
 
 ### Negative:
 
-- Socket.IO is not a pure WebSocket protocol; it uses its own framing on top of WebSocket (or HTTP long-polling as a fallback). Any non-Socket.IO WebSocket client connecting to the `/socket.io/` endpoint will not work.
+- Socket.IO is not a pure WebSocket protocol; it uses its own framing on top of WebSocket. Every client (Timer, browser, and the server's own `AsyncRedisManager`) is pinned to `transports=["websocket"]` with no HTTP long-polling fallback, because AEMS now runs multiple Gunicorn workers behind Redis and a polling handshake's follow-up requests can land on a worker that never saw the Engine.IO session. Any non-Socket.IO WebSocket client connecting to the `/socket.io/` endpoint will not work.
 - The Timer hardware client (`timer.py`) must be updated alongside the server; running a mixed old/new deployment is not supported.
 - `socket.io-client` adds a runtime dependency (~45 KB gzipped) to the browser bundle.
 
