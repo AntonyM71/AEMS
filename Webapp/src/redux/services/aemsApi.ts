@@ -986,7 +986,6 @@ export type HeatResponse = {
 	id: string
 	competition_id: string
 	name: string
-	competition_foreign?: CompetitionNested[] | null
 	athleteheat_foreign?: AthleteHeatNested[] | null
 }
 export type HeatCreate = {

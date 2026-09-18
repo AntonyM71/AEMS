@@ -28,6 +28,8 @@ For this stage of the project, we souced all the materials from [The Pi Hut](htt
 
 # Connection Diagram
 
+All GPIO numbers below are **Broadcom (BCM) numbers** — the scheme `timer.py` uses via `GPIO.setmode(GPIO.BCM)` — not the physical pin positions on the 40-pin header. Physical pin 4, for example, is a 5V rail, not a GPIO. Each node names both so the diagram can be wired directly from the physical header without cross-referencing the code.
+
 ```mermaid
 graph LR
     subgraph 12vPSU[12v PSU]
@@ -42,13 +44,13 @@ graph LR
 
     end
     subgraph RaspberryPi[Raspberry Pi]
-        GPIO3[GPIO Pin 4 - Start Timer Switch Input]
-        GPIO4[GPIO Pin 5 - Cancel Timer Switch Input]
-        GPIO8[GPIO Pin 8 - Display Clock]
-        GPIO7[GPIO Pin 4 - Display DIO]
-        GPIO15[GPIO Pin 15 - Buzzer Output]
-        GPIO6[GPIO Pin 6 - Ready Light]
-        GPIO14[GPIO Pin 14 - Running Light]
+        GPIO3[BCM GPIO4, physical pin 7 - Start Timer Switch Input]
+        GPIO4[BCM GPIO5, physical pin 29 - Cancel Timer Switch Input]
+        GPIO8[BCM GPIO8, physical pin 24 - Display Clock]
+        GPIO7[BCM GPIO7, physical pin 26 - Display DIO]
+        GPIO15[BCM GPIO15, physical pin 10 - Buzzer Output]
+        GPIO6[BCM GPIO6, physical pin 31 - Ready Light]
+        GPIO14[BCM GPIO14, physical pin 8 - Running Light]
         PowerRail5V[5V Power Rail]
         PowerRail33V[3.3V Power Rail]
         RPIGround[0V Power Rail]

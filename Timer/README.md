@@ -4,9 +4,9 @@
 
 This is a Python-based timer application designed to run on a Raspberry Pi. The application uses GPIO pins to perform the following tasks:
 
-- Start a 45-second timer when a specific pin (Pin 3) goes HIGH.
-- Cancel any running timers when another pin (Pin 4) goes HIGH.
-- Output a 1-second buzzer signal when the timer completes.
+- Start a 45-second timer when a specific pin (GPIO 4, BCM numbering) goes HIGH.
+- Cancel any running timers when another pin (GPIO 5) goes HIGH.
+- Output a 1-second buzzer signal on GPIO 15 when the timer completes.
 
 ## Hardware Requirements
 
@@ -45,27 +45,26 @@ Timer is tested on Raspberry Pi 4 and Pi 5 (4GB RAM or more recommended).
 2. Start the application:
 
    ```bash
-   python timer.py
+   python src/timer.py
    ```
 
 3. The application will:
-   - Monitor GPIO Pin 3 to start a 45-second timer.
-   - Monitor GPIO Pin 4 to cancel an ongoing timer.
-   - Activate a buzzer connected to GPIO Pin 17 for 1 second when the timer completes.
+   - Monitor GPIO 4 to start a 45-second timer.
+   - Monitor GPIO 5 to cancel an ongoing timer.
+   - Activate a buzzer connected to GPIO 15 for 1 second when the timer completes.
 
-## `fake_timer.py` — WebSocket Timer Test Client
+## `fake_timer.py` — Socket.IO Timer Test Client
 
-This script simulates a timer device for testing WebSocket communication with the AEMS backend.
+This script simulates a timer device for testing Socket.IO communication with the AEMS backend.
 
 **Features:**
 
-- Connects to the backend WebSocket endpoint (default: `ws://localhost:8001/timer`).
+- Connects to the backend Socket.IO server (default: `http://localhost:8000`, `/timer` namespace). Override with the `SOCKETIO_URL` environment variable.
 - Periodically sends JSON messages containing a random `time_remaining` value and a fixed `status` field (`"running"`), mimicking timer updates.
-- Concurrently listens for and prints any messages received from the server.
-- Useful for testing and debugging backend WebSocket handling logic without requiring real hardware.
+- Useful for testing and debugging backend Socket.IO handling logic without requiring real hardware.
 
 **Usage:**
 
 ```bash
-python fake_timer.py
+python src/fake_timer.py
 ```
