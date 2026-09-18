@@ -171,9 +171,15 @@ jobs:
           docker run -d --name redis-e2e \
             -p 6379:6379 \
             redis:7-alpine
+          ready=false
           for i in $(seq 1 15); do
-            docker exec redis-e2e redis-cli ping | grep -q PONG && break || sleep 1
+            docker exec redis-e2e redis-cli ping | grep -q PONG && ready=true && break
+            sleep 1
           done
+          if [ "$ready" != "true" ]; then
+            echo "redis-e2e did not respond to PING within 15s" >&2
+            exit 1
+          fi
         displayName: "Start Redis"
 
       - script: |
