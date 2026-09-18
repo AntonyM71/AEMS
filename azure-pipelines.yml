@@ -247,12 +247,12 @@ jobs:
 
       - script: |
           npm ci
-          npx playwright install --with-deps chromium
+          ./node_modules/.bin/playwright install --with-deps chromium
         displayName: "Install Playwright"
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
       - script: |
-          FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 SECOND_BACKEND_URL=http://localhost:8001 npx playwright test
+          FRONTEND_URL=http://localhost:3000 BACKEND_URL=http://localhost:8000 SECOND_BACKEND_URL=http://localhost:8001 ./node_modules/.bin/playwright test
         displayName: "Run E2E Tests"
         workingDirectory: $(Build.SourcesDirectory)/e2e
 
