@@ -1,11 +1,13 @@
-"""Unit tests for how socket_manager reads REDIS_URL."""
+"""Unit tests for how socket_manager reads REDIS_URL and reports reachability."""
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import redis
 import socketio
 
+from app.common import socket_manager
 from app.common.socket_manager import IN_MEMORY, get_client_manager, redis_is_reachable
 
 REDIS_URL = "redis://localhost:6379/0"
@@ -43,34 +45,37 @@ def test_malformed_redis_url_is_rejected(value: str) -> None:
         get_client_manager()
 
 
-def test_sentinel_is_always_reachable() -> None:
-    with patch.dict(os.environ, {"REDIS_URL": IN_MEMORY}):
-        assert redis_is_reachable() is True
+@pytest.mark.asyncio
+async def test_in_memory_manager_is_always_reachable() -> None:
+    with patch.object(socket_manager.sio, "manager", MagicMock()):
+        assert await redis_is_reachable() is True
 
 
-def test_reachable_when_redis_answers() -> None:
-    client = MagicMock()
-    with (
-        patch.dict(os.environ, {"REDIS_URL": REDIS_URL}),
-        patch("redis.Redis.from_url", return_value=client),
-    ):
-        assert redis_is_reachable() is True
-    client.ping.assert_called_once_with()
+@pytest.mark.asyncio
+async def test_reachable_when_the_live_redis_connection_answers() -> None:
+    fake_manager = MagicMock(spec=socketio.AsyncRedisManager)
+    fake_manager.redis = AsyncMock()
+    with patch.object(socket_manager.sio, "manager", fake_manager):
+        assert await redis_is_reachable() is True
+    fake_manager.redis.ping.assert_awaited_once_with()
 
 
-def test_unreachable_when_redis_raises() -> None:
-    import redis
+@pytest.mark.asyncio
+async def test_unreachable_when_the_live_redis_connection_raises() -> None:
+    fake_manager = MagicMock(spec=socketio.AsyncRedisManager)
+    fake_manager.redis = AsyncMock()
+    fake_manager.redis.ping.side_effect = redis.RedisError("down")
+    with patch.object(socket_manager.sio, "manager", fake_manager):
+        assert await redis_is_reachable() is False
 
-    client = MagicMock()
-    client.ping.side_effect = redis.RedisError("down")
-    with (
-        patch.dict(os.environ, {"REDIS_URL": REDIS_URL}),
-        patch("redis.Redis.from_url", return_value=client),
-    ):
-        assert redis_is_reachable() is False
+
+@pytest.mark.asyncio
+async def test_unreachable_while_the_manager_has_not_connected_yet() -> None:
+    fake_manager = MagicMock(spec=socketio.AsyncRedisManager)
+    fake_manager.redis = None
+    with patch.object(socket_manager.sio, "manager", fake_manager):
+        assert await redis_is_reachable() is False
 
 
 def test_sio_is_a_real_async_server() -> None:
-    from app.common import socket_manager
-
     assert isinstance(socket_manager.sio, socketio.AsyncServer)

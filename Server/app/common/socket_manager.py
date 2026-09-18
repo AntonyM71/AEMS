@@ -49,17 +49,19 @@ def get_client_manager() -> socketio.AsyncRedisManager | None:
     )
 
 
-def redis_is_reachable() -> bool:
-    """True when Redis answers, and when in-memory was configured deliberately."""
-    url = _configured_redis_url()
-    if url is None:
+async def redis_is_reachable() -> bool:
+    """True when the live Redis connection answers, or in-memory was chosen deliberately.
+
+    Pings sio.manager's own connection rather than a fresh one, so this
+    reflects the connection real broadcasts actually use.
+    """
+    manager = sio.manager
+    if not isinstance(manager, socketio.AsyncRedisManager):
         return True
+    if manager.redis is None:
+        return False
     try:
-        redis.Redis.from_url(
-            url,
-            socket_connect_timeout=_TIMEOUT_SECONDS,
-            socket_timeout=_TIMEOUT_SECONDS,
-        ).ping()
+        await manager.redis.ping()
     except redis.RedisError:
         return False
     return True
