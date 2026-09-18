@@ -7,6 +7,7 @@ ENV UVICORN_PORT 8000
 ENV PORT 3000
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
+ENV REDIS_URL redis://redis:6379/0
 #
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -21,4 +22,4 @@ RUN uv sync --frozen
 
 WORKDIR /code/
 #
-CMD ["bash", "-c", "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 8 -k uvicorn.workers.UvicornWorker --timeout 120 main:socket_app -b 0.0.0.0:8000"]
+CMD ["bash", "-c", "alembic upgrade head && python -m scripts.seed_scoresheets && gunicorn -w 4 -k uvicorn.workers.UvicornWorker --timeout 120 main:socket_app -b 0.0.0.0:8000"]

@@ -768,9 +768,7 @@ export type RootGetApiResponse = /** status 200 Successful Response */ {
 }
 export type RootGetApiArg = void
 export type HealthCheckHealthGetApiResponse =
-	/** status 200 Successful Response */ {
-		[key: string]: any
-	}
+	/** status 200 Successful Response */ any
 export type HealthCheckHealthGetApiArg = void
 export type ValidationError = {
 	loc: (string | number)[]

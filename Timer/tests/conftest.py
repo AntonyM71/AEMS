@@ -5,6 +5,7 @@ ensures the mocks are in place before conftest is even fully loaded.
 """
 
 import sys
+from typing import ClassVar
 from unittest.mock import MagicMock
 
 # ---------------------------------------------------------------------------
@@ -34,12 +35,14 @@ socketio_mock = MagicMock()
 class _FakeSimpleClient:
     """Minimal stand-in for socketio.SimpleClient."""
 
+    last_connect_kwargs: ClassVar[dict] = {}
+
     def __init__(self) -> None:
         self.connected = True
         self._emitted: list = []
 
     def connect(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
-        pass
+        _FakeSimpleClient.last_connect_kwargs = kwargs
 
     def emit(self, event: str, data: object) -> None:
         self._emitted.append((event, data))

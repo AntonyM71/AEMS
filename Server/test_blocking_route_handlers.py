@@ -19,11 +19,13 @@ from main import app
 
 # Handlers that are async def and take a database session, but hand the blocking
 # work to a worker thread themselves with anyio.to_thread. They are correct, so
-# they are not regressions. Their offloading is covered by the timing test in
-# performance/test_event_loop_concurrency.py.
+# they are not regressions. Where the offloaded work is heavy enough to time
+# reliably, it is also covered by performance/test_event_loop_concurrency.py
+# (/health's SELECT 1 isn't, which is exactly what this file exists for).
 EXPLICITLY_OFFLOADED = frozenset(
     {
         "POST /addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}",
+        "GET /health",
     }
 )
 

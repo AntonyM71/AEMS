@@ -3,6 +3,7 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable
 
+import anyio.to_thread
 import socketio as _socketio
 import structlog
 import uvicorn
@@ -15,7 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
 from app.broadcastEndpoints import broadcast_router
-from app.common.socket_manager import sio
+from app.common.socket_manager import redis_is_reachable, sio
 from app.competition_management.competition_management import (
     competition_management_router,
 )
@@ -138,17 +139,23 @@ async def root() -> dict[str, str]:
     return {"message": "Go to /docs to see the swagger documentation"}
 
 
-@app.get("/health", tags=["health"])
-def health_check(db: Session = Depends(get_transaction_session)) -> dict:
+def _check_database(db: Session) -> str:
+    """The DB portion of /health: "healthy", "unknown", or "unhealthy"."""
     try:
-        # Execute a simple query to check the database connection
         result = db.execute(text("SELECT 1"))
-        if result.scalar() == 1:
-            return {"status": "healthy"}
     except SQLAlchemyError:
-        return {"status": "unhealthy"}
-    # Ensure a default return value in case of unexpected issues
-    return {"status": "unknown"}
+        return "unhealthy"
+    return "healthy" if result.scalar() == 1 else "unknown"
+
+
+@app.get("/health", tags=["health"])
+async def health_check(db: Session = Depends(get_transaction_session)) -> JSONResponse:
+    db_status = await anyio.to_thread.run_sync(_check_database, db)
+    if db_status != "healthy":
+        return JSONResponse(status_code=503, content={"status": db_status})
+    if not await redis_is_reachable():
+        return JSONResponse(status_code=503, content={"status": "unhealthy"})
+    return JSONResponse(status_code=200, content={"status": "healthy"})
 
 
 app.add_middleware(
