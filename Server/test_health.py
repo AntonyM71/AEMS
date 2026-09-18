@@ -4,23 +4,9 @@ Compose routes every broadcast through Redis, so a server that cannot reach it
 is not serving judges even though its database answers.
 """
 
-from collections.abc import Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
-
-from db.client import get_transaction_session
-from main import app
-
-
-@pytest.fixture
-def client() -> Generator[TestClient]:
-    session = MagicMock()
-    session.execute.return_value.scalar.return_value = 1
-    app.dependency_overrides[get_transaction_session] = lambda: session
-    yield TestClient(app)
-    app.dependency_overrides.clear()
 
 
 def test_healthy_when_database_and_redis_answer(client: TestClient) -> None:
