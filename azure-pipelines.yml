@@ -265,6 +265,9 @@ jobs:
         condition: succeededOrFailed()
 
       - script: |
-          docker rm -f postgres-e2e redis-e2e || true
+          status=0
+          docker rm -f postgres-e2e || status=1
+          docker rm -f redis-e2e || status=1
+          exit $status
         displayName: "Stop Services"
         condition: always()
