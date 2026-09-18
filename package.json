@@ -1,0 +1,8 @@
+{
+  "name": "aems",
+  "private": true,
+  "description": "Repo-root tooling for AEMS (spec-driven development via OpenSpec). Each service (Server/, Webapp/, Timer/, e2e/) owns its own package.json/pyproject.toml.",
+  "devDependencies": {
+    "@fission-ai/openspec": "1.13.1"
+  }
+}

@@ -1,0 +1,50 @@
+schema: spec-driven
+githubCopilot:
+  cloudAgent: false
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+context: |
+  AEMS is a multi-service freestyle kayaking competition management system, designed to
+  run offline on a local network. Full conventions live in CLAUDE.md at the repo root -
+  read it first. Key points for writing specs:
+  - Monorepo: Server/ (FastAPI+SQLAlchemy backend), Webapp/ (Next.js frontend),
+    Timer/ (Raspberry Pi timing box), GraphicsServer/ (static overlay host), e2e/
+    (Playwright). A capability's spec may span services when a feature does
+    (e.g. an API change plus the UI that uses it) - don't split by service alone.
+  - Domain model: Competition -> Events -> Phases -> Heats -> Athletes, with runs,
+    scored moves, and bonuses. Scoring aggregates multiple judges per athlete/run.
+  - Requirements and scenarios should reflect what the existing tests and code
+    actually assert, not aspirational behavior - see Server/app/*/tests/ and
+    Webapp/src/**/__tests__/ before writing a spec for existing behavior.
+  - docs/decisions/ (ADRs) record *why* a past architectural decision was made;
+    openspec/specs/ record *what* the system must do now. Don't duplicate one in
+    the other - link to an ADR instead of restating it.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
