@@ -53,17 +53,35 @@ async def redis_is_reachable() -> bool:
     """True when the live Redis connection answers, or in-memory was chosen deliberately.
 
     Pings sio.manager's own connection rather than a fresh one, so this
-    reflects the connection real broadcasts actually use.
+    reflects the connection real broadcasts actually use. python-socketio
+    only opens that connection on the first Engine.IO connect though, so
+    before that this falls back to a one-shot ping of its own.
     """
     manager = sio.manager
     if not isinstance(manager, socketio.AsyncRedisManager):
         return True
-    if manager.redis is None:
-        return False
+    if manager.redis is not None:
+        try:
+            await manager.redis.ping()
+        except redis.RedisError:
+            return False
+        return True
+    return await _fresh_ping()
+
+
+async def _fresh_ping() -> bool:
+    """A one-shot reachability check, for before the live connection exists."""
+    client = redis.asyncio.Redis.from_url(
+        _configured_redis_url(),
+        socket_connect_timeout=_TIMEOUT_SECONDS,
+        socket_timeout=_TIMEOUT_SECONDS,
+    )
     try:
-        await manager.redis.ping()
-    except redis.RedisError:
+        await client.ping()
+    except (redis.RedisError, ValueError):
         return False
+    finally:
+        await client.aclose()
     return True
 
 
