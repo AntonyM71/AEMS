@@ -442,11 +442,6 @@ class TestStartSocketIOThread:
             mock_thread_cls.assert_not_called()
 
 
-# ===========================================================================
-# run_socketio_loop() transport
-# ===========================================================================
-
-
 class TestSocketIOTransport:
     def test_connects_over_websocket_only(
         self, monkeypatch: pytest.MonkeyPatch
