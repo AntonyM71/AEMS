@@ -239,9 +239,15 @@ jobs:
           cp -r public .next/standalone/public
           cp -r .next/static .next/standalone/.next/static
           node .next/standalone/server.js &
+          ready=false
           for i in $(seq 1 30); do
-            curl -sf http://localhost:3000 > /dev/null && break || sleep 3
+            curl -sf http://localhost:3000 > /dev/null && ready=true && break
+            sleep 3
           done
+          if [ "$ready" != "true" ]; then
+            echo "frontend did not respond on :3000 within 90s" >&2
+            exit 1
+          fi
         displayName: "Start Frontend"
         workingDirectory: $(Build.SourcesDirectory)/Webapp
 
