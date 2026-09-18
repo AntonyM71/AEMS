@@ -10,7 +10,12 @@ SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
 
 def main() -> None:
     with socketio.SimpleClient() as sio:
-        sio.connect(SIO_SERVER_URL, namespace="/timer", socketio_path=SIO_PATH)
+        sio.connect(
+            SIO_SERVER_URL,
+            namespace="/timer",
+            socketio_path=SIO_PATH,
+            transports=["websocket"],
+        )
         print(f"Connected to {SIO_SERVER_URL}/timer")
 
         while True:
