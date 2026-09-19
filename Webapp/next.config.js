@@ -1,5 +1,6 @@
 const { lookup } = require("node:dns").promises
 const { existsSync, readFileSync } = require("node:fs")
+const path = require("node:path")
 
 const resolveDefaultGraphicsOrigin = async () => {
 	if (!existsSync("/.dockerenv")) {
@@ -37,6 +38,10 @@ const resolveDefaultGraphicsOrigin = async () => {
 module.exports = {
 	pageExtensions: ["js", "jsx", "ts", "tsx"],
 	output: "standalone",
+	// The repo-root package-lock.json (OpenSpec tooling) would otherwise make
+	// Next infer the monorepo root as the tracing root, nesting the standalone
+	// build under .next/standalone/Webapp/ instead of .next/standalone/.
+	outputFileTracingRoot: path.join(__dirname),
 	async rewrites() {
 		if (process.env.NODE_ENV !== "development") {
 			return []
