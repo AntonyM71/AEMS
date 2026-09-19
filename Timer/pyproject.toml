@@ -48,6 +48,7 @@ dependencies = [
     "python-socketio",
     "requests",  # python-socketio sync client: HTTP long-polling transport
     "websocket-client",  # python-socketio sync client: WebSocket transport
+    "pydantic-settings>=2.0,<3.0",
 
     # Dev
     "ruff",

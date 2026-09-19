@@ -5,7 +5,6 @@ import pytest
 from sqlalchemy.orm import Session
 
 # Mock database functions at module level
-patch("db.client.get_database_address", return_value="mock://db").start()
 patch("db.client.create_engine").start()
 patch("db.client.sessionmaker").start()
 

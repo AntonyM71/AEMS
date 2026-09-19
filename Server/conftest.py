@@ -6,11 +6,12 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from db.client import get_transaction_session
-
-# socket_manager requires REDIS_URL; the unit suite runs with no services, so
-# this names the sentinel explicitly. setdefault lets a real Redis still win.
+# app.config.Settings is now constructed eagerly when db.client is imported
+# below, so these must be set first. setdefault lets a real value still win.
 os.environ.setdefault("REDIS_URL", "memory")
+os.environ.setdefault("CONNECTION_STRING", "postgresql://test:test@localhost/test")
+
+from db.client import get_transaction_session
 
 
 @pytest.fixture

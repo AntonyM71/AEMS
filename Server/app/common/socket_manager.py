@@ -1,15 +1,14 @@
-import os
-
 import redis
 import socketio
 
-IN_MEMORY = "memory"
-_REDIS_SCHEMES = ("redis://", "rediss://", "unix://")
+from app.config import IN_MEMORY, Settings, settings
+
 _TIMEOUT_SECONDS = 2
 
-_cors_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
 _parsed_origins = [
-    origin.strip() for origin in _cors_origins_env.split(",") if origin.strip()
+    origin.strip()
+    for origin in settings.cors_allowed_origins.split(",")
+    if origin.strip()
 ]
 # Default to "*" so dev and E2E environments (frontend and backend on
 # different ports) can still establish Socket.IO connections.
@@ -18,30 +17,14 @@ socketio_cors_allowed_origins: list[str] | str = (
 )
 
 
-def _configured_redis_url() -> str | None:
-    """The Redis URL to use, or None when in-memory was asked for by name."""
-    url = os.getenv("REDIS_URL")
-    if url == IN_MEMORY:
-        return None
-    if not url or not url.startswith(_REDIS_SCHEMES):
-        msg = (
-            f"REDIS_URL must be a redis:// URL, or {IN_MEMORY!r} to select the "
-            f"in-memory manager, which is only correct for a single worker. "
-            f"Got: {url!r}"
-        )
-        raise ValueError(msg)
-    return url
-
-
-def get_client_manager() -> socketio.AsyncRedisManager | None:
+def get_client_manager(settings: Settings) -> socketio.AsyncRedisManager | None:
     """None selects the in-memory manager, which does not share across workers."""
-    url = _configured_redis_url()
-    if url is None:
+    if settings.redis_url == IN_MEMORY:
         return None
     # Without these, an unreachable Redis blocks emit for the kernel's TCP retry
     # budget, stalling the score submission the emit is part of.
     return socketio.AsyncRedisManager(
-        url,
+        settings.redis_url,
         redis_options={
             "socket_connect_timeout": _TIMEOUT_SECONDS,
             "socket_timeout": _TIMEOUT_SECONDS,
@@ -72,7 +55,7 @@ async def redis_is_reachable() -> bool:
 async def _fresh_ping() -> bool:
     """A one-shot reachability check, for before the live connection exists."""
     client = redis.asyncio.Redis.from_url(
-        _configured_redis_url(),
+        settings.redis_url,
         socket_connect_timeout=_TIMEOUT_SECONDS,
         socket_timeout=_TIMEOUT_SECONDS,
     )
@@ -88,7 +71,7 @@ async def _fresh_ping() -> bool:
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=socketio_cors_allowed_origins,
-    client_manager=get_client_manager(),
+    client_manager=get_client_manager(settings),
     logger=False,
     engineio_logger=False,
 )
