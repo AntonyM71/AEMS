@@ -5,15 +5,12 @@ from typing import Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy.orm import Session
 
 from db.client import transaction_session_context_manager
 from db.models import AvailableBonuses, AvailableMoves, ScoreSheet
 
-scoresheet_files = os.listdir(path=Path("data"))
-print(scoresheet_files)
-
-
-bonus_order = {"air": 0, "huge": 1, "clean": 2, "superclean": 3, "link": 4}
+BONUS_ORDER = {"air": 0, "huge": 1, "clean": 2, "superclean": 3, "link": 4}
 
 
 class SeedMoveData(BaseModel):
@@ -25,65 +22,75 @@ class SeedMoveData(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
-for file in scoresheet_files:
-    scoresheet_name = file.split(".")[0] or ""
-    print(scoresheet_name)
+def seed_scoresheet(db: Session, scoresheet_name: str, moves_json: str) -> None:
+    """Insert `scoresheet_name` with its moves/bonuses parsed from `moves_json`.
 
-    with transaction_session_context_manager() as db:
-        if (
-            db.query(ScoreSheet).filter(ScoreSheet.name == scoresheet_name)
-        ).one_or_none():
-            print("Scoresheet Already Exists")
+    No-ops if a scoresheet with that name already exists.
+    """
+    if (
+        db.query(ScoreSheet).filter(ScoreSheet.name == scoresheet_name)
+    ).one_or_none():
+        print("Scoresheet Already Exists")
+        return
 
-        else:
-            print("Making Scoresheet")
-            scoresheet_id = uuid4()
-            db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
-            with open(Path("data", file)) as json_file:
-                data = json.loads(json_file.read())
+    print("Making Scoresheet")
+    scoresheet_id = uuid4()
+    db.bulk_save_objects([ScoreSheet(id=scoresheet_id, name=scoresheet_name)])
 
-                # print(data)
+    pydantic_moves = [SeedMoveData(**move) for move in json.loads(moves_json)]
+    move_order = {
+        name: index
+        for index, name in enumerate(
+            sorted((m.Move for m in pydantic_moves), key=str.lower)
+        )
+    }
 
-                pydantic_moves = [SeedMoveData(**move) for move in data]
-                move_order = {
-                    name: index
-                    for index, name in enumerate(
-                        sorted((m.Move for m in pydantic_moves), key=str.lower)
-                    )
-                }
+    for pydantic_move in pydantic_moves:
+        move_id = uuid4()
+        db.bulk_save_objects(
+            [
+                AvailableMoves(
+                    id=move_id,
+                    sheet_id=scoresheet_id,
+                    name=pydantic_move.Move,
+                    direction=pydantic_move.Direction,
+                    fl_score=pydantic_move.Value,
+                    rb_score=pydantic_move.ReverseValue
+                    if pydantic_move.ReverseValue
+                    else pydantic_move.Value,
+                    display_order=move_order[pydantic_move.Move],
+                )
+            ]
+        )
 
-                for pydantic_move in pydantic_moves:
-                    move_id = uuid4()
-                    # print(pydantic_move)
-                    db.bulk_save_objects(
-                        [
-                            AvailableMoves(
-                                id=move_id,
-                                sheet_id=scoresheet_id,
-                                name=pydantic_move.Move,
-                                direction=pydantic_move.Direction,
-                                fl_score=pydantic_move.Value,
-                                rb_score=pydantic_move.ReverseValue
-                                if pydantic_move.ReverseValue
-                                else pydantic_move.Value,
-                                display_order=move_order[pydantic_move.Move],
-                            )
-                        ]
-                    )
+        extra_fields = pydantic_move.model_extra or {}
+        bonuses = [
+            AvailableBonuses(
+                id=uuid4(),
+                sheet_id=scoresheet_id,
+                move_id=move_id,
+                name=bonus_name,
+                score=score,
+                display_order=BONUS_ORDER.get(bonus_name.lower(), None),
+            )
+            for bonus_name, score in extra_fields.items()
+        ]
 
-                    extra_fields = pydantic_move.model_extra or {}
-                    bonuses = [
-                        AvailableBonuses(
-                            id=uuid4(),
-                            sheet_id=scoresheet_id,
-                            move_id=move_id,
-                            name=bonus_name,
-                            score=score,
-                            display_order=bonus_order.get(bonus_name.lower(), None),
-                        )
-                        for bonus_name, score in extra_fields.items()
-                    ]
+        db.bulk_save_objects(bonuses)
 
-                    db.bulk_save_objects(bonuses)
+    db.commit()
 
-                db.commit()
+
+def seed_all_scoresheets() -> None:
+    data_dir = Path("data")
+    for file in os.listdir(path=data_dir):
+        scoresheet_name = file.split(".")[0] or ""
+        with (
+            transaction_session_context_manager() as db,
+            open(data_dir / file) as json_file,
+        ):
+            seed_scoresheet(db, scoresheet_name, json_file.read())
+
+
+if __name__ == "__main__":
+    seed_all_scoresheets()
