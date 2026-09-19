@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { toast } from "react-hot-toast"
@@ -359,7 +359,8 @@ describe("HeatAthleteTable", () => {
 		expect(await screen.findByDisplayValue("123")).toBeInTheDocument()
 	})
 
-	it.skip("shows warning and deletes moves when moving athlete to different heat", async () => {
+	it("shows warning and deletes moves when moving athlete to different heat", async () => {
+		let deleteMovesRequestUrl: URL | undefined
 		// Mock endpoints
 		server.use(
 			http.get("/api/heat", () =>
@@ -395,9 +396,11 @@ describe("HeatAthleteTable", () => {
 			http.patch("/api/athleteheat/:id", () =>
 				HttpResponse.json({ data: [{ id: "1" }] })
 			),
-			http.delete("/api/scoredmoves", () =>
-				HttpResponse.json({ message: "Success" })
-			)
+			http.delete("/api/scoredmoves", ({ request }) => {
+				deleteMovesRequestUrl = new URL(request.url)
+
+				return HttpResponse.json({ message: "Success" })
+			})
 		)
 
 		const store = setupStore({
@@ -425,8 +428,10 @@ describe("HeatAthleteTable", () => {
 			</Provider>
 		)
 
-		// Wait for dialog to load and check warning is shown
-		await screen.findByText("Edit Athlete")
+		// Wait for dialog to load and check warning is shown. "Edit Athlete"
+		// is ambiguous once the form loads - it's also the submit button's
+		// label - so query the dialog heading specifically.
+		await screen.findByRole("heading", { name: "Edit Athlete" })
 		expect(await screen.findByText(/Warning:/)).toBeInTheDocument()
 		expect(
 			screen.getByText(
@@ -434,32 +439,38 @@ describe("HeatAthleteTable", () => {
 			)
 		).toBeInTheDocument()
 
-		// Change heat
+		// Change heat. `data-testid="heat-select"` lands on MUI's outer
+		// MuiInputBase-root wrapper, not the inner role="combobox" div that
+		// actually opens the menu on click - query within it for that div.
 		const heatSelect = screen.getByTestId("heat-select")
 		const user = userEvent.setup()
-		await user.click(heatSelect)
+		await user.click(within(heatSelect).getByRole("combobox"))
 
-		// Wait for menu items to appear in the portal
-		await new Promise((resolve) => setTimeout(resolve, 500))
-		const heatOption = await screen.findByText(
-			"Another Heat",
-			{},
-			{ timeout: 2000 }
-		)
+		const heatOption = await screen.findByRole("option", {
+			name: "Another Heat"
+		})
 		await user.click(heatOption)
 
 		// Submit form
-		const editButton = screen.getByText("Edit Athlete")
+		const editButton = screen.getByRole("button", { name: "Edit Athlete" })
 		await user.click(editButton)
 
-		// Wait for async operations
-		await new Promise((resolve) => setTimeout(resolve, 100))
-
 		// Verify success toast
-		expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
+		await waitFor(() =>
+			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
+		)
 		expect(toast.success).toHaveBeenCalledWith(
 			"Updated Athlete Competition Information"
 		)
+
+		// Verify the scored moves were deleted for the OLD heat ("1"), not
+		// the new one ("2"), scoped to this athlete
+		expect(
+			deleteMovesRequestUrl?.searchParams.getAll("heat_id____list")
+		).toEqual(["1"])
+		expect(
+			deleteMovesRequestUrl?.searchParams.getAll("athlete_id____list")
+		).toEqual(["1"])
 	})
 })
 
