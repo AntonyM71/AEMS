@@ -1,13 +1,11 @@
-import os
 from logging.config import fileConfig
 
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.config import settings
 from db.models import Base
 
-load_dotenv(".env")
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -31,7 +29,7 @@ target_metadata = Base.metadata
 # this will overwrite the ini-file sqlalchemy.url path
 # with the path given in the config of the main code
 
-config.set_main_option("sqlalchemy.url", os.environ.get("CONNECTION_STRING") or "")
+config.set_main_option("sqlalchemy.url", settings.connection_string)
 
 
 def run_migrations_offline() -> None:

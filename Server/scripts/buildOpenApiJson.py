@@ -4,12 +4,13 @@ import os
 from fastapi.openapi.utils import get_openapi
 from starlette.routing import WebSocketRoute
 
-# main -> app.common.socket_manager builds its Redis client manager at import
-# time, so REDIS_URL must be set before `from main import app` runs. This
-# script only reads app.routes for the OpenAPI schema, so the in-memory
-# sentinel (also used by Server/conftest.py for the same reason) is correct
-# even when no Redis is running.
+# main -> app.config builds a Settings object at import time requiring both
+# REDIS_URL and CONNECTION_STRING, so these must be set before `from main
+# import app` runs. This script only reads app.routes for the OpenAPI schema,
+# so the same dummy values Server/conftest.py uses are correct here too, even
+# with no Redis or database running.
 os.environ.setdefault("REDIS_URL", "memory")
+os.environ.setdefault("CONNECTION_STRING", "postgresql://test:test@localhost/test")
 
 from main import app
 

@@ -1,5 +1,4 @@
 import logging
-import os
 import queue
 import sys
 import threading
@@ -9,10 +8,12 @@ from typing import Literal
 
 import RPi.GPIO as GPIO
 import socketio
+from pydantic import ValidationError
 
-sys.path.append('/home/aems/AEMS/Server')  # Add Server to sys.path if needed
+sys.path.append("/home/aems/AEMS/Server")  # Add Server to sys.path if needed
 from custom_logging import setup_logging
 
+from config import TimerSettings
 from tm1637 import TM1637Decimal
 
 setup_logging(json_logs=True, log_level="INFO", log_name="timer")
@@ -75,15 +76,32 @@ def swap(segs: bytearray) -> bytearray:
 
 
 tm = TM1637Decimal(clk=CLK, dio=DIO)
-tm.write(swap(tm.encode_string('READY')))
+tm.write(swap(tm.encode_string("READY")))
 
-# Environment variable configuration
-# Set to "0", "false", or "no" to disable WebSocket functionality
-ENABLE_WEBSOCKET = os.environ.get("ENABLE_WEBSOCKET", "true").lower() not in (
-    "0",
-    "false",
-    "no",
-)
+
+def load_timer_settings() -> tuple[bool, str, str]:
+    """Load Timer config, degrading to WebSocket-disabled on an invalid value.
+
+    An invalid value never stops the GPIO-driven countdown/buzzer, which have
+    no dependency on Socket.IO connectivity.
+    """
+    try:
+        settings = TimerSettings()
+    except ValidationError:
+        logging.exception(
+            "Invalid timer configuration - disabling WebSocket connectivity so "
+            "the countdown timer and buzzer keep working"
+        )
+        return False, "http://192.168.0.28:81", "/socket.io/"
+    return settings.enable_websocket, str(settings.socketio_url), settings.socketio_path
+
+
+# Server configuration - change this to match your server address.
+# In production, port 81 is the nginx reverse proxy that serves the full stack.
+# In development, use http://localhost:8000 (the uvicorn server directly).
+# Default Socket.IO path assumes direct uvicorn (`/socket.io/`); when using nginx
+# that strips `/api`, set SOCKETIO_PATH=/api/socket.io/ in the environment.
+ENABLE_WEBSOCKET, SIO_SERVER_URL, SIO_PATH = load_timer_settings()
 
 # Timer and threading variables
 timer_thread = None
@@ -92,15 +110,6 @@ socketio_thread = None
 # Thread-safe queue for Socket.IO messages
 message_queue: queue.Queue = queue.Queue()
 socketio_running = True  # Flag to control the Socket.IO thread
-
-# Server configuration - change this to match your server address.
-# In production, port 81 is the nginx reverse proxy that serves the full stack.
-# In development, use http://localhost:8000 (the uvicorn server directly).
-# Default Socket.IO path assumes direct uvicorn (`/socket.io/`); when using nginx
-# that strips `/api`, set SOCKETIO_PATH=/api/socket.io/ in the environment.
-SIO_SERVER_URL = os.environ.get(
-    "SOCKETIO_URL", "http://192.168.0.28:81")
-SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
 
 StatusLiteral = Literal["started", "running", "finished", "cancelled"]
 
@@ -119,7 +128,7 @@ def get_short_status(status: StatusLiteral) -> str:
         "started": "STA",
         "running": "RUN",
         "finished": "FIN",
-        "cancelled": "CAN"
+        "cancelled": "CAN",
     }
     return status_map.get(status, "UNK")  # "UNK" for unknown statuses
 
@@ -141,8 +150,7 @@ def process_message_queue_sync(sio_client: socketio.SimpleClient) -> None:
     except queue.Empty:
         pass
     except Exception:
-        logging.exception(
-            "Error processing item from queue - Message: %s", message)
+        logging.exception("Error processing item from queue - Message: %s", message)
         if message is not None:
             message_queue.put(message)
         raise
@@ -199,12 +207,13 @@ def start_socketio_thread() -> None:
 
     if socketio_thread is None or not socketio_thread.is_alive():
         socketio_running = True
-        socketio_thread = threading.Thread(
-            target=socketio_worker, daemon=True)
+        socketio_thread = threading.Thread(target=socketio_worker, daemon=True)
         socketio_thread.start()
 
 
-def send_timer_update(status: StatusLiteral, time_remaining: float | None = None) -> None:
+def send_timer_update(
+    status: StatusLiteral, time_remaining: float | None = None
+) -> None:
     """
     Queue a timer status update to be sent by the Socket.IO thread.
     Non-blocking and safe to call from the timer thread.
@@ -215,17 +224,14 @@ def send_timer_update(status: StatusLiteral, time_remaining: float | None = None
     """
     # Skip if Socket.IO functionality is disabled
     display_time = int(time_remaining) if time_remaining is not None else 0
-    tm.write(swap(tm.encode_string(
-        f'{get_short_status(status)}-{display_time:02}')))
+    tm.write(swap(tm.encode_string(f"{get_short_status(status)}-{display_time:02}")))
     if not ENABLE_WEBSOCKET:
         return
 
     try:
-
-        payload = QueueItem(status=status,
-                            time_remaining=int(
-                                time_remaining) if time_remaining else 0
-                            )
+        payload = QueueItem(
+            status=status, time_remaining=int(time_remaining) if time_remaining else 0
+        )
 
         message_queue.put(payload)
     except Exception as e:
@@ -301,13 +307,16 @@ def timer_task() -> None:
     # Timer phase durations
 
     sec10_buzz_duration = 0.33
-    second_phase_duration = end_warning_buzz_time - \
-        sec10_buzz_duration  # Second phase duration
+    second_phase_duration = (
+        end_warning_buzz_time - sec10_buzz_duration
+    )  # Second phase duration
 
-    first_phase_duration = get_total_duration(
-    ) - end_warning_buzz_time  # First phase duration
+    first_phase_duration = (
+        get_total_duration() - end_warning_buzz_time
+    )  # First phase duration
     total_duration = round(
-        first_phase_duration + second_phase_duration + sec10_buzz_duration)
+        first_phase_duration + second_phase_duration + sec10_buzz_duration
+    )
     # Run first phase
     elapsed_time, last_whole_second, phase1_completed = run_timer_phase(
         first_phase_duration, elapsed_time, last_whole_second, total_duration
@@ -315,7 +324,6 @@ def timer_task() -> None:
 
     # Signal end of first phase if not cancelled
     if phase1_completed:
-
         buzz(duration=sec10_buzz_duration)
         elapsed_time = (
             elapsed_time + sec10_buzz_duration
