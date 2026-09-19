@@ -372,13 +372,15 @@ def check_athlete_started_at_least_one_ride(athlete_info: AthleteScores) -> bool
     return not (dns_list and all(dns_list))
 
 
-def _scores_match(a: float | None, b: float) -> bool:
-    """True when two totals are equal to two decimal places.
+def _floats_match(a: float | None, b: float) -> bool:
+    """True when two scores are equal to two decimal places.
 
-    ``total_score`` is a sum of ``round(mean, 2)`` run means, so two athletes
-    who genuinely tie can end up a float ULP apart. Compare at the precision
-    scores are reported to. ``a`` may be ``None`` (an athlete with no score
-    never matches); ``b`` is the current athlete's total, always non-``None``.
+    A score that is itself a sum of ``round(mean, 2)`` values (``total_score``)
+    can leave two athletes who genuinely tie a float ULP apart, so every
+    tie-break comparison is made at the precision scores are reported to
+    rather than with raw float equality. ``a`` may be ``None`` (an athlete
+    with no score never matches); ``b`` is the current athlete's score,
+    always non-``None``.
     """
     return a is not None and round(a, 2) == round(b, 2)
 
@@ -398,7 +400,7 @@ def calculate_rank(
         athletes_with_same_score = [
             item
             for item in sorted_athletes_scores
-            if _scores_match(item.total_score, s.total_score)
+            if _floats_match(item.total_score, s.total_score)
             and check_athlete_started_at_least_one_ride(item)
         ]
         athletes_ranked_above = sum(
@@ -473,7 +475,7 @@ def athletes_with_this_exact_score_after_tiebreak(
 def athlete_is_fully_tied(a: AthleteScores, this_athlete: AthleteScores) -> bool:
     run_count = max(len(a.run_scores), len(this_athlete.run_scores))
     return (
-        _scores_match(a.total_score, this_athlete.total_score)
+        _floats_match(a.total_score, this_athlete.total_score)
         and a.highest_scoring_move == this_athlete.highest_scoring_move
         and [get_nth_highest_score(i)(a) for i in range(run_count)]
         == [get_nth_highest_score(i)(this_athlete) for i in range(run_count)]
@@ -558,7 +560,10 @@ def build_tie_break_reason(
     still_tied = [
         a
         for a in resolved_order
-        if all(value_of(a) == value_of(this_athlete) for _c, value_of in criteria)
+        if all(
+            _floats_match(value_of(a), value_of(this_athlete))
+            for _c, value_of in criteria
+        )
     ]
     if len(still_tied) > 1:
         remaining = ", ".join(
@@ -569,14 +574,23 @@ def build_tie_break_reason(
     rival = (
         resolved_order[position - 1] if position > 0 else resolved_order[position + 1]
     )
+
+    # Narrows to athletes not yet separated from this_athlete by an earlier
+    # criterion, until the criterion that also separates it from its rival.
+    group = tied_athletes
     for criterion, value_of in criteria:
-        if value_of(this_athlete) != value_of(rival):
-            pair = sorted([this_athlete, rival], key=value_of, reverse=True)
+        if not _floats_match(value_of(this_athlete), value_of(rival)):
+            # resolved_order already reflects every criterion, including ones
+            # after this one, so filtering it (rather than re-sorting `group`
+            # on this criterion alone) keeps ties within the group in their
+            # true finishing order instead of caller-supplied input order.
+            ordered = [a for a in resolved_order if a in group]
             compared = ", ".join(
                 f"{_athlete_label(a.athlete_id, bib_numbers)} ({value_of(a):.2f})"
-                for a in pair
+                for a in ordered
             )
             return f"Tie resolved by {criterion}: {compared}"
+        group = [a for a in group if _floats_match(value_of(a), value_of(this_athlete))]
 
     msg = "rival draws on every criterion yet is not in still_tied"
     raise AssertionError(msg)

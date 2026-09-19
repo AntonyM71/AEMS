@@ -2059,14 +2059,18 @@ class TestAthleteRankCalculation:
             _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
 
-        top_reason = "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00)"
+        # All three are pairwise distinct on the very first criterion, so the
+        # same full breakdown explains every athlete's placement.
+        top_reason = (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
+        )
         want = [
             _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
             _tied_athlete(id_4, [30.0, 20.0], highest_move=30.0),
             _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
         want[0].ranking = 3
-        want[0].reason = "Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"
+        want[0].reason = top_reason
         want[1].ranking = 2
         want[1].reason = top_reason
         want[2].ranking = 1
@@ -2093,7 +2097,14 @@ class TestAthleteRankCalculation:
             _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
         ]
 
-        run_reason = "Tie resolved by 3rd highest scoring run: #5 (20.00), #3 (10.00)"
+        # #4 also scored 10 on the 3rd run, tied with #3 there, so the run-based
+        # reason names it too even though #4 is separated from this pair earlier
+        # (by highest scoring move). #3 is named before #4 since #3 finishes
+        # ahead of #4 overall (by that later move criterion).
+        run_reason = (
+            "Tie resolved by 3rd highest scoring run: #5 (20.00), #3 (10.00), "
+            "#4 (10.00)"
+        )
         want = [
             _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
             _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
@@ -2125,7 +2136,13 @@ class TestAthleteRankCalculation:
             _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
         ]
 
-        top_reason = "Tie resolved by highest scoring run: #3 (40.00), #4 (30.00)"
+        # #5 also scored 30 on the highest run, tied with #4 there, so #3's and
+        # #4's shared reason names it even though #5 is separated from them
+        # later (by the 2nd highest scoring run). #4 is named before #5 since
+        # #4 finishes ahead of #5 overall (by that later run).
+        top_reason = (
+            "Tie resolved by highest scoring run: #3 (40.00), #4 (30.00), #5 (30.00)"
+        )
         want = [
             _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
             _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
@@ -2159,14 +2176,19 @@ class TestAthleteRankCalculation:
             _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
         ]
 
-        top_reason = "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00)"
+        # All three share identical run scores, so nothing separates any pair of
+        # them until the move criterion - every athlete gets the same full
+        # three-way breakdown there.
+        top_reason = (
+            "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00), #5 (10.00)"
+        )
         want = [
             _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
             _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
             _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
         ]
         want[0].ranking = 3
-        want[0].reason = "Tie resolved by highest scoring move: #4 (20.00), #5 (10.00)"
+        want[0].reason = top_reason
         want[1].ranking = 2
         want[1].reason = top_reason
         want[2].ranking = 1
@@ -2190,7 +2212,13 @@ class TestAthleteRankCalculation:
             _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
         ]
 
-        top_reason = "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+        # #3 also scored 25 on the highest run, tied with #4 there, so #4's and
+        # #5's shared reason names it even though #3 is separated from them
+        # later (by highest scoring move). #4 is named before #3 since #4
+        # finishes ahead of #3 overall (by that later criterion).
+        top_reason = (
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00), #3 (25.00)"
+        )
         want = [
             _tied_athlete(id_3, [25.0, 25.0], highest_move=20.0),
             _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
@@ -2500,7 +2528,7 @@ class TestAthleteRankCalculation:
         assert got[UUID(tied_a)].ranking == 3
         assert got[UUID(tied_b)].ranking == 3
         assert got[UUID(clear)].reason == (
-            "Tie resolved by highest scoring run: #2 (40.00), #3 (25.00)"
+            "Tie resolved by highest scoring run: #2 (40.00), #3 (25.00), #4 (25.00)"
         )
         assert got[UUID(tied_a)].reason == (
             "Tie unresolved - athletes remain tied: #3, #4"
@@ -2757,7 +2785,9 @@ class TestBuildTieBreakReason:
             f"athlete {UUID(B)} (25.00)"
         )
 
-    def test_it_compares_each_athlete_against_its_adjacent_rival(self) -> None:
+    def test_it_names_every_athlete_still_tied_at_the_deciding_criterion(
+        self,
+    ) -> None:
         tied = [
             _tied_athlete(
                 "c7476320-6c48-11ee-b962-0242ac120005",
@@ -2780,11 +2810,14 @@ class TestBuildTieBreakReason:
                 UUID(C),
             )
         }
+        # #3 also scored 25 on the highest run, tied with #4 there, so both #5's
+        # and #4's reason name it even though #3 is separated from them later
+        # (by highest scoring move).
         assert reasons[UUID("c7476320-6c48-11ee-b962-0242ac120005")] == (
-            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00), #3 (25.00)"
         )
         assert reasons[UUID(A)] == (
-            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00), #3 (25.00)"
         )
         assert reasons[UUID(C)] == (
             "Tie resolved by highest scoring move: #4 (20.00), #3 (12.00)"
@@ -2806,8 +2839,10 @@ class TestBuildTieBreakReason:
         unresolved = "Tie unresolved - athletes remain tied: #4, #3"
         assert build_tie_break_reason(UUID(A), tied, bibs) == unresolved
         assert build_tie_break_reason(UUID(B), tied, bibs) == unresolved
+        # The cleared athlete's reason names both #4 and #3, since they're
+        # equally tied with each other at the deciding criterion (issue #434).
         assert build_tie_break_reason(UUID(cleared_id), tied, bibs) == (
-            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00)"
+            "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00), #3 (25.00)"
         )
 
     def test_it_mixes_bib_and_uuid_labels_when_a_bib_is_missing(self) -> None:
