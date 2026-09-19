@@ -1,22 +1,11 @@
-import os
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-
-def get_database_address() -> str:
-    """Get database connection string from environment"""
-    load_dotenv(".env")
-    database_address = os.environ.get("CONNECTION_STRING")
-    if not database_address:
-        msg = "Database Address cannot be empty"
-        raise ValueError(msg)
-    return database_address
-
+from app.config import settings
 
 # Initialize these as None so they can be set up lazily
 engine = None
@@ -27,7 +16,7 @@ def setup_database() -> None:
     """Set up database connection"""
     global engine, session
     if engine is None:
-        engine = create_engine(get_database_address())
+        engine = create_engine(settings.connection_string)
         session = sessionmaker(engine)
 
 

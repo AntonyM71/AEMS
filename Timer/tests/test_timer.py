@@ -11,9 +11,11 @@ from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 # conftest.py has already injected all the necessary sys.modules mocks.
 import timer
+from config import TimerSettings
 from tests import conftest
 
 
@@ -459,3 +461,39 @@ class TestSocketIOTransport:
         assert conftest._FakeSimpleClient.last_connect_kwargs["transports"] == [
             "websocket"
         ]
+
+
+# ===========================================================================
+# load_timer_settings()
+# ===========================================================================
+
+
+class TestLoadTimerSettings:
+    def test_valid_config_returns_validated_values(self) -> None:
+        valid_settings = TimerSettings(
+            socketio_url="http://example.com:1234",
+            socketio_path="/custom/",
+            enable_websocket=False,
+        )
+        with patch("timer.TimerSettings", return_value=valid_settings):
+            enabled, url, path = timer.load_timer_settings()
+
+        assert enabled is False
+        assert url == "http://example.com:1234/"
+        assert path == "/custom/"
+
+    def test_invalid_config_disables_websocket_with_safe_defaults(self) -> None:
+        try:
+            TimerSettings(socketio_url="not-a-url")
+        except ValidationError as exc:
+            validation_error = exc
+
+        with patch("timer.TimerSettings", side_effect=validation_error):
+            enabled, url, path = timer.load_timer_settings()
+
+        assert enabled is False
+        assert url == "http://192.168.0.28:81"
+        assert path == "/socket.io/"
+        # An invalid config must never take down the GPIO-driven hardware.
+        assert callable(timer.start_timer)
+        assert callable(timer.update_buzzer)

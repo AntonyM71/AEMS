@@ -1,4 +1,3 @@
-import os
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -10,7 +9,6 @@ import uvicorn
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import TypeAdapter
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -21,6 +19,7 @@ from app.competition_management.competition_management import (
     competition_management_router,
 )
 from app.competition_management.pdfEndpoints import pdf_router
+from app.config import settings
 from app.crud.athlete import athlete_router
 from app.crud.athleteheat import athleteheat_router
 from app.crud.availablebonuses import availablebonuses_router
@@ -37,15 +36,13 @@ from app.scoring.customScoringEndpoints import scoring_router
 from custom_logging import setup_logging
 from db.client import get_transaction_session
 
-frontend_url = f"http://localhost:{os.getenv('PORT', default=3000)}"
+frontend_url = f"http://localhost:{settings.port}"
 request_origins = [frontend_url]
 
 
-LOG_JSON_FORMAT = TypeAdapter(bool).validate_python(
-    os.getenv("LOG_JSON_FORMAT", default=False)
+setup_logging(
+    json_logs=settings.log_json_format, log_level=settings.log_level, log_name="server"
 )
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-setup_logging(json_logs=LOG_JSON_FORMAT, log_level=LOG_LEVEL, log_name="server")
 
 access_logger = structlog.stdlib.get_logger("api.access")
 

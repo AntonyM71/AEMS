@@ -1,11 +1,13 @@
-import os
 import random
 import time
 
 import socketio
 
-SIO_SERVER_URL = os.environ.get("SOCKETIO_URL", "http://localhost:8000")
-SIO_PATH = os.environ.get("SOCKETIO_PATH", "/socket.io/")
+from config import FakeTimerSettings
+
+_settings = FakeTimerSettings()
+SIO_SERVER_URL = str(_settings.socketio_url)
+SIO_PATH = _settings.socketio_path
 
 
 def main() -> None:
