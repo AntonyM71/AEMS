@@ -103,6 +103,33 @@ describe("UploadCsv", () => {
 		post.mockRestore()
 	})
 
+	it("warns about rows the server skipped instead of silently reporting success", async () => {
+		const post = jest.spyOn(axios, "post").mockResolvedValue({
+			data: {
+				skipped_rows: [
+					{
+						first_name: "Jane",
+						last_name: "Doe",
+						reason: "Event 'Unknown' not found"
+					}
+				]
+			}
+		})
+		const user = userEvent.setup({ delay: null })
+		renderWithProviders(<UploadCsv />)
+
+		await fillCompleteForm(user)
+		await user.click(screen.getByRole("button", { name: "Submit" }))
+
+		await waitFor(() => expect(post).toHaveBeenCalledTimes(1))
+		expect(toast.error).toHaveBeenCalledWith(
+			expect.stringContaining("Jane Doe (Event 'Unknown' not found)")
+		)
+		expect(toast.success).not.toHaveBeenCalled()
+
+		post.mockRestore()
+	})
+
 	it("sends a fresh form on each submit — no duplicated fields", async () => {
 		const post = jest.spyOn(axios, "post").mockResolvedValue({ data: {} })
 		const user = userEvent.setup({ delay: null })

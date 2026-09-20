@@ -139,7 +139,13 @@ const UploadForm = () => {
 			formData.append("random_heats", randomHeats.toString())
 			formData.append("number_of_random_heats", numberOfHeats.toString())
 			axios
-				.post(
+				.post<{
+					skipped_rows?: {
+						first_name: string
+						last_name: string
+						reason: string
+					}[]
+				}>(
 					`${
 						process.env.NEXT_PUBLIC_API_URL_DEV ?? "/api/"
 					}competition_management/upload`,
@@ -147,8 +153,22 @@ const UploadForm = () => {
 					{}
 				)
 
-				.then(() => {
-					toast.success("Competition uploaded")
+				.then((response) => {
+					const skippedRows = response.data.skipped_rows ?? []
+					if (skippedRows.length > 0) {
+						toast.error(
+							`Competition uploaded, but ${
+								skippedRows.length
+							} row(s) were skipped: ${skippedRows
+								.map(
+									(row) =>
+										`${row.first_name} ${row.last_name} (${row.reason})`
+								)
+								.join(", ")}`
+						)
+					} else {
+						toast.success("Competition uploaded")
+					}
 				})
 				.catch((error: AxiosError) => {
 					// handle errors

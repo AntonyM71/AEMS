@@ -142,8 +142,9 @@ def process_competitors_df(
     number_of_random_heats: int = 5,
     *,
     random_heats: bool = False,
-) -> int:
+) -> tuple[int, list[dict[str, str]]]:
     paddler_count = 0
+    skipped_rows: list[dict[str, str]] = []
     competition_id = generate_uuid()
 
     with transaction_session_context_manager() as db:
@@ -200,8 +201,36 @@ def process_competitors_df(
         if random_heats:
             competitors_df = competitors_df.sample(frac=1)
         for i, (_index, row) in enumerate(competitors_df.iterrows()):
-            athlete_id = generate_uuid()
+            phase_id = event_phase_map.get(row["Event"].strip(), None)
 
+            if phase_id is None:
+                skipped_rows.append(
+                    {
+                        "first_name": row["first_name"],
+                        "last_name": row["last_name"],
+                        "bib": str(row["bib"]),
+                        "reason": f"Event '{row['Event']}' not found",
+                    }
+                )
+                continue
+
+            if random_heats:
+                heat_id = heat_list[int(i) % number_of_random_heats]
+            else:
+                heat_id = heat_map.get(row["Heat"], None)
+
+            if heat_id is None:
+                skipped_rows.append(
+                    {
+                        "first_name": row["first_name"],
+                        "last_name": row["last_name"],
+                        "bib": str(row["bib"]),
+                        "reason": f"Heat '{row['Heat']}' not found",
+                    }
+                )
+                continue
+
+            athlete_id = generate_uuid()
             athlete_data = [
                 {
                     "id": athlete_id,
@@ -214,22 +243,8 @@ def process_competitors_df(
 
             post_athlete(athlete_data, db=db)
             paddler_count += 1
+
             athlete_heat_id = generate_uuid()
-
-            phase_id = event_phase_map.get(row["Event"].strip(), None)
-
-            if phase_id is None:
-                print(f"Event '{row['Event']}' not found in event_phase_map.")
-                continue
-            if random_heats:
-                heat_id = heat_list[int(i) % number_of_random_heats]
-            else:
-                heat_id = heat_map.get(row["Heat"], None)
-
-            if heat_id is None:
-                print(f"Heat '{row['Heat']}' not found in heat_map.")
-                continue
-
             athlete_heat_data = [
                 {
                     "id": athlete_heat_id,
@@ -243,7 +258,7 @@ def process_competitors_df(
             post_athlete_heat(athlete_heat_data, db=db)
 
         db.commit()
-        return paddler_count
+        return paddler_count, skipped_rows
 
 
 class NoHeatInfoForNonRandomHeatError(Exception):
