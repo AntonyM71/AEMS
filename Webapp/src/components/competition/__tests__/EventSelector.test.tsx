@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
@@ -10,6 +10,12 @@ import {
 } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import EventSelector from "../EventSelector"
+
+interface EventPostBody {
+	name: string
+	id: string
+	competition_id: string
+}
 
 // Need to ensure MSW intercepts requests
 beforeAll(() => server.listen())
@@ -127,5 +133,62 @@ describe("EventSelector", () => {
 
 		// Verify the Redux store was updated
 		expect(store.getState().competitions.selectedEvent).toBe("event-1")
+	})
+
+	it("adds a new event and shows it in the selector", async () => {
+		const user = userEvent.setup()
+		const events = [
+			{ id: "event-1", name: "Event 1", competition_id: "1" },
+			{ id: "event-2", name: "Event 2", competition_id: "1" }
+		]
+		let postedBody: EventPostBody[] | undefined
+		server.use(
+			http.get("/api/competition/:competitionPkId/event", () =>
+				HttpResponse.json(events)
+			),
+			http.post("/api/event/", async ({ request }) => {
+				postedBody = (await request.json()) as EventPostBody[]
+				events.push(postedBody[0])
+
+				return HttpResponse.json(postedBody, { status: 201 })
+			})
+		)
+
+		store.dispatch(updateSelectedCompetition("1"))
+
+		render(
+			<Provider store={store}>
+				<EventSelector showDetailed={true} />
+			</Provider>
+		)
+
+		await screen.findByText("Add New Event")
+
+		await user.type(
+			screen.getByRole("textbox", { name: "New event" }),
+			"Freestyle Finals"
+		)
+
+		const addButton = screen.getByRole("button", { name: "Add Event" })
+		await waitFor(() => expect(addButton).toBeEnabled())
+		await user.click(addButton)
+
+		await waitFor(() => expect(events).toHaveLength(3))
+		expect(postedBody).toEqual([
+			expect.objectContaining({
+				name: "Freestyle Finals",
+				competition_id: "1"
+			})
+		])
+		const selectElement = screen
+			.getAllByRole("combobox")
+			.find((el) => el.getAttribute("aria-haspopup") === "listbox")
+		if (!selectElement) {
+			throw new Error("Select Event combobox not found")
+		}
+		await user.click(selectElement)
+		expect(
+			await screen.findByRole("option", { name: "Freestyle Finals" })
+		).toBeInTheDocument()
 	})
 })
