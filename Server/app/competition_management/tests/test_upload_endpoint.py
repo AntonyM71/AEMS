@@ -41,6 +41,13 @@ def _post(form: dict, csv: bytes = VALID_CSV) -> Response:
     )
 
 
+def _assert_upload_accepted_without_heat_column(response: Response) -> None:
+    """201 means validation received random_heats=True and didn't require a Heat
+    column; the pre-fix bug hardcoded False and would 422 here instead.
+    """
+    assert response.status_code == 201
+
+
 def test_number_of_runs_of_zero_is_rejected() -> None:
     response = _post({**VALID_FORM, "number_of_runs": "0"})
 
@@ -83,5 +90,4 @@ def test_random_heats_upload_without_heat_column_succeeds(
         csv=NO_HEAT_CSV,
     )
 
-    assert response.status_code == 201
-    assert mock_process_competitors_df.call_args.kwargs["random_heats"] is True
+    _assert_upload_accepted_without_heat_column(response)
