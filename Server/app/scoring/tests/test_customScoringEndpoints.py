@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
@@ -767,3 +768,43 @@ async def test_update_athlete_score_persists_and_broadcasts(
 
     assert mock_db_session.commit.called
     mock_emit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_rejects_locked_run(
+    mock_db_session: Session,
+) -> None:
+    heat_id = str(uuid.uuid4())
+    athlete_id = str(uuid.uuid4())
+    judge_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        RunStatus(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number=1,
+            phase_id=phase_id,
+            locked=True,
+            did_not_start=False,
+        )
+    )
+    request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert exc_info.value.status_code == 500
+    assert not mock_db_session.commit.called
+    assert not mock_db_session.bulk_save_objects.called
+    mock_emit.assert_not_awaited()
