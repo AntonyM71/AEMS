@@ -159,6 +159,22 @@ def test_get_many_competitions_with_pagination(
     assert mock_db_session.execute.called
 
 
+def test_get_many_competitions_limit_zero_returns_no_rows(
+    test_client: TestClient, mock_db_session: Session, mock_competition: Competition
+) -> None:
+    """limit=0 is a real bound (zero rows), matching every other list endpoint."""
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = [mock_competition]
+    mock_db_session.execute.return_value = mock_result
+
+    response = test_client.get("/competition/?limit=0&offset=0")
+
+    assert response.status_code == 200
+    query = mock_db_session.execute.call_args[0][0]
+    assert query._limit_clause.value == 0
+    assert query._offset_clause.value == 0
+
+
 def test_get_many_competitions_with_ordering(
     test_client: TestClient, mock_db_session: Session, mock_competition: Competition
 ) -> None:
