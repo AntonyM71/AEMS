@@ -75,7 +75,7 @@
 		"@eslint/js": "^9.21.0",
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/react": "^16.3.0",
-		"@testing-library/user-event": "^14.5.2",
+		"@testing-library/user-event": "^14.6.7",
 		"@types/redux-mock-store": "^1.5.0",
 		"@types/uuid": "^8.3.0",
 		"esbuild": "^0.28.0",
