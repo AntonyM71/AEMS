@@ -5,6 +5,20 @@ import LiveTimer from "../LiveTimer"
 
 jest.mock("../WebSocketConnections")
 
+const renderAndConnect = async () => {
+	renderWithProviders(<LiveTimer />)
+	await waitFor(() => expect(socketHub.openCount("timer")).toBeGreaterThan(0))
+}
+
+const emitTimerEvent = (payload: {
+	time_remaining: number
+	status?: string
+}) => {
+	act(() => {
+		socketHub.emit("timer", "timer", payload)
+	})
+}
+
 describe("LiveTimer", () => {
 	beforeEach(() => socketHub.reset())
 
@@ -16,69 +30,34 @@ describe("LiveTimer", () => {
 	})
 
 	it("shows the remaining seconds sent by the server", async () => {
-		renderWithProviders(<LiveTimer />)
+		await renderAndConnect()
 
-		await waitFor(() =>
-			expect(socketHub.openCount("timer")).toBeGreaterThan(0)
-		)
-
-		act(() => {
-			socketHub.emit("timer", "timer", { time_remaining: 30 })
-		})
+		emitTimerEvent({ time_remaining: 30 })
 		expect(await screen.findByText("30")).toBeInTheDocument()
 
-		act(() => {
-			socketHub.emit("timer", "timer", { time_remaining: 12 })
-		})
+		emitTimerEvent({ time_remaining: 12 })
 		expect(await screen.findByText("12")).toBeInTheDocument()
 		expect(screen.queryByText("30")).not.toBeInTheDocument()
 	})
 
 	it("shows the remaining seconds while the timer is running", async () => {
-		renderWithProviders(<LiveTimer />)
+		await renderAndConnect()
 
-		await waitFor(() =>
-			expect(socketHub.openCount("timer")).toBeGreaterThan(0)
-		)
-
-		act(() => {
-			socketHub.emit("timer", "timer", {
-				time_remaining: 20,
-				status: "running"
-			})
-		})
+		emitTimerEvent({ time_remaining: 20, status: "running" })
 		expect(await screen.findByText("20")).toBeInTheDocument()
 	})
 
 	it("shows 0 once the timer finishes normally", async () => {
-		renderWithProviders(<LiveTimer />)
+		await renderAndConnect()
 
-		await waitFor(() =>
-			expect(socketHub.openCount("timer")).toBeGreaterThan(0)
-		)
-
-		act(() => {
-			socketHub.emit("timer", "timer", {
-				time_remaining: 0,
-				status: "finished"
-			})
-		})
+		emitTimerEvent({ time_remaining: 0, status: "finished" })
 		expect(await screen.findByText("0")).toBeInTheDocument()
 	})
 
 	it("shows Cancelled instead of a number when the run is cancelled", async () => {
-		renderWithProviders(<LiveTimer />)
+		await renderAndConnect()
 
-		await waitFor(() =>
-			expect(socketHub.openCount("timer")).toBeGreaterThan(0)
-		)
-
-		act(() => {
-			socketHub.emit("timer", "timer", {
-				time_remaining: 0,
-				status: "cancelled"
-			})
-		})
+		emitTimerEvent({ time_remaining: 0, status: "cancelled" })
 		expect(await screen.findByText("Cancelled")).toBeInTheDocument()
 		expect(screen.queryByText("0")).not.toBeInTheDocument()
 	})
