@@ -111,7 +111,7 @@ socketio_thread = None
 message_queue: queue.Queue = queue.Queue()
 socketio_running = True  # Flag to control the Socket.IO thread
 
-StatusLiteral = Literal["started", "running", "finished", "cancelled"]
+StatusLiteral = Literal["running", "finished", "cancelled"]
 
 
 def update_buzzer(*, manual_buzz: bool, timer_buzz: bool) -> None:
@@ -125,7 +125,6 @@ def update_buzzer(*, manual_buzz: bool, timer_buzz: bool) -> None:
 def get_short_status(status: StatusLiteral) -> str:
     """Returns a three-letter abbreviation for the given status."""
     status_map = {
-        "started": "STA",
         "running": "RUN",
         "finished": "FIN",
         "cancelled": "CAN",
@@ -219,7 +218,7 @@ def send_timer_update(
     Non-blocking and safe to call from the timer thread.
 
     Args:
-        status (str): Status of the timer ("started", "running", "finished", "cancelled")
+        status (str): Status of the timer ("running", "finished", "cancelled")
         time_remaining (float, optional): Remaining time in seconds
     """
     # Skip if Socket.IO functionality is disabled

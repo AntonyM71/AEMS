@@ -102,7 +102,6 @@ class TestGetShortStatus:
     @pytest.mark.parametrize(
         "status,expected",
         [
-            ("started", "STA"),
             ("running", "RUN"),
             ("finished", "FIN"),
             ("cancelled", "CAN"),
@@ -114,6 +113,10 @@ class TestGetShortStatus:
     def test_unknown_status_returns_unk(self) -> None:
         # Intentionally passing an invalid status to test the fallback "UNK" path.
         assert timer.get_short_status("bogus") == "UNK"  # type: ignore[arg-type]
+
+    def test_started_is_not_a_valid_status(self) -> None:
+        # send_timer_update never emits "started"; it is not part of StatusLiteral.
+        assert timer.get_short_status("started") == "UNK"  # type: ignore[arg-type]
 
 
 # ===========================================================================
@@ -230,7 +233,6 @@ class TestSendTimerUpdate:
     def test_status_queued_correctly(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(timer, "ENABLE_WEBSOCKET", True)
         statuses: tuple[timer.StatusLiteral, ...] = (
-            "started",
             "running",
             "finished",
             "cancelled",
