@@ -33,11 +33,11 @@ VALID_FORM = {
 }
 
 
-def _post(form: dict) -> Response:
+def _post(form: dict, csv: bytes = VALID_CSV) -> Response:
     return client.post(
         "/competition_management/upload",
         data=form,
-        files={"file": ("competitors.csv", BytesIO(VALID_CSV), "text/csv")},
+        files={"file": ("competitors.csv", BytesIO(csv), "text/csv")},
     )
 
 
@@ -78,10 +78,9 @@ def test_random_heats_upload_without_heat_column_succeeds(
 ) -> None:
     mock_process_competitors_df.return_value = 1
 
-    response = client.post(
-        "/competition_management/upload",
-        data={**VALID_FORM, "random_heats": "true", "number_of_random_heats": "2"},
-        files={"file": ("competitors.csv", BytesIO(NO_HEAT_CSV), "text/csv")},
+    response = _post(
+        {**VALID_FORM, "random_heats": "true", "number_of_random_heats": "2"},
+        csv=NO_HEAT_CSV,
     )
 
     assert response.status_code == 201
