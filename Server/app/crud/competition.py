@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.crud.query_helpers import apply_in_filters, apply_ordering
+from app.crud.query_helpers import apply_in_filters, apply_ordering, apply_pagination
 from app.crud.schemas import (
     CompetitionCreate,
     CompetitionNested,
@@ -84,11 +84,7 @@ def get_many(
 
     query = apply_ordering(query, order_by_columns, {"name": Competition.name})
 
-    # This endpoint treats a zero offset/limit as "unset" (unlike the others).
-    if offset:
-        query = query.offset(offset)
-    if limit:
-        query = query.limit(limit)
+    query = apply_pagination(query, limit, offset)
 
     result = db.execute(query)
     competitions = result.scalars().all()

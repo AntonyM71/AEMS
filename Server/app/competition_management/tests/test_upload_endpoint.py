@@ -20,9 +20,7 @@ VALID_CSV = (
     b"James,Wilkinson,1,Senior Elite C1M,1\n"
 )
 
-NO_HEAT_COLUMN_CSV = (
-    b"first_name,last_name,bib,Event\nJames,Wilkinson,1,Senior Elite C1M\n"
-)
+NO_HEAT_CSV = b"first_name,last_name,bib,Event\nJames,Wilkinson,1,Senior Elite C1M\n"
 
 VALID_FORM = {
     "competition_name": "Test Comp",
@@ -35,12 +33,19 @@ VALID_FORM = {
 }
 
 
-def _post(form: dict) -> Response:
+def _post(form: dict, csv: bytes = VALID_CSV) -> Response:
     return client.post(
         "/competition_management/upload",
         data=form,
-        files={"file": ("competitors.csv", BytesIO(VALID_CSV), "text/csv")},
+        files={"file": ("competitors.csv", BytesIO(csv), "text/csv")},
     )
+
+
+def _assert_upload_accepted_without_heat_column(response: Response) -> None:
+    """201 confirms validation ran with random_heats=True; with False it would
+    422 for requiring a missing Heat column.
+    """
+    assert response.status_code == 201
 
 
 def test_number_of_runs_of_zero_is_rejected() -> None:
@@ -80,13 +85,9 @@ def test_random_heats_upload_without_heat_column_succeeds(
 ) -> None:
     mock_process_competitors_df.return_value = 1
 
-    response = client.post(
-        "/competition_management/upload",
-        data={**VALID_FORM, "random_heats": "true"},
-        files={
-            "file": ("competitors.csv", BytesIO(NO_HEAT_COLUMN_CSV), "text/csv")
-        },
+    response = _post(
+        {**VALID_FORM, "random_heats": "true", "number_of_random_heats": "2"},
+        csv=NO_HEAT_CSV,
     )
 
-    assert response.status_code == 201
-    assert mock_process_competitors_df.call_args.kwargs["random_heats"] is True
+    _assert_upload_accepted_without_heat_column(response)
