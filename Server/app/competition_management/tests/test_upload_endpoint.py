@@ -42,8 +42,8 @@ def _post(form: dict, csv: bytes = VALID_CSV) -> Response:
 
 
 def _assert_upload_accepted_without_heat_column(response: Response) -> None:
-    """201 means validation received random_heats=True and didn't require a Heat
-    column; the pre-fix bug hardcoded False and would 422 here instead.
+    """201 confirms validation ran with random_heats=True; with False it would
+    422 for requiring a missing Heat column.
     """
     assert response.status_code == 201
 
