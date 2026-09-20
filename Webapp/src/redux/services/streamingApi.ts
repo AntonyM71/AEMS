@@ -91,10 +91,17 @@ const emitWithSocketReuse = async (
 	}
 }
 
+export interface TimerStreamData {
+	time_remaining: number
+	status: "running" | "finished" | "cancelled"
+}
+
 export const streamingApi = emptySplitApi.injectEndpoints({
 	endpoints: (build) => ({
-		timerStream: build.query<number, void>({
-			queryFn: () => ({ data: 0 }),
+		timerStream: build.query<TimerStreamData, void>({
+			queryFn: () => ({
+				data: { time_remaining: 0, status: "running" }
+			}),
 			async onCacheEntryAdded(
 				_,
 				{ updateCachedData, cacheEntryRemoved }
@@ -103,16 +110,11 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					current: null
 				}
 				socketRef.current = connectTimerSocket()
-				socketRef.current.on(
-					"timer",
-					(data: { time_remaining: number }) => {
-						if (data?.time_remaining !== undefined) {
-							updateCachedData(
-								() => data.time_remaining
-							)
-						}
+				socketRef.current.on("timer", (data: TimerStreamData) => {
+					if (data?.time_remaining !== undefined) {
+						updateCachedData(() => data)
 					}
-				)
+				})
 				await cacheEntryRemoved
 				socketRef.current?.disconnect()
 				socketRef.current = null
