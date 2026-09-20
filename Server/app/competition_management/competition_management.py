@@ -91,7 +91,7 @@ def upload(
     else:
         msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
         raise InvalidFileTypeError(msg)
-    validate_columns_and_data_types(competitors_df, random_heats=False)
+    validate_columns_and_data_types(competitors_df, random_heats=random_heats)
     number_of_paddlers_added = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,
