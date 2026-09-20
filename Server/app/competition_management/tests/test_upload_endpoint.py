@@ -20,6 +20,10 @@ VALID_CSV = (
     b"James,Wilkinson,1,Senior Elite C1M,1\n"
 )
 
+NO_HEAT_COLUMN_CSV = (
+    b"first_name,last_name,bib,Event\nJames,Wilkinson,1,Senior Elite C1M\n"
+)
+
 VALID_FORM = {
     "competition_name": "Test Comp",
     "scoresheet_name": "icf",
@@ -68,3 +72,21 @@ def test_a_valid_upload_succeeds(mock_process_competitors_df) -> None:  # noqa: 
     assert response.status_code == 201
     assert mock_process_competitors_df.call_args.kwargs["number_of_runs"] == 2
     assert mock_process_competitors_df.call_args.kwargs["number_of_runs_for_score"] == 1
+
+
+@patch("app.competition_management.competition_management.process_competitors_df")
+def test_random_heats_upload_without_heat_column_succeeds(
+    mock_process_competitors_df,  # noqa: ANN001
+) -> None:
+    mock_process_competitors_df.return_value = 1
+
+    response = client.post(
+        "/competition_management/upload",
+        data={**VALID_FORM, "random_heats": "true"},
+        files={
+            "file": ("competitors.csv", BytesIO(NO_HEAT_COLUMN_CSV), "text/csv")
+        },
+    )
+
+    assert response.status_code == 201
+    assert mock_process_competitors_df.call_args.kwargs["random_heats"] is True
