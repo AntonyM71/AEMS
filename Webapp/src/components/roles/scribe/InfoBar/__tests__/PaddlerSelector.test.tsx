@@ -49,14 +49,16 @@ describe("PaddlerSelector", () => {
 				bib: "456",
 				first_name: "John",
 				last_name: "Doe",
-				scoresheet: "sheet-1"
+				scoresheet: "sheet-1",
+				number_of_runs: 2
 			},
 			{
 				id: "124",
 				bib: "457",
 				first_name: "Jane",
 				last_name: "Smith",
-				scoresheet: "sheet-2"
+				scoresheet: "sheet-2",
+				number_of_runs: 2
 			}
 		]
 
@@ -72,8 +74,7 @@ describe("PaddlerSelector", () => {
 			{
 				preloadedState: {
 					competitions: {
-						selectedHeat: "heat-1",
-						numberOfRuns: 2
+						selectedHeat: "heat-1"
 					}
 				}
 			}
@@ -136,14 +137,16 @@ describe("PaddlerSelector", () => {
 				bib: "456",
 				first_name: "John",
 				last_name: "Doe",
-				scoresheet: "sheet-1"
+				scoresheet: "sheet-1",
+				number_of_runs: 2
 			},
 			{
 				id: "124",
 				bib: "457",
 				first_name: "Jane",
 				last_name: "Smith",
-				scoresheet: "sheet-2"
+				scoresheet: "sheet-2",
+				number_of_runs: 2
 			}
 		]
 
@@ -159,8 +162,7 @@ describe("PaddlerSelector", () => {
 			{
 				preloadedState: {
 					competitions: {
-						selectedHeat: "heat-1",
-						numberOfRuns: 2
+						selectedHeat: "heat-1"
 					}
 				}
 			}
@@ -212,5 +214,69 @@ describe("PaddlerSelector", () => {
 		await waitFor(() => {
 			expect(store.getState().score.selectedRun).toBe(1)
 		})
+	})
+
+	it("keeps the run in range going backwards through paddlers with only one run (issue #397)", async () => {
+		const mockPaddlers = [
+			{
+				id: "123",
+				bib: "456",
+				first_name: "John",
+				last_name: "Doe",
+				scoresheet: "sheet-1",
+				number_of_runs: 1
+			},
+			{
+				id: "124",
+				bib: "457",
+				first_name: "Jane",
+				last_name: "Smith",
+				scoresheet: "sheet-2",
+				number_of_runs: 1
+			}
+		]
+
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json(mockPaddlers)
+			)
+		)
+
+		const { store } = renderWithProviders(
+			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
+			{
+				preloadedState: {
+					competitions: {
+						selectedHeat: "heat-1",
+						// stale global value left over from a previously-viewed
+						// multi-run phase; must not be used for the wrap math
+						numberOfRuns: 3
+					}
+				}
+			}
+		)
+
+		// Wait for the heat's athlete data (and their number_of_runs) to load
+		// before interacting, so the wrap math isn't racing the query.
+		await waitFor(() => {
+			const apiState = store.getState()[aemsApi.reducerPath] as {
+				queries: Record<string, { data?: any[] }>
+			}
+			const heatInfoKey = Object.keys(apiState.queries).find((key) =>
+				key.startsWith("getHeatInfo")
+			)
+			expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
+				2
+			)
+		})
+
+		const prevButton = screen.getByTestId("button-prev-paddler")
+
+		fireEvent.click(prevButton)
+
+		await waitFor(() => {
+			expect(store.getState().score.selectedPaddler).toBe(1)
+		})
+		expect(store.getState().score.selectedRun).toBe(0)
 	})
 })

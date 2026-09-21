@@ -93,6 +93,20 @@ describe("RunSelector", () => {
 			</Provider>
 		)
 
+		// Wait for the heat's athlete data (and their number_of_runs) to load
+		// before interacting, so the wrap math isn't racing the query.
+		await waitFor(() => {
+			const apiState = store.getState()[aemsApi.reducerPath] as {
+				queries: Record<string, { data?: any[] }>
+			}
+			const heatInfoKey = Object.keys(apiState.queries).find((key) =>
+				key.startsWith("getHeatInfo")
+			)
+			expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
+				1
+			)
+		})
+
 		// Test next button
 		const nextButton = screen.getByTestId("button-next-run")
 		expect(store.getState().score.selectedRun).toBe(0)
@@ -116,7 +130,7 @@ describe("RunSelector", () => {
 		})
 	})
 
-	it("displays red text when run number exceeds athlete's number of runs", async () => {
+	it("keeps the run in range for an athlete with a single run (issue #397)", async () => {
 		const mockPaddlerInfo = {
 			id: "123",
 			bib: "456",
@@ -137,12 +151,52 @@ describe("RunSelector", () => {
 			</Provider>
 		)
 
-		const nextButton = screen.getByTestId("button-next-run")
+		const nextButton = await screen.findByTestId("button-next-run")
 		fireEvent.click(nextButton)
 
 		await waitFor(() => {
-			const runNumber = screen.getByText("2")
-			expect(runNumber).toHaveStyle({ color: "red" })
+			expect(store.getState().score.selectedRun).toBe(0)
+		})
+	})
+
+	it("displays red text when the selected run is out of range for the athlete", async () => {
+		store = createTestStore({
+			score: {
+				selectedPaddler: 0,
+				selectedRun: 1,
+				scoredMoves: [],
+				scoredBonuses: [],
+				currentMove: "",
+				userRole: ""
+			},
+			competitions: {
+				selectedHeat: "heat-1",
+				numberOfRuns: 2
+			}
+		})
+
+		const mockPaddlerInfo = {
+			id: "123",
+			bib: "456",
+			first_name: "John",
+			last_name: "Doe",
+			number_of_runs: 1
+		}
+
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([mockPaddlerInfo])
+			)
+		)
+
+		render(
+			<Provider store={store}>
+				<RunSelector />
+			</Provider>
+		)
+
+		await waitFor(() => {
+			expect(screen.getByText("2")).toHaveStyle({ color: "red" })
 		})
 	})
 })

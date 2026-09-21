@@ -5,10 +5,7 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	getNumberOfRuns,
-	getSelectedHeat
-} from "../../../../redux/atoms/competitions"
+import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun,
@@ -20,20 +17,25 @@ import { calculateNewIndex } from "../InfoBar"
 export const RunSelector = () => {
 	const dispatch = useDispatch()
 	const selectedRun = useSelector(getSelectedRun)
-	const numberOfRuns = useSelector(getNumberOfRuns)
 	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
 	const selectedHeat = useSelector(getSelectedHeat)
-	const changeRun = (number: number) => {
-		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
-
-		setselectedRun(newRun)
-	}
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
 			heatId: selectedHeat
 		},
 		{ skip: !selectedHeat }
 	)
+	// Derived from the heat's own athletes rather than the separately-dispatched
+	// global numberOfRuns state, which lags a render behind on heat/phase switches.
+	const numberOfRuns = Math.max(
+		...(athletes.data ?? []).map((paddler) => paddler.number_of_runs),
+		1
+	)
+	const changeRun = (number: number) => {
+		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
+
+		setselectedRun(newRun)
+	}
 
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedAthlete = athletes.data
