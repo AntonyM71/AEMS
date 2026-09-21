@@ -26,32 +26,30 @@ const waitForHeatInfoData = async (
 	})
 }
 
-const twoMockPaddlers = (numberOfRuns: number) => [
-	{
-		id: "123",
-		bib: "456",
-		first_name: "John",
-		last_name: "Doe",
-		scoresheet: "sheet-1",
-		number_of_runs: numberOfRuns
-	},
-	{
-		id: "124",
-		bib: "457",
-		first_name: "Jane",
-		last_name: "Smith",
-		scoresheet: "sheet-2",
-		number_of_runs: numberOfRuns
-	}
-]
-
 // Renders PaddlerSelector for a two-paddler heat and waits for the heat data
 // to load, so each test only has to describe its own interaction/assertions.
 const renderTwoPaddlerHeat = async (
 	numberOfRuns: number,
 	competitionsOverrides: Record<string, unknown> = {}
 ) => {
-	const mockPaddlers = twoMockPaddlers(numberOfRuns)
+	const mockPaddlers = [
+		{
+			id: "123",
+			bib: "456",
+			first_name: "John",
+			last_name: "Doe",
+			scoresheet: "sheet-1",
+			number_of_runs: numberOfRuns
+		},
+		{
+			id: "124",
+			bib: "457",
+			first_name: "Jane",
+			last_name: "Smith",
+			scoresheet: "sheet-2",
+			number_of_runs: numberOfRuns
+		}
+	]
 
 	server.use(
 		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json(mockPaddlers))
