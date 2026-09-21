@@ -12,7 +12,7 @@ import {
 	updateRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
-import { calculateNewIndex } from "../InfoBar"
+import { calculateNewIndex, getNumberOfRunsInHeat } from "../InfoBar"
 
 export const RunSelector = () => {
 	const dispatch = useDispatch()
@@ -25,12 +25,7 @@ export const RunSelector = () => {
 		},
 		{ skip: !selectedHeat }
 	)
-	// Derived from the heat's own athletes rather than the separately-dispatched
-	// global numberOfRuns state, which lags a render behind on heat/phase switches.
-	const numberOfRuns = Math.max(
-		...(athletes.data ?? []).map((paddler) => paddler.number_of_runs),
-		1
-	)
+	const numberOfRuns = getNumberOfRunsInHeat(athletes.data ?? [])
 	const changeRun = (number: number) => {
 		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
 

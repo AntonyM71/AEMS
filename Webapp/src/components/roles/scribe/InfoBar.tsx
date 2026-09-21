@@ -201,3 +201,9 @@ export const calculateNewIndex = (newNumber: number, maxNumber: number) => {
 		return newNumber
 	}
 }
+
+// The max across the heat's athletes, since different paddlers in a heat can
+// have different run counts (see commit b0823fc).
+export const getNumberOfRunsInHeat = (
+	heatAthletes: { number_of_runs: number }[]
+) => Math.max(...heatAthletes.map((athlete) => athlete.number_of_runs), 1)

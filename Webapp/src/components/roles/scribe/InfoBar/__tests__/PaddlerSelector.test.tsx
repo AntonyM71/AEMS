@@ -1,9 +1,30 @@
+import { EnhancedStore } from "@reduxjs/toolkit"
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "../../../../../mocks/server"
+import { RootState } from "../../../../../redux/store"
 import { aemsApi } from "../../../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../../../testUtils"
 import { PaddlerSelector } from "../PaddlerSelector"
+
+// Waits for the heat's athlete data (and their number_of_runs) to load
+// before interacting, so navigation math isn't racing the query.
+const waitForHeatInfoData = async (
+	store: EnhancedStore<RootState>,
+	expectedLength: number
+) => {
+	await waitFor(() => {
+		const apiState = store.getState()[aemsApi.reducerPath] as {
+			queries: Record<string, { data?: unknown[] }>
+		}
+		const heatInfoKey = Object.keys(apiState.queries).find((key) =>
+			key.startsWith("getHeatInfo")
+		)
+		expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
+			expectedLength
+		)
+	})
+}
 
 describe("PaddlerSelector", () => {
 	beforeEach(() => {
@@ -80,25 +101,7 @@ describe("PaddlerSelector", () => {
 			}
 		)
 
-		// Wait for API response to be processed
-		let queryData: any[] | undefined
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const queryKeys = Object.keys(apiState.queries)
-			const heatInfoKey = queryKeys.find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			if (!heatInfoKey) {
-				throw new Error("Heat info query not found")
-			}
-			queryData = apiState.queries[heatInfoKey].data
-			expect(queryData).toBeDefined()
-		})
-
-		// Verify API data length
-		expect(queryData).toHaveLength(2)
+		await waitForHeatInfoData(store, 2)
 
 		// Verify initial state
 		expect(await screen.findByText("456")).toBeInTheDocument()
@@ -168,25 +171,7 @@ describe("PaddlerSelector", () => {
 			}
 		)
 
-		// Wait for API response to be processed
-		let queryData: any[] | undefined
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const queryKeys = Object.keys(apiState.queries)
-			const heatInfoKey = queryKeys.find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			if (!heatInfoKey) {
-				throw new Error("Heat info query not found")
-			}
-			queryData = apiState.queries[heatInfoKey].data
-			expect(queryData).toBeDefined()
-		})
-
-		// Verify API data length
-		expect(queryData).toHaveLength(2)
+		await waitForHeatInfoData(store, 2)
 
 		// Verify initial state
 		expect(screen.getByText("456")).toBeInTheDocument()
@@ -256,19 +241,7 @@ describe("PaddlerSelector", () => {
 			}
 		)
 
-		// Wait for the heat's athlete data (and their number_of_runs) to load
-		// before interacting, so the wrap math isn't racing the query.
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const heatInfoKey = Object.keys(apiState.queries).find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
-				2
-			)
-		})
+		await waitForHeatInfoData(store, 2)
 
 		const prevButton = screen.getByTestId("button-prev-paddler")
 
