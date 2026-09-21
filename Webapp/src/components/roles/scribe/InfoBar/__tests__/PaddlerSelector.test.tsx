@@ -26,6 +26,51 @@ const waitForHeatInfoData = async (
 	})
 }
 
+const twoMockPaddlers = (numberOfRuns: number) => [
+	{
+		id: "123",
+		bib: "456",
+		first_name: "John",
+		last_name: "Doe",
+		scoresheet: "sheet-1",
+		number_of_runs: numberOfRuns
+	},
+	{
+		id: "124",
+		bib: "457",
+		first_name: "Jane",
+		last_name: "Smith",
+		scoresheet: "sheet-2",
+		number_of_runs: numberOfRuns
+	}
+]
+
+// Renders PaddlerSelector for a two-paddler heat and waits for the heat data
+// to load, so each test only has to describe its own interaction/assertions.
+const renderTwoPaddlerHeat = async (
+	numberOfRuns: number,
+	competitionsOverrides: Record<string, unknown> = {}
+) => {
+	const mockPaddlers = twoMockPaddlers(numberOfRuns)
+
+	server.use(
+		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json(mockPaddlers))
+	)
+
+	const { store } = renderWithProviders(
+		<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
+		{
+			preloadedState: {
+				competitions: { selectedHeat: "heat-1", ...competitionsOverrides }
+			}
+		}
+	)
+
+	await waitForHeatInfoData(store, 2)
+
+	return { store, mockPaddlers }
+}
+
 describe("PaddlerSelector", () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
@@ -64,44 +109,7 @@ describe("PaddlerSelector", () => {
 	})
 
 	it("handles navigation buttons correctly", async () => {
-		const mockPaddlers = [
-			{
-				id: "123",
-				bib: "456",
-				first_name: "John",
-				last_name: "Doe",
-				scoresheet: "sheet-1",
-				number_of_runs: 2
-			},
-			{
-				id: "124",
-				bib: "457",
-				first_name: "Jane",
-				last_name: "Smith",
-				scoresheet: "sheet-2",
-				number_of_runs: 2
-			}
-		]
-
-		// Mock the API response with multiple paddlers
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json(mockPaddlers)
-			)
-		)
-
-		const { store } = renderWithProviders(
-			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
-			{
-				preloadedState: {
-					competitions: {
-						selectedHeat: "heat-1"
-					}
-				}
-			}
-		)
-
-		await waitForHeatInfoData(store, 2)
+		const { store } = await renderTwoPaddlerHeat(2)
 
 		// Verify initial state
 		expect(await screen.findByText("456")).toBeInTheDocument()
@@ -134,44 +142,7 @@ describe("PaddlerSelector", () => {
 	})
 
 	it("increments the run when rolling round to the first paddler", async () => {
-		const mockPaddlers = [
-			{
-				id: "123",
-				bib: "456",
-				first_name: "John",
-				last_name: "Doe",
-				scoresheet: "sheet-1",
-				number_of_runs: 2
-			},
-			{
-				id: "124",
-				bib: "457",
-				first_name: "Jane",
-				last_name: "Smith",
-				scoresheet: "sheet-2",
-				number_of_runs: 2
-			}
-		]
-
-		// Mock the API response with multiple paddlers
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json(mockPaddlers)
-			)
-		)
-
-		const { store } = renderWithProviders(
-			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
-			{
-				preloadedState: {
-					competitions: {
-						selectedHeat: "heat-1"
-					}
-				}
-			}
-		)
-
-		await waitForHeatInfoData(store, 2)
+		const { store } = await renderTwoPaddlerHeat(2)
 
 		// Verify initial state
 		expect(screen.getByText("456")).toBeInTheDocument()
@@ -202,46 +173,11 @@ describe("PaddlerSelector", () => {
 	})
 
 	it("keeps the run in range going backwards through paddlers with only one run (issue #397)", async () => {
-		const mockPaddlers = [
-			{
-				id: "123",
-				bib: "456",
-				first_name: "John",
-				last_name: "Doe",
-				scoresheet: "sheet-1",
-				number_of_runs: 1
-			},
-			{
-				id: "124",
-				bib: "457",
-				first_name: "Jane",
-				last_name: "Smith",
-				scoresheet: "sheet-2",
-				number_of_runs: 1
-			}
-		]
-
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json(mockPaddlers)
-			)
-		)
-
-		const { store } = renderWithProviders(
-			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
-			{
-				preloadedState: {
-					competitions: {
-						selectedHeat: "heat-1",
-						// stale global value left over from a previously-viewed
-						// multi-run phase; must not be used for the wrap math
-						numberOfRuns: 3
-					}
-				}
-			}
-		)
-
-		await waitForHeatInfoData(store, 2)
+		const { store } = await renderTwoPaddlerHeat(1, {
+			// stale global value left over from a previously-viewed multi-run
+			// phase; must not be used for the wrap math
+			numberOfRuns: 3
+		})
 
 		const prevButton = screen.getByTestId("button-prev-paddler")
 
