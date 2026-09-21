@@ -92,7 +92,9 @@ def load_timer_settings() -> tuple[bool, str, str]:
             "Invalid timer configuration - disabling WebSocket connectivity so "
             "the countdown timer and buzzer keep working"
         )
-        return False, "http://192.168.0.28:81", "/socket.io/"
+        default_url = TimerSettings.model_fields["socketio_url"].default
+        default_path = TimerSettings.model_fields["socketio_path"].default
+        return False, str(default_url), default_path
     return settings.enable_websocket, str(settings.socketio_url), settings.socketio_path
 
 
