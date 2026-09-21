@@ -33,6 +33,14 @@ def test_missing_body_is_rejected_as_validation_error() -> None:
     response = client.post("/competition_management/promote_phase")
 
     assert response.status_code == 422
+    assert response.json()["detail"] == [
+        {
+            "type": "missing",
+            "loc": ["body", "request_body"],
+            "msg": "Field required",
+            "input": None,
+        }
+    ]
 
 
 def test_unwrapped_body_is_rejected_as_validation_error() -> None:
@@ -43,6 +51,14 @@ def test_unwrapped_body_is_rejected_as_validation_error() -> None:
     )
 
     assert response.status_code == 422
+    assert response.json()["detail"] == [
+        {
+            "type": "missing",
+            "loc": ["body", "request_body"],
+            "msg": "Field required",
+            "input": None,
+        }
+    ]
 
 
 SOURCE_PHASE_ID = "11111111-1111-1111-1111-111111111111"

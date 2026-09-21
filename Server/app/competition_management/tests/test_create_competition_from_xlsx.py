@@ -1100,6 +1100,58 @@ class TestScoring:
             any_order=True,
         )
 
+    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
+    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
+    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
+    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
+    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
+    @patch("app.competition_management.create_competition_from_xlsx.post_event")
+    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
+    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
+    @patch(
+        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+    )
+    def test_it_skips_a_row_whose_event_does_not_resolve_without_creating_an_orphaned_athlete(
+        self,
+        mock_transaction_manager,  # noqa: ANN001
+        mock_post_competition,  # noqa: ANN001
+        mock_get_scoresheets,  # noqa: ANN001
+        mock_post_event,  # noqa: ANN001
+        mock_post_phase,  # noqa: ANN001
+        mock_post_heat,  # noqa: ANN001
+        mock_post_athlete,  # noqa: ANN001
+        mock_post_athlete_heat,  # noqa: ANN001
+        mock_uuid,  # noqa: ANN001
+    ) -> None:
+        mock_session = MagicMock()
+        mock_transaction_manager.return_value.__enter__.return_value = mock_session
+        mock_get_scoresheets.return_value = [
+            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
+        ]
+
+        # Trailing whitespace on the Event value means event_phase_map's key
+        # (built from the raw column) never matches the stripped lookup.
+        mismatched_event_df = pd.DataFrame(
+            columns=["first_name", "last_name", "bib", "Event", "Heat"],
+            data=[["James", "Wilkinson", 1, "Senior Elite C1M ", 1]],
+        )
+
+        paddler_count, skipped_rows = process_competitors_df(
+            mismatched_event_df, "test_comp"
+        )
+
+        assert paddler_count == 0
+        assert skipped_rows == [
+            {
+                "first_name": "James",
+                "last_name": "Wilkinson",
+                "bib": "1",
+                "reason": "Event 'Senior Elite C1M ' not found",
+            }
+        ]
+        mock_post_athlete.assert_not_called()
+        mock_post_athlete_heat.assert_not_called()
+
 
 MANDATORY_COLUMNS = ["first_name", "last_name", "bib", "Event"]
 

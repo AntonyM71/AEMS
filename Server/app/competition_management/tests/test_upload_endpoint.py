@@ -16,8 +16,7 @@ from main import app
 client = TestClient(app)
 
 VALID_CSV = (
-    b"first_name,last_name,bib,Event,Heat\n"
-    b"James,Wilkinson,1,Senior Elite C1M,1\n"
+    b"first_name,last_name,bib,Event,Heat\nJames,Wilkinson,1,Senior Elite C1M,1\n"
 )
 
 NO_HEAT_CSV = b"first_name,last_name,bib,Event\nJames,Wilkinson,1,Senior Elite C1M\n"
@@ -70,7 +69,7 @@ def test_number_of_runs_for_score_exceeding_number_of_runs_is_rejected() -> None
 
 @patch("app.competition_management.competition_management.process_competitors_df")
 def test_a_valid_upload_succeeds(mock_process_competitors_df) -> None:  # noqa: ANN001
-    mock_process_competitors_df.return_value = 1
+    mock_process_competitors_df.return_value = (1, [])
 
     response = _post(VALID_FORM)
 
@@ -83,7 +82,7 @@ def test_a_valid_upload_succeeds(mock_process_competitors_df) -> None:  # noqa: 
 def test_random_heats_upload_without_heat_column_succeeds(
     mock_process_competitors_df,  # noqa: ANN001
 ) -> None:
-    mock_process_competitors_df.return_value = 1
+    mock_process_competitors_df.return_value = (1, [])
 
     response = _post(
         {**VALID_FORM, "random_heats": "true", "number_of_random_heats": "2"},
@@ -91,3 +90,23 @@ def test_random_heats_upload_without_heat_column_succeeds(
     )
 
     _assert_upload_accepted_without_heat_column(response)
+
+
+@patch("app.competition_management.competition_management.process_competitors_df")
+def test_rows_skipped_for_an_unresolved_event_or_heat_are_returned_in_the_response(
+    mock_process_competitors_df,  # noqa: ANN001
+) -> None:
+    skipped_rows = [
+        {
+            "first_name": "James",
+            "last_name": "Wilkinson",
+            "bib": "1",
+            "reason": "Event 'Unknown Event' not found",
+        }
+    ]
+    mock_process_competitors_df.return_value = (0, skipped_rows)
+
+    response = _post(VALID_FORM)
+
+    assert response.status_code == 201
+    assert response.json()["skipped_rows"] == skipped_rows
