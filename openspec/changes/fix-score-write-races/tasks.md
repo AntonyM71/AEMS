@@ -54,9 +54,10 @@ asserting the status, the persistence calls and the broadcast in each case.
 Only what a running stack can show. Both tests are deterministic, so they prove the SQL
 semantics without depending on timing.
 
-- [ ] 7.1 Submit two scores for one heat/athlete/run/judge in sequence, newer identifier first, through Playwright's request context; verify the second is answered `409` and reading the score back returns the newer submission. This is the test that proves the conditional upsert really rejects
+- [ ] 7.1 Submit two scores for one heat/athlete/run/judge in sequence, newer identifier first, through Playwright's request context; verify the second is answered `409` and reading the score back returns the newer submission. This is the test that proves the conditional upsert really rejects. Extend `e2e/tests/websocket.spec.ts`, which already seeds a competition, fetches an available move and maps its direction
 - [ ] 7.2 Send two run-status messages for one run; verify reading back yields one status holding the second message's values, proving the constraint and upsert hold against the real schema
-- [ ] 7.3 Run `uv run python -m pytest` and `uv run ruff check .` in `Server/`, and `npm test` in `Webapp/`; verify all pass
+- [ ] 7.3 Verify the three existing tests that post scores without an identifier still pass — `websocket.spec.ts` (a move reaching the head judge), `promotePhase.spec.ts` (scores driving promotion) and `multi-worker.spec.ts` (repeated empty posts to one key). They are the regression net for the rollout claim that a submission with no identifier is treated as newest, and `multi-worker` requires that it win every time rather than once
+- [ ] 7.4 Run `uv run python -m pytest` and `uv run ruff check .` in `Server/`, and `npm test` in `Webapp/`; verify all pass
 
 Deliberately omitted: tests that fire genuinely concurrent submissions and assert on a winner.
 Their outcome turns on connection timing, so they would pass without proving anything and fail
