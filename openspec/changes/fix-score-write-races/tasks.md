@@ -7,14 +7,14 @@ running stack can show.
 ## 1. Baseline the happy path, before changing anything
 
 Nothing today asserts that a judge can submit moves and then submit more. Every existing test
-submits once per key: `websocket.spec.ts` and `promotePhase.spec.ts` post one score each,
-`multi-worker.spec.ts` posts one empty score per test, and `Scribe.test.tsx` only asserts the
-cases where no submission fires. Write these two first, on unchanged code, so the rest of the
-work has a baseline that fails loudly if replacement semantics regress.
+submits once per key: `websocket.spec.ts` and `promotePhase.spec.ts` post one score each, and
+`multi-worker.spec.ts` posts one empty score per test. `Scribe.test.tsx` does assert that a
+single tap reaches the server, but never a second tap. Write these first, on unchanged code,
+so the rest of the work has a baseline that fails loudly if replacement semantics regress.
 
-- [ ] 1.1 Add an e2e test that submits a move for one heat/athlete/run/judge, reads it back, submits a longer list for the same key, and reads back again; verify each read returns exactly the list last submitted, and that the second submission replaced the first rather than appending to it. Extend `e2e/tests/websocket.spec.ts`, which already seeds a competition and resolves an available move
-- [ ] 1.2 Add a `Scribe.test.tsx` case that taps two moves in succession; verify a submission fires for each and the second carries both moves, complementing the existing cases that assert no submission fires
-- [ ] 1.3 Run both and confirm they pass against unchanged code; commit them separately so the baseline is visible in history
+- [x] 1.1 Add an e2e test that submits a move for one heat/athlete/run/judge, reads it back, submits a longer list for the same key, and reads back again; verify each read returns exactly the list last submitted, and that the second submission replaced the first rather than appending to it. Written as `e2e/tests/scoreSubmission.spec.ts` rather than inside `websocket.spec.ts`, since it drives no browser and `setupTestData` already provides the seeding; a second case covers clearing every move
+- [x] 1.2 Add a `Scribe.test.tsx` case that taps two moves in succession; verify a submission fires for each and the second carries both moves
+- [ ] 1.3 Run both and confirm they pass against unchanged code; commit them separately so the baseline is visible in history. **Blocked on a running stack**: `Scribe.test.tsx` passes (5/5), but the e2e file has only been type-checked and collected by Playwright, never executed — this environment has no Postgres, backend or frontend, and no Docker access
 
 ## 2. Run status uniqueness
 

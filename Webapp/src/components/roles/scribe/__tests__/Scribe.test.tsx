@@ -111,6 +111,34 @@ describe("Scribe", () => {
 		)
 	})
 
+	// Each edit posts the judge's whole list, so a later tap must carry the
+	// earlier moves with it. The server replaces what it holds with the body,
+	// so a submission that dropped them would erase them.
+	it("carries the earlier moves in the submission a later tap sends", async () => {
+		const user = userEvent.setup({ delay: null })
+		renderScribe()
+
+		await user.click(await screen.findByTestId("button-test-move-1-l"))
+		await waitFor(() =>
+			expect(
+				scorePosts.some((p) => p.moves.length === 1)
+			).toBe(true)
+		)
+
+		await user.click(screen.getByTestId("button-test-move-1-r"))
+
+		await waitFor(() =>
+			expect(
+				scorePosts[scorePosts.length - 1].moves.map(
+					({ move_id, direction }) => ({ move_id, direction })
+				)
+			).toEqual([
+				{ move_id: "test-move-1", direction: "L" },
+				{ move_id: "test-move-1", direction: "R" }
+			])
+		)
+	})
+
 	it("blocks scoring and shows a notice while the run is locked", async () => {
 		server.use(
 			http.get("/api/run_status/", () =>
