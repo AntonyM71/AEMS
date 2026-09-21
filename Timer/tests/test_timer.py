@@ -490,12 +490,30 @@ class TestLoadTimerSettings:
         except ValidationError as exc:
             validation_error = exc
 
-        with patch("timer.TimerSettings", side_effect=validation_error):
+        with patch.object(TimerSettings, "__init__", side_effect=validation_error):
             enabled, url, path = timer.load_timer_settings()
 
         assert enabled is False
-        assert url == "http://192.168.0.28:81"
-        assert path == "/socket.io/"
+        assert url == str(TimerSettings.model_fields["socketio_url"].default)
+        assert path == TimerSettings.model_fields["socketio_path"].default
         # An invalid config must never take down the GPIO-driven hardware.
         assert callable(timer.start_timer)
         assert callable(timer.update_buzzer)
+
+    def test_invalid_enable_websocket_also_discards_a_valid_custom_url(self) -> None:
+        """Pydantic validates the whole model atomically: a typo in one field
+        (enable_websocket) invalidates the model even though socketio_url was
+        set correctly, so the custom URL is lost along with it."""
+        try:
+            TimerSettings(
+                socketio_url="http://example.com:1234", enable_websocket="not-a-bool"
+            )
+        except ValidationError as exc:
+            validation_error = exc
+
+        with patch.object(TimerSettings, "__init__", side_effect=validation_error):
+            enabled, url, _path = timer.load_timer_settings()
+
+        assert enabled is False
+        assert url == str(TimerSettings.model_fields["socketio_url"].default)
+        assert url != "http://example.com:1234/"
