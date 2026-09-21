@@ -6,6 +6,7 @@ import { server } from "../../../../../mocks/server"
 import { competitionsReducer } from "../../../../../redux/atoms/competitions"
 import { scoringReducer } from "../../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../../redux/services/aemsApi"
+import { waitForHeatInfoData } from "../heatInfoTestHelpers"
 import { RunSelector } from "../Runselector"
 
 const createTestStore = (preloadedState = {}) =>
@@ -103,19 +104,7 @@ describe("RunSelector", () => {
 	it("handles navigation buttons correctly", async () => {
 		renderRunSelector(2)
 
-		// Wait for the heat's athlete data (and their number_of_runs) to load
-		// before interacting, so the wrap math isn't racing the query.
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const heatInfoKey = Object.keys(apiState.queries).find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
-				1
-			)
-		})
+		await waitForHeatInfoData(store, 1)
 
 		// Test next button
 		const nextButton = screen.getByTestId("button-next-run")

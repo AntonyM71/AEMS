@@ -1,30 +1,9 @@
-import { EnhancedStore } from "@reduxjs/toolkit"
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "../../../../../mocks/server"
-import { RootState } from "../../../../../redux/store"
-import { aemsApi } from "../../../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../../../testUtils"
+import { waitForHeatInfoData } from "../heatInfoTestHelpers"
 import { PaddlerSelector } from "../PaddlerSelector"
-
-// Waits for the heat's athlete data (and their number_of_runs) to load
-// before interacting, so navigation math isn't racing the query.
-const waitForHeatInfoData = async (
-	store: EnhancedStore<RootState>,
-	expectedLength: number
-) => {
-	await waitFor(() => {
-		const apiState = store.getState()[aemsApi.reducerPath] as {
-			queries: Record<string, { data?: unknown[] }>
-		}
-		const heatInfoKey = Object.keys(apiState.queries).find((key) =>
-			key.startsWith("getHeatInfo")
-		)
-		expect(heatInfoKey && apiState.queries[heatInfoKey].data).toHaveLength(
-			expectedLength
-		)
-	})
-}
 
 // Renders PaddlerSelector for a two-paddler heat and waits for the heat data
 // to load, so each test only has to describe its own interaction/assertions.
