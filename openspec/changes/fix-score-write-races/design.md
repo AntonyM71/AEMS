@@ -81,6 +81,13 @@ rows and still run concurrently.
 This replaces the advisory lock the original issue proposed. An advisory lock serialises but
 stores nothing, so the watermark would need a row anyway; one row does both jobs.
 
+The watermark needs its own table rather than a column on `runStatus`. A run status is keyed
+without the judge, so one shared watermark would reject a judge's submission whenever another
+judge's landed first, and adding the judge to `runStatus` would contradict the uniqueness this
+change adds and feed duplicate rows to `_score_for_missing_athlete`. Run status rows also
+appear only once the head judge locks or marks a run, which is after the scoring they would
+have to order. ADR010 option 7 records this.
+
 ### Run status gets a unique constraint and an upsert
 
 The run-status key omits the judge, because a run's lock and did-not-start state belong to the
