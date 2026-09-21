@@ -92,7 +92,7 @@ def upload(
         msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
         raise InvalidFileTypeError(msg)
     validate_columns_and_data_types(competitors_df, random_heats=random_heats)
-    number_of_paddlers_added = process_competitors_df(
+    number_of_paddlers_added, skipped_rows = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,
         scoresheet_name=scoresheet_name,
@@ -103,10 +103,11 @@ def upload(
         number_of_random_heats=number_of_random_heats,
     )
 
-    return JSONResponse(
-        status_code=201,
-        content=f"Succesfully made competition {competition_name} with {number_of_paddlers_added} athletes.",
-    )
+    content: dict[str, object] = {
+        "message": f"Succesfully made competition {competition_name} with {number_of_paddlers_added} athletes.",
+        "skipped_rows": skipped_rows,
+    }
+    return JSONResponse(status_code=201, content=content)
 
 
 class NewPhaseInfo(BaseModel):
