@@ -15,7 +15,7 @@ import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/servi
 import {
 	AthleteInfo,
 	calculateNewIndex,
-	getNumberOfRunsInHeat
+	getMaxNumberOfRunsInHeat
 } from "../InfoBar"
 
 export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
@@ -35,7 +35,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	)
 	const paddlersInHeat = athletes.data ?? []
 	const numberOfPaddlers = paddlersInHeat.length
-	const numberOfRuns = getNumberOfRunsInHeat(paddlersInHeat)
+	const numberOfRuns = getMaxNumberOfRunsInHeat(paddlersInHeat)
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
 			currentPaddler + number,

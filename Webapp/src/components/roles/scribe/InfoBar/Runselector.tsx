@@ -12,7 +12,7 @@ import {
 	updateRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
-import { calculateNewIndex, getNumberOfRunsInHeat } from "../InfoBar"
+import { calculateNewIndex, getMaxNumberOfRunsInHeat } from "../InfoBar"
 
 export const RunSelector = () => {
 	const dispatch = useDispatch()
@@ -25,7 +25,7 @@ export const RunSelector = () => {
 		},
 		{ skip: !selectedHeat }
 	)
-	const numberOfRuns = getNumberOfRunsInHeat(athletes.data ?? [])
+	const numberOfRuns = getMaxNumberOfRunsInHeat(athletes.data ?? [])
 	const changeRun = (number: number) => {
 		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
 
