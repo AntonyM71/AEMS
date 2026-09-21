@@ -12,7 +12,11 @@ import {
 	updateRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
-import { calculateNewIndex, getMaxNumberOfRunsInHeat } from "../InfoBar"
+import {
+	calculateNewIndex,
+	getMaxNumberOfRunsInHeat,
+	isRunOutOfRangeForAthlete
+} from "../InfoBar"
 
 export const RunSelector = () => {
 	const dispatch = useDispatch()
@@ -63,8 +67,7 @@ export const RunSelector = () => {
 						fontWeight={"fontWeightBold"}
 						variant="h5"
 						color={
-							selectedAthlete?.number_of_runs &&
-							selectedRun + 1 > selectedAthlete?.number_of_runs
+							isRunOutOfRangeForAthlete(selectedRun, selectedAthlete)
 								? "red"
 								: "default"
 						}
