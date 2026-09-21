@@ -5,9 +5,15 @@ import React from "react"
 import { useTimerStreamQuery } from "../../../redux/services/streamingApi"
 
 export const LiveTimerLogic = ({ textSize = "h5" }: { textSize?: Variant }) => {
-	const { data: time = 0 } = useTimerStreamQuery()
+	const { data } = useTimerStreamQuery()
 
-	return <Typography variant={textSize}>{Math.round(time)}</Typography>
+	return (
+		<Typography variant={textSize}>
+			{data?.status === "cancelled"
+				? "Cancelled"
+				: Math.round(data?.time_remaining ?? 0)}
+		</Typography>
+	)
 }
 const LiveTimer: React.FC = () => (
 	<Paper
