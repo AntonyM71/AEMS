@@ -131,7 +131,7 @@ Comments are a last resort. If something is already visible in the code — a na
 
 Write a comment only for what code can't say by itself: *why* (a non-obvious constraint or the reason for a workaround), a warning of a real consequence, or a public contract for callers who won't read the implementation (FastAPI docstrings, exported Webapp hooks/components). Keep those to one or two lines — the docstring's job is the contract, not a tutorial.
 
-Don't write: commented-out code (delete it — git has the history), changelog/attribution notes (that's the commit message), or section banners or closing-brace comments (break the function down into helper functions instead).
+Don't write: commented-out code (delete it — git has the history), changelog/attribution notes (that's the commit message), commit-hash or PR-number references (`see commit abc1234`, `fixed in #123`) as a stand-in for explaining *why* — state the reason directly in the comment instead, since the hash rots the moment history is rewritten and the reader has to leave the code to learn anything, or section banners or closing-brace comments (break the function down into helper functions instead).
 
 Keep what you do write true — fix or delete a comment in the same change that makes it stop matching the code. And write it like prose: active voice, positive form, concrete, no needless words.
 
