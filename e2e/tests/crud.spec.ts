@@ -1,42 +1,8 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import { randomUUID } from "crypto"
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
-const MISCONFIGURED_DEV_API_PORT = "8001"
+import { BACKEND_URL, proxyFrontendAPIToBackend } from "./helpers/apiProxy"
 
 test.describe("Database Read/Write", () => {
-	const proxyFrontendAPIToBackend = async (page: Page) => {
-		await page.route("**/*", async (route) => {
-			const request = route.request()
-			const requestUrl = new URL(request.url())
-			const isFrontendApiPath = requestUrl.pathname.startsWith("/api/")
-			const isMisconfiguredDevApiPort =
-				requestUrl.hostname === "localhost" &&
-				requestUrl.port === MISCONFIGURED_DEV_API_PORT
-			if (!isFrontendApiPath && !isMisconfiguredDevApiPort) {
-				await route.continue()
-				return
-			}
-			const backendPath = isFrontendApiPath
-				? requestUrl.pathname.replace(/^\/api/, "")
-				: requestUrl.pathname
-			const backendUrl = `${BACKEND_URL}${backendPath}${requestUrl.search}`
-			try {
-				const response = await route.fetch({ url: backendUrl })
-				await route.fulfill({ response })
-			} catch (error) {
-				if (
-					String(error).includes(
-						"Target page, context or browser has been closed"
-					)
-				) {
-					return
-				}
-				throw error
-			}
-		})
-	}
-
 	test("can create a competition via the backend and read it back", async ({
 		request
 	}) => {
