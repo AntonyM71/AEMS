@@ -117,9 +117,11 @@ so both answer `409` and neither is retried.
 - **Rejecting v4 breaks a half-upgraded client** → The server accepts a missing identifier but
   rejects a v4 one, so a client minting v4 would fail hard. Ship the v7 minting and the version
   check together, and no such client exists.
-- **No backend test can see any of this** → Interleaving, constraint enforcement and ordering
-  under concurrency are all invisible against a mocked session, so the coverage lives in the
-  Playwright e2e suite against the running stack.
+- **A mocked session hides the SQL semantics** → Whether the conditional upsert really rejects
+  a losing submission, and whether the unique constraint really holds, cannot be seen against a
+  mocked session. Two deterministic e2e tests cover those. Everything the server *decides* —
+  which status to answer, what to persist, what to broadcast, which identifiers to accept — is
+  unit-tested against the mocked session, where the cases are cheap to enumerate.
 
 ## Migration Plan
 
