@@ -1,5 +1,6 @@
 import { expect, test, type APIRequestContext } from "@playwright/test"
 import { randomUUID } from "node:crypto"
+import { fetchTwoMoves } from "./helpers/moves"
 import { setupTestData, type TestData } from "./helpers/testData"
 import { nextUuid7 } from "./helpers/uuid7"
 
@@ -8,37 +9,10 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
 const JUDGE_ID = "1"
 const RUN_NUMBER = 0
 
-interface AvailableMove {
-	id: string
-	name: string
-	direction: string
-}
-
 interface ScoredMove {
 	id: string
 	move_id: string
 	direction: string
-}
-
-const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
-
-/** Two available moves from the seeded scoresheet, with a valid scored direction each. */
-const fetchTwoMoves = async (
-	request: APIRequestContext,
-	scoresheetId: string
-): Promise<{ moveId: string; direction: string }[]> => {
-	const response = await request.get(
-		`${BACKEND_URL}/availablemoves/?sheet_id____list=${scoresheetId}&limit=20`
-	)
-	expect(response.status()).toBe(200)
-	const moves = (await response.json()) as AvailableMove[]
-	expect(moves.length).toBeGreaterThanOrEqual(2)
-
-	return moves.slice(0, 2).map((move) => {
-		expect(Object.keys(directionMap)).toContain(move.direction)
-
-		return { moveId: move.id, direction: directionMap[move.direction]! }
-	})
 }
 
 const submitScore = async (
@@ -80,7 +54,7 @@ test.describe("score submission", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		const [first, second] = await fetchTwoMoves(request, data.scoresheetId)
+		const [first, second] = await fetchTwoMoves(request, BACKEND_URL, data.scoresheetId)
 
 		const firstMove = {
 			id: randomUUID(),
@@ -112,7 +86,7 @@ test.describe("score submission", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		const [first] = await fetchTwoMoves(request, data.scoresheetId)
+		const [first] = await fetchTwoMoves(request, BACKEND_URL, data.scoresheetId)
 
 		await submitScore(request, data, [
 			{

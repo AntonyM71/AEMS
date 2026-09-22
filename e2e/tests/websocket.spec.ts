@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 import { randomUUID } from "node:crypto"
 import { BACKEND_URL, proxyFrontendAPIToBackend } from "./helpers/apiProxy"
+import { fetchTwoMoves } from "./helpers/moves"
 import { setupTestData } from "./helpers/testData"
 import { makeUuid7, nextUuid7 } from "./helpers/uuid7"
 
@@ -216,18 +217,11 @@ test.describe("WebSocket Streaming Updates", () => {
 	}) => {
 		const { heatId, athleteId, phaseId, scoresheetId } =
 			await setupTestData(request)
-
-		const movesResponse = await request.get(
-			`${BACKEND_URL}/availablemoves/?sheet_id____list=${scoresheetId}&limit=2`
+		const [newerMove, olderMove] = await fetchTwoMoves(
+			request,
+			BACKEND_URL,
+			scoresheetId
 		)
-		expect(movesResponse.status()).toBe(200)
-		const moves = (await movesResponse.json()) as Array<{
-			id: string
-			direction: "LR" | "FB" | "S"
-		}>
-		expect(moves.length).toBeGreaterThanOrEqual(2)
-		const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
-		const [newerMove, olderMove] = moves
 
 		const now = Date.now()
 		const newerRequestId = makeUuid7(now + 10_000)
@@ -240,8 +234,8 @@ test.describe("WebSocket Streaming Updates", () => {
 					moves: [
 						{
 							id: randomUUID(),
-							move_id: newerMove.id,
-							direction: directionMap[newerMove.direction]
+							move_id: newerMove.moveId,
+							direction: newerMove.direction
 						}
 					],
 					bonuses: [],
@@ -258,8 +252,8 @@ test.describe("WebSocket Streaming Updates", () => {
 					moves: [
 						{
 							id: randomUUID(),
-							move_id: olderMove.id,
-							direction: directionMap[olderMove.direction]
+							move_id: olderMove.moveId,
+							direction: olderMove.direction
 						}
 					],
 					bonuses: [],
@@ -276,7 +270,7 @@ test.describe("WebSocket Streaming Updates", () => {
 		const { moves: storedMoves } = (await readBack.json()) as {
 			moves: Array<{ move_id: string }>
 		}
-		expect(storedMoves.map((m) => m.move_id)).toEqual([newerMove.id])
+		expect(storedMoves.map((m) => m.move_id)).toEqual([newerMove.moveId])
 	})
 
 	test("two concurrent submissions for one judge's run never interleave, and the newer one always wins", async ({
@@ -284,18 +278,11 @@ test.describe("WebSocket Streaming Updates", () => {
 	}) => {
 		const { heatId, athleteId, phaseId, scoresheetId } =
 			await setupTestData(request)
-
-		const movesResponse = await request.get(
-			`${BACKEND_URL}/availablemoves/?sheet_id____list=${scoresheetId}&limit=2`
+		const [smallerMove, largerMove] = await fetchTwoMoves(
+			request,
+			BACKEND_URL,
+			scoresheetId
 		)
-		expect(movesResponse.status()).toBe(200)
-		const moves = (await movesResponse.json()) as Array<{
-			id: string
-			direction: "LR" | "FB" | "S"
-		}>
-		expect(moves.length).toBeGreaterThanOrEqual(2)
-		const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
-		const [smallerMove, largerMove] = moves
 
 		const now = Date.now()
 		const smallerRequestId = makeUuid7(now)
@@ -314,16 +301,8 @@ test.describe("WebSocket Streaming Updates", () => {
 			})
 
 		const [possiblyStaleResponse, alwaysWinningResponse] = await Promise.all([
-			submit(
-				smallerMove.id,
-				directionMap[smallerMove.direction],
-				smallerRequestId
-			),
-			submit(
-				largerMove.id,
-				directionMap[largerMove.direction],
-				largerRequestId
-			)
+			submit(smallerMove.moveId, smallerMove.direction, smallerRequestId),
+			submit(largerMove.moveId, largerMove.direction, largerRequestId)
 		])
 
 		expect(alwaysWinningResponse.status()).toBe(200)
@@ -336,6 +315,6 @@ test.describe("WebSocket Streaming Updates", () => {
 		const { moves: storedMoves } = (await readBack.json()) as {
 			moves: Array<{ move_id: string }>
 		}
-		expect(storedMoves.map((m) => m.move_id)).toEqual([largerMove.id])
+		expect(storedMoves.map((m) => m.move_id)).toEqual([largerMove.moveId])
 	})
 })
