@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 import uuid
 from unittest.mock import AsyncMock, patch
@@ -6,6 +7,8 @@ from uuid import UUID
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
 from app.scoring.customScoringEndpoints import (
@@ -13,6 +16,7 @@ from app.scoring.customScoringEndpoints import (
     UpdatedRideMetaData,
     assemble_phase_scores,
     check_run_is_locked,
+    copy_message_to_db,
     get_athlete_moves_and_bonuses,
     get_heat_info_logic,
     get_moves_from_server,
@@ -24,6 +28,8 @@ from app.scoring.scoring_logic import (
     AthleteScoreInfo,
     AthleteScores,
     JudgeScores,
+    PydanticScoredBonuses,
+    PydanticScoredMoves,
     RunScores,
 )
 from db.models import (
@@ -335,6 +341,14 @@ def test_check_run_is_locked_returns_false_when_no_status(
 
     # Verify the result
     assert result is False
+
+
+def _v7(ms: int, suffix: int = 0) -> UUID:
+    ts_hex = f"{ms:012x}"
+    tail_hex = f"{suffix:018x}"[-18:]
+    return UUID(
+        f"{ts_hex[:8]}-{ts_hex[8:12]}-7{tail_hex[:3]}-a{tail_hex[3:6]}-{tail_hex[6:18]}"
+    )
 
 
 PHASE_ID = "942e908e-b074-48b7-926a-59b9dd214dc7"
@@ -680,8 +694,6 @@ async def test_on_run_status_persists_and_broadcasts(
         "did_not_start": False,
         "locked": False,
     }
-    # one .filter() call with 4 conditions, then .first() -- see copy_message_to_db
-    mock_db_session.query.return_value.filter.return_value.first.return_value = None
 
     with (
         patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
@@ -747,7 +759,9 @@ async def test_update_athlete_score_persists_and_broadcasts(
     phase_id = str(uuid.uuid4())
     # one .filter() call with 4 conditions, then .first() -- see check_run_is_locked
     mock_db_session.query.return_value.filter.return_value.first.return_value = None
-    request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
+    request = AddUpdateScoredMovesRequest(
+        moves=[], bonuses=[], request_id=_v7(1_700_000_000_000)
+    )
 
     with (
         patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
@@ -788,7 +802,10 @@ async def test_update_athlete_score_rejects_locked_run(
             did_not_start=False,
         )
     )
-    request = AddUpdateScoredMovesRequest(moves=[], bonuses=[])
+    unbeatable_request_id = _v7(9_999_999_999_999)
+    request = AddUpdateScoredMovesRequest(
+        moves=[], bonuses=[], request_id=unbeatable_request_id
+    )
 
     with (
         patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
@@ -804,7 +821,190 @@ async def test_update_athlete_score_rejects_locked_run(
             db=mock_db_session,
         )
 
-    assert exc_info.value.status_code == 500
+    assert exc_info.value.status_code == 409
     assert not mock_db_session.commit.called
     assert not mock_db_session.bulk_save_objects.called
     mock_emit.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("request_id", "expect_valid"),
+    [
+        (str(_v7(1_700_000_000_000)), True),
+        (str(uuid.uuid1()), False),
+        (str(uuid.uuid4()), False),
+        ("not-a-uuid", False),
+    ],
+)
+def test_identifier_validation_accepts_only_v7(
+    client: TestClient,
+    mock_db_session: Session,
+    request_id: str,
+    expect_valid: bool,  # noqa: FBT001
+) -> None:
+    heat_id, athlete_id, judge_id, phase_id = (str(uuid.uuid4()) for _ in range(4))
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+    mock_db_session.execute.return_value.first.return_value = ("won",)
+
+    response = client.post(
+        f"/addUpdateAthleteScore/{heat_id}/{athlete_id}/1/{judge_id}"
+        f"?phase_id={phase_id}",
+        json={"moves": [], "bonuses": [], "request_id": request_id},
+    )
+
+    if expect_valid:
+        assert response.status_code != 422
+    else:
+        assert response.status_code == 422
+
+
+def test_identifier_validation_rejects_a_missing_identifier(
+    client: TestClient, mock_db_session: Session
+) -> None:
+    heat_id, athlete_id, judge_id, phase_id = (str(uuid.uuid4()) for _ in range(4))
+
+    response = client.post(
+        f"/addUpdateAthleteScore/{heat_id}/{athlete_id}/1/{judge_id}"
+        f"?phase_id={phase_id}",
+        json={"moves": [], "bonuses": []},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_rejects_a_stale_submission(
+    mock_db_session: Session,
+) -> None:
+    heat_id, athlete_id, judge_id, phase_id = (str(uuid.uuid4()) for _ in range(4))
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+    mock_db_session.execute.return_value.first.return_value = None
+    request = AddUpdateScoredMovesRequest(
+        moves=[], bonuses=[], request_id=_v7(1_700_000_000_000)
+    )
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert exc_info.value.status_code == 409
+    assert not mock_db_session.bulk_save_objects.called
+    assert not mock_db_session.commit.called
+    mock_emit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_persists_a_winning_submission(
+    mock_db_session: Session,
+) -> None:
+    heat_id, athlete_id, judge_id, phase_id = (str(uuid.uuid4()) for _ in range(4))
+    move_id = uuid.uuid4()
+    bonus_id = uuid.uuid4()
+    move = PydanticScoredMoves(id=uuid.uuid4(), move_id=move_id, direction="L")
+    bonus = PydanticScoredBonuses(id=uuid.uuid4(), bonus_id=bonus_id, move_id=move_id)
+    mock_db_session.query.return_value.filter.return_value.first.return_value = None
+    mock_db_session.execute.return_value.first.return_value = (_v7(1_700_000_000_001),)
+    request = AddUpdateScoredMovesRequest(
+        moves=[move], bonuses=[bonus], request_id=_v7(1_700_000_000_001)
+    )
+
+    with (
+        patch("app.scoring.customScoringEndpoints.sio.emit") as mock_emit,
+        patch(
+            "app.scoring.customScoringEndpoints.get_moves_from_server"
+        ) as mock_get_moves,
+    ):
+        mock_get_moves.return_value = {"heat_id": heat_id}
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert mock_db_session.commit.called
+    saved_moves, saved_bonuses = (
+        call.args[0] for call in mock_db_session.bulk_save_objects.call_args_list
+    )
+    assert [m.move_id for m in saved_moves] == [move_id]
+    assert [b.bonus_id for b in saved_bonuses] == [bonus_id]
+    mock_emit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_update_athlete_score_unrelated_failure_stays_500(
+    mock_db_session: Session,
+) -> None:
+    heat_id, athlete_id, judge_id, phase_id = (str(uuid.uuid4()) for _ in range(4))
+    request = AddUpdateScoredMovesRequest(
+        moves=[], bonuses=[], request_id=_v7(1_700_000_000_000)
+    )
+
+    with (
+        patch(
+            "app.scoring.customScoringEndpoints._persist_athlete_score",
+            side_effect=RuntimeError("boom"),
+        ),
+        pytest.raises(HTTPException) as exc_info,
+    ):
+        await update_athlete_score(
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            run_number="1",
+            judge_id=judge_id,
+            phase_id=phase_id,
+            scored_moves_list=request,
+            db=mock_db_session,
+        )
+
+    assert exc_info.value.status_code == 500
+
+
+def test_copy_message_to_db_upserts_on_the_run_key(
+    mock_db_session: Session,
+) -> None:
+    payload = {
+        "id": str(uuid.uuid4()),
+        "heat_id": str(uuid.uuid4()),
+        "athlete_id": str(uuid.uuid4()),
+        "phase_id": str(uuid.uuid4()),
+        "run_number": 1,
+        "did_not_start": True,
+        "locked": True,
+    }
+
+    with patch(
+        "app.scoring.customScoringEndpoints.transaction_session_context_manager"
+    ) as mock_context_manager:
+        mock_context_manager.return_value.__enter__.return_value = mock_db_session
+        mock_context_manager.return_value.__exit__.return_value = None
+        copy_message_to_db(json.dumps(payload))
+
+    assert mock_db_session.commit.called
+    executed_statement = mock_db_session.execute.call_args[0][0]
+    compiled = executed_statement.compile(dialect=postgresql.dialect())
+    assert "ON CONFLICT" in str(compiled)
+    assert "DO UPDATE SET" in str(compiled)
+    assert set(compiled.params) >= {
+        "heat_id",
+        "phase_id",
+        "athlete_id",
+        "run_number",
+        "locked",
+        "did_not_start",
+    }
+    assert compiled.params["locked"] is True
+    assert compiled.params["did_not_start"] is True

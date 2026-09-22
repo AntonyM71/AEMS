@@ -39,8 +39,9 @@ for one run, after which lock and did-not-start checks read whichever row comes 
 - Cover overlapping and out-of-order submissions with tests that exercise real request
   ordering rather than mocked sessions.
 
-Nothing breaks. The identifier is additive, and the server treats a submission without one as
-newest, so old clients keep working through a rollout.
+The identifier is required: a submission missing it, or carrying anything but a v7 UUID, is
+rejected with `422`. The stack deploys as one Docker Compose unit, so server and webapp always
+land on the same commit — there's no rollout window to design around.
 
 ## Capabilities
 
@@ -65,8 +66,8 @@ None. This changes how existing judging behaviour is persisted, not what the sys
 - **Webapp**: `Scribe.tsx` mints and sends the identifier and handles `409`; a small helper
   holds the server-clock offset; `uuid` moves past `^9.0.0`, which predates `v7`.
 - **API contract**: the body of
-  `POST /addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}` gains an
-  optional field, so `buildApi.sh` must run again and regenerate `Common/openapi.json`.
+  `POST /addUpdateAthleteScore/{heat_id}/{athlete_id}/{run_number}/{judge_id}` gains a
+  required field, so `buildApi.sh` must run again and regenerate `Common/openapi.json`.
 - **Scoring**: the math is unchanged, but did-not-start and locked-run behaviour stops
   depending on which duplicate run-status row happens to be read first.
 - **Decision record**: ADR010 records why ordering rides on a server-stamped identifier rather

@@ -58,9 +58,10 @@ tablet drift, a replacement tablet mid-heat, and the case with no ceiling: a fas
 writing a watermark into the future and locking out every device that follows it on that key.
 Because one clock orders everything, the design needs no staleness escape hatch.
 
-Reject an identifier whose version nibble is not 7. A UUIDv4 in the comparison column compares
-as a random number and would beat or lose to every later submission arbitrarily, and a tablet
-on a stale cached bundle sending v4 is realistic at an offline venue.
+Reject a submission whose identifier is missing or whose version nibble is not 7. A UUIDv4 in
+the comparison column compares as a random number and would beat or lose to every later
+submission arbitrarily, and a tablet on a stale cached bundle sending v4 is realistic at an
+offline venue.
 
 ### One statement does the compare-and-set, the lock and the watermark write
 
@@ -114,9 +115,6 @@ so both answer `409` and neither is retried.
   and the head judge's screen can reconstruct them. Where duplicates disagree the migration
   keeps the row with `locked` set, since locking is the action with consequences, and logs what
   it removed.
-- **Rejecting v4 breaks a half-upgraded client** → The server accepts a missing identifier but
-  rejects a v4 one, so a client minting v4 would fail hard. Ship the v7 minting and the version
-  check together, and no such client exists.
 - **A mocked session hides the SQL semantics** → Whether the conditional upsert really rejects
   a losing submission, and whether the unique constraint really holds, cannot be seen against a
   mocked session. Two deterministic e2e tests cover those. Everything the server *decides* —
@@ -127,12 +125,12 @@ so both answer `409` and neither is retried.
 
 1. Migration A resolves duplicate run statuses, then adds the unique constraint.
 2. Migration B creates `run_updates`.
-3. Deploy the server. It accepts submissions with or without an identifier, so existing clients
-   keep working.
-4. Deploy the webapp, which starts sending identifiers.
+3. Deploy the stack. Server and webapp redeploy together as one Docker Compose unit, so there
+   is no window where one runs ahead of the other.
 
-To roll back, drop the webapp first; the server tolerates clients that send no identifier.
-Rolling the server back re-opens the races but loses no data, leaving `run_updates` unread.
+Rolling back means redeploying the previous stack version; because the whole stack redeploys
+atomically, there is no partial state to reconcile. A rollback re-opens the races but loses no
+data, leaving `run_updates` unread.
 
 ## Open Questions
 

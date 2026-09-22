@@ -15,14 +15,27 @@ Same DB and scoresheet requirements as test_key_endpoint_performance.py.
 import asyncio
 import statistics
 import time
+from itertools import count
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import httpx
 import pytest
 
 from db.canned_data import CannedPhase
 from main import app
+
+_uuid7_counter = count()
+
+
+def _next_uuid7() -> str:
+    ts_hex = f"{int(time.time() * 1000):012x}"
+    tail_hex = f"{next(_uuid7_counter):018x}"[-18:]
+
+    return str(
+        UUID(f"{ts_hex[:8]}-{ts_hex[8:]}-7{tail_hex[:3]}-a{tail_hex[3:6]}-{tail_hex[6:]}")
+    )
+
 
 # A blocked event loop pins this fraction at 1.0, because the light request
 # cannot finish ahead of the heavy one it is stuck behind. That holds on any
@@ -56,7 +69,11 @@ def _submission_payload(
         }
         for i in range(min(bonus_count, move_count))
     ]
-    return {"moves": moves, "bonuses": bonuses}
+    return {
+        "moves": moves,
+        "bonuses": bonuses,
+        "request_id": _next_uuid7(),
+    }
 
 
 def _probe_request(canned_phase: CannedPhase) -> Request:
@@ -150,14 +167,16 @@ async def test_heavy_endpoint_does_not_delay_other_requests(
     # cost and with it the margin these assertions depend on.
     monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
 
-    heavy = _heavy_request(heavy_endpoint, canned_phase)
     probe = _probe_request(canned_phase)
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://testserver"
     ) as client:
         fractions = [
-            await _probe_fraction_of(client, heavy, probe) for _ in range(REPEATS)
+            await _probe_fraction_of(
+                client, _heavy_request(heavy_endpoint, canned_phase), probe
+            )
+            for _ in range(REPEATS)
         ]
 
     fraction = statistics.median(fractions)

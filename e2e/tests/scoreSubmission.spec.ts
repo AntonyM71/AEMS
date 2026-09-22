@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext } from "@playwright/test"
 import { randomUUID } from "node:crypto"
 import { setupTestData, type TestData } from "./helpers/testData"
+import { nextUuid7 } from "./helpers/uuid7"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
 
@@ -47,7 +48,7 @@ const submitScore = async (
 ): Promise<void> => {
 	const response = await request.post(
 		`${BACKEND_URL}/addUpdateAthleteScore/${data.heatId}/${data.athleteId}/${RUN_NUMBER}/${JUDGE_ID}?phase_id=${data.phaseId}`,
-		{ data: { moves, bonuses: [] } }
+		{ data: { moves, bonuses: [], request_id: nextUuid7() } }
 	)
 	expect(response.status()).toBe(200)
 }

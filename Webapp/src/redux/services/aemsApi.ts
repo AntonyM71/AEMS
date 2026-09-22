@@ -829,6 +829,7 @@ export type PydanticScoredBonuses = {
 export type AddUpdateScoredMovesRequest = {
 	moves?: PydanticScoredMoves[]
 	bonuses?: PydanticScoredBonuses[]
+	request_id: string
 }
 export type PydanticScoredMovesResponse = {
 	id: string

@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 def all_equal(iterable: list) -> bool:
@@ -24,8 +24,17 @@ class PydanticScoredBonuses(BaseModel):
 class AddUpdateScoredMovesRequest(BaseModel):
     moves: list[PydanticScoredMoves] = []
     bonuses: list[PydanticScoredBonuses] = []
+    request_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("request_id")
+    @classmethod
+    def _request_id_must_be_v7(cls, value: UUID) -> UUID:
+        if value.version != 7:
+            msg = "request_id must be a UUIDv7"
+            raise ValueError(msg)
+        return value
 
 
 class MixedUpScoresheetExceptionError(Exception):

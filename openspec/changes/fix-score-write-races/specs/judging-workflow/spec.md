@@ -3,9 +3,11 @@
 ## ADDED Requirements
 
 ### Requirement: Score submissions carry an ordering identifier
-Every score submission SHALL carry an identifier that orders it in time against other
+Every score submission SHALL carry a v7 UUID identifier that orders it in time against other
 submissions for the same heat/athlete/phase/run/judge. A retry SHALL resend the identifier its
-submission was created with, not a new one.
+submission was created with, not a new one. The server SHALL reject a submission that is
+missing this identifier, or that carries one that is not a v7 UUID, with `422 Unprocessable
+Entity`.
 
 #### Scenario: A submission is retried after a later edit
 - **WHEN** a submission fails and retries after the scribe has made a further edit
@@ -14,7 +16,11 @@ submission was created with, not a new one.
 
 #### Scenario: A submission arrives without an identifier
 - **WHEN** a score submission arrives carrying no identifier
-- **THEN** the server treats it as the newest submission for that key and applies it
+- **THEN** the server answers `422 Unprocessable Entity` and applies nothing
+
+#### Scenario: A submission carries an identifier that is not a v7 UUID
+- **WHEN** a score submission arrives carrying an identifier that is not a v7 UUID
+- **THEN** the server answers `422 Unprocessable Entity` and applies nothing
 
 ### Requirement: The server rejects out-of-order score submissions
 The server SHALL apply a score submission only when its identifier orders after the most

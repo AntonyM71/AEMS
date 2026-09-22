@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
+import { validate as validateUuid, version as uuidVersion } from "uuid"
 import { server } from "../../../../mocks/server"
 import { socketHub } from "../../../../mocks/socketHub"
 import { competitionInitialState } from "../../../../redux/atoms/competitions"
@@ -22,6 +23,7 @@ interface ScorePost {
 	heatId: string
 	athleteId: string
 	moves: { move_id: string; direction: string }[]
+	requestId: string
 }
 let scorePosts: ScorePost[]
 
@@ -69,11 +71,13 @@ beforeEach(() => {
 			async ({ params, request }) => {
 				const body = (await request.json()) as {
 					moves: { move_id: string; direction: string }[]
+					request_id: string
 				}
 				scorePosts.push({
 					heatId: String(params.heatId),
 					athleteId: String(params.athleteId),
-					moves: body.moves ?? []
+					moves: body.moves ?? [],
+					requestId: body.request_id
 				})
 
 				return HttpResponse.json({ success: true })
@@ -111,18 +115,13 @@ describe("Scribe", () => {
 		)
 	})
 
-	// Each edit posts the judge's whole list, so a later tap must carry the
-	// earlier moves with it. The server replaces what it holds with the body,
-	// so a submission that dropped them would erase them.
 	it("carries the earlier moves in the submission a later tap sends", async () => {
 		const user = userEvent.setup({ delay: null })
 		renderScribe()
 
 		await user.click(await screen.findByTestId("button-test-move-1-l"))
 		await waitFor(() =>
-			expect(
-				scorePosts.some((p) => p.moves.length === 1)
-			).toBe(true)
+			expect(scorePosts.some((p) => p.moves.length === 1)).toBe(true)
 		)
 
 		await user.click(screen.getByTestId("button-test-move-1-r"))
@@ -188,5 +187,41 @@ describe("Scribe", () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 300))
 		expect(scorePosts).toHaveLength(0)
+	})
+
+	it("sends a v7 identifier that increases across successive edits", async () => {
+		const user = userEvent.setup({ delay: null })
+		renderScribe()
+
+		await user.click(await screen.findByTestId("button-test-move-1-l"))
+		await waitFor(() => expect(scorePosts).toHaveLength(1))
+
+		await user.click(screen.getByTestId("button-test-move-1-r"))
+		await waitFor(() => expect(scorePosts).toHaveLength(2))
+
+		const [first, second] = scorePosts
+		expect(validateUuid(first.requestId)).toBe(true)
+		expect(uuidVersion(first.requestId)).toBe(7)
+		expect(uuidVersion(second.requestId)).toBe(7)
+		expect(second.requestId > first.requestId).toBe(true)
+	})
+
+	it("keeps showing local state and stays usable after a 409", async () => {
+		server.use(
+			http.post(
+				"/api/addUpdateAthleteScore/:heatId/:athleteId/:runNumber/:judgeId",
+				() => HttpResponse.json({ detail: "stale" }, { status: 409 })
+			)
+		)
+		const user = userEvent.setup({ delay: null })
+		renderScribe()
+
+		await user.click(await screen.findByTestId("button-test-move-1-l"))
+
+		const list = within(await moveListEl())
+		expect(await list.findByText("Cartwheel")).toBeInTheDocument()
+
+		await user.click(screen.getByTestId("button-test-move-1-r"))
+		expect(list.getAllByText("Cartwheel")).toHaveLength(2)
 	})
 })

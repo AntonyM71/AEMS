@@ -20,8 +20,10 @@ Never point this at a database with real competition data: the upload test
 creates a new competition on every one of its BENCHMARK_ROUNDS.
 """
 
+import time
 from io import BytesIO
-from uuid import uuid4
+from itertools import count
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 from pytest_benchmark.fixture import BenchmarkFixture
@@ -31,6 +33,20 @@ from main import app
 
 BENCHMARK_ROUNDS = 10
 UPLOAD_ATHLETE_COUNT = 60
+
+_uuid7_counter = count()
+
+
+def _next_uuid7() -> str:
+    ts_hex = f"{int(time.time() * 1000):012x}"
+    tail_hex = f"{next(_uuid7_counter):018x}"[-18:]
+
+    return str(
+        UUID(
+            f"{ts_hex[:8]}-{ts_hex[8:]}-7{tail_hex[:3]}-a{tail_hex[3:6]}-{tail_hex[6:]}"
+        )
+    )
+
 
 # Mean-latency ceilings, in seconds -- "did this regress badly" gates, not
 # tight tracking (that's what benchmark-results.json is for).
@@ -133,6 +149,7 @@ def test_score_submission_performance(
                     "move_id": str(move_ids[0]),
                 }
             ],
+            "request_id": _next_uuid7(),
         }
         return client.post(
             f"/addUpdateAthleteScore/{canned_phase.heat_id}/{athlete_id}/0/{judge_id}",

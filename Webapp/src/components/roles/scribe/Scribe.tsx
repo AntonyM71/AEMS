@@ -2,6 +2,8 @@ import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
 import { useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { v7 as uuidv7 } from "uuid"
+import { serverClock } from "../../../utils/serverClock"
 import {
 	getSelectedHeat,
 	updateNumberOfRuns
@@ -117,7 +119,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				judgeId: scribeNumber,
 				addUpdateScoredMovesRequest: {
 					moves: formattedScoredMoves,
-					bonuses: formattedScoredBonuses
+					bonuses: formattedScoredBonuses,
+					request_id: uuidv7({ msecs: serverClock.correctedNow() })
 				}
 			})
 		}

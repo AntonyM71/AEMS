@@ -1,7 +1,15 @@
 import uuid
 
 import sqlalchemy
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -258,4 +266,27 @@ class RunStatus(Base):
     athlete = relationship("Athlete", foreign_keys=[athlete_id])
     locked = Column(Boolean, nullable=False)
     did_not_start = Column(Boolean, nullable=False)
+    schema = "public"
+    __table_args__ = (
+        UniqueConstraint(
+            "heat_id",
+            "phase_id",
+            "athlete_id",
+            "run_number",
+            name="sth_uq_runStatus_run_key",
+        ),
+    )
+
+
+class RunUpdate(Base):
+    __tablename__ = "runUpdates"
+    heat_id = Column(UUID(as_uuid=True), ForeignKey(FK_HEAT_ID), primary_key=True)
+    heat = relationship("Heat", foreign_keys=[heat_id])
+    athlete_id = Column(UUID(as_uuid=True), ForeignKey(FK_ATHLETE_ID), primary_key=True)
+    athlete = relationship("Athlete", foreign_keys=[athlete_id])
+    phase_id = Column(UUID(as_uuid=True), ForeignKey(FK_PHASE_ID), primary_key=True)
+    phase = relationship("Phase", foreign_keys=[phase_id])
+    run_number = Column(Integer, primary_key=True)
+    judge_id = Column(String, primary_key=True)
+    request_id = Column(UUID(as_uuid=True), nullable=False)
     schema = "public"

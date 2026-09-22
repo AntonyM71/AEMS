@@ -189,9 +189,10 @@ the invariant instead of application code.
 
 ## Consequences:
 
-- The score submission endpoint gains an optional identifier. The server treats a missing one
-  as newest, so a mixed fleet survives a rollout and the frontend can roll back independently
-  of the server.
+- The score submission endpoint gains a required identifier. The server rejects a submission
+  that is missing one, or that carries anything but a v7 UUID, as a `422`. The stack deploys as
+  one Docker Compose unit, so server and webapp always land on the same commit — there is no
+  rollout window or independent rollback to design for.
 - Stale submissions and locked-run submissions are both answered as conflicts rather than
   server errors, so neither is retried. A locked-run rejection previously triggered five more
   attempts.
