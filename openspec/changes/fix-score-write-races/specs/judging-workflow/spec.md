@@ -23,16 +23,24 @@ Entity`.
 - **THEN** the server answers `422 Unprocessable Entity` and applies nothing
 
 ### Requirement: The server rejects out-of-order score submissions
-The server SHALL apply a score submission only when its identifier orders after the most
-recent submission already applied for that heat/athlete/phase/run/judge. The server SHALL
-answer `409 Conflict` to any other submission, leave the stored moves and bonuses untouched,
-and broadcast nothing.
+The server SHALL apply a score submission when its identifier orders after, or is identical
+to, the most recent submission already applied for that heat/athlete/phase/run/judge. The
+server SHALL answer `409 Conflict` to a submission whose identifier orders before that one,
+leave the stored moves and bonuses untouched, and broadcast nothing.
 
 #### Scenario: A stale retry arrives after a newer submission succeeded
 - **WHEN** a submission carrying an older identifier reaches the server after one carrying a
   newer identifier has been applied for the same heat, athlete, run and judge
 - **THEN** the server answers `409 Conflict`, the stored moves and bonuses remain those of the
   newer submission, and no `/current_scores` broadcast goes out
+
+#### Scenario: A retry carries the same identifier as the submission already applied
+- **WHEN** a retry reaches the server carrying the identical identifier of the submission most
+  recently applied for that heat, athlete, run and judge — because the original request's
+  response was lost before the client saw it
+- **THEN** the server applies it and answers success, rather than `409 Conflict`, since a retry
+  resends the identifier its submission was created with and this is that same submission
+  landing again
 
 #### Scenario: Editing continues after a rejection
 - **WHEN** the scribe makes a further edit after the server rejected a stale retry

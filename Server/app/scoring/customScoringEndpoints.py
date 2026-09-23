@@ -159,7 +159,7 @@ def _advance_watermark_if_newer(
     watermark_upsert = watermark_upsert.on_conflict_do_update(
         index_elements=["heat_id", "athlete_id", "phase_id", "run_number", "judge_id"],
         set_={"request_id": watermark_upsert.excluded.request_id},
-        where=RunUpdate.request_id < watermark_upsert.excluded.request_id,
+        where=RunUpdate.request_id <= watermark_upsert.excluded.request_id,
     ).returning(RunUpdate.request_id)
     return db.execute(watermark_upsert).first() is not None
 

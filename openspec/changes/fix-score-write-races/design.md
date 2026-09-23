@@ -70,14 +70,18 @@ INSERT INTO run_updates (heat_id, athlete_id, phase_id, run_number, judge_id, re
 VALUES (:heat_id, :athlete_id, :phase_id, :run_number, :judge_id, :request_id)
 ON CONFLICT (heat_id, athlete_id, phase_id, run_number, judge_id)
   DO UPDATE SET request_id = EXCLUDED.request_id
-  WHERE run_updates.request_id < EXCLUDED.request_id
+  WHERE run_updates.request_id <= EXCLUDED.request_id
 RETURNING request_id;
 ```
 
-An empty result means the submission is stale: answer `409` and stop. A returned row means the
-transaction holds that row's lock for its remainder, so the delete-and-insert that follows
-cannot interleave with another submission for the same key. Different judges hold different
-rows and still run concurrently.
+An empty result means the submission is older than what's stored: answer `409` and stop. A
+returned row means the transaction holds that row's lock for its remainder, so the
+delete-and-insert that follows cannot interleave with another submission for the same key.
+Different judges hold different rows and still run concurrently.
+
+The comparison is `<=`, not `<`: a retry resends the identifier its submission was born with, so
+an identical identifier means this is that same submission landing again — after a dropped
+response, say — and must win, not be answered `409` for data that's already correct.
 
 This replaces the advisory lock the original issue proposed. An advisory lock serialises but
 stores nothing, so the watermark would need a row anyway; one row does both jobs.

@@ -317,4 +317,34 @@ test.describe("WebSocket Streaming Updates", () => {
 		}
 		expect(storedMoves.map((m) => m.move_id)).toEqual([largerMove.moveId])
 	})
+
+	test("a retry carrying the same identifier as the applied submission succeeds", async ({
+		request
+	}) => {
+		const { heatId, athleteId, phaseId, scoresheetId } =
+			await setupTestData(request)
+		const [move] = await fetchTwoMoves(request, BACKEND_URL, scoresheetId)
+		const requestId = makeUuid7(Date.now())
+		const scoreUrl = `${BACKEND_URL}/addUpdateAthleteScore/${heatId}/${athleteId}/0/1?phase_id=${phaseId}`
+		const body = {
+			moves: [{ id: randomUUID(), move_id: move.moveId, direction: move.direction }],
+			bonuses: [],
+			request_id: requestId
+		}
+
+		const firstResponse = await request.post(scoreUrl, { data: body })
+		expect(firstResponse.status()).toBe(200)
+
+		const retryResponse = await request.post(scoreUrl, { data: body })
+		expect(retryResponse.status()).toBe(200)
+
+		const readBack = await request.get(
+			`${BACKEND_URL}/getAthleteMovesAndBonuses/${heatId}/${athleteId}/0?judge_id=1`
+		)
+		expect(readBack.status()).toBe(200)
+		const { moves: storedMoves } = (await readBack.json()) as {
+			moves: Array<{ move_id: string }>
+		}
+		expect(storedMoves.map((m) => m.move_id)).toEqual([move.moveId])
+	})
 })
