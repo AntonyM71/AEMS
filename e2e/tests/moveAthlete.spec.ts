@@ -1,7 +1,7 @@
 import { expect, test, type APIRequestContext } from "@playwright/test"
 import { randomUUID } from "node:crypto"
-import { io, type Socket } from "socket.io-client"
 import { fetchTwoMoves } from "./helpers/moves"
+import { setRunStatusOnce, type RunStatusFields } from "./helpers/runStatus"
 import { setupTestData, type TestData } from "./helpers/testData"
 import { nextUuid7 } from "./helpers/uuid7"
 
@@ -32,6 +32,21 @@ interface AthleteHeatMoveResponse {
 	scores_preserved: boolean | null
 }
 
+const setSourceRunStatus = (
+	data: TestData,
+	fields: RunStatusFields
+): Promise<void> =>
+	setRunStatusOnce(
+		BACKEND_URL,
+		{
+			heatId: data.heatId,
+			phaseId: data.phaseId,
+			athleteId: data.athleteId,
+			runNumber: RUN_NUMBER
+		},
+		fields
+	)
+
 const submitScore = async (
 	request: APIRequestContext,
 	heatId: string,
@@ -47,33 +62,25 @@ const submitScore = async (
 	expect(response.status()).toBe(200)
 }
 
+const readBackMovesAndBonuses = async (
+	request: APIRequestContext,
+	heatId: string,
+	athleteId: string
+): Promise<{ moves: ScoredMove[]; bonuses: ScoredBonus[] }> => {
+	const response = await request.get(
+		`${BACKEND_URL}/getAthleteMovesAndBonuses/${heatId}/${athleteId}/${RUN_NUMBER}?judge_id=${JUDGE_ID}`
+	)
+	expect(response.status()).toBe(200)
+
+	return response.json()
+}
+
 const readBackMoves = async (
 	request: APIRequestContext,
 	heatId: string,
 	athleteId: string
-): Promise<ScoredMove[]> => {
-	const response = await request.get(
-		`${BACKEND_URL}/getAthleteMovesAndBonuses/${heatId}/${athleteId}/${RUN_NUMBER}?judge_id=${JUDGE_ID}`
-	)
-	expect(response.status()).toBe(200)
-	const body = (await response.json()) as { moves: ScoredMove[] }
-
-	return body.moves
-}
-
-const readBackBonuses = async (
-	request: APIRequestContext,
-	heatId: string,
-	athleteId: string
-): Promise<ScoredBonus[]> => {
-	const response = await request.get(
-		`${BACKEND_URL}/getAthleteMovesAndBonuses/${heatId}/${athleteId}/${RUN_NUMBER}?judge_id=${JUDGE_ID}`
-	)
-	expect(response.status()).toBe(200)
-	const body = (await response.json()) as { bonuses: ScoredBonus[] }
-
-	return body.bonuses
-}
+): Promise<ScoredMove[]> =>
+	(await readBackMovesAndBonuses(request, heatId, athleteId)).moves
 
 const readRunStatuses = async (
 	request: APIRequestContext,
@@ -89,45 +96,6 @@ const readRunStatuses = async (
 	expect(response.status()).toBe(200)
 
 	return response.json()
-}
-
-const setRunStatusViaSocket = async (
-	heatId: string,
-	phaseId: string,
-	athleteId: string,
-	fields: { locked: boolean; did_not_start: boolean }
-): Promise<void> => {
-	const socket: Socket = io(`${BACKEND_URL}/run_status`, {
-		path: "/socket.io/",
-		transports: ["websocket"],
-		reconnection: false
-	})
-	try {
-		await new Promise<void>((resolve, reject) => {
-			socket.once("connect", () => resolve())
-			socket.once("connect_error", reject)
-		})
-		await new Promise<void>((resolve, reject) => {
-			const timer = setTimeout(
-				() => reject(new Error("no run_status echo within 10s")),
-				10000
-			)
-			socket.once("run_status", () => {
-				clearTimeout(timer)
-				resolve()
-			})
-			socket.emit("run_status", {
-				id: randomUUID(),
-				heat_id: heatId,
-				athlete_id: athleteId,
-				phase_id: phaseId,
-				run_number: RUN_NUMBER,
-				...fields
-			})
-		})
-	} finally {
-		socket.close()
-	}
 }
 
 const getHeatRunScores = async (
@@ -183,6 +151,24 @@ const createPhaseInSameEvent = async (
 	expect(response.status()).toBe(201)
 
 	return phaseId
+}
+
+// icf_2026 is a different seeded scoresheet from icf_2025 (used by
+// setupTestData), so a phase built from it scores against genuinely
+// different available moves.
+const fetchOtherScoresheetId = async (
+	request: APIRequestContext,
+	excludingScoresheetId: string
+): Promise<string> => {
+	const response = await request.get(
+		`${BACKEND_URL}/scoresheet/?name____list=icf_2026`
+	)
+	expect(response.status()).toBe(200)
+	const sheets = (await response.json()) as Array<{ id: string }>
+	expect(sheets.length).toBeGreaterThan(0)
+	expect(sheets[0].id).not.toBe(excludingScoresheetId)
+
+	return sheets[0].id
 }
 
 const directionMap: Record<string, string> = { LR: "L", FB: "F", S: "S" }
@@ -275,20 +261,10 @@ test.describe("moving an athlete between heats", () => {
 			{ id: randomUUID(), move_id: move.moveId, direction: move.direction }
 		])
 
-		// icf_2026 is a different seeded scoresheet from icf_2025 (used by
-		// setupTestData), so this phase scores against genuinely different
-		// available moves.
-		const otherSheetResponse = await request.get(
-			`${BACKEND_URL}/scoresheet/?name____list=icf_2026`
+		const otherScoresheetId = await fetchOtherScoresheetId(
+			request,
+			data.scoresheetId
 		)
-		expect(otherSheetResponse.status()).toBe(200)
-		const otherSheets = (await otherSheetResponse.json()) as Array<{
-			id: string
-		}>
-		expect(otherSheets.length).toBeGreaterThan(0)
-		const otherScoresheetId = otherSheets[0].id
-		expect(otherScoresheetId).not.toBe(data.scoresheetId)
-
 		const newPhaseId = await createPhaseInSameEvent(
 			request,
 			data,
@@ -315,10 +291,7 @@ test.describe("moving an athlete between heats", () => {
 		])
 		// A locked run keeps the moves the judge scored before it was locked;
 		// did-not-start is set independently and here has no moves behind it.
-		await setRunStatusViaSocket(data.heatId, data.phaseId, data.athleteId, {
-			locked: true,
-			did_not_start: false
-		})
+		await setSourceRunStatus(data, { locked: true, did_not_start: false })
 
 		const newHeatId = await createHeatInSameCompetition(
 			request,
@@ -357,10 +330,7 @@ test.describe("moving an athlete between heats", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		await setRunStatusViaSocket(data.heatId, data.phaseId, data.athleteId, {
-			locked: false,
-			did_not_start: true
-		})
+		await setSourceRunStatus(data, { locked: false, did_not_start: true })
 
 		const newHeatId = await createHeatInSameCompetition(
 			request,
@@ -489,21 +459,16 @@ test.describe("moving an athlete between heats", () => {
 			[{ id: randomUUID(), bonus_id: bonusId, move_id: scoredMoveId }]
 		)
 		expect(
-			await readBackBonuses(request, data.heatId, data.athleteId)
+			(await readBackMovesAndBonuses(request, data.heatId, data.athleteId))
+				.bonuses
 		).toHaveLength(1)
-		await setRunStatusViaSocket(data.heatId, data.phaseId, data.athleteId, {
-			locked: true,
-			did_not_start: false
-		})
+		await setSourceRunStatus(data, { locked: true, did_not_start: false })
 
 		// A phase using a different scoresheet forces the discarding branch.
-		const otherSheetResponse = await request.get(
-			`${BACKEND_URL}/scoresheet/?name____list=icf_2026`
+		const otherScoresheetId = await fetchOtherScoresheetId(
+			request,
+			data.scoresheetId
 		)
-		expect(otherSheetResponse.status()).toBe(200)
-		const otherScoresheetId = (
-			(await otherSheetResponse.json()) as Array<{ id: string }>
-		)[0].id
 		const newPhaseId = await createPhaseInSameEvent(
 			request,
 			data,
@@ -516,12 +481,13 @@ test.describe("moving an athlete between heats", () => {
 		})
 		expect(moveResult.scores_preserved).toBe(false)
 
-		expect(
-			await readBackMoves(request, data.heatId, data.athleteId)
-		).toHaveLength(0)
-		expect(
-			await readBackBonuses(request, data.heatId, data.athleteId)
-		).toHaveLength(0)
+		const afterMove = await readBackMovesAndBonuses(
+			request,
+			data.heatId,
+			data.athleteId
+		)
+		expect(afterMove.moves).toHaveLength(0)
+		expect(afterMove.bonuses).toHaveLength(0)
 		expect(
 			await readRunStatuses(request, data.heatId, data.phaseId, data.athleteId)
 		).toHaveLength(0)
