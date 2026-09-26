@@ -235,7 +235,8 @@ def build_phase_pdf_content(
     pdf.add_page()
 
     with pdf.table(
-        col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3)
+        col_widths=(1, 3, 3, 1, 3, *([2] * phase_metadata.number_of_runs), 2, 3),
+        line_height=pdf.font_size * 1.2,
     ) as table:
         header = table.row()
         header.cell("Rank")

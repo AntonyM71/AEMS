@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,7 +12,7 @@ from app.competition_management.pdfEndpoints import (
     phase_pdf,
     sanitize_filename,
 )
-from app.scoring.customScoringEndpoints import HeatInfoResponse
+from app.scoring.customScoringEndpoints import HeatInfoResponse, PhaseScoresResponse
 from app.scoring.scoring_logic import (
     AthleteScoresWithAthleteInfo,
     RunScores,
@@ -402,6 +403,53 @@ def test_pdf_content_structure(
         assert b"%PDF-" in pdf_content, (
             "Response body should start with the PDF magic number (%PDF-)"
         )
+
+
+def test_phase_pdf_notes_use_compact_line_height(mock_phase: MagicMock) -> None:
+    """Multi-line tiebreak notes must not use fpdf2's double-spaced table default (#409)."""
+    from fpdf.table import Table
+
+    from app.competition_management.pdfEndpoints import (
+        HelveticaNeuePDF,
+        build_phase_pdf_content,
+    )
+
+    pdf = HelveticaNeuePDF()
+    captured: dict[str, Any] = {}
+    original_init = Table.__init__
+
+    def capture_init(self: Table, fpdf: Any, *args: Any, **kwargs: Any) -> None:
+        captured.update(kwargs)
+        original_init(self, fpdf, *args, **kwargs)
+
+    phase_scores = PhaseScoresResponse(
+        phase_id=str(uuid.uuid4()),
+        scores=[
+            AthleteScoresWithAthleteInfo(
+                athlete_id=uuid.uuid4(),
+                first_name="John",
+                last_name="Doe",
+                bib_number=123,
+                run_scores=[],
+                highest_scoring_move=0,
+                total_score=200.0,
+                ranking=1,
+                reason="Tie resolved by highest scoring move: #17 (80.00), #7 (50.00)",
+                last_phase_rank=None,
+            )
+        ],
+    )
+
+    with patch.object(Table, "__init__", capture_init):
+        build_phase_pdf_content(pdf, mock_phase, phase_scores)
+
+    assert captured.get("line_height") is not None, (
+        "phase table should set an explicit line_height"
+    )
+    assert captured["line_height"] < 2 * pdf.font_size, (
+        "phase table notes should not fall back to fpdf2's default "
+        "double-spaced line height"
+    )
 
 
 def test_sanitize_filename() -> None:
