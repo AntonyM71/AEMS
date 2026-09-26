@@ -1,16 +1,30 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { toast } from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
-import { setupStore } from "../../../redux/store"
+import { renderWithProviders } from "../../../testUtils"
 import {
 	AddAthletesToHeat,
 	EditAthleteDialog,
 	HeatAthleteTable,
 	HeatSummaryTable
 } from "../HeatSummaryTable"
+
+const defaultCompetitionsState = {
+	selectedHeat: "1",
+	selectedCompetition: "1",
+	selectedPhase: "1",
+	selectedEvent: "1",
+	numberOfRuns: 2
+}
+
+const renderWithHeatSelected = (
+	ui: React.ReactElement
+): ReturnType<typeof renderWithProviders> =>
+	renderWithProviders(ui, {
+		preloadedState: { competitions: defaultCompetitionsState }
+	})
 
 describe("HeatSummaryTable", () => {
 	beforeEach(() => {
@@ -75,41 +89,13 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("shows loading skeleton when data is being fetched", () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
 	})
 
 	it("displays heat data and athlete table when loaded", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		// Wait for heat name to appear
 		expect(await screen.findByText("Heat: Test Heat")).toBeInTheDocument()
@@ -170,21 +156,7 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("shows add athletes section when showAddAthletes is true", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable showAddAthletes={true} />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable showAddAthletes={true} />)
 
 		// Wait for heat name to appear
 		await screen.findByText("Heat: Test Heat")
@@ -196,27 +168,13 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("creates URLs for PDF downloads", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
 		// Mock URL.createObjectURL and window.open
 		const mockCreateObjectURL = jest.fn(() => "mock-url")
 		global.URL.createObjectURL = mockCreateObjectURL
 		const mockWindowOpen = jest.fn()
 		window.open = mockWindowOpen
 
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		// Mock window.open to return an object with location
 		const mockWindow = { location: { href: "" } }
@@ -265,21 +223,7 @@ describe("HeatAthleteTable", () => {
 	})
 
 	it("shows admin column in grid when showAdmin is true", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatAthleteTable showAdmin={true} />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatAthleteTable showAdmin={true} />)
 
 		// Wait for data to load
 		const grid = await screen.findByTestId("mock-data-grid")
@@ -327,29 +271,17 @@ describe("HeatAthleteTable", () => {
 			)
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-				/>
-			</Provider>
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
 		)
 
 		// Check dialog content
@@ -400,29 +332,17 @@ describe("HeatAthleteTable", () => {
 			})
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-				/>
-			</Provider>
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
 		)
 
 		// "Edit Athlete" is ambiguous once the form loads - it's also the
@@ -488,29 +408,17 @@ describe("HeatAthleteTable", () => {
 			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([]))
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-				/>
-			</Provider>
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
 		)
 
 		await screen.findByRole("heading", { name: "Edit Athlete" })
@@ -573,30 +481,18 @@ describe("HeatAthleteTable", () => {
 			})
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-					last_phase_rank={3}
-				/>
-			</Provider>
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+				last_phase_rank={3}
+			/>
 		)
 
 		await screen.findByRole("heading", { name: "Edit Athlete" })
@@ -657,21 +553,7 @@ describe("AddAthletesToHeat", () => {
 	})
 
 	it("validates required fields", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -691,21 +573,7 @@ describe("AddAthletesToHeat", () => {
 	it("shows last phase rank field when enabled", async () => {
 		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK = "true"
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -718,21 +586,7 @@ describe("AddAthletesToHeat", () => {
 	it("hides last phase rank field when disabled", async () => {
 		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK = "false"
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -754,21 +608,8 @@ describe("AddAthletesToHeat", () => {
 				HttpResponse.json({ data: [{ id: "1" }] })
 			)
 		)
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
 
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
