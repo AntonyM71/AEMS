@@ -29,7 +29,6 @@ import {
 	getSelectedHeat
 } from "../../redux/atoms/competitions"
 import {
-	useDeleteManyScoredmovesDeleteMutation,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetManyEventGetQuery,
 	useGetManyHeatGetQuery,
@@ -179,7 +178,6 @@ export const HeatSummaryTable = ({
 	return <h4>Something went wrong</h4>
 }
 
-
 export const HeatAthleteTable = ({
 	showAdmin = false
 }: {
@@ -198,6 +196,7 @@ export const HeatAthleteTable = ({
 		phase_id?: string
 		athlete_id?: string
 		event_name?: string
+		last_phase_rank?: number
 	}>({})
 	const editCol = showAdmin
 		? [
@@ -266,6 +265,7 @@ export const HeatAthleteTable = ({
 					bib={rowData.bib ?? 1}
 					phase_id={rowData.phase_id ?? ""}
 					athlete_heat_id={rowData.athlete_heat_id ?? ""}
+					last_phase_rank={rowData.last_phase_rank}
 				/>
 				<DataGrid
 					sx={{ height: "50vh" }}
@@ -293,7 +293,8 @@ export const EditAthleteDialog = ({
 	bib,
 	phase_id,
 	affiliation,
-	athlete_heat_id
+	athlete_heat_id,
+	last_phase_rank
 }: {
 	open: boolean
 	handleClose: () => void
@@ -304,6 +305,7 @@ export const EditAthleteDialog = ({
 	bib?: number
 	phase_id?: string
 	athlete_heat_id?: string
+	last_phase_rank?: number
 }) => (
 	<Dialog onClose={handleClose} open={open}>
 		<div
@@ -322,12 +324,55 @@ export const EditAthleteDialog = ({
 				affiliation={affiliation}
 				bib={bib}
 				phase_id={phase_id}
+				last_phase_rank={last_phase_rank}
 				handleClose={handleClose}
 			/>
 		</div>
 	</Dialog>
 )
 
+interface PhaseWithScoresheet {
+	id: string
+	scoresheet?: string | null
+}
+
+// The server is the source of truth for whether a move actually preserves
+// scores (it also checks the destination isn't already occupied), but the
+// operator needs to know before they save, not after - this mirrors just the
+// scoresheet half of that decision, from data already loaded for the phase
+// selector.
+const willPreserveScoresOnMove = (
+	phases: PhaseWithScoresheet[],
+	sourcePhaseId: string | undefined,
+	destinationPhaseId: string
+): boolean => {
+	if (!sourcePhaseId || sourcePhaseId === destinationPhaseId) {
+		return true
+	}
+	const sourceScoresheet = phases.find(
+		(p) => p.id === sourcePhaseId
+	)?.scoresheet
+	const destinationScoresheet = phases.find(
+		(p) => p.id === destinationPhaseId
+	)?.scoresheet
+
+	return (
+		Boolean(sourceScoresheet) && sourceScoresheet === destinationScoresheet
+	)
+}
+
+const describeScoresOutcome = (
+	scoresPreserved: boolean | null | undefined
+): string => {
+	if (scoresPreserved === true) {
+		return "Updated Athlete Competition Information - scores preserved"
+	}
+	if (scoresPreserved === false) {
+		return "Updated Athlete Competition Information - scores cleared"
+	}
+
+	return "Updated Athlete Competition Information"
+}
 
 export const AddAthletesToHeat = (props: {
 	athlete_id?: string
@@ -337,6 +382,7 @@ export const AddAthletesToHeat = (props: {
 	bib?: number
 	phase_id?: string
 	athlete_heat_id?: string
+	last_phase_rank?: number
 	showHeat?: boolean
 	handleClose?: () => void
 }) => {
@@ -369,7 +415,7 @@ export const AddAthletesToHeat = (props: {
 	const [bibNumber, setBibNumber] = useState<number>(Number(props.bib ?? 1))
 
 	const [lastPhaseRank, setLastPhaseRank] = useState<number | undefined>(
-		undefined
+		props.last_phase_rank
 	)
 	const { data, isSuccess } = useGetManyEventGetQuery(
 		{
@@ -396,7 +442,6 @@ export const AddAthletesToHeat = (props: {
 		usePartialUpdateOneByPrimaryKeyAthleteIdPatchMutation()
 	const [updateAthleteHeat] =
 		usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation()
-	const [deleteOldMoves] = useDeleteManyScoredmovesDeleteMutation()
 	// eslint-disable-next-line complexity
 	const handleNewPaddlerSubmit = async () => {
 		if (athleteFirstName && athleteLastName && bibNumber) {
@@ -416,29 +461,21 @@ export const AddAthletesToHeat = (props: {
 					"Updated Athlete"
 				)
 
+				const athleteHeatUpdateResult = await updateAthleteHeat({
+					id: athleteHeatId,
+					athleteHeatUpdate: {
+						heat_id: newHeat,
+						athlete_id: athleteId,
+						phase_id: selectedPhase,
+						last_phase_rank: Number(lastPhaseRank ?? undefined)
+					}
+				})
 				HandlePostResponse(
-					await updateAthleteHeat({
-						id: athleteHeatId,
-						athleteHeatUpdate: {
-							heat_id: newHeat,
-							athlete_id: athleteId,
-							phase_id: selectedPhase,
-							last_phase_rank: Number(lastPhaseRank ?? undefined)
-						}
-					}),
-					"Updated Athlete Competition Information"
-				)
-				if (
-					selectedHeat !== newHeat ||
-					selectedPhase !== props.phase_id
-				) {
-					HandlePostResponse(
-						await deleteOldMoves({
-							heatIdList: [selectedHeat],
-							athleteIdList: [athleteId]
-						})
+					athleteHeatUpdateResult,
+					describeScoresOutcome(
+						athleteHeatUpdateResult.data?.scores_preserved
 					)
-				}
+				)
 			} else {
 				HandlePostResponse(
 					await makeAthlete({
@@ -505,16 +542,30 @@ export const AddAthletesToHeat = (props: {
 				.flat()
 		: []
 
+	const scoresWillBePreserved = willPreserveScoresOnMove(
+		phases,
+		props.phase_id,
+		selectedPhase
+	)
+
 	return (
 		<Grid container spacing={1} alignItems="stretch">
 			{props.athlete_id && props.athlete_heat_id && (
 				<Grid size={colWidth}>
 					{" "}
-					<Alert severity="info">
-						Warning: Moving an athlete between heats or phases will
-						delete any previously scored moves for that athlete in
-						that heat/phase{" "}
-					</Alert>
+					{scoresWillBePreserved ? (
+						<Alert severity="info">
+							Moving this athlete will keep their previously
+							scored moves, since the selected phase uses the same
+							scoresheet.
+						</Alert>
+					) : (
+						<Alert severity="warning">
+							Warning: Moving this athlete to the selected phase
+							will delete their previously scored moves, since it
+							uses a different scoresheet.
+						</Alert>
+					)}
 				</Grid>
 			)}
 			<Grid size={colWidth}>

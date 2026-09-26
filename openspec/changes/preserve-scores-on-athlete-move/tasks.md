@@ -81,29 +81,44 @@ holds the coverage that only a running stack can give.
 
 ## 5. Webapp
 
-- [ ] 5.1 Remove the `useDeleteManyScoredmovesDeleteMutation` import, the `deleteOldMoves`
+- [x] 5.1 Remove the `useDeleteManyScoredmovesDeleteMutation` import, the `deleteOldMoves`
       binding, and the conditional delete block from
       `Webapp/src/components/competition/HeatSummaryTable.tsx`
-- [ ] 5.2 Add a named helper — not an inline ternary — that takes the phase list already loaded
+- [x] 5.2 Add a named helper — not an inline ternary — that takes the phase list already loaded
       in `AddAthletesToHeat` and reports whether moving from the athlete's current phase to the
-      selected one keeps their scores, by comparing the two phases' `scoresheet` values
-- [ ] 5.3 Drive the existing `Alert` from that helper: a warning that the scores will be
+      selected one keeps their scores, by comparing the two phases' `scoresheet` values.
+      Implemented as `willPreserveScoresOnMove`
+- [x] 5.3 Drive the existing `Alert` from that helper: a warning that the scores will be
       deleted when the scoresheets differ, and an informational note that they will be kept
       when they match
-- [ ] 5.4 Report the server's `scores_preserved` in the toast for the athlete-heat update, so
-      the operator is told what actually happened rather than what was predicted
-- [ ] 5.5 Add `last_phase_rank` to the `rowData` state type in `HeatAthleteTable` (the row
+- [x] 5.4 Report the server's `scores_preserved` in the toast for the athlete-heat update, so
+      the operator is told what actually happened rather than what was predicted. Implemented
+      as `describeScoresOutcome`
+- [x] 5.5 Add `last_phase_rank` to the `rowData` state type in `HeatAthleteTable` (the row
       already carries it via `HeatInfoResponse`, just unread), pass it as a `last_phase_rank`
       prop through `EditAthleteDialog` into `AddAthletesToHeat`, and initialise the
       `lastPhaseRank` state from that prop instead of `undefined` — the same pattern already
       used for `athleteFirstName` and `bibNumber`
-- [ ] 5.6 Update `Webapp/src/components/competition/__tests__/HeatSummaryTable.test.tsx`:
+- [x] 5.6 Update `Webapp/src/components/competition/__tests__/HeatSummaryTable.test.tsx`:
       remove the `http.delete("/api/scoredmoves")` handler and its assertion, add cases
       asserting the warning text an operator sees for a same-scoresheet move and for a
       different-scoresheet move, and add a case asserting that editing an athlete with an
       existing `last_phase_rank` and changing only their bib number submits that same rank
-      rather than `null`
-- [ ] 5.7 Run `npm run precommit` in `Webapp/`
+      rather than `null`. The old single test's own premise needed updating too: it only
+      changed heat (not phase), which under the new logic always preserves scores (scoresheet
+      depends on phase, not heat) — so it now expects the info message, not the old
+      unconditional warning, split into three focused tests instead of one. Verified: 13/13
+      pass in this file, 267/268 in the full webapp suite (the one unrelated failure,
+      Scribe.test.tsx, passes cleanly in isolation — flaky under full-suite parallel load, not
+      a regression; confirmed by diff scope, this file's diff touches nothing Scribe.tsx uses)
+- [x] 5.7 Run `npm run precommit` in `Webapp/`. Ran scoped `eslint --fix` and `prettier -w` on
+      just the two changed files instead of the repo-wide `precommit`: a stale `node_modules`
+      (package.json already required `uuid@^14.0.2` from the prior `fix-score-write-races`
+      change, never reinstalled) meant `npm install` was needed first to get a clean `tsc`, and
+      that install shifted formatting-tool versions enough that the full `precommit` reformatted
+      ~23 unrelated files repo-wide — reverted all of those, keeping only the two files this
+      task actually touches. `tsc` and the full webapp suite were still run unscoped (read-only,
+      safe); only the fix-formatting step was scoped
 
 ## 6. End-to-end coverage against a real database
 

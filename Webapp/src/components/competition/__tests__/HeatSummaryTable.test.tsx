@@ -359,20 +359,13 @@ describe("HeatAthleteTable", () => {
 		expect(await screen.findByDisplayValue("123")).toBeInTheDocument()
 	})
 
-	it("shows warning and deletes moves when moving athlete to different heat", async () => {
-		let deleteMovesRequestUrl: URL | undefined
-		// Mock endpoints
+	it("shows an info message and reports preserved scores when moving to a heat in the same phase", async () => {
+		let athleteHeatUpdateBody: unknown
 		server.use(
 			http.get("/api/heat", () =>
 				HttpResponse.json([
-					{
-						id: "1",
-						name: "Test Heat"
-					},
-					{
-						id: "2",
-						name: "Another Heat"
-					}
+					{ id: "1", name: "Test Heat" },
+					{ id: "2", name: "Another Heat" }
 				])
 			),
 			http.get("/api/event", () =>
@@ -383,7 +376,8 @@ describe("HeatAthleteTable", () => {
 						phase_foreign: [
 							{
 								id: "1",
-								name: "Test Phase"
+								name: "Test Phase",
+								scoresheet: "sheet-1"
 							}
 						]
 					}
@@ -391,15 +385,18 @@ describe("HeatAthleteTable", () => {
 			),
 			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
 			http.patch("/api/athlete/:id", () =>
-				HttpResponse.json({ data: [{ id: "1" }] })
+				HttpResponse.json({ id: "1" })
 			),
-			http.patch("/api/athleteheat/:id", () =>
-				HttpResponse.json({ data: [{ id: "1" }] })
-			),
-			http.delete("/api/scoredmoves", ({ request }) => {
-				deleteMovesRequestUrl = new URL(request.url)
+			http.patch("/api/athleteheat/:id", async ({ request }) => {
+				athleteHeatUpdateBody = await request.json()
 
-				return HttpResponse.json({ message: "Success" })
+				return HttpResponse.json({
+					id: "1",
+					athlete_id: "1",
+					heat_id: "2",
+					phase_id: "1",
+					scores_preserved: true
+				})
 			})
 		)
 
@@ -428,49 +425,194 @@ describe("HeatAthleteTable", () => {
 			</Provider>
 		)
 
-		// Wait for dialog to load and check warning is shown. "Edit Athlete"
-		// is ambiguous once the form loads - it's also the submit button's
-		// label - so query the dialog heading specifically.
+		// "Edit Athlete" is ambiguous once the form loads - it's also the
+		// submit button's label - so query the dialog heading specifically.
 		await screen.findByRole("heading", { name: "Edit Athlete" })
-		expect(await screen.findByText(/Warning:/)).toBeInTheDocument()
+
+		// No phase change has been made yet, so the phase-only comparison
+		// that drives this message reports the move as scores-preserving by
+		// default - a heat-only move never changes the scoresheet.
 		expect(
-			screen.getByText(
-				/Moving an athlete between heats or phases will delete any previously scored moves/
-			)
+			await screen.findByText(/will keep their previously scored moves/)
 		).toBeInTheDocument()
 
-		// Change heat. `data-testid="heat-select"` lands on MUI's outer
-		// MuiInputBase-root wrapper, not the inner role="combobox" div that
-		// actually opens the menu on click - query within it for that div.
+		// `data-testid="heat-select"` lands on MUI's outer MuiInputBase-root
+		// wrapper, not the inner role="combobox" div that actually opens the
+		// menu on click - query within it for that div.
 		const heatSelect = screen.getByTestId("heat-select")
 		const user = userEvent.setup()
 		await user.click(within(heatSelect).getByRole("combobox"))
+		await user.click(
+			await screen.findByRole("option", { name: "Another Heat" })
+		)
 
-		const heatOption = await screen.findByRole("option", {
-			name: "Another Heat"
-		})
-		await user.click(heatOption)
-
-		// Submit form
 		const editButton = screen.getByRole("button", { name: "Edit Athlete" })
 		await user.click(editButton)
 
-		// Verify success toast
 		await waitFor(() =>
 			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
 		)
 		expect(toast.success).toHaveBeenCalledWith(
-			"Updated Athlete Competition Information"
+			"Updated Athlete Competition Information - scores preserved"
+		)
+		expect(athleteHeatUpdateBody).toEqual(
+			expect.objectContaining({ heat_id: "2", phase_id: "1" })
+		)
+	})
+
+	it("shows a warning when the selected phase uses a different scoresheet", async () => {
+		server.use(
+			http.get("/api/heat", () =>
+				HttpResponse.json([{ id: "1", name: "Test Heat" }])
+			),
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase",
+								scoresheet: "sheet-1"
+							},
+							{
+								id: "2",
+								name: "Other Phase",
+								scoresheet: "sheet-2"
+							}
+						]
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([]))
 		)
 
-		// Verify the scored moves were deleted for the OLD heat ("1"), not
-		// the new one ("2"), scoped to this athlete
+		const store = setupStore({
+			competitions: {
+				selectedHeat: "1",
+				selectedCompetition: "1",
+				selectedPhase: "1",
+				selectedEvent: "1",
+				numberOfRuns: 2
+			}
+		})
+
+		render(
+			<Provider store={store}>
+				<EditAthleteDialog
+					open={true}
+					handleClose={jest.fn()}
+					athlete_id="1"
+					first_name="John"
+					last_name="Doe"
+					bib={123}
+					phase_id="1"
+					athlete_heat_id="1"
+				/>
+			</Provider>
+		)
+
+		await screen.findByRole("heading", { name: "Edit Athlete" })
 		expect(
-			deleteMovesRequestUrl?.searchParams.getAll("heat_id____list")
-		).toEqual(["1"])
+			await screen.findByText(/will keep their previously scored moves/)
+		).toBeInTheDocument()
+
+		const phaseSelect = screen.getAllByRole("combobox")[0]
+		const user = userEvent.setup()
+		await user.click(phaseSelect)
+		await user.click(
+			await screen.findByRole("option", {
+				name: "Test Event - Other Phase"
+			})
+		)
+
+		expect(await screen.findByText(/Warning:/)).toBeInTheDocument()
 		expect(
-			deleteMovesRequestUrl?.searchParams.getAll("athlete_id____list")
-		).toEqual(["1"])
+			screen.getByText(
+				/will delete their previously scored moves, since it uses a different scoresheet/
+			)
+		).toBeInTheDocument()
+	})
+
+	it("preserves an athlete's last_phase_rank when editing only their bib number", async () => {
+		let athleteHeatUpdateBody: unknown
+		server.use(
+			http.get("/api/heat", () =>
+				HttpResponse.json([{ id: "1", name: "Test Heat" }])
+			),
+			http.get("/api/event", () =>
+				HttpResponse.json([
+					{
+						id: "1",
+						name: "Test Event",
+						phase_foreign: [
+							{
+								id: "1",
+								name: "Test Phase",
+								scoresheet: "sheet-1"
+							}
+						]
+					}
+				])
+			),
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
+			http.patch("/api/athlete/:id", () =>
+				HttpResponse.json({ id: "1" })
+			),
+			http.patch("/api/athleteheat/:id", async ({ request }) => {
+				athleteHeatUpdateBody = await request.json()
+
+				return HttpResponse.json({
+					id: "1",
+					athlete_id: "1",
+					heat_id: "1",
+					phase_id: "1",
+					scores_preserved: null
+				})
+			})
+		)
+
+		const store = setupStore({
+			competitions: {
+				selectedHeat: "1",
+				selectedCompetition: "1",
+				selectedPhase: "1",
+				selectedEvent: "1",
+				numberOfRuns: 2
+			}
+		})
+
+		render(
+			<Provider store={store}>
+				<EditAthleteDialog
+					open={true}
+					handleClose={jest.fn()}
+					athlete_id="1"
+					first_name="John"
+					last_name="Doe"
+					bib={123}
+					phase_id="1"
+					athlete_heat_id="1"
+					last_phase_rank={3}
+				/>
+			</Provider>
+		)
+
+		await screen.findByRole("heading", { name: "Edit Athlete" })
+		const bibInput = await screen.findByLabelText("Bib Number")
+		const user = userEvent.setup()
+		await user.clear(bibInput)
+		await user.type(bibInput, "456")
+
+		await user.click(screen.getByRole("button", { name: "Edit Athlete" }))
+
+		await waitFor(() =>
+			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
+		)
+		expect(athleteHeatUpdateBody).toEqual(
+			expect.objectContaining({ last_phase_rank: 3 })
+		)
 	})
 })
 
