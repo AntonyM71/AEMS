@@ -5,12 +5,8 @@ jest.mock("pixi.js", () => {
 	class MockTexture {
 		width = 100
 		height = 100
-		url?: string
-		constructor(url?: string) {
-			this.url = url
-		}
 	}
-	const textureFrom = jest.fn((url: string) => new MockTexture(url))
+	const textureFrom = jest.fn(() => new MockTexture())
 	const assetsLoad = jest.fn(() => Promise.resolve())
 	class MockSprite {
 		anchor = { set: jest.fn() }
@@ -33,16 +29,18 @@ jest.mock("pixi.js", () => {
 		__esModule: true,
 		Application: MockApplication,
 		Sprite: MockSprite,
-		Texture: { EMPTY: new MockTexture("empty"), from: textureFrom },
+		Texture: { EMPTY: new MockTexture(), from: textureFrom },
 		Assets: { load: assetsLoad },
 		__mockTextureFrom: textureFrom
 	}
 })
 
-const getPixiMocks = () =>
-	jest.requireMock("pixi.js") as unknown as {
-		__mockTextureFrom: jest.Mock
-	}
+// jest.mock's factory must be self-contained (it runs during module import,
+// before any of this file's own top-level statements), so the mock function
+// is smuggled out through the module's exports and read back once here.
+const { __mockTextureFrom: mockTextureFrom } = jest.requireMock("pixi.js") as {
+	__mockTextureFrom: jest.Mock
+}
 
 const getContentOpacity = () =>
 	(screen.getByTestId("content").parentElement as HTMLElement).style.opacity
@@ -52,8 +50,7 @@ const getContentOpacity = () =>
 // condition. Waiting for the real frames to load first before checking
 // opacity avoids mistaking that transient state for the post-intro hold.
 const waitForFramesLoaded = async (count: number) => {
-	const { __mockTextureFrom: textureFromMock } = getPixiMocks()
-	await waitFor(() => expect(textureFromMock).toHaveBeenCalledTimes(count))
+	await waitFor(() => expect(mockTextureFrom).toHaveBeenCalledTimes(count))
 }
 
 describe("PixiFrameSequenceOverlay", () => {
@@ -62,22 +59,6 @@ describe("PixiFrameSequenceOverlay", () => {
 	afterEach(() => {
 		jest.clearAllMocks()
 		global.fetch = originalFetch
-	})
-
-	it("keeps children hidden while the Pixi app is still initializing", () => {
-		render(
-			<PixiFrameSequenceOverlay
-				frameUrls={["a.png", "b.png", "c.png"]}
-				holdImage={1}
-				fps={1000}
-				isVisible
-			>
-				<div data-testid="content">Content</div>
-			</PixiFrameSequenceOverlay>
-		)
-
-		// Synchronous initial render, before Pixi/frame loading resolves.
-		expect(getContentOpacity()).toBe("0")
 	})
 
 	it("plays the intro once and settles into the looping hold frame", async () => {
@@ -91,6 +72,9 @@ describe("PixiFrameSequenceOverlay", () => {
 				<div data-testid="content">Content</div>
 			</PixiFrameSequenceOverlay>
 		)
+
+		// Synchronous initial render, before Pixi/frame loading resolves.
+		expect(getContentOpacity()).toBe("0")
 
 		await waitForFramesLoaded(3)
 		await waitFor(() => expect(getContentOpacity()).toBe("1"), {
@@ -134,7 +118,6 @@ describe("PixiFrameSequenceOverlay", () => {
 	})
 
 	it("resolves frame urls from a mocked /componentInfo/{name} response", async () => {
-		const { __mockTextureFrom: textureFromMock } = getPixiMocks()
 		const fetchMock = jest.fn().mockResolvedValue({
 			ok: true,
 			url: "https://graphics.local/componentInfo/pack1",
@@ -159,10 +142,10 @@ describe("PixiFrameSequenceOverlay", () => {
 		)
 
 		await waitFor(() => {
-			expect(textureFromMock).toHaveBeenCalledWith(
+			expect(mockTextureFrom).toHaveBeenCalledWith(
 				"https://graphics.local/packs/pack1/frame_01.png"
 			)
-			expect(textureFromMock).toHaveBeenCalledWith(
+			expect(mockTextureFrom).toHaveBeenCalledWith(
 				"https://graphics.local/packs/pack1/frame_02.png"
 			)
 		})
