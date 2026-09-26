@@ -19,7 +19,12 @@ SHEET_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 
 @pytest.mark.parametrize(
-    ("source_scoresheet", "destination_scoresheet", "destination_is_occupied", "expected"),
+    (
+        "source_scoresheet",
+        "destination_scoresheet",
+        "destination_is_occupied",
+        "expected",
+    ),
     [
         (SHEET_A, SHEET_A, False, True),
         (SHEET_A, SHEET_A, True, False),
@@ -30,7 +35,7 @@ SHEET_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 def test_move_preserves_scores(
     source_scoresheet: UUID,
     destination_scoresheet: UUID,
-    destination_is_occupied: bool,
+    destination_is_occupied: bool,  # noqa: FBT001
     expected: bool,  # noqa: FBT001
 ) -> None:
     """Scores are preserved only when the scoresheet matches and the destination is free."""

@@ -12,7 +12,9 @@ athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
 
 
 def move_preserves_scores(
-    source_scoresheet: UUID, destination_scoresheet: UUID, destination_is_occupied: bool  # noqa: FBT001
+    source_scoresheet: UUID,
+    destination_scoresheet: UUID,
+    destination_is_occupied: bool,  # noqa: FBT001
 ) -> bool:
     """A move keeps its scores only when the destination scores against the same
     scoresheet and holds no scores of its own for this athlete yet."""
@@ -101,9 +103,7 @@ def _move_athlete_scores(
             .values(heat_id=destination_heat_id, phase_id=destination_phase_id)
         )
     else:
-        db.execute(
-            delete(ScoredBonuses).where(ScoredBonuses.move_id.in_(source_moves))
-        )
+        db.execute(delete(ScoredBonuses).where(ScoredBonuses.move_id.in_(source_moves)))
         db.execute(
             delete(RunStatus)
             .where(RunStatus.heat_id == source_heat_id)

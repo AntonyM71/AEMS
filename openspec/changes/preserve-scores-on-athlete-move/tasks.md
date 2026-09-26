@@ -169,6 +169,12 @@ sessions and cannot show that rows actually moved.
 
 ## 7. Finish
 
-- [ ] 7.1 Run `uv run ruff check .` and `uv run python -m pytest` in `Server/`
-- [ ] 7.2 Confirm no Alembic migration was generated — this change moves rows, it does not
-      alter the schema
+- [x] 7.1 Run `uv run ruff check .` and `uv run python -m pytest` in `Server/`. Caught one real
+      `ruff check` finding (a missing `# noqa: FBT001` on the new test's boolean parameter,
+      matching the one already needed on `expected`), fixed. `ruff format --check` also flagged
+      the two files this change touches plus four unrelated ones with pre-existing drift; ran
+      `ruff format` scoped to just the two files this change owns, same reasoning as 5.7's
+      scoped prettier pass. Verified: `ruff check` clean, 328/328 tests pass
+- [x] 7.2 Confirm no Alembic migration was generated — this change moves rows, it does not
+      alter the schema. Verified: `Server/alembic/versions/` has no untracked files and its last
+      commit predates this branch
