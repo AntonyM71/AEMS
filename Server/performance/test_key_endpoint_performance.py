@@ -28,9 +28,11 @@ from pytest_benchmark.fixture import BenchmarkFixture
 
 from db.canned_data import CannedPhase
 from main import app
+from performance.conftest import next_uuid7
 
 BENCHMARK_ROUNDS = 10
 UPLOAD_ATHLETE_COUNT = 60
+
 
 # Mean-latency ceilings, in seconds -- "did this regress badly" gates, not
 # tight tracking (that's what benchmark-results.json is for).
@@ -133,6 +135,7 @@ def test_score_submission_performance(
                     "move_id": str(move_ids[0]),
                 }
             ],
+            "request_id": next_uuid7(),
         }
         return client.post(
             f"/addUpdateAthleteScore/{canned_phase.heat_id}/{athlete_id}/0/{judge_id}",

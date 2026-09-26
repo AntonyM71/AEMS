@@ -38,6 +38,9 @@ const resolveDefaultGraphicsOrigin = async () => {
 module.exports = {
 	pageExtensions: ["js", "jsx", "ts", "tsx"],
 	output: "standalone",
+	// uuid ships ESM-only from v10 on; next/jest only transforms node_modules
+	// packages named here, so Jest can parse its `export` syntax.
+	transpilePackages: ["uuid"],
 	// The repo-root package-lock.json (OpenSpec tooling) would otherwise make
 	// Next infer the monorepo root as the tracing root, nesting the standalone
 	// build under .next/standalone/Webapp/ instead of .next/standalone/.

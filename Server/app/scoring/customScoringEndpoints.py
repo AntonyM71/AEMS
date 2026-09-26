@@ -11,6 +11,7 @@ from fastapi import (
     status,
 )
 from pydantic import BaseModel, ConfigDict, TypeAdapter
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.common.socket_manager import sio
@@ -40,6 +41,7 @@ from db.models import (
     AvailableMoves,
     Phase,
     RunStatus,
+    RunUpdate,
     ScoredBonuses,
     ScoredMoves,
 )
@@ -133,6 +135,35 @@ class UpdatingLockedRunError(Exception):
     pass
 
 
+class StaleSubmissionError(Exception):
+    pass
+
+
+def _advance_watermark_if_newer(
+    db: Session,
+    heat_id: str,
+    athlete_id: str,
+    phase_id: str,
+    run_number: str,
+    judge_id: str,
+    request_id: UUID,
+) -> bool:
+    watermark_upsert = pg_insert(RunUpdate).values(
+        heat_id=heat_id,
+        athlete_id=athlete_id,
+        phase_id=phase_id,
+        run_number=run_number,
+        judge_id=judge_id,
+        request_id=request_id,
+    )
+    watermark_upsert = watermark_upsert.on_conflict_do_update(
+        index_elements=["heat_id", "athlete_id", "phase_id", "run_number", "judge_id"],
+        set_={"request_id": watermark_upsert.excluded.request_id},
+        where=RunUpdate.request_id <= watermark_upsert.excluded.request_id,
+    ).returning(RunUpdate.request_id)
+    return db.execute(watermark_upsert).first() is not None
+
+
 def _persist_athlete_score(
     db: Session,
     heat_id: str,
@@ -153,6 +184,20 @@ def _persist_athlete_score(
         if run_is_locked:
             msg = "Score Update not processed as the run is locked"
             raise UpdatingLockedRunError(msg)
+
+        is_newest_submission = _advance_watermark_if_newer(
+            db=db,
+            heat_id=heat_id,
+            athlete_id=athlete_id,
+            phase_id=phase_id,
+            run_number=run_number,
+            judge_id=judge_id,
+            request_id=scored_moves_list.request_id,
+        )
+        if not is_newest_submission:
+            msg = "Score Update not processed as a newer submission already applied"
+            raise StaleSubmissionError(msg)
+
         scored_moves = (
             db.query(ScoredMoves.id)
             .filter(ScoredMoves.heat_id == heat_id)
@@ -232,6 +277,8 @@ async def update_athlete_score(
             scored_data,
             namespace="/current_scores",
         )
+    except (UpdatingLockedRunError, StaleSubmissionError) as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except Exception as e:
         logging.exception("Error Updating Score")
         raise HTTPException(
@@ -629,37 +676,24 @@ async def on_run_status_disconnect(sid: str) -> None:
 def copy_message_to_db(data: str) -> None:
     run_status = RunStatusSchema.model_validate_json(data)
     with transaction_session_context_manager() as db:
-        existing_run_status = (
-            db.query(RunStatus)
-            .filter(
-                RunStatus.heat_id == run_status.heat_id,
-                RunStatus.run_number == run_status.run_number,
-                RunStatus.phase_id == run_status.phase_id,
-                RunStatus.athlete_id == run_status.athlete_id,
-            )
-            .first()
+        upsert_statement = pg_insert(RunStatus).values(
+            id=run_status.id,
+            heat_id=run_status.heat_id,
+            run_number=run_status.run_number,
+            phase_id=run_status.phase_id,
+            athlete_id=run_status.athlete_id,
+            locked=run_status.locked,
+            did_not_start=run_status.did_not_start,
         )
-
-        if existing_run_status:
-            existing_run_status.locked = run_status.locked
-            existing_run_status.did_not_start = run_status.did_not_start
-            db.add(existing_run_status)
-            db.commit()
-            db.refresh(existing_run_status)
-
-        else:
-            new_run_status = RunStatus(
-                id=run_status.id,
-                heat_id=run_status.heat_id,
-                run_number=run_status.run_number,
-                phase_id=run_status.phase_id,
-                athlete_id=run_status.athlete_id,
-                locked=run_status.locked,
-                did_not_start=run_status.did_not_start,
-            )
-            db.add(new_run_status)
-            db.commit()
-            db.refresh(new_run_status)
+        upsert_statement = upsert_statement.on_conflict_do_update(
+            index_elements=["heat_id", "phase_id", "athlete_id", "run_number"],
+            set_={
+                "locked": upsert_statement.excluded.locked,
+                "did_not_start": upsert_statement.excluded.did_not_start,
+            },
+        )
+        db.execute(upsert_statement)
+        db.commit()
 
 
 def check_run_is_locked(

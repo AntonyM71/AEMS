@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test"
 import { randomUUID } from "node:crypto"
 import { BACKEND_URL, proxyFrontendAPIToBackend } from "./helpers/apiProxy"
+import { nextUuid7 } from "./helpers/uuid7"
 
 interface AvailableMove {
 	id: string
@@ -162,7 +163,8 @@ test.describe("Promote Phase", () => {
 								direction: forwardDirection[move.direction]
 							}
 						],
-						bonuses: []
+						bonuses: [],
+						request_id: nextUuid7()
 					}
 				}
 			)
