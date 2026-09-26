@@ -178,3 +178,11 @@ sessions and cannot show that rows actually moved.
 - [x] 7.2 Confirm no Alembic migration was generated — this change moves rows, it does not
       alter the schema. Verified: `Server/alembic/versions/` has no untracked files and its last
       commit predates this branch
+- [x] 7.3 Code review on PR #485 surfaced that `_move_athlete_scores` never checks
+      `RunStatus.locked`, with no spec or design text saying whether that's intentional.
+      Confirmed with the author it's deliberate (an admin move corrects where an athlete's
+      entry lives, not what a judge scored, so the lock that protects the latter has no bearing
+      on the former) and made it explicit: added "A locked run does not block moving the
+      athlete" to the spec delta and a matching section to `design.md`. No code change — the
+      already-shipped behaviour (proven by the existing `moveAthlete.spec.ts` locked-run case)
+      was correct; only the documentation was missing

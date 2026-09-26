@@ -72,6 +72,18 @@ def move_preserves_scores(
 When neither `heat_id` nor `phase_id` actually changes — an operator correcting a bib number —
 nothing happens to the scores at all, and the endpoint behaves exactly as it does today.
 
+## A locked run does not gate the move
+
+`_move_athlete_scores` checks the destination's occupancy and the two phases' scoresheets, but
+never `RunStatus.locked`. This is deliberate, not an oversight left over from copying the
+scoring endpoint's pattern: `_persist_athlete_score` rejects a score submission for a locked
+run because a lock means the head judge has confirmed *what a judge scored*, and a judge's
+retry or late submission must not overwrite that. A move changes *where an athlete's entry
+lives*, not what was scored — the same lock that rightly stops a judge from re-editing a
+confirmed score has no bearing on an operator moving the paddler who owns it, and blocking the
+move would leave the operator stuck with a misplaced paddler they can no longer fix once the
+run is locked, which is precisely when the mistake is most likely to have been noticed.
+
 ## Statement order inside the transaction
 
 The re-pointing branch runs three statements against the rows identified by the **old** key,

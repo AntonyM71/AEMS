@@ -78,6 +78,13 @@ webapp SHALL NOT settle those scores in a request of its own.
 - **THEN** its response states whether the athlete's scores were preserved or deleted, and the
   webapp tells the operator which happened
 
+### Requirement: A locked run does not block moving the athlete
+The server SHALL move an athlete's heat or phase, and settle their scores accordingly, regardless of whether any of their runs are locked. This differs from a judge's own score submission, which the server rejects outright for a locked run: a move is an operator correcting where an athlete belongs, not an edit to what a judge scored, and an operator who needs to move a paddler out of a heat cannot be blocked by a lock the paddler's own presence there created.
+
+#### Scenario: Moving an athlete with a locked run succeeds
+- **WHEN** an operator moves an athlete who has a locked run to a different heat or phase
+- **THEN** the move succeeds, and if the destination phase uses the same scoresheet that run's scores and its locked status both carry over unchanged
+
 ### Requirement: An athlete is not moved into scores that already exist for them
 The server SHALL NOT carry an athlete's scores into a heat and phase that already holds scored
 moves or run statuses for that same athlete. It SHALL keep what is already recorded there and
