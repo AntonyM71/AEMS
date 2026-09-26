@@ -395,19 +395,6 @@ const injectedRtkApi = api.injectEndpoints({
 				}
 			})
 		}),
-		deleteManyScoredmovesDelete: build.mutation<
-			DeleteManyScoredmovesDeleteApiResponse,
-			DeleteManyScoredmovesDeleteApiArg
-		>({
-			query: (queryArg) => ({
-				url: `/scoredmoves/`,
-				method: "DELETE",
-				params: {
-					heat_id____list: queryArg.heatIdList,
-					athlete_id____list: queryArg.athleteIdList
-				}
-			})
-		}),
 		insertManyAthleteheatPost: build.mutation<
 			InsertManyAthleteheatPostApiResponse,
 			InsertManyAthleteheatPostApiArg
@@ -725,14 +712,6 @@ export type GetManyAvailablebonusesGetApiArg = {
 	offset?: number | null
 	orderByColumns?: string[] | null
 }
-export type DeleteManyScoredmovesDeleteApiResponse =
-	/** status 200 Successful Response */ {
-		[key: string]: any
-	}
-export type DeleteManyScoredmovesDeleteApiArg = {
-	heatIdList?: string[] | null
-	athleteIdList?: string[] | null
-}
 export type InsertManyAthleteheatPostApiResponse =
 	/** status 201 Successful Response */ AthleteHeatResponse[]
 export type InsertManyAthleteheatPostApiArg = {
@@ -1048,6 +1027,7 @@ export type AthleteHeatResponse = {
 	athlete_id: string
 	heat_id: string
 	phase_id: string
+	scores_preserved?: boolean | null
 }
 export type AthleteHeatCreate = {
 	id?: string | null
@@ -1104,7 +1084,6 @@ export const {
 	useInsertManyScoresheetPostMutation,
 	useGetManyAvailablemovesGetQuery,
 	useGetManyAvailablebonusesGetQuery,
-	useDeleteManyScoredmovesDeleteMutation,
 	useInsertManyAthleteheatPostMutation,
 	usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation,
 	useGetManyRunStatusGetQuery,

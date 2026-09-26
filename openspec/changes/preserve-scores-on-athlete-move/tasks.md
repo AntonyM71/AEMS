@@ -69,13 +69,15 @@ holds the coverage that only a running stack can give.
 
 ## 4. Remove the endpoint this makes dead
 
-- [ ] 4.1 Delete `Server/app/crud/scoredmoves.py` and `Server/app/crud/tests/test_scoredmoves.py`,
+- [x] 4.1 Delete `Server/app/crud/scoredmoves.py` and `Server/app/crud/tests/test_scoredmoves.py`,
       and unregister `scoredmoves_router` from `Server/main.py`
-- [ ] 4.2 Confirm nothing else references it — at the time of writing its only consumers are
-      `HeatSummaryTable.tsx` and the MSW handler in its test file, both removed in group 5
-- [ ] 4.3 Run `./buildApi.sh` from the repo root to regenerate `Common/openapi.json` and
+- [x] 4.2 Confirm nothing else references it — at the time of writing its only consumers are
+      `HeatSummaryTable.tsx` and the MSW handler in its test file, both removed in group 5.
+      Verified: grep finds it only in `aemsApi.ts` (regenerated next) and that test file
+- [x] 4.3 Run `./buildApi.sh` from the repo root to regenerate `Common/openapi.json` and
       `Webapp/src/redux/services/aemsApi.ts`, picking up both the removed endpoint and the new
-      response field
+      response field. Verified: `DeleteManyScoredmoves*` gone from `aemsApi.ts`,
+      `scores_preserved?: boolean | null` present; full server suite still 328/328
 
 ## 5. Webapp
 
