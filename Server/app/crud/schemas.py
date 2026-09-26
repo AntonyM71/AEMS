@@ -24,6 +24,9 @@ class AthleteHeatResponse(BaseModel):
     athlete_id: UUID
     heat_id: UUID
     phase_id: UUID
+    scores_preserved: bool | None = None
+    """Set only when this update moved the athlete to a different heat or phase:
+    True if their scores were carried over, False if they were cleared."""
 
     model_config = ConfigDict(from_attributes=True)
 

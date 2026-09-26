@@ -32,31 +32,40 @@ holds the coverage that only a running stack can give.
 
 ## 3. Applying the move server-side
 
-- [ ] 3.1 In `partial_update_one_by_primary_key`, read the athlete-heat row's current
+- [x] 3.1 In `partial_update_one_by_primary_key`, read the athlete-heat row's current
       `heat_id`, `phase_id` and `athlete_id` before applying the update, and work out the
       destination heat and phase from the request body, falling back to the current values for
       whichever field the body omits
-- [ ] 3.2 Return early with no score handling when neither the heat nor the phase changes,
+- [x] 3.2 Return early with no score handling when neither the heat nor the phase changes,
       leaving the endpoint's behaviour identical to today for a name or bib correction
-- [ ] 3.3 Load the source and destination phases' `scoresheet`, and test the destination for
+- [x] 3.3 Load the source and destination phases' `scoresheet`, and test the destination for
       existing `scoredMoves` or `runStatus` rows for that athlete. Both checks are needed — a
       destination can hold a did-not-start status with no moves behind it
-- [ ] 3.4 On the preserving branch, `UPDATE` the athlete's `scoredMoves` and `runStatus` rows
+- [x] 3.4 On the preserving branch, `UPDATE` the athlete's `scoredMoves` and `runStatus` rows
       from the old heat and phase to the new ones, filtering on heat, phase and athlete. The
       `scoredMoves` ids are unchanged, so `scoredBonuses` follow without being touched
-- [ ] 3.5 On the discarding branch, delete `scoredBonuses` whose `move_id` is among the
+- [x] 3.5 On the discarding branch, delete `scoredBonuses` whose `move_id` is among the
       matching `scoredMoves`, then that athlete's `runStatus` rows, then the `scoredMoves`
       themselves — children first, all filtered on heat, phase and athlete
-- [ ] 3.6 Verify both branches run inside the endpoint's existing transaction, so a failure
-      rolls back the athlete-heat update too. Do not add a second `commit`
-- [ ] 3.7 Before the occupancy check in 3.3, execute
+- [x] 3.6 Verify both branches run inside the endpoint's existing transaction, so a failure
+      rolls back the athlete-heat update too. Do not add a second `commit`. Confirmed: no
+      `with db.begin()` or extra `commit()` added; the single existing `db.commit()` at the end
+      covers the move statements too
+- [x] 3.7 Before the occupancy check in 3.3, execute
       `SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))` keyed on the destination
       `heat_id`, `phase_id` and `athlete_id`, so a second move targeting the same destination
       blocks until this transaction commits or rolls back rather than racing its occupancy
-      check. No unlock call — the lock is transaction-scoped
-- [ ] 3.8 Add `scores_preserved: bool | None` to `AthleteHeatResponse` in
+      check. No unlock call — the lock is transaction-scoped. Proven in 6.6: with the lock
+      temporarily removed and the window artificially widened (a 0.5s sleep inserted after the
+      occupancy check), the concurrent-move test failed with both requests reporting
+      `scores_preserved: true`; with the lock restored and the same widened window still in
+      place, it passed reliably — the lock closes the window regardless of timing, not just
+      under lucky scheduling
+- [x] 3.8 Add `scores_preserved: bool | None` to `AthleteHeatResponse` in
       `Server/app/crud/schemas.py` and set it from the branch taken, leaving it `None` when no
-      move happened and on `POST /athleteheat/`
+      move happened and on `POST /athleteheat/`. Verified `POST /athleteheat/`'s existing tests
+      still pass unmodified — Pydantic's `from_attributes` falls back to the field's `None`
+      default when the ORM object has no such attribute
 
 ## 4. Remove the endpoint this makes dead
 
@@ -99,27 +108,47 @@ holds the coverage that only a running stack can give.
 This is where the re-pointing itself is proven. The server tests in group 2 use mocked
 sessions and cannot show that rows actually moved.
 
-- [ ] 6.1 Rewrite `e2e/tests/moveAthlete.spec.ts` from 1.2 to assert the new behaviour: after
+- [x] 6.1 Rewrite `e2e/tests/moveAthlete.spec.ts` from 1.2 to assert the new behaviour: after
       the move, the athlete's scores read back against the new heat with the same values, and
       nothing remains against the old one
-- [ ] 6.2 Add a case moving an athlete into a phase that uses a different scoresheet, asserting
+- [x] 6.2 Add a case moving an athlete into a phase that uses a different scoresheet, asserting
       the scores are gone from both heats. This needs a second scoresheet — seed one, or create
-      a phase against a different seeded sheet
-- [ ] 6.3 Add a case covering a locked and a did-not-start run surviving a same-scoresheet
-      move, read back through the heat scores response
-- [ ] 6.4 Add a case moving an athlete into a heat and phase where they already have scores,
+      a phase against a different seeded sheet. Used the already-seeded `icf_2026` sheet rather
+      than seeding a new one
+- [x] 6.3 Add a case covering a locked and a did-not-start run surviving a same-scoresheet move.
+      Split into two tests rather than one: a genuinely did-not-start run has no scored moves
+      behind it, and `getHeatScores`'s athlete list is built from `scoredMoves` (pre-existing,
+      unrelated to this change), so a DNS-only athlete never appears in that response — the
+      locked case (which has a move) is read back through `getHeatScores` as planned, the DNS
+      case through `run_status` directly, with a comment explaining why
+- [x] 6.4 Add a case moving an athlete into a heat and phase where they already have scores,
       asserting the destination's scores are unchanged and the athlete's run scores are the
-      destination's alone — the inflated-score failure this guard exists to prevent
-- [ ] 6.5 Add a case asserting no orphans survive a discarding move: the bonuses and run
+      destination's alone. First attempt used a *different* athlete already scoring in the
+      destination heat, which is the ordinary multi-competitor case and correctly preserved
+      (caught the test's own wrong premise, not a code bug) — the real "occupied" scenario needs
+      the *same* athlete already holding scores there via a second `athleteheat` entry, rewritten
+      accordingly
+- [x] 6.5 Add a case asserting no orphans survive a discarding move: the bonuses and run
       statuses for the cleared moves are gone, not just the moves
-- [ ] 6.6 Add a case proving the advisory lock from 3.7: promote an athlete (so they hold two
+- [x] 6.6 Add a case proving the advisory lock from 3.7: promote an athlete (so they hold two
       `athleteheat` entries), give both entries scores, then fire two `PATCH` requests
       concurrently (`Promise.all`) targeting the same empty destination heat and phase, one
       request per entry. Assert the destination ends up with exactly one entry's scores, not
-      both merged, and that this fails without 3.7 — run it once against the endpoint with 3.7
-      commented out or reverted to confirm it actually catches the race before trusting it green
-- [ ] 6.7 Run the full e2e suite against a running stack and confirm `promotePhase.spec.ts` and
-      `scoreSubmission.spec.ts` still pass
+      both merged. Real network timing alone didn't reliably reproduce the race (5/5 passed even
+      with the lock removed), so the window was temporarily widened with a 0.5s sleep after the
+      occupancy check to force it — confirmed it then fails without 3.7 (both requests reported
+      `scores_preserved: true`) and passes reliably with 3.7 restored, even with the window still
+      widened. The sleep was removed afterward; see 3.7's note
+- [x] 6.7 Run the full e2e suite against a running stack and confirm `promotePhase.spec.ts` and
+      `scoreSubmission.spec.ts` still pass. Verified: both pass, along with 15 other tests
+      (moveAthlete, runStatusUpsert, crud, health, app). Two failures are pre-existing and
+      structurally unrelated to this change — `multi-worker.spec.ts` needs a second backend
+      process on port 8001 plus real Redis pub-sub (this session ran one server with
+      `REDIS_URL=memory`), and two `websocket.spec.ts` cases time out waiting for a live UI
+      update following a judge-score broadcast, in code this change's diff never touches
+      (`customScoringEndpoints.py`, `scoring_logic.py`, the Scribe/HeadJudge components) —
+      reported here by name rather than silently set aside, per this session's own verification
+      discipline, though not re-verified against a from-scratch `main` checkout
 
 ## 7. Finish
 
