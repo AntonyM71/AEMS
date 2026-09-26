@@ -5,35 +5,36 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	getNumberOfRuns,
-	getSelectedHeat
-} from "../../../../redux/atoms/competitions"
+import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun,
 	updateRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
-import { calculateNewIndex } from "../InfoBar"
+import {
+	calculateNewIndex,
+	getMaxNumberOfRunsInHeat,
+	isRunOutOfRangeForAthlete
+} from "../InfoBar"
 
 export const RunSelector = () => {
 	const dispatch = useDispatch()
 	const selectedRun = useSelector(getSelectedRun)
-	const numberOfRuns = useSelector(getNumberOfRuns)
 	const setselectedRun = (newRun: number) => dispatch(updateRun(newRun))
 	const selectedHeat = useSelector(getSelectedHeat)
-	const changeRun = (number: number) => {
-		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
-
-		setselectedRun(newRun)
-	}
 	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{
 			heatId: selectedHeat
 		},
 		{ skip: !selectedHeat }
 	)
+	const numberOfRuns = getMaxNumberOfRunsInHeat(athletes.data ?? [])
+	const changeRun = (number: number) => {
+		const newRun = calculateNewIndex(selectedRun + number, numberOfRuns)
+
+		setselectedRun(newRun)
+	}
 
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedAthlete = athletes.data
@@ -66,8 +67,7 @@ export const RunSelector = () => {
 						fontWeight={"fontWeightBold"}
 						variant="h5"
 						color={
-							selectedAthlete?.number_of_runs &&
-							selectedRun + 1 > selectedAthlete?.number_of_runs
+							isRunOutOfRangeForAthlete(selectedRun, selectedAthlete)
 								? "red"
 								: "default"
 						}

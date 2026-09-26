@@ -5,6 +5,7 @@ import { validate as validateUuid, version as uuidVersion } from "uuid"
 import { server } from "../../../../mocks/server"
 import { socketHub } from "../../../../mocks/socketHub"
 import { competitionInitialState } from "../../../../redux/atoms/competitions"
+import { scoringInitialState } from "../../../../redux/atoms/scoring"
 import { renderWithProviders } from "../../../../testUtils"
 import Scribe from "../Scribe"
 
@@ -160,6 +161,47 @@ describe("Scribe", () => {
 			await screen.findByText("Run has been locked by head judge")
 		).toBeInTheDocument()
 		expect(screen.getByTestId("button-test-move-1-l")).toBeDisabled()
+
+		const list = within(await moveListEl())
+		expect(list.queryByText("Cartwheel")).not.toBeInTheDocument()
+		expect(scorePosts).toHaveLength(0)
+	})
+
+	it("blocks scoring and shows a notice when the selected run doesn't exist for the athlete", async () => {
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", ({ params }) =>
+				HttpResponse.json([
+					{
+						athlete_heat_id: "ah-1",
+						heat_id: params.heatId,
+						athlete_id: "athlete-1",
+						phase_id: "phase-1",
+						number_of_runs: 1,
+						number_of_runs_for_score: 1,
+						scoresheet: "sheet-1",
+						first_name: "John",
+						last_name: "Smith",
+						affiliation: "GBR",
+						bib: "42",
+						event_name: "Test Event"
+					}
+				])
+			)
+		)
+		renderWithProviders(<Scribe scribeNumber="1" />, {
+			preloadedState: {
+				competitions: {
+					...competitionInitialState,
+					selectedHeat: "heat-1"
+				},
+				score: { ...scoringInitialState, selectedRun: 1 } // run 2, out of range
+			}
+		})
+
+		expect(
+			await screen.findByText(/John Smith is only scored for 1 run/)
+		).toBeInTheDocument()
+		expect(await screen.findByTestId("button-test-move-1-l")).toBeDisabled()
 
 		const list = within(await moveListEl())
 		expect(list.queryByText("Cartwheel")).not.toBeInTheDocument()

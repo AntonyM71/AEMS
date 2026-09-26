@@ -6,6 +6,7 @@ import { server } from "../../../../../mocks/server"
 import { competitionsReducer } from "../../../../../redux/atoms/competitions"
 import { scoringReducer } from "../../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../../redux/services/aemsApi"
+import { waitForHeatInfoData } from "../heatInfoTestHelpers"
 import { RunSelector } from "../Runselector"
 
 const createTestStore = (preloadedState = {}) =>
@@ -45,13 +46,37 @@ describe("RunSelector", () => {
 		jest.resetAllMocks()
 	})
 
-	it("renders run information correctly", () => {
+	// Renders RunSelector for a single athlete with the given number_of_runs,
+	// optionally overriding the store's score state (e.g. to start on a
+	// specific run), so each test only has to describe its own scenario.
+	const renderRunSelector = (
+		numberOfRuns: number,
+		scoreOverrides: Record<string, unknown> = {}
+	) => {
+		if (Object.keys(scoreOverrides).length > 0) {
+			store = createTestStore({
+				score: {
+					selectedPaddler: 0,
+					selectedRun: 0,
+					scoredMoves: [],
+					scoredBonuses: [],
+					currentMove: "",
+					userRole: "",
+					...scoreOverrides
+				},
+				competitions: {
+					selectedHeat: "heat-1",
+					numberOfRuns: 2
+				}
+			})
+		}
+
 		const mockPaddlerInfo = {
 			id: "123",
 			bib: "456",
 			first_name: "John",
 			last_name: "Doe",
-			number_of_runs: 2
+			number_of_runs: numberOfRuns
 		}
 
 		server.use(
@@ -65,6 +90,10 @@ describe("RunSelector", () => {
 				<RunSelector />
 			</Provider>
 		)
+	}
+
+	it("renders run information correctly", () => {
+		renderRunSelector(2)
 
 		expect(screen.getByText("Run:")).toBeInTheDocument()
 		expect(screen.getByText("1")).toBeInTheDocument() // Run number starts at 1
@@ -73,25 +102,9 @@ describe("RunSelector", () => {
 	})
 
 	it("handles navigation buttons correctly", async () => {
-		const mockPaddlerInfo = {
-			id: "123",
-			bib: "456",
-			first_name: "John",
-			last_name: "Doe",
-			number_of_runs: 2
-		}
+		renderRunSelector(2)
 
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([mockPaddlerInfo])
-			)
-		)
-
-		render(
-			<Provider store={store}>
-				<RunSelector />
-			</Provider>
-		)
+		await waitForHeatInfoData(store, 1)
 
 		// Test next button
 		const nextButton = screen.getByTestId("button-next-run")
@@ -116,33 +129,22 @@ describe("RunSelector", () => {
 		})
 	})
 
-	it("displays red text when run number exceeds athlete's number of runs", async () => {
-		const mockPaddlerInfo = {
-			id: "123",
-			bib: "456",
-			first_name: "John",
-			last_name: "Doe",
-			number_of_runs: 1
-		}
+	it("keeps the run in range for an athlete with a single run (issue #397)", async () => {
+		renderRunSelector(1)
 
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json([mockPaddlerInfo])
-			)
-		)
-
-		render(
-			<Provider store={store}>
-				<RunSelector />
-			</Provider>
-		)
-
-		const nextButton = screen.getByTestId("button-next-run")
+		const nextButton = await screen.findByTestId("button-next-run")
 		fireEvent.click(nextButton)
 
 		await waitFor(() => {
-			const runNumber = screen.getByText("2")
-			expect(runNumber).toHaveStyle({ color: "red" })
+			expect(store.getState().score.selectedRun).toBe(0)
+		})
+	})
+
+	it("displays red text when the selected run is out of range for the athlete", async () => {
+		renderRunSelector(1, { selectedRun: 1 })
+
+		await waitFor(() => {
+			expect(screen.getByText("2")).toHaveStyle({ color: "red" })
 		})
 	})
 })

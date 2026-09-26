@@ -53,6 +53,13 @@ The scribe screen SHALL disable move entry and show a notice when the current at
 - **WHEN** the current athlete's run status is locked
 - **THEN** the scribe screen shows "Run has been locked by head judge", move controls are disabled, and no score submission is sent
 
+### Requirement: An invalid run blocks scribe scoring
+The scribe screen SHALL disable move entry and show an error when the selected run does not exist for the current athlete (the selected run number exceeds that athlete's own run count), and SHALL NOT submit scores while on that invalid run.
+
+#### Scenario: Selected run exceeds the athlete's run count
+- **WHEN** the selected run number is greater than the current athlete's number of runs
+- **THEN** the scribe screen shows an error naming the athlete and their run count, move controls are disabled, and no score submission is sent
+
 ### Requirement: Removing a scored move requires a double click and clears its bonuses
 A scored move SHALL only be removed on a double click of its remove control; a single click SHALL show a warning instead. Removing a scored move SHALL also remove any bonuses scored on it.
 

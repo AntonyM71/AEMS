@@ -201,3 +201,17 @@ export const calculateNewIndex = (newNumber: number, maxNumber: number) => {
 		return newNumber
 	}
 }
+
+// The max across the heat's athletes, since different paddlers in a heat can
+// have different run counts.
+export const getMaxNumberOfRunsInHeat = (
+	heatAthletes: { number_of_runs: number }[]
+) => Math.max(...heatAthletes.map((athlete) => athlete.number_of_runs), 1)
+
+// selectedRun is 0-indexed; an athlete may have fewer runs than the heat's max
+// (see getMaxNumberOfRunsInHeat), so the currently selected run can be one
+// that doesn't exist for them.
+export const isRunOutOfRangeForAthlete = (
+	selectedRun: number,
+	athlete?: { number_of_runs: number }
+) => Boolean(athlete?.number_of_runs && selectedRun + 1 > athlete.number_of_runs)

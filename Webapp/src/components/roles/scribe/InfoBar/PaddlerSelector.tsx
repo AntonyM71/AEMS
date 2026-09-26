@@ -5,24 +5,24 @@ import IconButton from "@mui/material/IconButton"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { useDispatch, useSelector } from "react-redux"
-import {
-	getNumberOfRuns,
-	getSelectedHeat
-} from "../../../../redux/atoms/competitions"
+import { getSelectedHeat } from "../../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun,
 	updatePaddlerAndRun
 } from "../../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../../redux/services/aemsApi"
-import { AthleteInfo, calculateNewIndex } from "../InfoBar"
+import {
+	AthleteInfo,
+	calculateNewIndex,
+	getMaxNumberOfRunsInHeat
+} from "../InfoBar"
 
 export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	const dispatch = useDispatch()
 	const setCurrentPaddlerAndRun = (newPaddler: number, newRun: number) =>
 		dispatch(updatePaddlerAndRun({ paddler: newPaddler, run: newRun }))
 
-	const numberOfRuns = useSelector(getNumberOfRuns)
 	const currentPaddler = useSelector(getCurrentPaddlerIndex)
 	const currentRun = useSelector(getSelectedRun)
 	const currentHeat = useSelector(getSelectedHeat)
@@ -35,6 +35,7 @@ export const PaddlerSelector = ({ paddlerInfo }: propsType) => {
 	)
 	const paddlersInHeat = athletes.data ?? []
 	const numberOfPaddlers = paddlersInHeat.length
+	const numberOfRuns = getMaxNumberOfRunsInHeat(paddlersInHeat)
 	const changePaddler = (number: number) => {
 		const newPaddlerIndex = calculateNewIndex(
 			currentPaddler + number,

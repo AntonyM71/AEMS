@@ -24,7 +24,7 @@ import {
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
 import { useRunStatusStreamQuery } from "../../../redux/services/streamingApi"
-import { InfoBar } from "./InfoBar"
+import { InfoBar, isRunOutOfRangeForAthlete } from "./InfoBar"
 import {
 	directionType,
 	movesType,
@@ -55,6 +55,10 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 
 	const currentAthleteId =
 		athleteData?.[currentPaddlerIndex]?.athlete_id ?? ""
+	const isRunOutOfRange = isRunOutOfRangeForAthlete(
+		selectedRun,
+		athleteData?.[currentPaddlerIndex]
+	)
 
 	const { data: runStatus, isFetching: isRunStatusFetching } =
 		useRunStatusStreamQuery(
@@ -135,7 +139,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 			!isMoveAndBonusFetching &&
 			!athletes.isFetching &&
 			!isRunStatusFetching &&
-			!runStatus?.locked
+			!runStatus?.locked &&
+			!isRunOutOfRange
 		) {
 			submitScores()
 		}
@@ -191,6 +196,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	)
 
 	if (athleteData?.[currentPaddlerIndex]?.athlete_id) {
+		const isMoveEntryDisabled = (runStatus?.locked ?? false) || isRunOutOfRange
+
 		return (
 			<Grid container spacing={1}>
 				<Grid size={7}>
@@ -199,13 +206,21 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 							Run has been locked by head judge
 						</Alert>
 					)}
+					{isRunOutOfRange && (
+						<Alert severity="error" sx={{ marginBottom: "0.5em" }}>
+							Invalid run: {athleteData[currentPaddlerIndex].first_name}{" "}
+							{athleteData[currentPaddlerIndex].last_name} is only
+							scored for {athleteData[currentPaddlerIndex].number_of_runs}{" "}
+							run(s). Select a valid run before scoring.
+						</Alert>
+					)}
 					<Grid container spacing={1}>
 						{availableMoves.data?.map((move) => (
 							<Grid key={move.id} size={3}>
 								<MoveCard
 									key={move.id}
 									move={move as movesType}
-									isRunLocked={runStatus?.locked ?? false}
+									isRunLocked={isMoveEntryDisabled}
 								/>
 							</Grid>
 						))}
@@ -234,7 +249,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 						data-testid={"infobar"}
 						availableMoves={availableMoves.data as movesType[]}
 						isFetchingScoredMoves={isMoveAndBonusFetching}
-						isRunLocked={runStatus?.locked ?? false}
+						isRunLocked={isMoveEntryDisabled}
 					/>
 				</Grid>
 			</Grid>

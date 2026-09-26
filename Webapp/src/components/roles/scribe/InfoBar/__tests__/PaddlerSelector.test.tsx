@@ -1,9 +1,52 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "../../../../../mocks/server"
-import { aemsApi } from "../../../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../../../testUtils"
+import { waitForHeatInfoData } from "../heatInfoTestHelpers"
 import { PaddlerSelector } from "../PaddlerSelector"
+
+// Renders PaddlerSelector for a two-paddler heat and waits for the heat data
+// to load, so each test only has to describe its own interaction/assertions.
+const renderTwoPaddlerHeat = async (
+	numberOfRuns: number,
+	competitionsOverrides: Record<string, unknown> = {}
+) => {
+	const mockPaddlers = [
+		{
+			id: "123",
+			bib: "456",
+			first_name: "John",
+			last_name: "Doe",
+			scoresheet: "sheet-1",
+			number_of_runs: numberOfRuns
+		},
+		{
+			id: "124",
+			bib: "457",
+			first_name: "Jane",
+			last_name: "Smith",
+			scoresheet: "sheet-2",
+			number_of_runs: numberOfRuns
+		}
+	]
+
+	server.use(
+		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json(mockPaddlers))
+	)
+
+	const { store } = renderWithProviders(
+		<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
+		{
+			preloadedState: {
+				competitions: { selectedHeat: "heat-1", ...competitionsOverrides }
+			}
+		}
+	)
+
+	await waitForHeatInfoData(store, 2)
+
+	return { store, mockPaddlers }
+}
 
 describe("PaddlerSelector", () => {
 	beforeEach(() => {
@@ -43,61 +86,7 @@ describe("PaddlerSelector", () => {
 	})
 
 	it("handles navigation buttons correctly", async () => {
-		const mockPaddlers = [
-			{
-				id: "123",
-				bib: "456",
-				first_name: "John",
-				last_name: "Doe",
-				scoresheet: "sheet-1"
-			},
-			{
-				id: "124",
-				bib: "457",
-				first_name: "Jane",
-				last_name: "Smith",
-				scoresheet: "sheet-2"
-			}
-		]
-
-		// Mock the API response with multiple paddlers
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json(mockPaddlers)
-			)
-		)
-
-		const { store } = renderWithProviders(
-			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
-			{
-				preloadedState: {
-					competitions: {
-						selectedHeat: "heat-1",
-						numberOfRuns: 2
-					}
-				}
-			}
-		)
-
-		// Wait for API response to be processed
-		let queryData: any[] | undefined
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const queryKeys = Object.keys(apiState.queries)
-			const heatInfoKey = queryKeys.find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			if (!heatInfoKey) {
-				throw new Error("Heat info query not found")
-			}
-			queryData = apiState.queries[heatInfoKey].data
-			expect(queryData).toBeDefined()
-		})
-
-		// Verify API data length
-		expect(queryData).toHaveLength(2)
+		const { store } = await renderTwoPaddlerHeat(2)
 
 		// Verify initial state
 		expect(await screen.findByText("456")).toBeInTheDocument()
@@ -130,61 +119,7 @@ describe("PaddlerSelector", () => {
 	})
 
 	it("increments the run when rolling round to the first paddler", async () => {
-		const mockPaddlers = [
-			{
-				id: "123",
-				bib: "456",
-				first_name: "John",
-				last_name: "Doe",
-				scoresheet: "sheet-1"
-			},
-			{
-				id: "124",
-				bib: "457",
-				first_name: "Jane",
-				last_name: "Smith",
-				scoresheet: "sheet-2"
-			}
-		]
-
-		// Mock the API response with multiple paddlers
-		server.use(
-			http.get("/api/getHeatInfo/:heatId", () =>
-				HttpResponse.json(mockPaddlers)
-			)
-		)
-
-		const { store } = renderWithProviders(
-			<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
-			{
-				preloadedState: {
-					competitions: {
-						selectedHeat: "heat-1",
-						numberOfRuns: 2
-					}
-				}
-			}
-		)
-
-		// Wait for API response to be processed
-		let queryData: any[] | undefined
-		await waitFor(() => {
-			const apiState = store.getState()[aemsApi.reducerPath] as {
-				queries: Record<string, { data?: any[] }>
-			}
-			const queryKeys = Object.keys(apiState.queries)
-			const heatInfoKey = queryKeys.find((key) =>
-				key.startsWith("getHeatInfo")
-			)
-			if (!heatInfoKey) {
-				throw new Error("Heat info query not found")
-			}
-			queryData = apiState.queries[heatInfoKey].data
-			expect(queryData).toBeDefined()
-		})
-
-		// Verify API data length
-		expect(queryData).toHaveLength(2)
+		const { store } = await renderTwoPaddlerHeat(2)
 
 		// Verify initial state
 		expect(screen.getByText("456")).toBeInTheDocument()
@@ -212,5 +147,22 @@ describe("PaddlerSelector", () => {
 		await waitFor(() => {
 			expect(store.getState().score.selectedRun).toBe(1)
 		})
+	})
+
+	it("keeps the run in range going backwards through paddlers with only one run (issue #397)", async () => {
+		const { store } = await renderTwoPaddlerHeat(1, {
+			// stale global value left over from a previously-viewed multi-run
+			// phase; must not be used for the wrap math
+			numberOfRuns: 3
+		})
+
+		const prevButton = screen.getByTestId("button-prev-paddler")
+
+		fireEvent.click(prevButton)
+
+		await waitFor(() => {
+			expect(store.getState().score.selectedPaddler).toBe(1)
+		})
+		expect(store.getState().score.selectedRun).toBe(0)
 	})
 })
