@@ -108,10 +108,10 @@ const PixiFrameSequenceOverlay = ({
 	holdImage,
 	isVisible,
 	children,
-	fps = 30,
-	fileNamePrefix = "frame_",
-	fileNamePadding = 4,
-	fileExtension = "png",
+	fps,
+	fileNamePrefix,
+	fileNamePadding,
+	fileExtension,
 	frameUrls,
 	className,
 	style,
@@ -407,7 +407,14 @@ const PixiFrameSequenceOverlay = ({
 		let isDisposed = false
 
 		const loadFrames = async (): Promise<void> => {
-			if (!isAppReady || resolvedFrameUrls.length === 0) {
+			if (!isAppReady) {
+				// Pixi hasn't initialized yet; stay in "loading" (its default
+				// phase) rather than reporting "done", which would show the
+				// wrapped content before the sequence has a chance to play.
+				return
+			}
+
+			if (resolvedFrameUrls.length === 0) {
 				texturesRef.current = []
 				holdIndexRef.current = 0
 				setIsReady(false)
