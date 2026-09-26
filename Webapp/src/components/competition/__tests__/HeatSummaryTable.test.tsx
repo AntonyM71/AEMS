@@ -26,6 +26,47 @@ const renderWithHeatSelected = (
 		preloadedState: { competitions: defaultCompetitionsState }
 	})
 
+// Mocks the endpoints an athlete-heat edit submission hits: the heat and
+// (single-phase) event lists the dialog loads, and the athlete/athleteheat
+// PATCH pair, whose response and captured request body the caller controls.
+const mockEditAthleteHeatSubmit = (options: {
+	heats: { id: string; name: string }[]
+	response: {
+		heat_id: string
+		phase_id: string
+		scores_preserved: boolean | null
+	}
+}): { body: unknown } => {
+	const captured: { body: unknown } = { body: undefined }
+	server.use(
+		http.get("/api/heat", () => HttpResponse.json(options.heats)),
+		http.get("/api/event", () =>
+			HttpResponse.json([
+				{
+					id: "1",
+					name: "Test Event",
+					phase_foreign: [
+						{ id: "1", name: "Test Phase", scoresheet: "sheet-1" }
+					]
+				}
+			])
+		),
+		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
+		http.patch("/api/athlete/:id", () => HttpResponse.json({ id: "1" })),
+		http.patch("/api/athleteheat/:id", async ({ request }) => {
+			captured.body = await request.json()
+
+			return HttpResponse.json({
+				id: "1",
+				athlete_id: "1",
+				...options.response
+			})
+		})
+	)
+
+	return captured
+}
+
 describe("HeatSummaryTable", () => {
 	beforeEach(() => {
 		// Mock URL.createObjectURL
@@ -292,45 +333,13 @@ describe("HeatAthleteTable", () => {
 	})
 
 	it("shows an info message and reports preserved scores when moving to a heat in the same phase", async () => {
-		let athleteHeatUpdateBody: unknown
-		server.use(
-			http.get("/api/heat", () =>
-				HttpResponse.json([
-					{ id: "1", name: "Test Heat" },
-					{ id: "2", name: "Another Heat" }
-				])
-			),
-			http.get("/api/event", () =>
-				HttpResponse.json([
-					{
-						id: "1",
-						name: "Test Event",
-						phase_foreign: [
-							{
-								id: "1",
-								name: "Test Phase",
-								scoresheet: "sheet-1"
-							}
-						]
-					}
-				])
-			),
-			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
-			http.patch("/api/athlete/:id", () =>
-				HttpResponse.json({ id: "1" })
-			),
-			http.patch("/api/athleteheat/:id", async ({ request }) => {
-				athleteHeatUpdateBody = await request.json()
-
-				return HttpResponse.json({
-					id: "1",
-					athlete_id: "1",
-					heat_id: "2",
-					phase_id: "1",
-					scores_preserved: true
-				})
-			})
-		)
+		const athleteHeatUpdate = mockEditAthleteHeatSubmit({
+			heats: [
+				{ id: "1", name: "Test Heat" },
+				{ id: "2", name: "Another Heat" }
+			],
+			response: { heat_id: "2", phase_id: "1", scores_preserved: true }
+		})
 
 		renderWithHeatSelected(
 			<EditAthleteDialog
@@ -375,7 +384,7 @@ describe("HeatAthleteTable", () => {
 		expect(toast.success).toHaveBeenCalledWith(
 			"Updated Athlete Competition Information - scores preserved"
 		)
-		expect(athleteHeatUpdateBody).toEqual(
+		expect(athleteHeatUpdate.body).toEqual(
 			expect.objectContaining({ heat_id: "2", phase_id: "1" })
 		)
 	})
@@ -444,42 +453,10 @@ describe("HeatAthleteTable", () => {
 	})
 
 	it("preserves an athlete's last_phase_rank when editing only their bib number", async () => {
-		let athleteHeatUpdateBody: unknown
-		server.use(
-			http.get("/api/heat", () =>
-				HttpResponse.json([{ id: "1", name: "Test Heat" }])
-			),
-			http.get("/api/event", () =>
-				HttpResponse.json([
-					{
-						id: "1",
-						name: "Test Event",
-						phase_foreign: [
-							{
-								id: "1",
-								name: "Test Phase",
-								scoresheet: "sheet-1"
-							}
-						]
-					}
-				])
-			),
-			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
-			http.patch("/api/athlete/:id", () =>
-				HttpResponse.json({ id: "1" })
-			),
-			http.patch("/api/athleteheat/:id", async ({ request }) => {
-				athleteHeatUpdateBody = await request.json()
-
-				return HttpResponse.json({
-					id: "1",
-					athlete_id: "1",
-					heat_id: "1",
-					phase_id: "1",
-					scores_preserved: null
-				})
-			})
-		)
+		const athleteHeatUpdate = mockEditAthleteHeatSubmit({
+			heats: [{ id: "1", name: "Test Heat" }],
+			response: { heat_id: "1", phase_id: "1", scores_preserved: null }
+		})
 
 		renderWithHeatSelected(
 			<EditAthleteDialog
@@ -506,7 +483,7 @@ describe("HeatAthleteTable", () => {
 		await waitFor(() =>
 			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
 		)
-		expect(athleteHeatUpdateBody).toEqual(
+		expect(athleteHeatUpdate.body).toEqual(
 			expect.objectContaining({ last_phase_rank: 3 })
 		)
 	})
