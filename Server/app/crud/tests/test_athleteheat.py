@@ -11,7 +11,35 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.crud.athleteheat import move_preserves_scores
 from db.models import AthleteHeat
+
+SHEET_A = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+SHEET_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+
+
+@pytest.mark.parametrize(
+    ("source_scoresheet", "destination_scoresheet", "destination_is_occupied", "expected"),
+    [
+        (SHEET_A, SHEET_A, False, True),
+        (SHEET_A, SHEET_A, True, False),
+        (SHEET_A, SHEET_B, False, False),
+        (SHEET_A, SHEET_B, True, False),
+    ],
+)
+def test_move_preserves_scores(
+    source_scoresheet: UUID,
+    destination_scoresheet: UUID,
+    destination_is_occupied: bool,
+    expected: bool,  # noqa: FBT001
+) -> None:
+    """Scores are preserved only when the scoresheet matches and the destination is free."""
+    assert (
+        move_preserves_scores(
+            source_scoresheet, destination_scoresheet, destination_is_occupied
+        )
+        is expected
+    )
 
 
 @pytest.fixture

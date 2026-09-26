@@ -11,6 +11,14 @@ from db.models import AthleteHeat
 athleteheat_router = APIRouter(prefix="/athleteheat", tags=["athleteheat"])
 
 
+def move_preserves_scores(
+    source_scoresheet: UUID, destination_scoresheet: UUID, destination_is_occupied: bool  # noqa: FBT001
+) -> bool:
+    """A move keeps its scores only when the destination scores against the same
+    scoresheet and holds no scores of its own for this athlete yet."""
+    return source_scoresheet == destination_scoresheet and not destination_is_occupied
+
+
 @athleteheat_router.post("/", status_code=201)
 def insert_many(
     athlete_heats: list[AthleteHeatCreate],

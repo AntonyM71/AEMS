@@ -7,24 +7,28 @@ holds the coverage that only a running stack can give.
 
 ## 1. Baseline today's behaviour, before changing anything
 
-- [ ] 1.1 Extend `setupTestData` in `e2e/tests/helpers/testData.ts` to also return `eventId`
+- [x] 1.1 Extend `setupTestData` in `e2e/tests/helpers/testData.ts` to also return `eventId`
       and `athleteHeatId`, both of which it already generates and discards. Every existing
-      caller keeps working, since this only widens the returned object
-- [ ] 1.2 Add `e2e/tests/moveAthlete.spec.ts`: seed an athlete, submit a scored move for them,
+      caller keeps working, since this only widens the returned object. Also widened with
+      `competitionId` (same situation — generated and discarded) since 1.2 needs it to create
+      a second heat in the same competition
+- [x] 1.2 Add `e2e/tests/moveAthlete.spec.ts`: seed an athlete, submit a scored move for them,
       `PATCH /athleteheat/{id}` to a second heat in the same phase, and read the scores back
       from both heats. Assert today's behaviour — the scores are still attached to the *old*
       heat and the athlete now has none. This test is rewritten in 6.1; its job now is to pin
       down what actually happens today
-- [ ] 1.3 Run it against unchanged code and confirm it passes, then commit it on its own
+- [x] 1.3 Run it against unchanged code and confirm it passes, then commit it on its own.
+      Verified: passes (617ms) against unmodified server code; committed as c213d5a
 
 ## 2. The move decision
 
-- [ ] 2.1 Add `move_preserves_scores(source_scoresheet, destination_scoresheet,
+- [x] 2.1 Add `move_preserves_scores(source_scoresheet, destination_scoresheet,
       destination_is_occupied)` to `Server/app/crud/athleteheat.py`, returning `True` only when
       the scoresheets match and the destination is free
-- [ ] 2.2 Cover it in `Server/app/crud/tests/test_athleteheat.py` across all four combinations
+- [x] 2.2 Cover it in `Server/app/crud/tests/test_athleteheat.py` across all four combinations
       of matching/differing scoresheet and occupied/free destination. This is the decision
-      logic; the SQL that acts on it is covered by group 6, not by a mocked session
+      logic; the SQL that acts on it is covered by group 6, not by a mocked session.
+      Verified: 9/9 pass (`uv run python -m pytest app/crud/tests/test_athleteheat.py`)
 
 ## 3. Applying the move server-side
 
