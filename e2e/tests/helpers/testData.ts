@@ -10,6 +10,9 @@ export interface TestData {
 	athleteId: string
 	phaseId: string
 	scoresheetId: string
+	eventId: string
+	athleteHeatId: string
+	competitionId: string
 }
 
 /**
@@ -89,5 +92,15 @@ export async function setupTestData(
 	)
 	expect(athleteHeatResponse.status()).toBe(201)
 
-	return { competitionName, heatName, heatId, athleteId, phaseId, scoresheetId }
+	return {
+		competitionName,
+		heatName,
+		heatId,
+		athleteId,
+		phaseId,
+		scoresheetId,
+		eventId,
+		athleteHeatId,
+		competitionId
+	}
 }
