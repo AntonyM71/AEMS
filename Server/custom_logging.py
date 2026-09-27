@@ -38,7 +38,6 @@ def setup_logging(
     structlog.configure(
         processors=[
             *shared_processors,
-            # Prepare event dict for `ProcessorFormatter`.
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         context_class=dict,
@@ -61,7 +60,6 @@ def setup_logging(
     pretty_formatter = formatter_for(structlog.dev.ConsoleRenderer())
 
     handler = logging.StreamHandler()
-    # Use OUR `ProcessorFormatter` to format all `logging` entries.
     handler.setFormatter(pretty_formatter)
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)

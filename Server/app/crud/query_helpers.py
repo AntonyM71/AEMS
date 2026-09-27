@@ -1,13 +1,16 @@
-"""Query-builder helpers shared by the CRUD list endpoints.
+"""Helpers shared by the CRUD endpoints.
 
 Each ``get_many`` handler stays flat by describing *what* to filter, order and
 paginate by; the repetitive mechanics of translating that into SQLAlchemy live
-here.
+here. Write-path mechanics shared by the insert/update endpoints (refreshing
+after commit, applying a partial update) live here too.
 """
 
 from collections.abc import Sequence
 from typing import Any
 
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import ColumnElement, Select
 
 
@@ -73,3 +76,15 @@ def apply_pagination(
     if limit is not None:
         query = query.limit(limit)
     return query
+
+
+def refresh_all(db: Session, entities: Sequence[Any]) -> None:
+    """Refresh each entity after commit, to pick up DB-generated values (e.g. ids)."""
+    for entity in entities:
+        db.refresh(entity)
+
+
+def apply_partial_update(entity: Any, update: BaseModel) -> None:
+    """Set only the fields explicitly provided in ``update`` onto ``entity``."""
+    for field, value in update.model_dump(exclude_unset=True).items():
+        setattr(entity, field, value)

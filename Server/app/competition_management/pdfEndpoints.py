@@ -21,11 +21,11 @@ from db.models import Competition, Event, Heat, Phase
 
 pdf_router = APIRouter(tags=["pdf generation"])
 
-# Constants for PDF table headers
 FIRST_NAME_HEADER = "First Name"
 LAST_NAME_HEADER = "Last Name"
 
 font_directory = Path("./fonts/")
+_FOOTER_Y_FROM_BOTTOM_MM = -15
 
 
 class HelveticaNeuePDF(FPDF):
@@ -139,36 +139,18 @@ def phase_pdf_header(
             new_y="NEXT",
         )
 
-    # Apply the footer method to this PDF
     pdf.header = types.MethodType(header, pdf)
 
 
 def setup_pdf_footer(
     pdf: FPDF, text: str | None = None, *, include_page_numbers: bool = True
 ) -> FPDF:
-    """
-    Configure a footer for all pages in a PDF document.
-
-    Must be called right after creating the PDF, before adding any pages.
-
-    Args:
-        pdf: The FPDF object
-        text: Footer text to display
-        include_page_numbers: Whether to include page numbers
-
-    Returns:
-        The configured PDF object
-    """
-    # Prepare footer text
+    """Must be called right after creating the PDF, before adding any pages."""
     footer_text = text if text is not None else get_footer_text()
 
-    # Define footer function
-
     def footer(self: FPDF) -> None:
-        # Position at 1.5 cm from bottom
-        self.set_y(-15)
+        self.set_y(_FOOTER_Y_FROM_BOTTOM_MM)
 
-        # Save current font settings
         current_font = self.font_family
         current_style = self.font_style
         current_size = self.font_size
@@ -187,29 +169,15 @@ def setup_pdf_footer(
         if include_page_numbers:
             self.cell(0, 5, f"Page {self.page_no()}/{{nb}}", align="R")
 
-        # Restore original font
         self.set_font(current_font, current_style, current_size)
 
-    # Apply the footer method to this PDF
     pdf.footer = types.MethodType(footer, pdf)
-
-    # Set up alias for total pages
     pdf.alias_nb_pages(alias="{nb}")
 
     return pdf
 
 
 def create_pdf_response(pdf: FPDF, filename: str) -> Response:
-    """
-    Create a FastAPI Response containing a PDF file as an attachment.
-
-    Args:
-        pdf: The FPDF object to render
-        filename: The name for the downloaded file (will be sanitized)
-
-    Returns:
-        A Response with the PDF content and appropriate headers
-    """
     safe_filename = sanitize_filename(filename)
     headers = {"Content-Disposition": f"attachment; filename={safe_filename}"}
     return Response(
@@ -222,16 +190,7 @@ def build_phase_pdf_content(
     phase_metadata: Phase,
     phase_scores: PhaseScoresResponse,
 ) -> None:
-    """
-    Populate a PDF with a phase scores table.
-
-    Adds a page and renders a table of athlete scores for the given phase.
-
-    Args:
-        pdf: The FPDF object (header/footer must already be configured)
-        phase_metadata: Phase model instance with run configuration
-        phase_scores: Calculated scores for all athletes in the phase
-    """
+    """pdf's header/footer must already be configured."""
     pdf.add_page()
 
     with pdf.table(
@@ -294,15 +253,6 @@ def build_heat_pdf_page(
     competition_metadata: Competition,
     heat_athlete_info: list[HeatInfoResponse],
 ) -> None:
-    """
-    Add a single heat draw page to the PDF.
-
-    Args:
-        pdf: The FPDF object to write into
-        heat_info: Heat model instance
-        competition_metadata: Competition model instance
-        heat_athlete_info: List of athlete info for the heat
-    """
     pdf.add_page()
     pdf.set_font(size=24)
     pdf.cell(
@@ -352,18 +302,7 @@ def build_heat_results_pdf_content(
     heat_scores: HeatScoresResponse,
     max_runs: int,
 ) -> None:
-    """
-    Populate a PDF with heat results scores table.
-
-    Adds a page with competition/heat headings and a table of run scores.
-
-    Args:
-        pdf: The FPDF object (footer must already be configured)
-        competition: Competition model instance
-        heat_info: Heat model instance
-        heat_scores: Calculated scores for all athletes in the heat
-        max_runs: Maximum number of runs across all athletes
-    """
+    """pdf's footer must already be configured."""
     pdf.add_page()
     pdf.set_font(size=24)
     pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
@@ -489,7 +428,6 @@ def heat_pdf(
             .one()
         )
         if len(heat_info_list) == 1:
-            # Single heat: use the heat name
             filename = f"{first_competition.name}_{heat_info_list[0].name}.pdf"
         else:
             # Multiple heats: indicate count to avoid overly long filenames

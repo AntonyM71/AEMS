@@ -35,7 +35,6 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
-# SQL constants for UUID generation and foreign key references
 POSTGRES_UUID_DEFAULT = text("gen_random_uuid()")
 FK_SCORESHEET_ID = "scoreSheet.id"
 FK_COMPETITION_ID = "competition.id"

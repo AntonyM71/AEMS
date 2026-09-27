@@ -1,8 +1,8 @@
 """
 Fires N concurrent requests at one URL and reports requests/sec.
 
-Point it at a blocking endpoint (e.g. /phase_pdf/{id}) before and after a
-Phase 1/2/3 fix from docs/superpowers/plans/2026-09-13-fix-blocking-event-loop-handlers.md:
+Point it at a blocking endpoint (e.g. /phase_pdf/{id}) before and after applying
+the fix described in docs/decisions/ADR009-keep-blocking-work-off-the-event-loop.md:
 if the handler still blocks the event loop, requests serialize and
 requests/sec stays near 1/request_time no matter how high --concurrent-requests is;
 once it's offloaded to a thread, requests/sec scales up with --concurrent-requests.

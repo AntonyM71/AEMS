@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.crud.query_helpers import apply_in_filters, apply_ordering, apply_pagination
+from app.crud.query_helpers import (
+    apply_in_filters,
+    apply_ordering,
+    apply_pagination,
+    refresh_all,
+)
 from app.crud.schemas import (
     CompetitionCreate,
     CompetitionNested,
@@ -106,10 +111,7 @@ def insert_many(
         db_competitions.append(db_competition)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for comp in db_competitions:
-        db.refresh(comp)
+    refresh_all(db, db_competitions)
 
     return [CompetitionResponse.model_validate(comp) for comp in db_competitions]
 
@@ -129,7 +131,6 @@ def partial_update_one_by_primary_key(
     if not db_competition:
         raise HTTPException(status_code=404, detail="Competition not found")
 
-    # Update the competition with provided fields
     if competition_update.name is not None:
         db_competition.name = competition_update.name
 
