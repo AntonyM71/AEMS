@@ -296,6 +296,7 @@ export const ScoresheetMoves = ({
 				onClick={() => void submitDataToDB()}
 				variant="contained"
 				color="secondary"
+				sx={{ mt: 2 }}
 			>
 				Update Scoresheet
 			</Button>
