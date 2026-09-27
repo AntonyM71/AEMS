@@ -103,8 +103,12 @@ def calculate_run_score(
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
 ) -> AthleteScoreInfo:
-    """Entries sharing a make_move_string identity are deduplicated before summing."""
-    check_moves_have_same_run_judge_athlete_heat(scored_moves=scored_moves)
+    """Expects moves from a single paddler, run, and judge.
+
+    Raises MixedUpScoresheetExceptionError if that doesn't hold. Entries
+    sharing a make_move_string identity are deduplicated before summing.
+    """
+    validate_all_moves_from_same_judge_run_athlete(scored_moves=scored_moves)
     filtered_move_scores: dict[str, float] = {}
 
     scored_move_list_with_scores = calculate_individual_move_scores(
@@ -126,7 +130,7 @@ def calculate_run_score(
     )
 
 
-def check_moves_have_same_run_judge_athlete_heat(
+def validate_all_moves_from_same_judge_run_athlete(
     scored_moves: list[PydanticScoredMovesResponse],
 ) -> None:
     fields = [
