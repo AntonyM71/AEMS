@@ -10,6 +10,7 @@ from app.crud.query_helpers import (
     apply_ordering,
     apply_pagination,
     apply_range_filters,
+    refresh_all,
 )
 from app.crud.schemas import (
     CompetitionNested,
@@ -40,7 +41,6 @@ def _apply_event_joins(
 def _build_event_dict(
     event: Event, join_foreign_table: list[str] | None
 ) -> dict[str, Any]:
-    """Build the response dict for an Event, including requested foreign keys."""
     event_dict: dict[str, Any] = {
         "id": event.id,
         "competition_id": event.competition_id,
@@ -129,10 +129,7 @@ def insert_many(
         db_events.append(db_event)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for event in db_events:
-        db.refresh(event)
+    refresh_all(db, db_events)
 
     return [EventResponse.model_validate(event) for event in db_events]
 

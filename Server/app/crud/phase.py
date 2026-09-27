@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.crud.query_helpers import apply_in_filters, apply_range_filters
+from app.crud.query_helpers import (
+    apply_in_filters,
+    apply_partial_update,
+    apply_range_filters,
+    refresh_all,
+)
 from app.crud.schemas import EventNested, PhaseCreate, PhaseResponse, PhaseUpdate
 from db.client import get_transaction_session
 from db.models import Phase
@@ -133,10 +138,7 @@ def partial_update_one_by_primary_key(
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
 
-    # Update only provided fields
-    update_data = phase_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(phase, field, value)
+    apply_partial_update(phase, phase_update)
 
     if phase.number_of_runs is None or phase.number_of_runs_for_score is None:
         msg = "number_of_runs and number_of_runs_for_score cannot be null"
@@ -164,9 +166,6 @@ def insert_many(
         db_phases.append(db_phase)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for phase in db_phases:
-        db.refresh(phase)
+    refresh_all(db, db_phases)
 
     return [PhaseResponse.model_validate(phase) for phase in db_phases]

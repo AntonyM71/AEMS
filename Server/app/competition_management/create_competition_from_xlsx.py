@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from db.client import transaction_session_context_manager
 from db.models import Athlete, AthleteHeat, Competition, Event, Heat, Phase, ScoreSheet
 
-# Set API endpoint URLs
 base_url = "http://localhost:8000/"
 competition_url = base_url + "competition"
 scoresheet_url = base_url + "scoresheet"
@@ -19,7 +18,6 @@ event_url = base_url + "event"
 phase_url = base_url + "phase"
 heat_url = base_url + "heat"
 
-# Constants for the competition
 scoresheet_name = "icf"
 
 number_of_runs = "1"
@@ -52,9 +50,6 @@ def get_scoresheets(db: Session) -> list[dict] | None:
     return [qr.to_dict() for qr in query_response]
 
 
-# Function to select the scoresheet by name
-
-
 def select_scoresheet_by_name(scoresheets: list[dict], name: str) -> str | None:
     for scoresheet in scoresheets:
         if scoresheet["name"].lower() == name.lower():
@@ -62,14 +57,8 @@ def select_scoresheet_by_name(scoresheets: list[dict], name: str) -> str | None:
     return None
 
 
-# Function to post event data
-
-
 def post_event(event_data: list[dict], db: Session) -> None:
     db.bulk_save_objects([Event(**c) for c in event_data])
-
-
-# Function to post phase data
 
 
 def post_phase(phase_data: list[dict], db: Session) -> None:

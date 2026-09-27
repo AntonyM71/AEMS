@@ -40,7 +40,7 @@ competition_management_router = APIRouter(
 
 
 class InvalidFileTypeError(Exception):
-    """Raised when the file type does not match what is expected"""
+    pass
 
 
 @competition_management_router.post(

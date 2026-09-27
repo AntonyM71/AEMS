@@ -8,6 +8,8 @@ here.
 from collections.abc import Sequence
 from typing import Any
 
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import ColumnElement, Select
 
 
@@ -73,3 +75,15 @@ def apply_pagination(
     if limit is not None:
         query = query.limit(limit)
     return query
+
+
+def refresh_all(db: Session, entities: Sequence[Any]) -> None:
+    """Refresh each entity after commit, to pick up DB-generated values (e.g. ids)."""
+    for entity in entities:
+        db.refresh(entity)
+
+
+def apply_partial_update(entity: Any, update: BaseModel) -> None:
+    """Set only the fields explicitly provided in ``update`` onto ``entity``."""
+    for field, value in update.model_dump(exclude_unset=True).items():
+        setattr(entity, field, value)

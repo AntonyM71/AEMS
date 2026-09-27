@@ -111,9 +111,9 @@ class AvailableMovesResponse(BaseModel):
     id: UUID
     sheet_id: UUID
     name: str
-    fl_score: int  # Changed from float to int to match models.py
-    rb_score: int  # Added missing field
-    direction: str  # Added missing field
+    fl_score: int  # Integer, not float - matches models.py
+    rb_score: int
+    direction: str
     display_order: int | None = None
 
     model_config = ConfigDict(from_attributes=True)

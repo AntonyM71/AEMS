@@ -9,6 +9,8 @@ from app.crud.query_helpers import (
     apply_in_filters,
     apply_ordering,
     apply_pagination,
+    apply_partial_update,
+    refresh_all,
 )
 from app.crud.schemas import (
     AthleteHeatNested,
@@ -115,10 +117,7 @@ def partial_update_one_by_primary_key(
     if not heat:
         raise HTTPException(status_code=404, detail="Heat not found")
 
-    # Update only provided fields
-    update_data = heat_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(heat, field, value)
+    apply_partial_update(heat, heat_update)
 
     db.commit()
     db.refresh(heat)
@@ -139,9 +138,6 @@ def insert_many(
         db_heats.append(db_heat)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for heat in db_heats:
-        db.refresh(heat)
+    refresh_all(db, db_heats)
 
     return [HeatResponse.model_validate(heat) for heat in db_heats]

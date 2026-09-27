@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import delete, select, text, update
 from sqlalchemy.orm import Session
 
+from app.crud.query_helpers import apply_partial_update, refresh_all
 from app.crud.schemas import AthleteHeatCreate, AthleteHeatResponse, AthleteHeatUpdate
 from db.client import get_transaction_session
 from db.models import AthleteHeat, Phase, RunStatus, ScoredBonuses, ScoredMoves
@@ -129,10 +130,7 @@ def insert_many(
         db_athlete_heats.append(db_athlete_heat)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for athlete_heat in db_athlete_heats:
-        db.refresh(athlete_heat)
+    refresh_all(db, db_athlete_heats)
 
     return [
         AthleteHeatResponse.model_validate(athlete_heat)
@@ -152,7 +150,6 @@ def partial_update_one_by_primary_key(
     """Partial update one athlete heat by primary key"""
     query = select(AthleteHeat).where(AthleteHeat.id == id)
 
-    # Apply additional filters if provided
     if athlete_id____list:
         query = query.where(AthleteHeat.athlete_id.in_(athlete_id____list))
     if heat_id____list:
@@ -170,10 +167,7 @@ def partial_update_one_by_primary_key(
     source_phase_id = db_athlete_heat.phase_id
     athlete_id = db_athlete_heat.athlete_id
 
-    # Update only provided fields
-    update_data = athlete_heat_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_athlete_heat, field, value)
+    apply_partial_update(db_athlete_heat, athlete_heat_update)
 
     destination_heat_id = db_athlete_heat.heat_id
     destination_phase_id = db_athlete_heat.phase_id

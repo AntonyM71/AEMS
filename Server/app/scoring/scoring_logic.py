@@ -38,7 +38,7 @@ class AddUpdateScoredMovesRequest(BaseModel):
 
 
 class MixedUpScoresheetExceptionError(Exception):
-    """for when scoresheets contain mixed up moves"""
+    pass
 
 
 class AthleteScoreInfo(BaseModel):
@@ -103,9 +103,7 @@ def calculate_run_score(
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
 ) -> AthleteScoreInfo:
-    # This function is intended to be used for a single paddler, for a single run, for a single judge.
-    # It will simply add up any scores you give it, and only deduplicated duplicated mvoes and bonuses.
-    # It does NOT filter by judge, run, athlete etc.
+    """Entries with the same move identity (see make_move_string) are deduplicated before summing."""
     check_moves_have_same_run_judge_athlete_heat(scored_moves=scored_moves)
     filtered_move_scores: dict[str, float] = {}
 

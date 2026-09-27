@@ -8,6 +8,7 @@ from app.crud.query_helpers import (
     apply_in_filters,
     apply_ordering,
     apply_pagination,
+    refresh_all,
 )
 from app.crud.schemas import ScoreSheetCreate, ScoreSheetResponse
 from db.client import get_transaction_session
@@ -58,10 +59,7 @@ def insert_many(
         db_scoresheets.append(db_scoresheet)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for scoresheet in db_scoresheets:
-        db.refresh(scoresheet)
+    refresh_all(db, db_scoresheets)
 
     return [
         ScoreSheetResponse.model_validate(scoresheet) for scoresheet in db_scoresheets

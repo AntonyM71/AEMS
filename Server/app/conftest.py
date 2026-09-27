@@ -4,19 +4,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlalchemy.orm import Session
 
-# Mock database functions at module level
 patch("db.client.create_engine").start()
 patch("db.client.sessionmaker").start()
 
 
 @pytest.fixture(autouse=True)
 def mock_db_session() -> Generator[Session]:
-    """Mock database session for all tests"""
     with patch("db.client.get_transaction_session") as mock_get_session:
-        # Create a mock session
         mock_session = MagicMock(spec=Session)
 
-        # Configure the session context manager behavior
         mock_get_session.return_value.__enter__.return_value = mock_session
         mock_get_session.return_value.__exit__.return_value = None
 

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.crud.query_helpers import apply_partial_update, refresh_all
 from app.crud.schemas import AthleteCreate, AthleteResponse, AthleteUpdate
 from db.client import get_transaction_session
 from db.models import Athlete
@@ -26,10 +27,7 @@ def insert_many(
         db_athletes.append(db_athlete)
 
     db.commit()
-
-    # Refresh to get generated IDs
-    for athlete in db_athletes:
-        db.refresh(athlete)
+    refresh_all(db, db_athletes)
 
     return [AthleteResponse.model_validate(athlete) for athlete in db_athletes]
 
@@ -49,10 +47,7 @@ def partial_update_one_by_primary_key(
     if not db_athlete:
         raise HTTPException(status_code=404, detail="Athlete not found")
 
-    # Update only provided fields
-    update_data = athlete_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_athlete, field, value)
+    apply_partial_update(db_athlete, athlete_update)
 
     db.commit()
     db.refresh(db_athlete)

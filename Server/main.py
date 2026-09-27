@@ -73,7 +73,6 @@ app = FastAPI()
 async def validation_exception_handler(
     request: Request, exc: Exception
 ) -> JSONResponse:
-    # Change here to Logger
     return JSONResponse(
         status_code=500,
         content={
@@ -161,8 +160,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Wrap the FastAPI app with the Socket.IO ASGI app so that Socket.IO connections
-# are handled transparently alongside existing HTTP routes.
 socket_app = _socketio.ASGIApp(sio, other_asgi_app=app)
 
 
