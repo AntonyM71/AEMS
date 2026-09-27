@@ -103,7 +103,7 @@ def calculate_run_score(
     available_moves: list[AvailableMoves],
     available_bonuses: list[AvailableBonuses],
 ) -> AthleteScoreInfo:
-    """Entries with the same move identity (see make_move_string) are deduplicated before summing."""
+    """Entries sharing a make_move_string identity are deduplicated before summing."""
     check_moves_have_same_run_judge_athlete_heat(scored_moves=scored_moves)
     filtered_move_scores: dict[str, float] = {}
 

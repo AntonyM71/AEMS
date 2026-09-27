@@ -1,8 +1,9 @@
-"""Query-builder helpers shared by the CRUD list endpoints.
+"""Helpers shared by the CRUD endpoints.
 
 Each ``get_many`` handler stays flat by describing *what* to filter, order and
 paginate by; the repetitive mechanics of translating that into SQLAlchemy live
-here.
+here. Write-path mechanics shared by the insert/update endpoints (refreshing
+after commit, applying a partial update) live here too.
 """
 
 from collections.abc import Sequence
