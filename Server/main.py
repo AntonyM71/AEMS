@@ -29,7 +29,6 @@ from app.crud.event import event_router
 from app.crud.heat import heat_router
 from app.crud.phase import phase_router
 from app.crud.run_status import run_status_router
-from app.crud.scoredmoves import scoredmoves_router
 from app.crud.scoresheet import scoresheet_router as scoresheet_crud_router
 from app.scoresheetEndpoints import scoresheet_router
 from app.scoring.customScoringEndpoints import scoring_router
@@ -64,7 +63,6 @@ app = FastAPI()
         scoresheet_crud_router,
         availablemoves_router,
         availablebonuses_router,
-        scoredmoves_router,
         athleteheat_router,
         run_status_router,
     ]

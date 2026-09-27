@@ -1,34 +1,9 @@
 import { test, expect, type APIRequestContext } from "@playwright/test"
-import { randomUUID } from "node:crypto"
-import { io, type Socket } from "socket.io-client"
+import { connectRunStatusSocket, sendRunStatus } from "./helpers/runStatus"
 import { setupTestData, type TestData } from "./helpers/testData"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"
 const RUN_NUMBER = 0
-
-const sendRunStatus = (
-	socket: Socket,
-	data: TestData,
-	fields: { locked: boolean; did_not_start: boolean }
-): Promise<void> =>
-	new Promise((resolve, reject) => {
-		const timer = setTimeout(
-			() => reject(new Error("no run_status echo within 10s")),
-			10000
-		)
-		socket.once("run_status", () => {
-			clearTimeout(timer)
-			resolve()
-		})
-		socket.emit("run_status", {
-			id: randomUUID(),
-			heat_id: data.heatId,
-			athlete_id: data.athleteId,
-			phase_id: data.phaseId,
-			run_number: RUN_NUMBER,
-			...fields
-		})
-	})
 
 const readRunStatuses = async (
 	request: APIRequestContext,
@@ -49,26 +24,17 @@ test.describe("run status upsert", () => {
 		request
 	}) => {
 		const data = await setupTestData(request)
-		const socket = io(`${BACKEND_URL}/run_status`, {
-			path: "/socket.io/",
-			transports: ["websocket"],
-			reconnection: false
-		})
+		const socket = await connectRunStatusSocket(BACKEND_URL)
+		const key = {
+			heatId: data.heatId,
+			phaseId: data.phaseId,
+			athleteId: data.athleteId,
+			runNumber: RUN_NUMBER
+		}
 
 		try {
-			await new Promise<void>((resolve, reject) => {
-				socket.once("connect", () => resolve())
-				socket.once("connect_error", reject)
-			})
-
-			await sendRunStatus(socket, data, {
-				locked: false,
-				did_not_start: true
-			})
-			await sendRunStatus(socket, data, {
-				locked: true,
-				did_not_start: false
-			})
+			await sendRunStatus(socket, key, { locked: false, did_not_start: true })
+			await sendRunStatus(socket, key, { locked: true, did_not_start: false })
 
 			const statuses = await readRunStatuses(request, data)
 			expect(statuses).toHaveLength(1)

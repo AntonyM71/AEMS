@@ -1,16 +1,71 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { toast } from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
-import { setupStore } from "../../../redux/store"
+import { renderWithProviders } from "../../../testUtils"
 import {
 	AddAthletesToHeat,
 	EditAthleteDialog,
 	HeatAthleteTable,
 	HeatSummaryTable
 } from "../HeatSummaryTable"
+
+const defaultCompetitionsState = {
+	selectedHeat: "1",
+	selectedCompetition: "1",
+	selectedPhase: "1",
+	selectedEvent: "1",
+	numberOfRuns: 2
+}
+
+const renderWithHeatSelected = (
+	ui: React.ReactElement
+): ReturnType<typeof renderWithProviders> =>
+	renderWithProviders(ui, {
+		preloadedState: { competitions: defaultCompetitionsState }
+	})
+
+// Mocks the endpoints an athlete-heat edit submission hits: the heat and
+// (single-phase) event lists the dialog loads, and the athlete/athleteheat
+// PATCH pair, whose response and captured request body the caller controls.
+const mockEditAthleteHeatSubmit = (options: {
+	heats: { id: string; name: string }[]
+	response: {
+		heat_id: string
+		phase_id: string
+		scores_preserved: boolean | null
+	}
+}): { body: unknown } => {
+	const captured: { body: unknown } = { body: undefined }
+	server.use(
+		http.get("/api/heat", () => HttpResponse.json(options.heats)),
+		http.get("/api/event", () =>
+			HttpResponse.json([
+				{
+					id: "1",
+					name: "Test Event",
+					phase_foreign: [
+						{ id: "1", name: "Test Phase", scoresheet: "sheet-1" }
+					]
+				}
+			])
+		),
+		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
+		http.patch("/api/athlete/:id", () => HttpResponse.json({ id: "1" })),
+		http.patch("/api/athleteheat/:id", async ({ request }) => {
+			captured.body = await request.json()
+
+			return HttpResponse.json({
+				id: "1",
+				athlete_id: "1",
+				...options.response
+			})
+		})
+	)
+
+	return captured
+}
 
 describe("HeatSummaryTable", () => {
 	beforeEach(() => {
@@ -75,41 +130,13 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("shows loading skeleton when data is being fetched", () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
 	})
 
 	it("displays heat data and athlete table when loaded", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		// Wait for heat name to appear
 		expect(await screen.findByText("Heat: Test Heat")).toBeInTheDocument()
@@ -170,21 +197,7 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("shows add athletes section when showAddAthletes is true", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable showAddAthletes={true} />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable showAddAthletes={true} />)
 
 		// Wait for heat name to appear
 		await screen.findByText("Heat: Test Heat")
@@ -196,27 +209,13 @@ describe("HeatSummaryTable", () => {
 	})
 
 	it("creates URLs for PDF downloads", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
 		// Mock URL.createObjectURL and window.open
 		const mockCreateObjectURL = jest.fn(() => "mock-url")
 		global.URL.createObjectURL = mockCreateObjectURL
 		const mockWindowOpen = jest.fn()
 		window.open = mockWindowOpen
 
-		render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatSummaryTable />)
 
 		// Mock window.open to return an object with location
 		const mockWindow = { location: { href: "" } }
@@ -265,21 +264,7 @@ describe("HeatAthleteTable", () => {
 	})
 
 	it("shows admin column in grid when showAdmin is true", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<HeatAthleteTable showAdmin={true} />
-			</Provider>
-		)
+		renderWithHeatSelected(<HeatAthleteTable showAdmin={true} />)
 
 		// Wait for data to load
 		const grid = await screen.findByTestId("mock-data-grid")
@@ -327,29 +312,17 @@ describe("HeatAthleteTable", () => {
 			)
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-				/>
-			</Provider>
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
 		)
 
 		// Check dialog content
@@ -359,21 +332,67 @@ describe("HeatAthleteTable", () => {
 		expect(await screen.findByDisplayValue("123")).toBeInTheDocument()
 	})
 
-	it("shows warning and deletes moves when moving athlete to different heat", async () => {
-		let deleteMovesRequestUrl: URL | undefined
-		// Mock endpoints
+	it("shows an info message and reports preserved scores when moving to a heat in the same phase", async () => {
+		const athleteHeatUpdate = mockEditAthleteHeatSubmit({
+			heats: [
+				{ id: "1", name: "Test Heat" },
+				{ id: "2", name: "Another Heat" }
+			],
+			response: { heat_id: "2", phase_id: "1", scores_preserved: true }
+		})
+
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
+		)
+
+		// "Edit Athlete" is ambiguous once the form loads - it's also the
+		// submit button's label - so query the dialog heading specifically.
+		await screen.findByRole("heading", { name: "Edit Athlete" })
+
+		// No phase change has been made yet, so the phase-only comparison
+		// that drives this message reports the move as scores-preserving by
+		// default - a heat-only move never changes the scoresheet.
+		expect(
+			await screen.findByText(/will keep their previously scored moves/)
+		).toBeInTheDocument()
+
+		// `data-testid="heat-select"` lands on MUI's outer MuiInputBase-root
+		// wrapper, not the inner role="combobox" div that actually opens the
+		// menu on click - query within it for that div.
+		const heatSelect = screen.getByTestId("heat-select")
+		const user = userEvent.setup()
+		await user.click(within(heatSelect).getByRole("combobox"))
+		await user.click(
+			await screen.findByRole("option", { name: "Another Heat" })
+		)
+
+		const editButton = screen.getByRole("button", { name: "Edit Athlete" })
+		await user.click(editButton)
+
+		await waitFor(() =>
+			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
+		)
+		expect(toast.success).toHaveBeenCalledWith(
+			"Updated Athlete Competition Information - scores preserved"
+		)
+		expect(athleteHeatUpdate.body).toEqual(
+			expect.objectContaining({ heat_id: "2", phase_id: "1" })
+		)
+	})
+
+	it("shows a warning when the selected phase uses a different scoresheet", async () => {
 		server.use(
 			http.get("/api/heat", () =>
-				HttpResponse.json([
-					{
-						id: "1",
-						name: "Test Heat"
-					},
-					{
-						id: "2",
-						name: "Another Heat"
-					}
-				])
+				HttpResponse.json([{ id: "1", name: "Test Heat" }])
 			),
 			http.get("/api/event", () =>
 				HttpResponse.json([
@@ -383,94 +402,90 @@ describe("HeatAthleteTable", () => {
 						phase_foreign: [
 							{
 								id: "1",
-								name: "Test Phase"
+								name: "Test Phase",
+								scoresheet: "sheet-1"
+							},
+							{
+								id: "2",
+								name: "Other Phase",
+								scoresheet: "sheet-2"
 							}
 						]
 					}
 				])
 			),
-			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([])),
-			http.patch("/api/athlete/:id", () =>
-				HttpResponse.json({ data: [{ id: "1" }] })
-			),
-			http.patch("/api/athleteheat/:id", () =>
-				HttpResponse.json({ data: [{ id: "1" }] })
-			),
-			http.delete("/api/scoredmoves", ({ request }) => {
-				deleteMovesRequestUrl = new URL(request.url)
+			http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json([]))
+		)
 
-				return HttpResponse.json({ message: "Success" })
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+			/>
+		)
+
+		await screen.findByRole("heading", { name: "Edit Athlete" })
+		expect(
+			await screen.findByText(/will keep their previously scored moves/)
+		).toBeInTheDocument()
+
+		const phaseSelect = screen.getAllByRole("combobox")[0]
+		const user = userEvent.setup()
+		await user.click(phaseSelect)
+		await user.click(
+			await screen.findByRole("option", {
+				name: "Test Event - Other Phase"
 			})
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<EditAthleteDialog
-					open={true}
-					handleClose={jest.fn()}
-					athlete_id="1"
-					first_name="John"
-					last_name="Doe"
-					bib={123}
-					phase_id="1"
-					athlete_heat_id="1"
-				/>
-			</Provider>
-		)
-
-		// Wait for dialog to load and check warning is shown. "Edit Athlete"
-		// is ambiguous once the form loads - it's also the submit button's
-		// label - so query the dialog heading specifically.
-		await screen.findByRole("heading", { name: "Edit Athlete" })
 		expect(await screen.findByText(/Warning:/)).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				/Moving an athlete between heats or phases will delete any previously scored moves/
+				/will delete their previously scored moves, since it uses a different scoresheet/
 			)
 		).toBeInTheDocument()
+	})
 
-		// Change heat. `data-testid="heat-select"` lands on MUI's outer
-		// MuiInputBase-root wrapper, not the inner role="combobox" div that
-		// actually opens the menu on click - query within it for that div.
-		const heatSelect = screen.getByTestId("heat-select")
-		const user = userEvent.setup()
-		await user.click(within(heatSelect).getByRole("combobox"))
-
-		const heatOption = await screen.findByRole("option", {
-			name: "Another Heat"
+	it("preserves an athlete's last_phase_rank when editing only their bib number", async () => {
+		const athleteHeatUpdate = mockEditAthleteHeatSubmit({
+			heats: [{ id: "1", name: "Test Heat" }],
+			response: { heat_id: "1", phase_id: "1", scores_preserved: null }
 		})
-		await user.click(heatOption)
 
-		// Submit form
-		const editButton = screen.getByRole("button", { name: "Edit Athlete" })
-		await user.click(editButton)
+		renderWithHeatSelected(
+			<EditAthleteDialog
+				open={true}
+				handleClose={jest.fn()}
+				athlete_id="1"
+				first_name="John"
+				last_name="Doe"
+				bib={123}
+				phase_id="1"
+				athlete_heat_id="1"
+				last_phase_rank={3}
+			/>
+		)
 
-		// Verify success toast
+		await screen.findByRole("heading", { name: "Edit Athlete" })
+		const bibInput = await screen.findByLabelText("Bib Number")
+		const user = userEvent.setup()
+		await user.clear(bibInput)
+		await user.type(bibInput, "456")
+
+		await user.click(screen.getByRole("button", { name: "Edit Athlete" }))
+
 		await waitFor(() =>
 			expect(toast.success).toHaveBeenCalledWith("Updated Athlete")
 		)
-		expect(toast.success).toHaveBeenCalledWith(
-			"Updated Athlete Competition Information"
+		expect(athleteHeatUpdate.body).toEqual(
+			expect.objectContaining({ last_phase_rank: 3 })
 		)
-
-		// Verify the scored moves were deleted for the OLD heat ("1"), not
-		// the new one ("2"), scoped to this athlete
-		expect(
-			deleteMovesRequestUrl?.searchParams.getAll("heat_id____list")
-		).toEqual(["1"])
-		expect(
-			deleteMovesRequestUrl?.searchParams.getAll("athlete_id____list")
-		).toEqual(["1"])
 	})
 })
 
@@ -515,21 +530,7 @@ describe("AddAthletesToHeat", () => {
 	})
 
 	it("validates required fields", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -549,21 +550,7 @@ describe("AddAthletesToHeat", () => {
 	it("shows last phase rank field when enabled", async () => {
 		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK = "true"
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -576,21 +563,7 @@ describe("AddAthletesToHeat", () => {
 	it("hides last phase rank field when disabled", async () => {
 		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK = "false"
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
-
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for the form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
@@ -612,21 +585,8 @@ describe("AddAthletesToHeat", () => {
 				HttpResponse.json({ data: [{ id: "1" }] })
 			)
 		)
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedPhase: "1",
-				selectedEvent: "1",
-				numberOfRuns: 2
-			}
-		})
 
-		render(
-			<Provider store={store}>
-				<AddAthletesToHeat />
-			</Provider>
-		)
+		renderWithHeatSelected(<AddAthletesToHeat />)
 
 		// Wait for form to load
 		const firstNameInput = await screen.findByLabelText("First Name")
