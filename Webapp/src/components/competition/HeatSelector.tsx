@@ -2,15 +2,9 @@ import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
-import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
-import InputLabel from "@mui/material/InputLabel"
-import MenuItem from "@mui/material/MenuItem"
-import Paper from "@mui/material/Paper"
-import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
-import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
@@ -32,15 +26,13 @@ import {
 	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-import { RefreshButton } from "./RefreshIconButton"
+import { SelectorPanel } from "./SelectorPanel"
 
 const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const handleClose = () => setOpen(false)
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const setSelectedHeat = (newHeat: string) =>
-		dispatch(updateSelectedHeat(newHeat))
 	const selectedHeat = useSelector(getSelectedHeat)
 
 	const { data, isLoading, isError, refetch } = useGetManyHeatGetQuery(
@@ -53,125 +45,56 @@ const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
 		}
 	)
 
-	const setCurrentPaddler = (newPaddler: number) =>
-		dispatch(updatePaddler(newPaddler))
-	const setSelectedRun = (newRun: number) => dispatch(updateRun(newRun))
-
-	const onSelect = (event: SelectChangeEvent<string>) => {
-		const newHeat = event.target.value
-		setSelectedHeat(newHeat)
-		setCurrentPaddler(0)
-		setSelectedRun(0)
+	const onSelect = (newHeat: string) => {
+		dispatch(updateSelectedHeat(newHeat))
+		dispatch(updatePaddler(0))
+		dispatch(updateRun(0))
 	}
 
 	if (!selectedCompetition) {
 		return <></>
 	}
 
-	if (isLoading) {
-		return <Skeleton variant="rectangular" data-testid="skeleton" />
-	}
-
-	if (isError) {
-		return (
-			<Paper sx={{ padding: "1em" }}>
-				<h4>Failed to get data from the server</h4>
-			</Paper>
-		)
-	}
-
-	if (!data) {
-		return (
-			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Stack
-					direction="row"
-					sx={{
-						alignItems: "center"
-					}}
-				>
-					<RefreshButton refetch={refetch} />
-					<h4>No Heats in Competition</h4>
-				</Stack>
-
-				<AddHeat refetch={refetch} />
-			</Paper>
-		)
-	} else {
-		return (
-			<Paper sx={{ padding: "1em" }}>
-				<EditHeatDialog
-					refetch={refetch}
-					open={open}
-					handleClose={handleClose}
-					selectedHeat={selectedHeat}
-				/>
-				<Grid container spacing={2}>
-					{showDetailed ? (
-						<Grid size={12}>
-							<h4>Select a Heat</h4>
-						</Grid>
-					) : (
-						<></>
-					)}
-					<Grid size={12}>
-						<FormControl fullWidth={true}>
-							<InputLabel id="heat-select-label">
-								Select Heat
-							</InputLabel>
-							<Select
-								value={selectedHeat}
-								onChange={onSelect}
-								variant="outlined"
-								labelId="heat-select-label"
-								id="heat-select"
-								label="Select Heat"
-								data-testid="heat-select"
-								inputProps={{
-									"aria-label": "Select Heat"
-								}}
-								startAdornment={
-									<RefreshButton refetch={refetch} />
-								}
-								endAdornment={
-									showDetailed && selectedHeat ? (
-										<IconButton
-											aria-label="edit heat"
-											onClick={() => setOpen(true)}
-										>
-											<Tooltip title="Edit Selected Heat">
-												<EditNoteIcon />
-											</Tooltip>
-										</IconButton>
-									) : undefined
-								}
-							>
-								{data.map((heat) =>
-									heat.name ? (
-										<MenuItem
-											key={heat.id}
-											value={heat.id}
-											data-testid={`heat-option-${heat.name
-												.toLowerCase()
-												.replace(/\s+/g, "-")}`}
-										>
-											{heat.name}
-										</MenuItem>
-									) : null
-								)}
-							</Select>
-						</FormControl>
-					</Grid>
-					{showDetailed ? (
-						<Grid>
-							<AddHeat refetch={refetch} />
-						</Grid>
-					) : (
-						<></>
-					)}
-				</Grid>
-			</Paper>
-		)
-	}
+	return (
+		<>
+			<EditHeatDialog
+				refetch={refetch}
+				open={open}
+				handleClose={handleClose}
+				selectedHeat={selectedHeat}
+			/>
+			<SelectorPanel
+				entityLabel="Heat"
+				items={(data ?? [])
+					.filter((heat) => !!heat.name)
+					.map((heat) => ({
+						id: heat.id ?? "",
+						name: heat.name ?? ""
+					}))}
+				selectedValue={selectedHeat}
+				onSelect={onSelect}
+				isLoading={isLoading}
+				isError={isError}
+				refetch={refetch}
+				showDetailed={showDetailed}
+				emptyMessage="No Heats in Competition"
+				selectTestId="heat-select"
+				addForm={<AddHeat refetch={refetch} />}
+				endAdornment={
+					showDetailed && selectedHeat ? (
+						<IconButton
+							aria-label="edit heat"
+							onClick={() => setOpen(true)}
+						>
+							<Tooltip title="Edit Selected Heat">
+								<EditNoteIcon />
+							</Tooltip>
+						</IconButton>
+					) : undefined
+				}
+			/>
+		</>
+	)
 }
 
 const EditHeatDialog = ({
@@ -226,7 +149,6 @@ const EditHeatDialog = ({
 		</Dialog>
 	)
 }
-
 
 const AddHeat = ({
 	refetch,

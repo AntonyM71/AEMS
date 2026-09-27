@@ -1,16 +1,9 @@
 import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
-import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
-import InputLabel from "@mui/material/InputLabel"
-import MenuItem from "@mui/material/MenuItem"
-import Paper from "@mui/material/Paper"
-import Select, { SelectChangeEvent } from "@mui/material/Select"
-import Skeleton from "@mui/material/Skeleton"
-import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
-import { Fragment, useState } from "react"
+import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 import {
@@ -26,7 +19,7 @@ import {
 	useInsertManyEventPostMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-import { RefreshButton } from "./RefreshIconButton"
+import { SelectorPanel } from "./SelectorPanel"
 
 const EventSelector = ({
 	showDetailed = false
@@ -35,12 +28,7 @@ const EventSelector = ({
 }) => {
 	const dispatch = useDispatch()
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const setSelectedEvent = (newEvent: string) =>
-		dispatch(updateSelectedEvent(newEvent))
 	const selectedEvent = useSelector(getSelectedEvent)
-	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
-
-	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
 	const { data, isLoading, isSuccess, refetch } =
 		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery(
 			{
@@ -50,78 +38,34 @@ const EventSelector = ({
 			{ skip: !selectedCompetition, refetchOnMountOrArgChange: true }
 		)
 
-	const onSelect = (event: SelectChangeEvent<string>) => {
-		resetSelectedHeat()
-		resetSelectedPhase()
-		setSelectedEvent(event.target.value)
+	const onSelect = (newEvent: string) => {
+		dispatch(updateSelectedHeat(""))
+		dispatch(updateSelectedPhase(""))
+		dispatch(updateSelectedEvent(newEvent))
 	}
 
 	if (!selectedCompetition) {
 		return <></>
 	}
-	if (isLoading) {
-		return <Skeleton variant="rectangular" data-testid="skeleton" />
-	} else if (!isSuccess) {
-		return <h4>Failed to get data from the server</h4>
-	} else if (!data || data.length === 0) {
-		return (
-			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Stack
-					direction="row"
-					sx={{
-						alignItems: "center"
-					}}
-				>
-					<RefreshButton refetch={refetch} />
-					<h4>No Events in competition</h4>
-				</Stack>
 
-				<AddEvent refetch={refetch} />
-			</Paper>
-		)
-	} else if (data) {
-		return (
-			<Paper sx={{ padding: "1em" }}>
-				<Grid container spacing={2}>
-					{showDetailed ? (
-						<Grid size={12}>
-							<h4>Select an Event</h4>
-						</Grid>
-					) : (
-						<></>
-					)}
-					<Grid size={12}>
-						<FormControl fullWidth={true}>
-							<InputLabel>Select Event</InputLabel>
-							<Select
-								value={selectedEvent}
-								onChange={onSelect}
-								variant="outlined"
-								startAdornment={
-									<RefreshButton refetch={refetch} />
-								}
-							>
-								{data.map((event) => (
-									<MenuItem key={event.id} value={event.id}>
-										{event.name}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
-					{showDetailed ? (
-						<Grid>
-							<AddEvent refetch={refetch} />
-						</Grid>
-					) : (
-						<></>
-					)}
-				</Grid>
-			</Paper>
-		)
-	} else {
-		return <Fragment>No Events Available</Fragment>
-	}
+	return (
+		<SelectorPanel
+			entityLabel="Event"
+			items={(data ?? []).map((event) => ({
+				id: event.id ?? "",
+				name: event.name ?? ""
+			}))}
+			selectedValue={selectedEvent}
+			onSelect={onSelect}
+			isLoading={isLoading}
+			isError={!isSuccess}
+			refetch={refetch}
+			showDetailed={showDetailed}
+			emptyMessage="No Events in competition"
+			sectionHeading="Select an Event"
+			addForm={<AddEvent refetch={refetch} />}
+		/>
+	)
 }
 
 const AddEvent = ({ refetch }: { refetch: () => Promise<any> }) => {
