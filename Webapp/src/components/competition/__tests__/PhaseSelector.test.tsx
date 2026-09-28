@@ -172,6 +172,28 @@ describe("PhaseSelector", () => {
 		expect(store.getState().competitions.selectedPhase).toBe("phase-1")
 	})
 
+	it("shows an error message and retry button when the request fails", async () => {
+		server.use(
+			http.get(
+				"/api/event/:eventPkId/phase",
+				() => new HttpResponse(null, { status: 500 })
+			)
+		)
+
+		render(
+			<Provider store={store}>
+				<PhaseSelector />
+			</Provider>
+		)
+
+		expect(
+			await screen.findByText("Failed to get data from the server")
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole("button", { name: /retry/i })
+		).toBeInTheDocument()
+	})
+
 	it("should show no phases message when event has no phases", async () => {
 		server.use(
 			http.get("/api/event/:eventPkId/phase", () =>

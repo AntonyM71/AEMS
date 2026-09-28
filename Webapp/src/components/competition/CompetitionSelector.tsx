@@ -53,6 +53,7 @@ export const CompetitionSelector = ({
 			emptyMessage="No Competitions"
 			loadingTestId="loading-skeleton"
 			addForm={<AddCompetition />}
+			addFormGridSize={12}
 		/>
 	)
 }

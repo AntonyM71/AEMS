@@ -59,6 +59,33 @@ describe("HeatSelector", () => {
 		expect(skeleton).toBeInTheDocument()
 	})
 
+	it("shows an error message and retry button when the request fails", async () => {
+		server.use(
+			http.get("/api/heat", () => new HttpResponse(null, { status: 500 }))
+		)
+		const store = setupStore({
+			competitions: {
+				selectedCompetition: "1",
+				selectedEvent: "",
+				selectedPhase: "",
+				selectedHeat: "",
+				numberOfRuns: 2
+			}
+		})
+		render(
+			<Provider store={store}>
+				<HeatSelector />
+			</Provider>
+		)
+
+		expect(
+			await screen.findByText("Failed to get data from the server")
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole("button", { name: /retry/i })
+		).toBeInTheDocument()
+	})
+
 	it("shows no heats message and add heat form when competition has no heats", async () => {
 		const user = userEvent.setup()
 		// Override handlers to return empty heat list and competition data

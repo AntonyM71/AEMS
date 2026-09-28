@@ -1,3 +1,5 @@
+import Alert from "@mui/material/Alert"
+import Button from "@mui/material/Button"
 import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
 import InputLabel from "@mui/material/InputLabel"
@@ -14,6 +16,23 @@ export interface SelectorOption {
 	name: string
 }
 
+export const SelectorErrorAlert = ({
+	refetch
+}: {
+	refetch: () => Promise<any>
+}) => (
+	<Alert
+		severity="error"
+		action={
+			<Button color="inherit" size="small" onClick={() => void refetch()}>
+				Retry
+			</Button>
+		}
+	>
+		Failed to get data from the server
+	</Alert>
+)
+
 export const SelectorPanel = ({
 	entityLabel,
 	items,
@@ -28,7 +47,8 @@ export const SelectorPanel = ({
 	endAdornment,
 	loadingTestId = "skeleton",
 	selectTestId,
-	sectionHeading
+	sectionHeading,
+	addFormGridSize
 }: {
 	entityLabel: string
 	items: SelectorOption[]
@@ -44,12 +64,13 @@ export const SelectorPanel = ({
 	loadingTestId?: string
 	selectTestId?: string
 	sectionHeading?: string
+	addFormGridSize?: number
 }) => {
 	if (isLoading) {
 		return <Skeleton variant="rectangular" data-testid={loadingTestId} />
 	}
 	if (isError) {
-		return <h4>Failed to get data from the server</h4>
+		return <SelectorErrorAlert refetch={refetch} />
 	}
 	if (items.length === 0) {
 		return (
@@ -97,7 +118,9 @@ export const SelectorPanel = ({
 						</Select>
 					</FormControl>
 				</Grid>
-				{showDetailed && <Grid>{addForm}</Grid>}
+				{showDetailed && (
+					<Grid size={addFormGridSize}>{addForm}</Grid>
+				)}
 			</Grid>
 		</Paper>
 	)

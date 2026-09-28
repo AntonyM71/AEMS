@@ -175,6 +175,39 @@ describe("CompetitionSelector", () => {
 		expect(screen.getByText("Add New Competition")).toBeInTheDocument()
 	})
 
+	it("re-issues the request when the retry button is clicked", async () => {
+		let requestCount = 0
+		const mockCompetitions = [{ id: "1", name: "Competition 1" }]
+
+		server.use(
+			http.get("/api/competition", () => {
+				requestCount += 1
+				if (requestCount === 1) {
+					return new HttpResponse(null, { status: 500 })
+				}
+
+				return HttpResponse.json(mockCompetitions)
+			})
+		)
+
+		render(
+			<Provider store={store}>
+				<CompetitionSelector />
+			</Provider>
+		)
+
+		const retryButton = await screen.findByRole("button", {
+			name: /retry/i
+		})
+		fireEvent.click(retryButton)
+
+		await waitFor(() => expect(requestCount).toBe(2))
+		expect(await screen.findByRole("combobox")).toBeInTheDocument()
+		expect(
+			screen.queryByText("Failed to get data from the server")
+		).not.toBeInTheDocument()
+	})
+
 	it("shows 'No Competitions' state when data is empty", async () => {
 		server.use(http.get("/api/competition", () => HttpResponse.json([])))
 
@@ -198,6 +231,27 @@ describe("CompetitionSelector", () => {
 		const noCompText = await screen.findByText("No Competitions")
 		expect(noCompText).toBeInTheDocument()
 		expect(noCompText.tagName).toBe("H4")
+	})
+
+	it("shows error message when the request fails", async () => {
+		server.use(
+			http.get(
+				"/api/competition",
+				() => new HttpResponse(null, { status: 500 })
+			)
+		)
+
+		render(
+			<Provider store={store}>
+				<CompetitionSelector />
+			</Provider>
+		)
+
+		const errorMessage = await screen.findByText(
+			"Failed to get data from the server"
+		)
+		expect(errorMessage).toBeInTheDocument()
+		expect(screen.queryByTestId("loading-skeleton")).not.toBeInTheDocument()
 	})
 
 	describe("AddCompetition", () => {
