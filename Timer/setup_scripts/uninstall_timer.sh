@@ -13,7 +13,7 @@ echo "Disabling $SERVICE_NAME..."
 sudo systemctl disable $SERVICE_NAME
 
 # Remove the service file
-if [ -f "$SERVICE_PATH" ]; then
+if [[ -f "$SERVICE_PATH" ]]; then
     echo "Removing $SERVICE_NAME file..."
     sudo rm $SERVICE_PATH
 else

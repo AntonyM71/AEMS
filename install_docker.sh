@@ -3,7 +3,7 @@
 
 set -e
 
-if [ "$EUID" -ne 0 ]; then
+if [[ "$EUID" -ne 0 ]]; then
   echo "Please run as root (use sudo)"
   exit 1
 fi
@@ -38,7 +38,7 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Add user to docker group and start Docker service
-if [ "$SUDO_USER" ]; then
+if [[ "$SUDO_USER" ]]; then
     sudo usermod -aG docker $SUDO_USER
     echo "Added $SUDO_USER to docker group."
 fi

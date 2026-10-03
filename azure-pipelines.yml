@@ -178,7 +178,7 @@ jobs:
             docker exec redis-e2e redis-cli ping | grep -q PONG && ready=true && break
             sleep 1
           done
-          if [ "$ready" != "true" ]; then
+          if [[ "$ready" != "true" ]]; then
             echo "redis-e2e did not respond to PING within 15s" >&2
             exit 1
           fi
@@ -248,7 +248,7 @@ jobs:
             curl -sf http://localhost:3000 > /dev/null && ready=true && break
             sleep 3
           done
-          if [ "$ready" != "true" ]; then
+          if [[ "$ready" != "true" ]]; then
             echo "frontend did not respond on :3000 within 90s" >&2
             exit 1
           fi

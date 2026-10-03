@@ -2,7 +2,7 @@
 
 # Usage: bash add_wifi_network.sh <network_name> <network_password>
 
-if [ "$#" -ne 2 ]; then
+if [[ "$#" -ne 2 ]]; then
     echo "Usage: $0 <network_name> <network_password>"
     exit 1
 fi
