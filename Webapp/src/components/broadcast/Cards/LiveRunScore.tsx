@@ -35,7 +35,6 @@ export const LiveRunScoreSpace = ({
 	</Collapse>
 )
 
-
 export const SubscribedFinalScore = ({
 	overlayControlState,
 	textSize = "h5"
@@ -98,9 +97,8 @@ export const SubscribedFinalScore = ({
 					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
 					[],
 				bonuses:
-					streamMoveData.bonuses?.filter(
-						(b) => b.judge_id === jid
-					) ?? []
+					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
+					[]
 			}
 			newScores[jid] = calculateMoveAndBonusScore(
 				filteredData,

@@ -10,5 +10,5 @@ module.exports = {
 	// The multipart upload endpoint can't be modelled by the codegen: it emits
 	// `file: string` with a plain-object body and no FormData, so the generated
 	// hook is unusable. UploadCsv.tsx posts to it with raw axios instead.
-	filterEndpoints: (name) => name !== "uploadCompetitionManagementUploadPost",
+	filterEndpoints: (name) => name !== "uploadCompetitionManagementUploadPost"
 }

@@ -17,7 +17,11 @@ const useSyncOverlaySelectionState = (
 
 	useEffect(() => {
 		if (overlayControlState.selectedCompetition) {
-			dispatch(updateSelectedCompetition(overlayControlState.selectedCompetition))
+			dispatch(
+				updateSelectedCompetition(
+					overlayControlState.selectedCompetition
+				)
+			)
 		}
 
 		if (overlayControlState.selectedEvent) {

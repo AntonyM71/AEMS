@@ -68,7 +68,9 @@ describe("PixiFrameSequenceOverlay", () => {
 		expect(contentWrapper()).toHaveStyle({ opacity: 0 })
 
 		await waitForFramesLoaded(3)
-		await waitFor(() => expect(contentWrapper()).toHaveStyle({ opacity: 1 }))
+		await waitFor(() =>
+			expect(contentWrapper()).toHaveStyle({ opacity: 1 })
+		)
 
 		// Further ticks on the hold frame must not replay the intro.
 		await new Promise((resolve) => setTimeout(resolve, 30))
@@ -91,7 +93,9 @@ describe("PixiFrameSequenceOverlay", () => {
 		)
 
 		await waitForFramesLoaded(4)
-		await waitFor(() => expect(contentWrapper()).toHaveStyle({ opacity: 1 }))
+		await waitFor(() =>
+			expect(contentWrapper()).toHaveStyle({ opacity: 1 })
+		)
 
 		rerender(
 			<PixiFrameSequenceOverlay {...props} isVisible={false}>
@@ -116,11 +120,11 @@ describe("PixiFrameSequenceOverlay", () => {
 			)
 		)
 
-		render(<PixiFrameSequenceOverlay configName="pack1" isVisible={false} />)
-
-		await waitFor(() =>
-			expect(mockTextureFrom).toHaveBeenCalledTimes(2)
+		render(
+			<PixiFrameSequenceOverlay configName="pack1" isVisible={false} />
 		)
+
+		await waitFor(() => expect(mockTextureFrom).toHaveBeenCalledTimes(2))
 		expect(mockTextureFrom).toHaveBeenCalledWith(
 			"https://graphics.local/packs/pack1/frame_01.png"
 		)

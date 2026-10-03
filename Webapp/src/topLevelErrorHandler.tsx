@@ -12,6 +12,7 @@ const extractErrorMessage = (error: any): string => {
 	if (typeof error === "string") {
 		return error
 	}
+
 	return (
 		error?.statusText ??
 		error?.message ??

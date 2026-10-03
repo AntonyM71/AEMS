@@ -227,7 +227,6 @@ const EditHeatDialog = ({
 	)
 }
 
-
 const AddHeat = ({
 	refetch,
 	existingHeatData

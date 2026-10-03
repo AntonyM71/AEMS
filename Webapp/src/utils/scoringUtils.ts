@@ -76,7 +76,10 @@ export function calculateSingleJudgeRunScore(
 				if (directionalScoredMoves.length !== 0) {
 					runScore =
 						runScore +
-						Math.max(0, ...directionalScoredMoves.map((a) => a.value))
+						Math.max(
+							0,
+							...directionalScoredMoves.map((a) => a.value)
+						)
 				}
 			})
 		}

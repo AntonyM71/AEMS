@@ -56,7 +56,9 @@ describe("createServerClock", () => {
 		jest.useFakeTimers().setSystemTime(now)
 		const clock = createServerClock()
 
-		expect(() => clock.calibrateFromFirstDateHeader("not a date")).not.toThrow()
+		expect(() =>
+			clock.calibrateFromFirstDateHeader("not a date")
+		).not.toThrow()
 		expect(clock.correctedNow()).toBe(now.getTime())
 	})
 
