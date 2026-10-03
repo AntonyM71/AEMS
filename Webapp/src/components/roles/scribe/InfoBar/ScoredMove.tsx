@@ -8,13 +8,10 @@ import {
 	updateScoredBonuses,
 	updateScoredMoves
 } from "../../../../redux/atoms/scoring"
-import {
-	useGetManyAvailablebonusesGetQuery,
-	useGetManyAvailablemovesGetQuery
-} from "../../../../redux/services/aemsApi"
 import { sortBonuses } from "../../../ScoresheetBuilder/ScoresheetBuilder"
 import { BonusChip } from "../BonusChip"
 import {
+	movesType,
 	removeScoredMoveType,
 	scoredBonusType,
 	scoredMovesType
@@ -24,6 +21,8 @@ interface ScoredMovePropsType {
 	scoredMove: scoredMovesType
 	scoredMovesList: scoredMovesType[]
 	scoredBonuses: scoredBonusType[]
+	availableMoves: movesType[]
+	availableBonuses: AvailableBonusType[]
 	chipActionsDisabled?: boolean
 }
 
@@ -32,6 +31,8 @@ const ScoredMove = React.memo(
 		scoredMove,
 		scoredMovesList,
 		scoredBonuses,
+		availableMoves,
+		availableBonuses,
 		chipActionsDisabled = false
 	}: ScoredMovePropsType) => {
 		const dispatch = useDispatch()
@@ -58,23 +59,13 @@ const ScoredMove = React.memo(
 			}
 		}
 
-		const availableMovesList = useGetManyAvailablemovesGetQuery({
-			idList: [scoredMove.moveId]
-		})
-		const bonusList = useGetManyAvailablebonusesGetQuery({
-			moveIdList: [scoredMove.moveId]
-		})
-		const filteredMoves =
-			availableMovesList.data?.filter(
-				(move) => move.id === scoredMove.moveId
-			) ?? []
-		const scoredMoveAvailableBonuses: AvailableBonusType[] =
-			(bonusList.data
-				?.filter((bonus) => bonus.move_id === scoredMove.moveId)
-				.sort(sortBonuses) as AvailableBonusType[]) || []
-		if (filteredMoves.length === 1) {
-			const moveData = filteredMoves[0]
-
+		const moveData = availableMoves.find(
+			(move) => move.id === scoredMove.moveId
+		)
+		const scoredMoveAvailableBonuses = availableBonuses
+			.filter((bonus) => bonus.move_id === scoredMove.moveId)
+			.sort(sortBonuses)
+		if (moveData) {
 			return (
 				<Paper
 					sx={{
@@ -143,6 +134,7 @@ export interface AvailableBonusType {
 	move_id: string
 	name: string
 	score: number
+	display_order?: number | null
 }
 
 export default ScoredMove

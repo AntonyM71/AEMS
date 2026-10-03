@@ -1,3 +1,4 @@
+import { setupListeners } from "@reduxjs/toolkit/query"
 import Container from "@mui/material/Container"
 import CssBaseline from "@mui/material/CssBaseline"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
@@ -11,6 +12,7 @@ import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 import { setupStore } from "../redux/store"
 import "./_app.css"
 const store = setupStore()
+setupListeners(store.dispatch)
 const App = ({ children, noLayout }: { children: any; noLayout?: boolean }) => {
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
 	const dispatch = useDispatch()

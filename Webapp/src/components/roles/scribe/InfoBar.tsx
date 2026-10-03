@@ -27,7 +27,7 @@ export interface AthleteInfo {
 }
 interface PropsType {
 	paddlerInfo: AthleteInfo
-	availableMoves: movesType[]
+	availableMoves: movesType[] | undefined
 	isFetchingScoredMoves: boolean
 	isRunLocked?: boolean
 }
@@ -97,6 +97,8 @@ export const InfoBar = ({
 					<Grid size={12}>
 						<ScoredMoveList
 							scoredMoves={scoredMoves}
+							availableMoves={availableMoves}
+							scoresheet={paddlerInfo.scoresheet}
 							isRunLocked={isRunLocked}
 						/>
 					</Grid>
@@ -110,12 +112,15 @@ export const CurrentScoreCalculation = ({
 	availableMoves,
 	scoresheet
 }: {
-	availableMoves: movesType[]
+	availableMoves: movesType[] | undefined
 	scoresheet: string
 }) => {
-	const bonusList = useGetManyAvailablebonusesGetQuery({
-		sheetIdList: [scoresheet]
-	})
+	const bonusList = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdList: [scoresheet]
+		},
+		{ refetchOnReconnect: true }
+	)
 	const scoredMoves = useSelector(getScoredMoves)
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const currentScore = calculateSingleJudgeRunScore(
@@ -144,12 +149,26 @@ export const CurrentScore = ({ currentScore }: { currentScore: number }) => (
 
 export const ScoredMoveList = ({
 	scoredMoves,
+	availableMoves,
+	scoresheet,
 	isRunLocked
 }: {
 	scoredMoves: scoredMovesType[]
+	availableMoves: movesType[] | undefined
+	scoresheet: string
 	isRunLocked?: boolean
 }) => {
 	const scoredBonuses = useSelector(getScoredBonuses)
+	const availableBonuses = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdList: [scoresheet]
+		},
+		{ refetchOnReconnect: true }
+	)
+
+	if (!availableMoves || !availableBonuses.data) {
+		return <Skeleton sx={{ width: "100%", height: "100%" }} />
+	}
 
 	return (
 		<Grid
@@ -174,6 +193,10 @@ export const ScoredMoveList = ({
 							scoredMove={scoredMove}
 							scoredMovesList={scoredMoves}
 							scoredBonuses={scoredBonuses}
+							availableMoves={availableMoves}
+							availableBonuses={
+								availableBonuses.data as AvailableBonusType[]
+							}
 							chipActionsDisabled={isRunLocked}
 						/>
 					</Grid>
