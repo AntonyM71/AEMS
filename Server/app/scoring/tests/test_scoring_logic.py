@@ -26,6 +26,36 @@ from app.scoring.scoring_logic import (
 )
 
 
+def _move(
+    id: str,
+    move_id: str,
+    direction: str,
+    **overrides: str,
+) -> PydanticScoredMovesResponse:
+    fields = {
+        "heat_id": "8fa0fe12-12e3-4020-892a-ffffe96f676d",
+        "run_number": "1",
+        "phase_id": "942e908e-b074-48b7-926a-59b9dd214dc7",
+        "judge_id": "meg",
+        "athlete_id": "c7476320-6c48-11ee-b962-0242ac120002",
+        **overrides,
+    }
+    return PydanticScoredMovesResponse(
+        id=id, move_id=move_id, direction=direction, **fields
+    )
+
+
+def _bonus(
+    id: str,
+    move_id: str,
+    bonus_id: str,
+    judge_id: str = "meg",
+) -> PydanticScoredBonusesResponse:
+    return PydanticScoredBonusesResponse(
+        id=id, move_id=move_id, bonus_id=bonus_id, judge_id=judge_id
+    )
+
+
 def _tied_athlete(
     athlete_id: str,
     run_means: list[float],
@@ -138,14 +168,9 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             )
         ]
@@ -166,24 +191,14 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             ),
         ]
@@ -204,24 +219,14 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="S",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="S",
             ),
         ]
@@ -242,14 +247,9 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             )
         ]
@@ -270,24 +270,14 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             ),
         ]
@@ -308,23 +298,17 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             )
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             )
         ]
 
@@ -343,33 +327,22 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             )
         ]
 
@@ -388,29 +361,22 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             )
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
         ]
 
@@ -429,39 +395,27 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b2",
-                judge_id="meg",
             ),
         ]
 
@@ -480,24 +434,14 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -518,33 +462,22 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="F",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
         ]
 
@@ -563,24 +496,15 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
                 judge_id="dave",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -602,24 +526,15 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                 run_number="2",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -641,23 +556,14 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
                 athlete_id="c7476320-6c48-11ee-b962-0242ac120001",
                 direction="B",
             ),
@@ -680,24 +586,15 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
                 heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676c",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -719,24 +616,15 @@ class TestScoring:
         available_bonuses: list[AvailableBonuses],
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
                 phase_id="942e908e-b074-48b7-926a-59b9dd214dc6",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -762,14 +650,9 @@ class TestMoveOrganising:
 
     def test_it_returns_a_pydantic_class_for_one_athlete(self) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             )
         ]
@@ -788,14 +671,9 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -810,24 +688,15 @@ class TestMoveOrganising:
 
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_judges(self) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
                 judge_id="dave",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -846,14 +715,10 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="dave",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
                                         judge_id="dave",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -862,14 +727,9 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -884,24 +744,15 @@ class TestMoveOrganising:
 
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_runs(self) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                 run_number="2",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
@@ -920,14 +771,9 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -941,14 +787,10 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -965,39 +807,28 @@ class TestMoveOrganising:
         self,
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                 run_number="2",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
         ]
         got = organise_moves_by_athlete_run_judge(
@@ -1015,23 +846,17 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1043,23 +868,18 @@ class TestMoveOrganising:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1088,23 +908,17 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1116,14 +930,10 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -1200,23 +1010,17 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1228,14 +1032,10 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -1322,23 +1122,17 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1350,14 +1144,10 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
@@ -1432,39 +1222,28 @@ class TestAthleteScoreCalculation:
         self,
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                run_number="1",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
-            PydanticScoredMovesResponse(
+            _move(
                 id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                 run_number="2",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                judge_id="meg",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                 direction="B",
             ),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
-            PydanticScoredBonusesResponse(
+            _bonus(
                 id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                 move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                 bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                judge_id="meg",
             ),
         ]
         got = organise_moves_by_athlete_run_judge(
@@ -1482,23 +1261,17 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1510,23 +1283,18 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1553,92 +1321,68 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             ),
                             JudgeMoves(
                                 judge_id="josh",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             ),
                             JudgeMoves(
                                 judge_id="Ibbo",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             ),
                             JudgeMoves(
                                 judge_id="Jon",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             ),
@@ -1716,23 +1460,17 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                                        run_number="1",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],
                                 scored_bonuses=[
-                                    PydanticScoredBonusesResponse(
+                                    _bonus(
                                         id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
                                         move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
                                         bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                        judge_id="meg",
                                     )
                                 ],
                             )
@@ -1744,14 +1482,10 @@ class TestAthleteScoreCalculation:
                             JudgeMoves(
                                 judge_id="meg",
                                 scored_moves=[
-                                    PydanticScoredMovesResponse(
+                                    _move(
                                         id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
                                         move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                                         run_number="2",
-                                        phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                                        judge_id="meg",
-                                        athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
                                         direction="B",
                                     )
                                 ],

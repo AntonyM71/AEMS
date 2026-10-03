@@ -1,4 +1,6 @@
 import uuid
+from collections.abc import Iterator
+from types import SimpleNamespace
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pandas as pd
@@ -14,6 +16,18 @@ from app.competition_management.create_competition_from_xlsx import (
     validate_columns_and_data_types,
 )
 
+MODULE = "app.competition_management.create_competition_from_xlsx"
+SCORESHEET_ID = "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"
+ADAPTER_NAMES = [
+    "post_competition",
+    "get_scoresheets",
+    "post_event",
+    "post_phase",
+    "post_heat",
+    "post_athlete",
+    "post_athlete_heat",
+]
+
 TEST_UUIDS_COUNT = 0
 
 
@@ -21,6 +35,10 @@ def mock_uuid() -> uuid.UUID:
     global TEST_UUIDS_COUNT
     TEST_UUIDS_COUNT += 1
     return uuid.UUID(int=TEST_UUIDS_COUNT)
+
+
+def uid(n: int) -> str:
+    return str(uuid.UUID(int=n))
 
 
 # Reset before each test
@@ -44,1091 +62,202 @@ def test_df() -> pd.DataFrame:
     )
 
 
-class TestScoring:
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
+@pytest.fixture
+def adapters() -> Iterator[SimpleNamespace]:
+    mocks = {}
+    patchers = [patch(f"{MODULE}.{name}") for name in ADAPTER_NAMES]
+    manager = patch(f"{MODULE}.transaction_session_context_manager")
+    uuid_patcher = patch.object(uuid, "uuid4", side_effect=mock_uuid)
+    for name, patcher in zip(ADAPTER_NAMES, patchers, strict=True):
+        mocks[name] = patcher.start()
+    manager.start().return_value.__enter__.return_value = MagicMock()
+    uuid_patcher.start()
+    mocks["get_scoresheets"].return_value = [{"name": "icf", "id": SCORESHEET_ID}]
+    yield SimpleNamespace(**mocks)
+    patch.stopall()
+
+
+def single(item: dict) -> object:
+    return call([item], db=ANY)
+
+
+def assert_competition_events_and_phases(adapters: SimpleNamespace) -> None:
+    adapters.post_competition.assert_called_once_with(
+        [{"name": "test_comp", "id": uid(1)}], db=ANY
     )
+    assert adapters.get_scoresheets.call_count == 1
+    events = [(2, "Senior Elite C1M"), (4, "Senior Intermediate K1M")]
+    events.append((6, "Junior Elite K1W"))
+    for event_id, name in events:
+        assert (
+            single({"name": name, "id": uid(event_id), "competition_id": uid(1)})
+            in adapters.post_event.call_args_list
+        )
+    adapters.post_phase.assert_has_calls(
+        [
+            single(
+                {
+                    "name": "Prelim",
+                    "id": uid(phase_id),
+                    "event_id": uid(phase_id - 1),
+                    "number_of_runs": 1,
+                    "number_of_runs_for_score": 1,
+                    "scoresheet": SCORESHEET_ID,
+                    "number_of_judges": 2,
+                }
+            )
+            for phase_id in (3, 5, 7)
+        ],
+        any_order=True,
+    )
+
+
+ATHLETES = [
+    # (id, first_name, last_name, bib, affiliation)
+    (9, "James", "Wilkinson", "1", "England"),
+    (11, "John", "Hutchinson", "126", "England"),
+    (13, "Elizabeth", "Taylor", "110", "England"),
+    (15, "Connor", "Keegan", "91", "Scotland"),
+    (17, "James", "Blunt", "99", "Wales"),
+]
+ATHLETE_PHASES = [3, 5, 7, 5, 5]
+
+
+def assert_athletes_and_heats(
+    adapters: SimpleNamespace,
+    *,
+    affiliated: bool = True,
+    last_phase_ranks: list[int | None] | None = None,
+) -> None:
+    ranks = last_phase_ranks or [None] * len(ATHLETES)
+    adapters.post_heat.assert_called_with(
+        [{"name": "Heat 1", "id": ANY, "competition_id": ANY}], db=ANY
+    )
+    adapters.post_athlete.assert_has_calls(
+        [
+            single(
+                {
+                    "id": uid(athlete_id),
+                    "first_name": first,
+                    "last_name": last,
+                    "bib": bib,
+                    "affiliation": affiliation if affiliated else None,
+                }
+            )
+            for athlete_id, first, last, bib, affiliation in ATHLETES
+        ],
+        any_order=True,
+    )
+    assert adapters.post_athlete_heat.call_count == len(ATHLETES)
+    adapters.post_athlete_heat.assert_has_calls(
+        [
+            single(
+                {
+                    "id": uid(athlete_id + 1),
+                    "heat_id": uid(8),
+                    "athlete_id": uid(athlete_id),
+                    "phase_id": uid(phase_id),
+                    "last_phase_rank": rank,
+                }
+            )
+            for (athlete_id, *_), phase_id, rank in zip(
+                ATHLETES, ATHLETE_PHASES, ranks, strict=True
+            )
+        ],
+        any_order=True,
+    )
+
+
+class TestScoring:
     def test_it_raises_an_error_if_the_scoresheet_does_not_exist(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        test_df,  # noqa: ANN001
+        adapters: SimpleNamespace,
+        test_df: pd.DataFrame,
     ) -> None:
-        # Set up the mock context manager
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
-
-        mock_get_scoresheets.return_value([])
+        adapters.get_scoresheets.return_value = [{"name": "other", "id": "x"}]
         with pytest.raises(ScoresheetWithSpecifiedNameDoesNotExistError):
             process_competitors_df(test_df, "test_comp")
-        mock_post_competition.assert_called_once_with(
+        adapters.post_competition.assert_called_once_with(
             [{"name": "test_comp", "id": ANY}], db=ANY
         )
-        mock_get_scoresheets.assert_called_once_with(db=ANY)
+        adapters.get_scoresheets.assert_called_once_with(db=ANY)
 
-    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
-    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
-    @patch("app.competition_management.create_competition_from_xlsx.post_event")
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
-    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        mock_post_event,  # noqa: ANN001
-        mock_post_phase,  # noqa: ANN001
-        mock_post_heat,  # noqa: ANN001
-        mock_post_athlete,  # noqa: ANN001
-        mock_post_athlete_heat,  # noqa: ANN001
-        mock_uuid,  # noqa: ANN001
-        test_df,  # noqa: ANN001
+        adapters: SimpleNamespace,
+        test_df: pd.DataFrame,
     ) -> None:
-        # Set up the mock context manager
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
-        mock_get_scoresheets.return_value = [
-            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
-        ]
-
         process_competitors_df(test_df, "test_comp")
-        mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}],
-            db=ANY,
-        )
-        assert mock_get_scoresheets.call_count == 1
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Elite C1M",
-                        "id": "00000000-0000-0000-0000-000000000002",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Intermediate K1M",
-                        "id": "00000000-0000-0000-0000-000000000004",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Junior Elite K1W",
-                        "id": "00000000-0000-0000-0000-000000000006",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        mock_post_heat.assert_called_with(
-            [{"name": "Heat 1", "id": ANY, "competition_id": ANY}], db=ANY
-        )
-        mock_post_phase.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000003",
-                            "event_id": "00000000-0000-0000-0000-000000000002",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000005",
-                            "event_id": "00000000-0000-0000-0000-000000000004",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000007",
-                            "event_id": "00000000-0000-0000-0000-000000000006",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        mock_post_athlete.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000009",
-                            "first_name": "James",
-                            "last_name": "Wilkinson",
-                            "bib": "1",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000b",
-                            "first_name": "John",
-                            "last_name": "Hutchinson",
-                            "bib": "126",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000d",
-                            "first_name": "Elizabeth",
-                            "last_name": "Taylor",
-                            "bib": "110",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000f",
-                            "first_name": "Connor",
-                            "last_name": "Keegan",
-                            "bib": "91",
-                            "affiliation": "Scotland",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000011",
-                            "first_name": "James",
-                            "last_name": "Blunt",
-                            "bib": "99",
-                            "affiliation": "Wales",
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        assert mock_post_athlete_heat.call_count == 5
-        mock_post_athlete_heat.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000a",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000009",
-                            "phase_id": "00000000-0000-0000-0000-000000000003",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000c",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000b",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000e",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000d",
-                            "phase_id": "00000000-0000-0000-0000-000000000007",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000010",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000f",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000012",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000011",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
+        assert_competition_events_and_phases(adapters)
+        assert_athletes_and_heats(adapters)
 
-    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
-    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
-    @patch("app.competition_management.create_competition_from_xlsx.post_event")
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
-    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_without_affiliations(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        mock_post_event,  # noqa: ANN001
-        mock_post_phase,  # noqa: ANN001
-        mock_post_heat,  # noqa: ANN001
-        mock_post_athlete,  # noqa: ANN001
-        mock_post_athlete_heat,  # noqa: ANN001
-        mock_uuid,  # noqa: ANN001
-        test_df,  # noqa: ANN001
+        adapters: SimpleNamespace,
+        test_df: pd.DataFrame,
     ) -> None:
-        # Set up the mock context manager
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
+        process_competitors_df(test_df.drop(columns="affiliation"), "test_comp")
+        assert_competition_events_and_phases(adapters)
+        assert_athletes_and_heats(adapters, affiliated=False)
 
-        mock_get_scoresheets.return_value = [
-            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
-        ]
-
-        no_affiliation_test_df = test_df.drop(columns="affiliation")
-        process_competitors_df(no_affiliation_test_df, "test_comp")
-        mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}],
-            db=ANY,
-        )
-        assert mock_get_scoresheets.call_count == 1
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Elite C1M",
-                        "id": "00000000-0000-0000-0000-000000000002",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Intermediate K1M",
-                        "id": "00000000-0000-0000-0000-000000000004",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Junior Elite K1W",
-                        "id": "00000000-0000-0000-0000-000000000006",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        mock_post_heat.assert_called_with(
-            [{"name": "Heat 1", "id": ANY, "competition_id": ANY}], db=ANY
-        )
-        mock_post_phase.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000003",
-                            "event_id": "00000000-0000-0000-0000-000000000002",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000005",
-                            "event_id": "00000000-0000-0000-0000-000000000004",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000007",
-                            "event_id": "00000000-0000-0000-0000-000000000006",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        mock_post_athlete.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000009",
-                            "first_name": "James",
-                            "last_name": "Wilkinson",
-                            "bib": "1",
-                            "affiliation": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000b",
-                            "first_name": "John",
-                            "last_name": "Hutchinson",
-                            "bib": "126",
-                            "affiliation": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000d",
-                            "first_name": "Elizabeth",
-                            "last_name": "Taylor",
-                            "bib": "110",
-                            "affiliation": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000f",
-                            "first_name": "Connor",
-                            "last_name": "Keegan",
-                            "bib": "91",
-                            "affiliation": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000011",
-                            "first_name": "James",
-                            "last_name": "Blunt",
-                            "bib": "99",
-                            "affiliation": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        assert mock_post_athlete_heat.call_count == 5
-        mock_post_athlete_heat.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000a",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000009",
-                            "phase_id": "00000000-0000-0000-0000-000000000003",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000c",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000b",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000e",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000d",
-                            "phase_id": "00000000-0000-0000-0000-000000000007",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000010",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000f",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000012",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000011",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-
-    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
-    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
-    @patch("app.competition_management.create_competition_from_xlsx.post_event")
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
-    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_with_last_phase_ranks(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        mock_post_event,  # noqa: ANN001
-        mock_post_phase,  # noqa: ANN001
-        mock_post_heat,  # noqa: ANN001
-        mock_post_athlete,  # noqa: ANN001
-        mock_post_athlete_heat,  # noqa: ANN001
-        mock_uuid,  # noqa: ANN001
-        test_df,  # noqa: ANN001
+        adapters: SimpleNamespace,
+        test_df: pd.DataFrame,
     ) -> None:
-        # Set up the mock context manager
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
-        mock_get_scoresheets.return_value = [
-            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
-        ]
-
         test_df["last_phase_rank"] = pd.Series([1, 2, 3, 4, 5])
         process_competitors_df(test_df, "test_comp")
-        mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}],
-            db=ANY,
-        )
-        assert mock_get_scoresheets.call_count == 1
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Elite C1M",
-                        "id": "00000000-0000-0000-0000-000000000002",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Intermediate K1M",
-                        "id": "00000000-0000-0000-0000-000000000004",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Junior Elite K1W",
-                        "id": "00000000-0000-0000-0000-000000000006",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        mock_post_heat.assert_called_with(
-            [{"name": "Heat 1", "id": ANY, "competition_id": ANY}], db=ANY
-        )
-        mock_post_phase.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000003",
-                            "event_id": "00000000-0000-0000-0000-000000000002",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000005",
-                            "event_id": "00000000-0000-0000-0000-000000000004",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000007",
-                            "event_id": "00000000-0000-0000-0000-000000000006",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        mock_post_athlete.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000009",
-                            "first_name": "James",
-                            "last_name": "Wilkinson",
-                            "bib": "1",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000b",
-                            "first_name": "John",
-                            "last_name": "Hutchinson",
-                            "bib": "126",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000d",
-                            "first_name": "Elizabeth",
-                            "last_name": "Taylor",
-                            "bib": "110",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000f",
-                            "first_name": "Connor",
-                            "last_name": "Keegan",
-                            "bib": "91",
-                            "affiliation": "Scotland",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000011",
-                            "first_name": "James",
-                            "last_name": "Blunt",
-                            "bib": "99",
-                            "affiliation": "Wales",
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        assert mock_post_athlete_heat.call_count == 5
-        mock_post_athlete_heat.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000a",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000009",
-                            "phase_id": "00000000-0000-0000-0000-000000000003",
-                            "last_phase_rank": 1,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000c",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000b",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-00000000000e",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000d",
-                            "phase_id": "00000000-0000-0000-0000-000000000007",
-                            "last_phase_rank": 3,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000010",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-00000000000f",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": 4,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": "00000000-0000-0000-0000-000000000012",
-                            "heat_id": "00000000-0000-0000-0000-000000000008",
-                            "athlete_id": "00000000-0000-0000-0000-000000000011",
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": 5,
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
+        assert_competition_events_and_phases(adapters)
+        assert_athletes_and_heats(adapters, last_phase_ranks=[1, 2, 3, 4, 5])
 
-    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
-    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
-    @patch("app.competition_management.create_competition_from_xlsx.post_event")
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
-    )
     def test_it_calls_the_database_adapters_correctly_with_a_valid_spreadsheet_and_random_heats(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        mock_post_event,  # noqa: ANN001
-        mock_post_phase,  # noqa: ANN001
-        mock_post_heat,  # noqa: ANN001
-        mock_post_athlete,  # noqa: ANN001
-        mock_post_athlete_heat,  # noqa: ANN001
-        mock_uuid,  # noqa: ANN001
-        test_df,  # noqa: ANN001
+        adapters: SimpleNamespace,
+        test_df: pd.DataFrame,
     ) -> None:
-        # Set up the mock context manager
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
-        mock_get_scoresheets.return_value = [
-            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
-        ]
         process_competitors_df(
             test_df, "test_comp", random_heats=True, number_of_random_heats=3
         )
-        mock_post_competition.assert_called_once_with(
-            [{"name": "test_comp", "id": "00000000-0000-0000-0000-000000000001"}],
-            db=ANY,
+        assert_competition_events_and_phases(adapters)
+        adapters.post_heat.assert_called_with(
+            [{"name": ANY, "id": ANY, "competition_id": uid(1)}], db=ANY
         )
-        assert mock_get_scoresheets.call_count == 1
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Elite C1M",
-                        "id": "00000000-0000-0000-0000-000000000002",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Senior Intermediate K1M",
-                        "id": "00000000-0000-0000-0000-000000000004",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        assert (
-            call(
-                [
-                    {
-                        "name": "Junior Elite K1W",
-                        "id": "00000000-0000-0000-0000-000000000006",
-                        "competition_id": "00000000-0000-0000-0000-000000000001",
-                    }
-                ],
-                db=ANY,
-            )
-            in mock_post_event.call_args_list
-        )
-        mock_post_heat.assert_called_with(
+        adapters.post_athlete.assert_has_calls(
             [
-                {
-                    "name": ANY,
-                    "id": ANY,
-                    "competition_id": "00000000-0000-0000-0000-000000000001",
-                }
-            ],
-            db=ANY,
-        )
-        mock_post_phase.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000003",
-                            "event_id": "00000000-0000-0000-0000-000000000002",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000005",
-                            "event_id": "00000000-0000-0000-0000-000000000004",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "name": "Prelim",
-                            "id": "00000000-0000-0000-0000-000000000007",
-                            "event_id": "00000000-0000-0000-0000-000000000006",
-                            "number_of_runs": 1,
-                            "number_of_runs_for_score": 1,
-                            "scoresheet": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a",
-                            "number_of_judges": 2,
-                        }
-                    ],
-                    db=ANY,
-                ),
+                single(
+                    {
+                        "id": ANY,
+                        "first_name": first,
+                        "last_name": last,
+                        "bib": bib,
+                        "affiliation": affiliation,
+                    }
+                )
+                for _, first, last, bib, affiliation in ATHLETES
             ],
             any_order=True,
         )
-        mock_post_athlete.assert_has_calls(
+        assert adapters.post_athlete_heat.call_count == len(ATHLETES)
+        adapters.post_athlete_heat.assert_has_calls(
             [
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "first_name": "James",
-                            "last_name": "Blunt",
-                            "bib": "99",
-                            "affiliation": "Wales",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "first_name": "Elizabeth",
-                            "last_name": "Taylor",
-                            "bib": "110",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "first_name": "Connor",
-                            "last_name": "Keegan",
-                            "bib": "91",
-                            "affiliation": "Scotland",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "first_name": "James",
-                            "last_name": "Wilkinson",
-                            "bib": "1",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "first_name": "John",
-                            "last_name": "Hutchinson",
-                            "bib": "126",
-                            "affiliation": "England",
-                        }
-                    ],
-                    db=ANY,
-                ),
-            ],
-            any_order=True,
-        )
-        assert mock_post_athlete_heat.call_count == 5
-        mock_post_athlete_heat.assert_has_calls(
-            [
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "heat_id": ANY,
-                            "athlete_id": ANY,
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "heat_id": ANY,
-                            "athlete_id": ANY,
-                            "phase_id": "00000000-0000-0000-0000-000000000007",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
-                # call(
-                #     [
-                #         {
-                #             "id": ANY,
-                #             "heat_id": ANY,
-                #             "athlete_id": ANY,
-                #             "phase_id": "00000000-0000-0000-0000-000000000003",
-                #             "last_phase_rank": None,
-                #         }
-                #     ],
-                #     ANY,
-                # ),
-                call(
-                    [
-                        {
-                            "id": ANY,
-                            "heat_id": ANY,
-                            "athlete_id": ANY,
-                            "phase_id": "00000000-0000-0000-0000-000000000005",
-                            "last_phase_rank": None,
-                        }
-                    ],
-                    db=ANY,
-                ),
+                single(
+                    {
+                        "id": ANY,
+                        "heat_id": ANY,
+                        "athlete_id": ANY,
+                        "phase_id": uid(phase_id),
+                        "last_phase_rank": None,
+                    }
+                )
+                for phase_id in (5, 7, 5)
             ],
             any_order=True,
         )
 
-    @patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_athlete")
-    @patch("app.competition_management.create_competition_from_xlsx.post_heat")
-    @patch("app.competition_management.create_competition_from_xlsx.post_phase")
-    @patch("app.competition_management.create_competition_from_xlsx.post_event")
-    @patch("app.competition_management.create_competition_from_xlsx.get_scoresheets")
-    @patch("app.competition_management.create_competition_from_xlsx.post_competition")
-    @patch(
-        "app.competition_management.create_competition_from_xlsx.transaction_session_context_manager"
-    )
     def test_it_skips_a_row_whose_event_does_not_resolve_without_creating_an_orphaned_athlete(
         self,
-        mock_transaction_manager,  # noqa: ANN001
-        mock_post_competition,  # noqa: ANN001
-        mock_get_scoresheets,  # noqa: ANN001
-        mock_post_event,  # noqa: ANN001
-        mock_post_phase,  # noqa: ANN001
-        mock_post_heat,  # noqa: ANN001
-        mock_post_athlete,  # noqa: ANN001
-        mock_post_athlete_heat,  # noqa: ANN001
-        mock_uuid,  # noqa: ANN001
+        adapters: SimpleNamespace,
     ) -> None:
-        mock_session = MagicMock()
-        mock_transaction_manager.return_value.__enter__.return_value = mock_session
-        mock_get_scoresheets.return_value = [
-            {"name": "icf", "id": "6766bbc3-cab2-4efd-adf6-a7b453f0a37a"}
-        ]
-
         # Trailing whitespace on the Event value means event_phase_map's key
         # (built from the raw column) never matches the stripped lookup.
         mismatched_event_df = pd.DataFrame(
@@ -1149,8 +278,8 @@ class TestScoring:
                 "reason": "Event 'Senior Elite C1M ' not found",
             }
         ]
-        mock_post_athlete.assert_not_called()
-        mock_post_athlete_heat.assert_not_called()
+        adapters.post_athlete.assert_not_called()
+        adapters.post_athlete_heat.assert_not_called()
 
 
 MANDATORY_COLUMNS = ["first_name", "last_name", "bib", "Event"]
