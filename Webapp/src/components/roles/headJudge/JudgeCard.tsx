@@ -8,7 +8,7 @@ import {
 	useGetManyAvailablemovesGetQuery
 } from "../../../redux/services/aemsApi"
 import { AthleteInfo, CurrentScore } from "../scribe/InfoBar"
-import ScoredMove, { AvailableBonusType } from "../scribe/InfoBar/ScoredMove"
+import ScoredMove from "../scribe/InfoBar/ScoredMove"
 import {
 	convertListToScoredBonusType,
 	convertListToScoredMovesType,
@@ -75,9 +75,7 @@ export const JudgeCard = ({
 								availableMoves={
 									availableMoves.data as movesType[]
 								}
-								availableBonuses={
-									availableBonuses.data as AvailableBonusType[]
-								}
+								availableBonuses={availableBonuses.data}
 								chipActionsDisabled={true}
 							/>
 						</Grid>

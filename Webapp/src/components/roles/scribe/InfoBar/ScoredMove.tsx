@@ -8,6 +8,7 @@ import {
 	updateScoredBonuses,
 	updateScoredMoves
 } from "../../../../redux/atoms/scoring"
+import { AvailableBonusesResponse } from "../../../../redux/services/aemsApi"
 import { sortBonuses } from "../../../ScoresheetBuilder/ScoresheetBuilder"
 import { BonusChip } from "../BonusChip"
 import {
@@ -128,13 +129,6 @@ const ScoredMove = React.memo(
 	}
 )
 
-export interface AvailableBonusType {
-	id: string
-	sheet_id: string
-	move_id: string
-	name: string
-	score: number
-	display_order?: number | null
-}
+export type AvailableBonusType = AvailableBonusesResponse
 
 export default ScoredMove

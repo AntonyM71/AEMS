@@ -41,6 +41,12 @@ export const InfoBar = ({
 	const [open, setOpen] = React.useState(false)
 
 	const scoredMoves = useSelector(getScoredMoves)
+	const { data: availableBonuses } = useGetManyAvailablebonusesGetQuery(
+		{
+			sheetIdList: [paddlerInfo.scoresheet]
+		},
+		{ refetchOnReconnect: true }
+	)
 
 	const handleOpen = () => setOpen(true)
 	const handleClose = () => setOpen(false)
@@ -78,7 +84,7 @@ export const InfoBar = ({
 				<Grid size={3}>
 					<CurrentScoreCalculation
 						availableMoves={availableMoves}
-						scoresheet={paddlerInfo.scoresheet}
+						availableBonuses={availableBonuses}
 					/>
 				</Grid>
 				<Grid size={6}>
@@ -98,7 +104,7 @@ export const InfoBar = ({
 						<ScoredMoveList
 							scoredMoves={scoredMoves}
 							availableMoves={availableMoves}
-							scoresheet={paddlerInfo.scoresheet}
+							availableBonuses={availableBonuses}
 							isRunLocked={isRunLocked}
 						/>
 					</Grid>
@@ -110,24 +116,18 @@ export const InfoBar = ({
 
 export const CurrentScoreCalculation = ({
 	availableMoves,
-	scoresheet
+	availableBonuses
 }: {
 	availableMoves: movesType[] | undefined
-	scoresheet: string
+	availableBonuses: AvailableBonusType[] | undefined
 }) => {
-	const bonusList = useGetManyAvailablebonusesGetQuery(
-		{
-			sheetIdList: [scoresheet]
-		},
-		{ refetchOnReconnect: true }
-	)
 	const scoredMoves = useSelector(getScoredMoves)
 	const scoredBonuses = useSelector(getScoredBonuses)
 	const currentScore = calculateSingleJudgeRunScore(
 		scoredMoves,
 		scoredBonuses,
 		availableMoves || [],
-		(bonusList.data as AvailableBonusType[]) || []
+		availableBonuses || []
 	)
 
 	return <CurrentScore currentScore={currentScore.score} />
@@ -150,23 +150,17 @@ export const CurrentScore = ({ currentScore }: { currentScore: number }) => (
 export const ScoredMoveList = ({
 	scoredMoves,
 	availableMoves,
-	scoresheet,
+	availableBonuses,
 	isRunLocked
 }: {
 	scoredMoves: scoredMovesType[]
 	availableMoves: movesType[] | undefined
-	scoresheet: string
+	availableBonuses: AvailableBonusType[] | undefined
 	isRunLocked?: boolean
 }) => {
 	const scoredBonuses = useSelector(getScoredBonuses)
-	const availableBonuses = useGetManyAvailablebonusesGetQuery(
-		{
-			sheetIdList: [scoresheet]
-		},
-		{ refetchOnReconnect: true }
-	)
 
-	if (!availableMoves || !availableBonuses.data) {
+	if (!availableMoves || !availableBonuses) {
 		return <Skeleton sx={{ width: "100%", height: "100%" }} />
 	}
 
@@ -194,9 +188,7 @@ export const ScoredMoveList = ({
 							scoredMovesList={scoredMoves}
 							scoredBonuses={scoredBonuses}
 							availableMoves={availableMoves}
-							availableBonuses={
-								availableBonuses.data as AvailableBonusType[]
-							}
+							availableBonuses={availableBonuses}
 							chipActionsDisabled={isRunLocked}
 						/>
 					</Grid>
@@ -237,4 +229,5 @@ export const getMaxNumberOfRunsInHeat = (
 export const isRunOutOfRangeForAthlete = (
 	selectedRun: number,
 	athlete?: { number_of_runs: number }
-) => Boolean(athlete?.number_of_runs && selectedRun + 1 > athlete.number_of_runs)
+) =>
+	Boolean(athlete?.number_of_runs && selectedRun + 1 > athlete.number_of_runs)
