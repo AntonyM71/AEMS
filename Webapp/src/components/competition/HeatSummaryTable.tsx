@@ -42,9 +42,7 @@ import { HandlePostResponse } from "../../utils/rtkQueryHelper"
 
 export const downloadHeatSummaryPDF = async (heats: string[]) => {
 	const searchParams = new URLSearchParams()
-	heats.map((h) => {
-		searchParams.append("heat_ids", h)
-	})
+	heats.forEach((h) => searchParams.append("heat_ids", h))
 	const response = await axios.get(
 		`${
 			process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"
