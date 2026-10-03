@@ -11,7 +11,8 @@ import { AthleteInfo, CurrentScore } from "../scribe/InfoBar"
 import ScoredMove from "../scribe/InfoBar/ScoredMove"
 import {
 	convertListToScoredBonusType,
-	convertListToScoredMovesType
+	convertListToScoredMovesType,
+	movesType
 } from "../scribe/Interfaces"
 
 interface JudgeCardProps {
@@ -31,13 +32,13 @@ export const JudgeCard = ({
 		{
 			sheetIdList: [selectedAthlete.scoresheet ?? ""]
 		},
-		{ skip: !selectedAthlete?.scoresheet }
+		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
 	)
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
 		},
-		{ skip: !selectedAthlete?.scoresheet }
+		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
 	)
 
 	const scoredMoves = convertListToScoredMovesType(
@@ -71,6 +72,10 @@ export const JudgeCard = ({
 								scoredBonuses={convertListToScoredBonusType(
 									moveAndBonusData.bonuses
 								)}
+								availableMoves={
+									availableMoves.data as movesType[]
+								}
+								availableBonuses={availableBonuses.data}
 								chipActionsDisabled={true}
 							/>
 						</Grid>

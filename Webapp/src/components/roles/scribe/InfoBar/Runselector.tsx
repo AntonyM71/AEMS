@@ -67,7 +67,10 @@ export const RunSelector = () => {
 						fontWeight={"fontWeightBold"}
 						variant="h5"
 						color={
-							isRunOutOfRangeForAthlete(selectedRun, selectedAthlete)
+							isRunOutOfRangeForAthlete(
+								selectedRun,
+								selectedAthlete
+							)
 								? "red"
 								: "default"
 						}

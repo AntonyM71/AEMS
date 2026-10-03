@@ -1,14 +1,13 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
-import { http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
-import { server } from "../../../../../mocks/server"
 import { renderWithProviders } from "../../../../../testUtils"
 import {
 	directionType,
 	scoredBonusType,
 	scoredMovesType
 } from "../../Interfaces"
-import ScoredMove from "../ScoredMove"
+import ScoredMove, { AvailableBonusType } from "../ScoredMove"
+import { movesType } from "../../../scribe/Interfaces"
 
 const mockScoredMove: scoredMovesType = {
 	id: "scored-move-1",
@@ -26,33 +25,25 @@ const mockScoredBonuses: scoredBonusType[] = [
 	}
 ]
 
+const mockAvailableMoves: movesType[] = [
+	{
+		id: "test-move-1",
+		name: "Test Move",
+		fl_score: 10,
+		rb_score: 20,
+		direction: "LR"
+	}
+]
+
 describe("ScoredMove", () => {
-	const mockMoveResponse = [
-		{
-			id: "test-move-1",
-			name: "Test Move",
-			fl_score: 10,
-			rb_score: 20,
-			direction: "LR",
-			sheet_id: "test-id"
-		}
-	]
-
-	beforeEach(() => {
-		// Default handler returns the move
-		server.use(
-			http.get("/api/availablemoves", () =>
-				HttpResponse.json(mockMoveResponse)
-			)
-		)
-	})
-
 	it("renders move details correctly", async () => {
 		renderWithProviders(
 			<ScoredMove
 				scoredMove={mockScoredMove}
 				scoredMovesList={mockScoredMovesList}
 				scoredBonuses={mockScoredBonuses}
+				availableMoves={mockAvailableMoves}
+				availableBonuses={[]}
 			/>
 		)
 
@@ -69,6 +60,8 @@ describe("ScoredMove", () => {
 				scoredMove={mockScoredMove}
 				scoredMovesList={mockScoredMovesList}
 				scoredBonuses={mockScoredBonuses}
+				availableMoves={mockAvailableMoves}
+				availableBonuses={[]}
 			/>
 		)
 
@@ -93,6 +86,8 @@ describe("ScoredMove", () => {
 				scoredMove={mockScoredMove}
 				scoredMovesList={mockScoredMovesList}
 				scoredBonuses={mockScoredBonuses}
+				availableMoves={mockAvailableMoves}
+				availableBonuses={[]}
 			/>,
 			{
 				preloadedState: {
@@ -120,7 +115,7 @@ describe("ScoredMove", () => {
 		expect(store.getState().score.scoredBonuses).toHaveLength(0)
 	})
 	it("renders and scores an available bonus for the move", async () => {
-		const mockBonusResponse = [
+		const mockBonusResponse: AvailableBonusType[] = [
 			{
 				id: "bonus-def-1",
 				sheet_id: "test-id",
@@ -129,17 +124,14 @@ describe("ScoredMove", () => {
 				score: 50
 			}
 		]
-		server.use(
-			http.get("/api/availablebonuses", () =>
-				HttpResponse.json(mockBonusResponse)
-			)
-		)
 
 		const { store } = renderWithProviders(
 			<ScoredMove
 				scoredMove={mockScoredMove}
 				scoredMovesList={mockScoredMovesList}
 				scoredBonuses={[]}
+				availableMoves={mockAvailableMoves}
+				availableBonuses={mockBonusResponse}
 			/>
 		)
 
@@ -151,8 +143,8 @@ describe("ScoredMove", () => {
 		expect(bonusChip).toHaveTextContent("H")
 
 		// BonusChip's own toggle behavior is covered by BonusChip.test.tsx;
-		// this asserts ScoredMove correctly fetches and wires up the
-		// available bonus for this move so a click reaches the store.
+		// this asserts ScoredMove correctly wires up the available bonus for
+		// this move so a click reaches the store.
 		fireEvent.click(bonusChip)
 
 		await waitFor(() => {
@@ -171,6 +163,8 @@ describe("ScoredMove", () => {
 				scoredMove={mockScoredMove}
 				scoredMovesList={mockScoredMovesList}
 				scoredBonuses={mockScoredBonuses}
+				availableMoves={mockAvailableMoves}
+				availableBonuses={[]}
 				chipActionsDisabled={true}
 			/>
 		)
@@ -179,5 +173,20 @@ describe("ScoredMove", () => {
 		expect(
 			screen.queryByTestId("scored-remove-scored-move-1")
 		).not.toBeInTheDocument()
+	})
+
+	it('shows "Unknown" when the move is not on the loaded scoresheet', async () => {
+		renderWithProviders(
+			<ScoredMove
+				scoredMove={mockScoredMove}
+				scoredMovesList={mockScoredMovesList}
+				scoredBonuses={mockScoredBonuses}
+				availableMoves={[]}
+				availableBonuses={[]}
+			/>
+		)
+
+		expect(await screen.findByText("Unknown")).toBeInTheDocument()
+		expect(screen.queryByText("Test Move")).not.toBeInTheDocument()
 	})
 })

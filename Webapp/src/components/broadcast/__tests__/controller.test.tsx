@@ -84,9 +84,7 @@ describe("OverlayController", () => {
 			</Provider>
 		)
 		await waitFor(() =>
-			expect(
-				socketHub.openCount("broadcast_control")
-			).toBeGreaterThan(0)
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
 		)
 
 		// Precondition: the default (and the mount emit) has the logo ON, so
@@ -145,15 +143,11 @@ describe("OverlayController", () => {
 		await user.click(summaryButton)
 
 		// The arena, on its own separate store, shows the heat the operator picked.
-		expect(
-			await screen.findByText("Heat detail 1")
-		).toBeInTheDocument()
+		expect(await screen.findByText("Heat detail 1")).toBeInTheDocument()
 
 		await user.click(summaryButton)
 		await waitFor(() =>
-			expect(
-				screen.queryByText("Heat detail 1")
-			).not.toBeInTheDocument()
+			expect(screen.queryByText("Heat detail 1")).not.toBeInTheDocument()
 		)
 	})
 })

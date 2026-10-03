@@ -4,7 +4,6 @@ import EventSelector from "./EventSelector"
 import HeatsSelector from "./HeatSelector"
 import PhaseSelector from "./PhaseSelector"
 
-
 export const SelectorDisplay = ({
 	showDetailed = false,
 	showCompetition = true,

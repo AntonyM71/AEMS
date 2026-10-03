@@ -1,5 +1,7 @@
 export interface ServerClock {
-	calibrateFromFirstDateHeader: (dateHeader: string | null | undefined) => void
+	calibrateFromFirstDateHeader: (
+		dateHeader: string | null | undefined
+	) => void
 	correctedNow: () => number
 }
 

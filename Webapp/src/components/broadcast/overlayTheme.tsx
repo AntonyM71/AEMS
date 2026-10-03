@@ -225,7 +225,9 @@ export const lightTheme = createTheme({
 					// The scoreboard cards are capped to the width of their
 					// background frame; the event title fills the screen so its
 					// absolutely-positioned groups resolve against the viewport.
-					"&.AemsTableCard-root": { maxWidth: scoreboardCardMaxWidth },
+					"&.AemsTableCard-root": {
+						maxWidth: scoreboardCardMaxWidth
+					},
 					"&.AemsEventTitle-root": {
 						width: "100%",
 						height: "100%",

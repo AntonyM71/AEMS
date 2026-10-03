@@ -22,7 +22,7 @@ describe("MakeHeatPDFs", () => {
 	beforeEach(() => {
 		requestedHeatIds = []
 		global.URL.createObjectURL = jest.fn(() => "mock-url")
-		window.open = jest.fn(() => ({ location: { href: "" } }) as Window)
+		window.open = jest.fn(() => ({ location: { href: "" } } as Window))
 		server.use(
 			http.get("/api/heat", () =>
 				HttpResponse.json([
