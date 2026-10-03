@@ -4,22 +4,16 @@ import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
-import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
 import IconButton from "@mui/material/IconButton"
-import InputLabel from "@mui/material/InputLabel"
-import MenuItem from "@mui/material/MenuItem"
-import Paper from "@mui/material/Paper"
-import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Skeleton from "@mui/material/Skeleton"
 import TextField from "@mui/material/TextField"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
-import { Fragment, useState } from "react"
+import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { v4 as uuid4 } from "uuid"
 
-import Stack from "@mui/material/Stack"
 import {
 	getSelectedCompetition,
 	getSelectedEvent,
@@ -34,7 +28,7 @@ import {
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-import { RefreshButton } from "./RefreshIconButton"
+import { SelectorPanel } from "./SelectorPanel"
 import { SelectScoresheet } from "./ScoresheetSelector"
 
 const PhasesSelector = ({
@@ -46,11 +40,8 @@ const PhasesSelector = ({
 	const handleClose = () => setOpen(false)
 	const dispatch = useDispatch()
 	const selectedEvent = useSelector(getSelectedEvent)
-	const setSelectedPhase = (newPhase: string) =>
-		dispatch(updateSelectedPhase(newPhase))
 	const selectedPhase = useSelector(getSelectedPhase)
 
-	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
 	const { data, isLoading, isSuccess, refetch } =
 		useGetManyByPkFromPhaseEventEventPkIdPhaseGetQuery(
 			{
@@ -60,9 +51,9 @@ const PhasesSelector = ({
 			{ skip: !selectedEvent, refetchOnMountOrArgChange: true }
 		)
 
-	const onSelect = (event: SelectChangeEvent<string>) => {
-		resetSelectedPhase()
-		setSelectedPhase(event.target.value)
+	const onSelect = (newPhase: string) => {
+		dispatch(updateSelectedPhase(""))
+		dispatch(updateSelectedPhase(newPhase))
 	}
 	if (!selectedEvent) {
 		return <></>
@@ -74,96 +65,46 @@ const PhasesSelector = ({
 				data-testid="phase-selector-loading"
 			/>
 		)
-	} else if (!isSuccess) {
-		return <h4>Failed to get data from the server</h4>
-	} else if (!data) {
-		return (
-			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Stack
-					direction="row"
-					sx={{
-						alignItems: "center"
-					}}
-				>
-					<RefreshButton refetch={refetch} />
-					<h4>No phases in event</h4>
-				</Stack>
-
-				<AddPhase refetch={refetch} />
-			</Paper>
-		)
-	} else if (data) {
-		return (
-			<Paper sx={{ padding: "1em" }}>
-				<EditPhaseDialog
-					refetch={refetch}
-					open={open}
-					handleClose={handleClose}
-					selectedPhase={selectedPhase}
-				/>
-				<Grid container spacing={2}>
-					{showDetailed ? (
-						<Grid size={12}>
-							<h4>Select a Phase</h4>
-						</Grid>
-					) : (
-						<></>
-					)}
-					<Grid size={12}>
-						<FormControl fullWidth={true}>
-							<InputLabel id="phase-select-label">
-								Select Phase
-							</InputLabel>
-
-							<Select
-								labelId="phase-select-label"
-								data-testid="phase-select"
-								value={selectedPhase}
-								onChange={onSelect}
-								variant="outlined"
-								startAdornment={
-									<RefreshButton refetch={refetch} />
-								}
-								endAdornment={
-									showDetailed && selectedPhase ? (
-										<Tooltip title="Edit Selected Phase">
-											<IconButton
-												aria-label="Edit selected phase"
-												onClick={() => setOpen(true)}
-											>
-												<EditNoteIcon />
-											</IconButton>
-										</Tooltip>
-									) : undefined
-								}
-							>
-								{data.map((Phase) => (
-									<MenuItem
-										key={Phase.id}
-										value={Phase.id}
-										data-testid={`phase-option-${
-											Phase.id ?? ""
-										}`}
-									>
-										{Phase.name}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
-					{showDetailed ? (
-						<Grid>
-							<AddPhase refetch={refetch} />
-						</Grid>
-					) : (
-						<></>
-					)}
-				</Grid>
-			</Paper>
-		)
-	} else {
-		return <Fragment>No Phases Available</Fragment>
 	}
+
+	return (
+		<>
+			<EditPhaseDialog
+				refetch={refetch}
+				open={open}
+				handleClose={handleClose}
+				selectedPhase={selectedPhase}
+			/>
+			<SelectorPanel
+				entityLabel="Phase"
+				items={(data ?? []).map((phase) => ({
+					id: phase.id ?? "",
+					name: phase.name ?? ""
+				}))}
+				selectedValue={selectedPhase}
+				onSelect={onSelect}
+				isLoading={false}
+				isError={!isSuccess}
+				refetch={refetch}
+				showDetailed={showDetailed}
+				emptyMessage="No phases in event"
+				selectTestId="phase-select"
+				addForm={<AddPhase refetch={refetch} />}
+				endAdornment={
+					showDetailed && selectedPhase ? (
+						<Tooltip title="Edit Selected Phase">
+							<IconButton
+								aria-label="Edit selected phase"
+								onClick={() => setOpen(true)}
+							>
+								<EditNoteIcon />
+							</IconButton>
+						</Tooltip>
+					) : undefined
+				}
+			/>
+		</>
+	)
 }
 
 const EditPhaseDialog = ({

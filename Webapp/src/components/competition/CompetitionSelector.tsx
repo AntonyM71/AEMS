@@ -1,12 +1,5 @@
 import Divider from "@mui/material/Divider"
-import FormControl from "@mui/material/FormControl"
 import Grid from "@mui/material/Grid2"
-import InputLabel from "@mui/material/InputLabel"
-import MenuItem from "@mui/material/MenuItem"
-import Paper from "@mui/material/Paper"
-import Select, { SelectChangeEvent } from "@mui/material/Select"
-import Skeleton from "@mui/material/Skeleton"
-import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
@@ -24,13 +17,12 @@ import {
 	useInsertManyCompetitionPostMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
-import { RefreshButton } from "./RefreshIconButton"
+import { SelectorPanel } from "./SelectorPanel"
 export const CompetitionSelector = ({
 	showDetailed = false
 }: {
 	showDetailed?: boolean
 }) => {
-	// const competitions = getCompetitions()
 	const dispatch = useDispatch()
 
 	const { data, isLoading, error, refetch } = useGetManyCompetitionGetQuery(
@@ -39,87 +31,31 @@ export const CompetitionSelector = ({
 	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
 
-	const setSelectedCompetition = (newComp: string) =>
+	const handleSelect = (newComp: string) => {
+		dispatch(updateSelectedHeat(""))
+		dispatch(updateSelectedEvent(""))
+		dispatch(updateSelectedPhase(""))
 		dispatch(updateSelectedCompetition(newComp))
-	const resetSelectedPhase = () => dispatch(updateSelectedPhase(""))
-	const resetSelectedEvent = () => dispatch(updateSelectedEvent(""))
-	const resetSelectedHeat = () => dispatch(updateSelectedHeat(""))
-	const handleSelect = (event: SelectChangeEvent<string>) => {
-		resetSelectedHeat()
-		resetSelectedEvent()
-		resetSelectedPhase()
+	}
 
-		setSelectedCompetition(event.target.value)
-	}
-	if (error) {
-		return <h4>Failed to get data from the server</h4>
-	} else if (isLoading) {
-		return <Skeleton variant="rectangular" data-testid="loading-skeleton" />
-	} else if (!data || data.length === 0) {
-		return (
-			<Paper sx={{ padding: "1em" }}>
-				<Stack
-					direction="row"
-					sx={{
-						alignItems: "center"
-					}}
-				>
-					<RefreshButton refetch={refetch} />
-					<h4>No Competitions</h4>
-				</Stack>
-				<AddCompetition />
-			</Paper>
-		)
-	} else {
-		return (
-			<Paper sx={{ padding: "1em", height: "100%" }}>
-				<Grid container spacing={2}>
-					{showDetailed ? (
-						<Grid size={12}>
-							<h4>Select a Competition</h4>
-						</Grid>
-					) : (
-						<></>
-					)}
-					<Grid size={12}>
-						<FormControl fullWidth={true}>
-							<InputLabel>Select Competition</InputLabel>
-							<Select
-								value={selectedCompetition}
-								onChange={handleSelect}
-								variant="outlined"
-								fullWidth={true}
-								label="Competition"
-								startAdornment={
-									<RefreshButton refetch={refetch} />
-								}
-							>
-								{data.map((competition) => {
-									if (competition.id) {
-										return (
-											<MenuItem
-												key={competition.id}
-												value={competition.id}
-											>
-												{competition.name ?? ""}
-											</MenuItem>
-										)
-									}
-								})}
-							</Select>
-						</FormControl>
-					</Grid>
-					{showDetailed ? (
-						<Grid size={12}>
-							<AddCompetition />
-						</Grid>
-					) : (
-						<></>
-					)}
-				</Grid>
-			</Paper>
-		)
-	}
+	return (
+		<SelectorPanel
+			entityLabel="Competition"
+			items={(data ?? [])
+				.filter((c) => !!c.id)
+				.map((c) => ({ id: c.id ?? "", name: c.name ?? "" }))}
+			selectedValue={selectedCompetition}
+			onSelect={handleSelect}
+			isLoading={isLoading}
+			isError={!!error}
+			refetch={refetch}
+			showDetailed={showDetailed}
+			emptyMessage="No Competitions"
+			loadingTestId="loading-skeleton"
+			addForm={<AddCompetition />}
+			addFormGridSize={12}
+		/>
+	)
 }
 
 const AddCompetition = () => {
