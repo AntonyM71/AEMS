@@ -113,9 +113,13 @@ const countRequests = async (
 	if (emitSocketKey) {
 		emitSockets[emitSocketKey] ??= socket
 	}
-	socket.on(requestEvent, () => {
+	const countOne = () => {
 		updateCachedData((count) => count + 1)
-	})
+	}
+	socket.on(requestEvent, countOne)
+	// A display's request is lost if it lands before this socket reconnects,
+	// so treat our own (re)connect as a request too.
+	socket.on("connect", countOne)
 	await cacheEntryRemoved
 	if (emitSocketKey && emitSockets[emitSocketKey] === socket) {
 		emitSockets[emitSocketKey] = null

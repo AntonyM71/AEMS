@@ -2,7 +2,7 @@
 
 ## 1. Server relay
 
-- [x] 1.1 Add `head_judge_selection` (relay to all, sender included) and `request_head_judge_selection` (relay with `skip_sid`) handlers plus connect/disconnect logging on `/head_judge_selection` in `Server/app/broadcastEndpoints.py`. Verify with new cases in `Server/app/tests/test_broadcast_endpoints.py` asserting the exact `sio.emit` call for each.
+- [x] 1.1 Add `head_judge_selection` (relay to all, sender included) and `request_head_judge_selection` (relay with `skip_sid`) handlers on `/head_judge_selection` in `Server/app/broadcastEndpoints.py`. Verify with new cases in `Server/app/tests/test_broadcast_endpoints.py` asserting the exact `sio.emit` call for each.
 - [x] 1.2 Add a `request_broadcast_control` handler on `/broadcast_control` that relays with `skip_sid`. Verify with a test in the same file asserting `skip_sid="sender-sid"`.
 - [x] 1.3 Run `uv run ruff check .` and `uv run python -m pytest app/tests/test_broadcast_endpoints.py` from `Server/` and confirm both pass.
 

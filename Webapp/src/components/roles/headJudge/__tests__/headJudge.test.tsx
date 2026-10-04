@@ -532,6 +532,20 @@ describe("HeadJudge position publishing", () => {
 		)
 	})
 
+	it("re-sends its position when its own socket reconnects, in case a display's request was lost", async () => {
+		mountHeadJudge()
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+		const sentBeforeReconnect = positionsSent().length
+
+		act(() => {
+			socketHub.emit("head_judge_selection", "connect")
+		})
+
+		await waitFor(() =>
+			expect(positionsSent().length).toBeGreaterThan(sentBeforeReconnect)
+		)
+	})
+
 	it("publishes nothing from the read-only commentator view", async () => {
 		mountHeadJudge(false)
 		await screen.findByTestId("head-judge-page")

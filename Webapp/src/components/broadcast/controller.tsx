@@ -112,9 +112,10 @@ const OverlayController: React.FC = () => {
 		undefined,
 		{ skip: !followHeadJudge }
 	)
-	const displayedHeat = followHeadJudge
-		? headJudgePosition?.heatId
-		: overlayControlState.selectedHeat
+	const displayedHeat =
+		followHeadJudge && headJudgePosition
+			? headJudgePosition.heatId
+			: overlayControlState.selectedHeat
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,

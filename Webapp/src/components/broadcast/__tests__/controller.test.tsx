@@ -265,6 +265,39 @@ describe("OverlayController", () => {
 			)
 		})
 
+		it("shows the heat summary from the controller's own heat until a head judge position arrives", async () => {
+			const store = setupStore({
+				competitions: {
+					...competitionInitialState,
+					selectedCompetition: "comp-1",
+					selectedHeat: "heat-1"
+				}
+			})
+			render(
+				<Provider store={store}>
+					<OverlayController />
+				</Provider>
+			)
+			const user = userEvent.setup({ delay: null })
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+			await screen.findByTestId("followed-pickers")
+
+			await user.click(
+				screen.getByRole("button", { name: "Show Heat Summary Modal" })
+			)
+
+			await waitFor(() =>
+				expect(lastBroadcast()).toEqual(
+					expect.objectContaining({
+						followHeadJudge: true,
+						showHeatSummary: true
+					})
+				)
+			)
+		})
+
 		it("switching back to Manual re-enables every picker and turns following off", async () => {
 			const user = mountController()
 			await user.click(
