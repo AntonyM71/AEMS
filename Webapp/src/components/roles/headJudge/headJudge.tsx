@@ -69,19 +69,33 @@ export default ({
 
 	const handleListOpen = () => setListOpen(true)
 	const handleListClose = () => setListOpen(false)
-	const [selectedAthlete, setSelectedAthlete] = useState<
-		AthleteInfo | undefined
-	>(undefined)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedRun = useSelector(getSelectedRun)
-	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: selectedHeat
-		},
-		{ skip: !selectedHeat }
-	)
+	// currentData, not data: data still holds the previous heat's paddlers
+	// while a new heat loads, which would publish them under the new heat.
+	const { currentData: athleteData } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{
+				heatId: selectedHeat
+			},
+			{ skip: !selectedHeat }
+		)
+	const selectedAthlete = useMemo((): AthleteInfo | undefined => {
+		const athlete = athleteData?.[currentPaddlerIndex]
+
+		return (
+			athlete && {
+				id: athlete.athlete_id,
+				first_name: athlete.first_name,
+				last_name: athlete.last_name,
+				bib: athlete.bib,
+				scoresheet: athlete.scoresheet,
+				affiliation: athlete.affiliation
+			}
+		)
+	}, [athleteData, currentPaddlerIndex])
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
 		{
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
@@ -102,21 +116,6 @@ export default ({
 		},
 		{ skip: !selectedHeat || !selectedAthlete?.id }
 	)
-
-	useEffect(() => {
-		if (athleteData) {
-			setSelectedAthlete({
-				id: athleteData[currentPaddlerIndex].athlete_id,
-				first_name: athleteData[currentPaddlerIndex].first_name,
-				last_name: athleteData[currentPaddlerIndex].last_name,
-				bib: athleteData[currentPaddlerIndex].bib,
-				scoresheet: athleteData[currentPaddlerIndex].scoresheet,
-				affiliation: athleteData[currentPaddlerIndex].affiliation
-			})
-		} else {
-			setSelectedAthlete(undefined)
-		}
-	}, [currentPaddlerIndex, athleteData, selectedHeat])
 
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	// The commentator page reuses this screen read-only; only the real head

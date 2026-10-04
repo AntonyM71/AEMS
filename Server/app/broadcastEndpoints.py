@@ -31,7 +31,7 @@ async def on_broadcast_control(sid: str, data: dict) -> None:
 
 @sio.on("request_broadcast_control", namespace="/broadcast_control")
 async def on_request_broadcast_control(sid: str) -> None:
-    # Unlike the state relays, skip the sender so it never answers its own request.
+    # Unlike the state relays, skip the requesting socket: it only listens for state.
     await sio.emit(
         "request_broadcast_control", namespace="/broadcast_control", skip_sid=sid
     )
@@ -55,7 +55,7 @@ async def on_head_judge_selection(sid: str, data: dict) -> None:
 
 @sio.on("request_head_judge_selection", namespace="/head_judge_selection")
 async def on_request_head_judge_selection(sid: str) -> None:
-    # Unlike the state relays, skip the sender so it never answers its own request.
+    # Unlike the state relays, skip the requesting socket: it only listens for state.
     await sio.emit(
         "request_head_judge_selection",
         namespace="/head_judge_selection",

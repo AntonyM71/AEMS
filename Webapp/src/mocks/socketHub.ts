@@ -101,6 +101,11 @@ class SocketHub {
 
 	public reset(): void {
 		;(Object.keys(this.sockets) as SocketChannel[]).forEach((channel) => {
+			// streamingApi's emit registry can still hold a previous test's
+			// socket; marking it dead makes the next emit open a tracked one.
+			this.sockets[channel].forEach((socket) => {
+				socket.connected = false
+			})
 			this.sockets[channel] = []
 		})
 		this.echoing.clear()

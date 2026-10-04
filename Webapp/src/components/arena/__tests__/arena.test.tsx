@@ -217,18 +217,29 @@ describe("Arena", () => {
 			).toBeInTheDocument()
 		})
 
-		it("ignores the head judge in Manual mode", async () => {
-			renderWithProviders(<Arena />)
+		it("ignores the head judge's athlete and heat after returning to Manual", async () => {
+			await renderFollowingArena({
+				selectedHeat: "",
+				showHeatSummary: true
+			})
+			publishPosition()
+			expect(await screen.findByText("JONES")).toBeInTheDocument()
+			expect(await screen.findByText("Heat detail 2")).toBeInTheDocument()
+
+			broadcast({
+				selectedHeat: "",
+				selectedAthlete,
+				showHeatSummary: true
+			})
+			publishPosition()
+
+			expect(await screen.findByText("RIVERA")).toBeInTheDocument()
+			expect(screen.queryByText("JONES")).not.toBeInTheDocument()
 			await waitFor(() =>
 				expect(
-					socketHub.openCount("broadcast_control")
-				).toBeGreaterThan(0)
+					screen.queryByText("Heat detail 2")
+				).not.toBeInTheDocument()
 			)
-			broadcast({ selectedHeat: "1", selectedAthlete })
-			expect(await screen.findByText("RIVERA")).toBeInTheDocument()
-
-			// Manual mode never subscribes, so there is no socket to push to.
-			expect(socketHub.openCount("head_judge_selection")).toBe(0)
 		})
 	})
 

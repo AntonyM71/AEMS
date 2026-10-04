@@ -68,7 +68,7 @@ const emitViaTemporarySocket = (
 	})
 
 // Reuse activeSocket while it is still connected, otherwise fall back to a
-// temporary socket. Shared by the run_status and broadcast_control mutations.
+// temporary socket.
 const emitWithSocketReuse = async (
 	activeSocket: Socket | null,
 	connect: () => Socket,

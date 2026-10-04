@@ -1,7 +1,7 @@
 """Covers the skip_sid distinction between the broadcast relays: state
 messages (/broadcast_control, /head_judge_selection) include the sender so every
 client applies the same state, while /timer ticks and the request_* events
-exclude it so a client never echoes or answers itself.
+skip the sending socket.
 """
 
 from unittest.mock import AsyncMock, patch
