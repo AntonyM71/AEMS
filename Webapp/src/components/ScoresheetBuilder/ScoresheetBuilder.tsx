@@ -361,8 +361,16 @@ const bonusTypeNames = (orderedBonuses: { name?: string | null }[]) =>
 		.map((b) => b.name)
 		.filter((name): name is string => !!name)
 
-// Scores go through String() because edited fields hold the raw input text;
-// Number() would turn an emptied field into 0 and hide the edit.
+// Edited fields hold raw input text, so "140.0" must match a saved 140. A
+// blank or non-numeric entry stays as typed: Number("") is 0 and would hide the edit.
+const scoreKey = (score: number | string) => {
+	const text = String(score).trim()
+
+	return text === "" || Number.isNaN(Number(text))
+		? text
+		: String(Number(text))
+}
+
 const serialiseScoresheet = (
 	moves: AvailableMovesResponse[],
 	bonuses: NewBonusInfo[],
@@ -373,11 +381,11 @@ const serialiseScoresheet = (
 			m.id,
 			m.name,
 			m.direction,
-			String(m.fl_score),
-			String(m.rb_score)
+			scoreKey(m.fl_score),
+			scoreKey(m.rb_score)
 		]),
 		bonuses: [...bonuses]
 			.sort((a, b) => a.id.localeCompare(b.id))
-			.map((b) => [b.id, b.move_id, b.name, String(b.score)]),
+			.map((b) => [b.id, b.move_id, b.name, scoreKey(b.score)]),
 		bonusTypeOrder
 	})

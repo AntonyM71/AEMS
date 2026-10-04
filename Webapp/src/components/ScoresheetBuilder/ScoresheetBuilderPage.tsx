@@ -25,7 +25,6 @@ export const ScoresheetBuilder = () => {
 		}
 		const warnBeforeUnload = (event: BeforeUnloadEvent) => {
 			event.preventDefault()
-			event.returnValue = ""
 		}
 		// The pages router can only cancel a route change by throwing from
 		// routeChangeStart, so the prompt must be synchronous. `cancelled`

@@ -761,6 +761,17 @@ describe("ScoresheetMoves", () => {
 			expect(screen.getByDisplayValue("Saved Move")).toBeInTheDocument()
 		})
 
+		it("is not shown for a score retyped as a different numeral of the saved value", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("10"), {
+				target: { value: "10.0" }
+			})
+
+			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
 		it("stays after a failed save", async () => {
 			useScoresheetHandlers()
 			server.use(
