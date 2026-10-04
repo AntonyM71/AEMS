@@ -42,15 +42,6 @@ competition_management_router = APIRouter(
     prefix="/competition_management", tags=["competition management"]
 )
 
-START_LIST_REJECTIONS = (
-    InvalidFileTypeError,
-    MissingColumnError,
-    ColumnTypeError,
-    NoHeatInfoForNonRandomHeatError,
-    pd.errors.ParserError,
-    pd.errors.EmptyDataError,
-)
-
 
 @competition_management_router.post(
     "/upload",
@@ -94,7 +85,14 @@ def upload(
     try:
         competitors_df = read_start_list(file.filename, file.file.read())
         validate_columns_and_data_types(competitors_df, random_heats=random_heats)
-    except START_LIST_REJECTIONS as e:
+    except (
+        InvalidFileTypeError,
+        MissingColumnError,
+        ColumnTypeError,
+        NoHeatInfoForNonRandomHeatError,
+        pd.errors.ParserError,
+        pd.errors.EmptyDataError,
+    ) as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     number_of_paddlers_added, skipped_rows = process_competitors_df(
         competitors_df=competitors_df,

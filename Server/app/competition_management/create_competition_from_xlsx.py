@@ -42,9 +42,6 @@ class InvalidFileTypeError(Exception):
     pass
 
 
-WHOLE_NUMBER_COLUMNS = ("bib", "Heat")
-
-
 def read_start_list(filename: str, data: bytes) -> pd.DataFrame:
     """Accepts CSVs as Excel saves them: any line ending, UTF-8 (with or without
     BOM) or Windows-1252, comma or semicolon separated. Rows that are blank in
@@ -77,23 +74,14 @@ def _drop_blank_rows(competitors_df: pd.DataFrame) -> pd.DataFrame:
     competitors_df = competitors_df.replace(r"^\s*$", np.nan, regex=True).dropna(
         how="all"
     )
-    # Blank rows force these columns to float while they are read.
-    return competitors_df.astype(
-        {
-            column: "int64"
-            for column in WHOLE_NUMBER_COLUMNS
-            if column in competitors_df
-            and _holds_only_whole_numbers(competitors_df[column])
-        }
-    )
-
-
-def _holds_only_whole_numbers(column: pd.Series) -> bool:
-    return (
-        ptypes.is_float_dtype(column)
-        and column.notna().all()
-        and (column % 1 == 0).all()
-    )
+    # Blank rows force these columns to float while they are read; downcast
+    # restores int only when no value is missing or fractional.
+    for column in ("bib", "Heat"):
+        if column in competitors_df and ptypes.is_float_dtype(competitors_df[column]):
+            competitors_df[column] = pd.to_numeric(
+                competitors_df[column], downcast="integer"
+            )
+    return competitors_df
 
 
 def generate_uuid() -> str:
