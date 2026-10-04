@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { http, HttpResponse } from "msw"
+import { http, HttpResponse, delay } from "msw"
+import Router from "next/router"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
@@ -119,5 +120,154 @@ describe("ScoresheetBuilderPage", () => {
 
 		// Assert that the ScoresheetMoves component is rendered
 		expect(addBonusButton).toBeInTheDocument()
+	})
+
+	describe("with unsaved scoresheet edits", () => {
+		const confirmSpy = jest.spyOn(window, "confirm")
+
+		beforeEach(() => {
+			confirmSpy.mockReset()
+			server.use(
+				http.get("/api/scoresheet", () =>
+					HttpResponse.json([
+						{ id: "sheet-a", name: "Sheet A" },
+						{ id: "sheet-b", name: "Sheet B" }
+					])
+				),
+				http.get("/api/availablemoves", () =>
+					HttpResponse.json([
+						{
+							id: "move-1",
+							sheet_id: "sheet-a",
+							name: "Loop",
+							fl_score: 10,
+							rb_score: 10,
+							direction: "LR"
+						}
+					])
+				),
+				http.get("/api/availablebonuses", () => HttpResponse.json([]))
+			)
+		})
+
+		afterAll(() => confirmSpy.mockRestore())
+
+		const user = userEvent.setup()
+
+		const selectScoresheet = async (name: string) => {
+			await user.click(
+				screen.getByRole("combobox", { name: "Scoresheet" })
+			)
+			await user.click(await screen.findByText(name))
+		}
+
+		const openSheetA = async (withEdit: boolean) => {
+			render(
+				<Provider store={store}>
+					<ScoresheetBuilder />
+				</Provider>
+			)
+			await screen.findByRole("combobox", { name: "Scoresheet" })
+			await selectScoresheet("Sheet A")
+			const moveName = await screen.findByDisplayValue("Loop")
+			if (withEdit) {
+				await user.type(moveName, " Edited")
+				await screen.findByText(/unsaved changes/i)
+			}
+		}
+
+		const scoresheetCombobox = () =>
+			screen.getByRole("combobox", { name: "Scoresheet" })
+
+		const dispatchBeforeUnload = () => {
+			const event = new Event("beforeunload", { cancelable: true })
+			window.dispatchEvent(event)
+
+			return event
+		}
+
+		it("keeps the current scoresheet and its edits when the switch is cancelled", async () => {
+			await openSheetA(true)
+			confirmSpy.mockReturnValue(false)
+
+			await selectScoresheet("Sheet B")
+
+			expect(confirmSpy).toHaveBeenCalledTimes(1)
+			expect(scoresheetCombobox()).toHaveValue("Sheet A")
+			expect(screen.getByDisplayValue("Loop Edited")).toBeInTheDocument()
+		})
+
+		it("switches scoresheet when the operator confirms", async () => {
+			await openSheetA(true)
+			confirmSpy.mockReturnValue(true)
+
+			await selectScoresheet("Sheet B")
+
+			expect(scoresheetCombobox()).toHaveValue("Sheet B")
+		})
+
+		it("switches without asking when there are no edits", async () => {
+			await openSheetA(false)
+
+			await selectScoresheet("Sheet B")
+
+			expect(confirmSpy).not.toHaveBeenCalled()
+			expect(scoresheetCombobox()).toHaveValue("Sheet B")
+		})
+
+		it("blocks a page unload only while edits are unsaved", async () => {
+			await openSheetA(false)
+			expect(dispatchBeforeUnload().defaultPrevented).toBe(false)
+
+			await user.type(screen.getByDisplayValue("Loop"), " Edited")
+			await screen.findByText(/unsaved changes/i)
+
+			expect(dispatchBeforeUnload().defaultPrevented).toBe(true)
+		})
+
+		it("asks before switching to a new scoresheet when edits were made while it was being created", async () => {
+			server.use(
+				http.post("/api/scoresheet", async () => {
+					await delay(300)
+
+					return HttpResponse.json({ success: true })
+				})
+			)
+			await openSheetA(false)
+			confirmSpy.mockReturnValue(false)
+
+			await user.type(
+				screen.getByRole("textbox", { name: "New Scoresheet" }),
+				"Brand New{enter}"
+			)
+			await user.type(screen.getByDisplayValue("Loop"), " Edited")
+			await screen.findByText(/unsaved changes/i)
+
+			await waitFor(() => expect(confirmSpy).toHaveBeenCalledTimes(1))
+			expect(scoresheetCombobox()).toHaveValue("Sheet A")
+			expect(screen.getByDisplayValue("Loop Edited")).toBeInTheDocument()
+		})
+
+		it("aborts in-app navigation when the operator cancels", async () => {
+			await openSheetA(true)
+			confirmSpy.mockReturnValue(false)
+
+			expect(() =>
+				Router.events.emit("routeChangeStart", "/Judging", {
+					shallow: false
+				})
+			).toThrow(/unsaved scoresheet changes/)
+		})
+
+		it("allows in-app navigation when the operator confirms", async () => {
+			await openSheetA(true)
+			confirmSpy.mockReturnValue(true)
+
+			expect(() =>
+				Router.events.emit("routeChangeStart", "/Judging", {
+					shallow: false
+				})
+			).not.toThrow()
+		})
 	})
 })

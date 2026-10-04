@@ -27,6 +27,11 @@ const extractErrorMessage = (error: any): string => {
 }
 
 export const handleErrors = (e: any) => {
+	// A route change cancelled on purpose (e.g. by an unsaved-changes guard)
+	// can only be aborted by throwing, so it arrives here but is not a failure.
+	if (e?.reason?.cancelled) {
+		return
+	}
 	const isDevelopment = process.env.NODE_ENV === "development"
 	if (isDevelopment) {
 		const message = extractErrorMessage(e)

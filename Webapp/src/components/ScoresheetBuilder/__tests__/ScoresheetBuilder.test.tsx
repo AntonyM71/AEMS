@@ -25,6 +25,7 @@ interface AvailableBonuses {
 	move_id: string
 	name: string
 	score: number
+	display_order?: number
 }
 
 const mockMoves: AvailableMoves[] = [
@@ -655,5 +656,197 @@ describe("ScoresheetMoves", () => {
 		// move's bonus must not linger in the payload
 		expect(submittedBonuses).toHaveLength(1)
 		expect(submittedBonuses[0].move_id).toBe("2")
+	})
+
+	describe("unsaved changes warning", () => {
+		const unsavedWarning = () => screen.queryByText(/unsaved changes/i)
+
+		const loadScoresheet = async () => {
+			renderScoresheet(store)
+			await screen.findByDisplayValue("Test Move")
+		}
+
+		const renameMove = async (name: string) => {
+			const nameInput = screen.getByDisplayValue("Test Move")
+			const user = userEvent.setup()
+			await user.clear(nameInput)
+			await user.type(nameInput, name)
+		}
+
+		it("is not shown for a freshly loaded scoresheet", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
+		it("is shown after a move is edited and cleared when the edit is undone", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("Test Move"), {
+				target: { value: "Renamed Move" }
+			})
+			expect(unsavedWarning()).toBeInTheDocument()
+
+			fireEvent.change(screen.getByDisplayValue("Renamed Move"), {
+				target: { value: "Test Move" }
+			})
+			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
+		it("is cleared when a bonus score is typed back to its saved value", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+			const bonusInput = screen.getByDisplayValue("5")
+
+			fireEvent.change(bonusInput, { target: { value: "7" } })
+			expect(unsavedWarning()).toBeInTheDocument()
+
+			fireEvent.change(bonusInput, { target: { value: "5" } })
+			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
+		it("is shown after bonus columns are reordered", async () => {
+			useScoresheetHandlers({
+				bonuses: [
+					...mockBonuses,
+					{
+						id: "2",
+						sheet_id: "test-id",
+						move_id: "1",
+						name: "Second Bonus",
+						score: 3
+					}
+				]
+			})
+			await loadScoresheet()
+
+			fireEvent.click(screen.getByTestId("move-bonus-right-Test Bonus"))
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("is cleared after a successful save", async () => {
+			let savedMoves = mockMoves
+			server.use(
+				http.get("/api/availablemoves", () =>
+					HttpResponse.json(savedMoves)
+				),
+				http.get("/api/availablebonuses", () =>
+					HttpResponse.json(mockBonuses)
+				),
+				http.post(
+					"/api/addUpdateScoresheet/:id",
+					async ({ request }) => {
+						const body = (await request.json()) as {
+							moves: AvailableMoves[]
+						}
+						savedMoves = body.moves
+
+						return HttpResponse.json({ success: true })
+					}
+				)
+			)
+			await loadScoresheet()
+			await renameMove("Saved Move")
+			expect(unsavedWarning()).toBeInTheDocument()
+
+			fireEvent.click(
+				screen.getByRole("button", { name: "Update Scoresheet" })
+			)
+
+			await waitFor(() =>
+				expect(unsavedWarning()).not.toBeInTheDocument()
+			)
+			expect(screen.getByDisplayValue("Saved Move")).toBeInTheDocument()
+		})
+
+		it("is not shown for a score retyped as a different numeral of the saved value", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("10"), {
+				target: { value: "10.0" }
+			})
+
+			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
+		it("is shown for a score typed as hexadecimal text of the saved value", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("10"), {
+				target: { value: "0x0A" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("is shown for a bonus edit when saved bonuses already have a display order", async () => {
+			useScoresheetHandlers({
+				bonuses: [{ ...mockBonuses[0], display_order: 0 }]
+			})
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("5"), {
+				target: { value: "7" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("is shown for an edit made while the saved data is refetching", async () => {
+			let saved = false
+			let refetchRequested = false
+			server.use(
+				http.get("/api/availablemoves", async () => {
+					if (saved) {
+						refetchRequested = true
+						await delay(500)
+					}
+
+					return HttpResponse.json(mockMoves)
+				}),
+				http.get("/api/availablebonuses", () =>
+					HttpResponse.json(mockBonuses)
+				),
+				http.post("/api/addUpdateScoresheet/:id", () => {
+					saved = true
+
+					return HttpResponse.json({ success: true })
+				})
+			)
+			await loadScoresheet()
+
+			fireEvent.click(
+				screen.getByRole("button", { name: "Update Scoresheet" })
+			)
+			await waitFor(() => expect(refetchRequested).toBe(true))
+			fireEvent.change(screen.getByDisplayValue("Test Move"), {
+				target: { value: "Edited during refetch" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("stays after a failed save", async () => {
+			useScoresheetHandlers()
+			server.use(
+				http.post("/api/addUpdateScoresheet/:id", () =>
+					HttpResponse.json({ detail: "boom" }, { status: 500 })
+				)
+			)
+			await loadScoresheet()
+			await renameMove("Unsaved Move")
+
+			fireEvent.click(
+				screen.getByRole("button", { name: "Update Scoresheet" })
+			)
+
+			await waitFor(() => expect(toast.error).toHaveBeenCalled())
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
 	})
 })
