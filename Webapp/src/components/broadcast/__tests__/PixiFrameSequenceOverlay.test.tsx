@@ -173,25 +173,14 @@ describe("PixiFrameSequenceOverlay fallback mode", () => {
 		mockAssetsLoad.mockImplementation(() => Promise.resolve())
 	})
 
-	it("shows its content in fallback mode when the config request fails", async () => {
-		server.use(
-			http.get(
-				"/componentInfo/pack1",
-				() => new HttpResponse(null, { status: 500 })
-			)
-		)
-
-		render(
-			<PixiFrameSequenceOverlay configName="pack1" isVisible>
-				<div data-testid="content">Content</div>
-			</PixiFrameSequenceOverlay>
-		)
-
-		await expectFallbackShown()
-	})
-
-	it("shows its content in fallback mode when the graphics server is unreachable", async () => {
-		server.use(http.get("/componentInfo/pack1", () => HttpResponse.error()))
+	it.each([
+		[
+			"the config request fails",
+			() => new HttpResponse(null, { status: 500 })
+		],
+		["the graphics server is unreachable", () => HttpResponse.error()]
+	])("shows its content in fallback mode when %s", async (_, respond) => {
+		server.use(http.get("/componentInfo/pack1", respond))
 
 		render(
 			<PixiFrameSequenceOverlay configName="pack1" isVisible>
@@ -267,36 +256,6 @@ describe("PixiFrameSequenceOverlay fallback mode", () => {
 		expect(onExitComplete).not.toHaveBeenCalled()
 		act(() => {
 			jest.advanceTimersByTime(40)
-		})
-		expect(onExitComplete).toHaveBeenCalledTimes(1)
-	})
-
-	it("reports exit completion after the content fade when no exit time is given", async () => {
-		failPixiInit()
-		const onExitComplete = jest.fn()
-		const props = { frameUrls: ["a.png", "b.png"], onExitComplete }
-
-		const { rerender } = render(
-			<PixiFrameSequenceOverlay {...props} isVisible>
-				<div data-testid="content">Content</div>
-			</PixiFrameSequenceOverlay>
-		)
-		await expectFallbackShown()
-
-		jest.useFakeTimers()
-		rerender(
-			<PixiFrameSequenceOverlay {...props} isVisible={false}>
-				<div data-testid="content">Content</div>
-			</PixiFrameSequenceOverlay>
-		)
-
-		expect(contentWrapper()).toHaveStyle({ opacity: 0 })
-		act(() => {
-			jest.advanceTimersByTime(319)
-		})
-		expect(onExitComplete).not.toHaveBeenCalled()
-		act(() => {
-			jest.advanceTimersByTime(1)
 		})
 		expect(onExitComplete).toHaveBeenCalledTimes(1)
 	})

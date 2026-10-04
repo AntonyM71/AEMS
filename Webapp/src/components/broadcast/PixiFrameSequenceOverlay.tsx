@@ -40,7 +40,7 @@ export interface PixiFrameSequenceOverlayProps {
 	style?: CSSProperties
 	onExitComplete?: () => void
 	/** How long a fallback-mode exit transition runs before the content is
-	 * hidden and `onExitComplete` fires; without it the content just fades. */
+	 * hidden and `onExitComplete` fires. */
 	fallbackExitMs?: number
 }
 
@@ -119,7 +119,7 @@ const PixiFrameSequenceOverlay = ({
 	className,
 	style,
 	onExitComplete,
-	fallbackExitMs
+	fallbackExitMs = CONTENT_FADE_MS
 }: PixiFrameSequenceOverlayProps): React.JSX.Element => {
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const appRef = useRef<Application | null>(null)
@@ -535,7 +535,7 @@ const PixiFrameSequenceOverlay = ({
 
 		const exitTimer = globalThis.setTimeout(() => {
 			onExitCompleteRef.current?.()
-		}, fallbackExitMs ?? CONTENT_FADE_MS)
+		}, fallbackExitMs)
 
 		return () => {
 			globalThis.clearTimeout(exitTimer)
@@ -615,10 +615,9 @@ const PixiFrameSequenceOverlay = ({
 	// Hold fallback content at full opacity while the caller's own exit
 	// transition plays, then cut it; a plain fade would dim that transition.
 	const fallbackHideDelayMs = isVisible ? 0 : fallbackExitMs
-	const childrenTransition =
-		isFallback && fallbackExitMs !== undefined
-			? `opacity 0ms linear ${fallbackHideDelayMs}ms`
-			: `opacity ${CONTENT_FADE_MS}ms ease-in-out`
+	const childrenTransition = isFallback
+		? `opacity 0ms linear ${fallbackHideDelayMs}ms`
+		: `opacity ${CONTENT_FADE_MS}ms ease-in-out`
 
 	return (
 		<div

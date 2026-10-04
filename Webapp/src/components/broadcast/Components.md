@@ -56,7 +56,7 @@ A reusable wrapper that renders a PNG frame sequence as a GPU-accelerated backgr
 | `fileExtension`      | `string`           | No       | `"png"`            | File extension for frame images                             |
 | `frameUrls`          | `string[]`         | No       |                    | Override with explicit frame URL list (skips path building) |
 | `onExitComplete`     | `() => void`       | No       |                    | Callback fired when the outro sequence finishes             |
-| `fallbackExitMs`     | `number`           | No       |                    | Fallback-mode exit time before content hides (else a fade)  |
+| `fallbackExitMs`     | `number`           | No       | `320`              | Fallback-mode exit time before content hides                |
 
 If the config, any frame, or the Pixi renderer fails to load, the overlay enters fallback mode: it skips the sequence, shows its children while `isVisible` is true, and marks their container with the `AemsOverlay-fallback` class and a `data-visible` attribute so a parent can style a backdrop (see `overlayFallback.ts`). It retries its config each time it is shown again.
 

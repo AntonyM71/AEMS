@@ -12,14 +12,10 @@ const icfMist = "#e3eef7"
 const icfTint = "#cfe6f5"
 
 const WIPE_MS = 420
-const WIPE_EASE = "cubic-bezier(0.22, 0.8, 0.24, 1)"
 const WIPE_OUT_DELAY_MS = 140
 const TEXT_IN_DELAY_MS = 260
 const TEXT_IN_MS = 260
-const TEXT_OUT_MS = 160
-const RUNS_STAGGER_IN_MS = 90
 const RUNS_STAGGER_OUT_MS = 80
-const REDUCED_MOTION_FADE_MS = 200
 
 /** The event title's run-count band is the last panel to leave. */
 export const OVERLAY_FALLBACK_EXIT_MS =
@@ -90,7 +86,7 @@ export const overlayFallbackSx: SxProps<Theme> = {
 
 	[panels(fallback)]: {
 		clipPath: CLIP_HIDDEN,
-		transition: `clip-path ${WIPE_MS}ms ${WIPE_EASE} ${WIPE_OUT_DELAY_MS}ms`
+		transition: `clip-path ${WIPE_MS}ms cubic-bezier(0.22, 0.8, 0.24, 1) ${WIPE_OUT_DELAY_MS}ms`
 	},
 	[`${fallback} .AemsEventTitle-root ${runs}`]: {
 		transitionDelay: `${WIPE_OUT_DELAY_MS + RUNS_STAGGER_OUT_MS}ms`
@@ -100,11 +96,11 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		transitionDelay: "0ms"
 	},
 	[`${shown} .AemsEventTitle-root ${runs}`]: {
-		transitionDelay: `${RUNS_STAGGER_IN_MS}ms`
+		transitionDelay: "90ms"
 	},
 	[panels(fallback, " > *")]: {
 		opacity: 0,
-		transition: `opacity ${TEXT_OUT_MS}ms ease-in`
+		transition: "opacity 160ms ease-in"
 	},
 	[panels(shown, " > *")]: {
 		opacity: 1,
@@ -115,7 +111,7 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		[panels(fallback)]: {
 			clipPath: "none",
 			opacity: 0,
-			transition: `opacity ${REDUCED_MOTION_FADE_MS}ms linear`
+			transition: "opacity 200ms linear"
 		},
 		[panels(shown)]: { clipPath: "none", opacity: 1 }
 	}
