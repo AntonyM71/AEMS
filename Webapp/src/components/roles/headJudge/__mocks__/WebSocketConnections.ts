@@ -13,3 +13,6 @@ export const connectCurrentScoreStatusSocket = jest.fn(() =>
 export const connectBroadcastControlSocket = jest.fn(() =>
 	socketHub.connect("broadcast_control")
 )
+export const connectHeadJudgeSelectionSocket = jest.fn(() =>
+	socketHub.connect("head_judge_selection")
+)

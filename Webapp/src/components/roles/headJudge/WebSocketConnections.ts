@@ -46,3 +46,9 @@ export const connectBroadcastControlSocket = (): Socket => {
 
 	return io(`${origin}/broadcast_control`, options)
 }
+
+export const connectHeadJudgeSelectionSocket = (): Socket => {
+	const { origin, options } = socketConfig()
+
+	return io(`${origin}/head_judge_selection`, options)
+}

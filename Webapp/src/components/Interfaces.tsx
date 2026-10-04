@@ -8,6 +8,9 @@ export interface OverlayControlState {
 	showLiveRunScore: boolean
 	showPhaseResults: boolean
 	showEventTitle: boolean
+	// When true, displays take competition, heat, athlete and run from the
+	// head judge's position instead of the selections below.
+	followHeadJudge: boolean
 	// data
 	selectedCompetition: string
 	selectedEvent: string
@@ -25,10 +28,18 @@ export const defaultOverlayControllerState: OverlayControlState = {
 	showEventTitle: false,
 	showLiveRunScore: false,
 	showPhaseResults: false,
+	followHeadJudge: false,
 	selectedCompetition: "",
 	selectedEvent: "",
 	selectedPhase: "",
 	selectedHeat: "",
 	selectedAthlete: undefined,
 	selectedRun: 0
+}
+
+export interface HeadJudgePosition {
+	competitionId: string
+	heatId: string
+	athlete: AthleteInfo
+	runNumber: number
 }
