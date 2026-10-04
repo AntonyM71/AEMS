@@ -7,13 +7,9 @@ describe("ScoresheetBuilderHeader", () => {
 	const createMockBonuses = () => ["Air", "Clean"]
 	const mockSetBonuses = jest.fn()
 	const mockDeleteBonus = jest.fn()
+	const mockSetUniqueBonusNamesList = jest.fn()
 
-	beforeEach(() => {
-		jest.clearAllMocks()
-	})
-
-	it("renders header with bonus columns", () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
+	const renderHeader = () =>
 		render(
 			<ScoresheetBuilderHeader
 				bonuses={createMockBonuses()}
@@ -22,6 +18,13 @@ describe("ScoresheetBuilderHeader", () => {
 				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
 			/>
 		)
+
+	beforeEach(() => {
+		jest.clearAllMocks()
+	})
+
+	it("renders header with bonus columns", () => {
+		renderHeader()
 
 		// Check standard columns
 		expect(screen.getByText("Name")).toBeInTheDocument()
@@ -39,15 +42,7 @@ describe("ScoresheetBuilderHeader", () => {
 	})
 
 	it("can add a new bonus", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 
 		const input = screen.getByLabelText("Add New Bonus")
 		await userEvent.type(input, "Super{Enter}")
@@ -56,15 +51,7 @@ describe("ScoresheetBuilderHeader", () => {
 	})
 
 	it("shows error when adding duplicate bonus", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 
 		const input = screen.getByLabelText("Add New Bonus")
 		await userEvent.type(input, "Air{Enter}")
@@ -74,15 +61,7 @@ describe("ScoresheetBuilderHeader", () => {
 	})
 
 	it("shows error when adding empty bonus", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 
 		const input = screen.getByLabelText("Add New Bonus")
 		await userEvent.type(input, "{Enter}")
@@ -92,15 +71,7 @@ describe("ScoresheetBuilderHeader", () => {
 	})
 
 	it("can delete existing bonus", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 
 		// Find delete buttons next to bonus names
 		const deleteButtons = screen.getAllByRole("button")
@@ -110,15 +81,7 @@ describe("ScoresheetBuilderHeader", () => {
 	})
 
 	it("clears input after successful bonus addition", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 
 		const input = screen.getByLabelText("Add New Bonus")
 		await userEvent.type(input, "Super{Enter}")
@@ -126,15 +89,7 @@ describe("ScoresheetBuilderHeader", () => {
 		expect(input).toHaveValue("")
 	})
 	it("can change the display order of bonuses to the right", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 		const button = screen.getByTestId(`move-bonus-right-Air`)
 		await userEvent.click(button)
 
@@ -144,15 +99,7 @@ describe("ScoresheetBuilderHeader", () => {
 		])
 	})
 	it("can change the display order of bonuses to the right", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 		const button = screen.getByTestId(`move-bonus-left-Clean`)
 		await userEvent.click(button)
 
@@ -163,15 +110,7 @@ describe("ScoresheetBuilderHeader", () => {
 		expect(toast.error).not.toHaveBeenCalled()
 	})
 	it("doesn't change the order of bonuses if it would roll over left", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 		const button = screen.getByTestId(`move-bonus-left-Air`)
 		await userEvent.click(button)
 		await waitFor(() => {
@@ -179,15 +118,7 @@ describe("ScoresheetBuilderHeader", () => {
 		})
 	})
 	it("doesn't change the order of bonuses if it would roll over right", async () => {
-		const mockSetUniqueBonusNamesList = jest.fn()
-		render(
-			<ScoresheetBuilderHeader
-				bonuses={createMockBonuses()}
-				setBonuses={mockSetBonuses}
-				deleteBonus={mockDeleteBonus}
-				setUniqueBonusNamesList={mockSetUniqueBonusNamesList}
-			/>
-		)
+		renderHeader()
 		const button = screen.getByTestId(`move-bonus-right-Clean`)
 		await userEvent.click(button)
 		await waitFor(() => {

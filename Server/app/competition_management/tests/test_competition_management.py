@@ -1,6 +1,8 @@
 import random
 from uuid import UUID
 
+import pytest
+
 from app.competition_management.competition_management import (
     AthleteIDandRank,
     assign_paddlers_to_heat,
@@ -152,209 +154,64 @@ class TestAssignPaddlersToHeat:
         assert got == want
 
 
+LEVAR = ("Levar", "Burton", "1", "7223c15d-18c1-440c-813c-9358de2844e2")
+BRETT = ("Brett", "Spiner", "2", "7486220f-ed09-4e9c-a105-fb448a198cfe")
+JONATHAN = ("Jonathan", "Frakes", "2", "db0b0953-1e9b-4ebe-a1dd-5abef970dd2a")
+PATRICK = ("Patrick", "Stewart", "2", "addb7085-0c24-4440-a25e-9b73bb111b04")
+
+
+def athlete(
+    who: tuple[str, str, str, str], ranking: int
+) -> AthleteScoresWithAthleteInfo:
+    first_name, last_name, bib_number, athlete_id = who
+    return AthleteScoresWithAthleteInfo(
+        first_name=first_name,
+        last_name=last_name,
+        bib_number=bib_number,
+        athlete_id=athlete_id,
+        run_scores=[],
+        highest_scoring_move=0,
+        ranking=ranking,
+    )
+
+
 class TestGetTopNPaddlers:
-    def test_it_returns_the_top_n_paddlers_with_scores_and_no_ties(self) -> None:
-        want = [
-            AthleteScoresWithAthleteInfo(
-                first_name="Levar",
-                last_name="Burton",
-                bib_number="1",
-                athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=1,
+    @pytest.mark.parametrize(
+        ("scores", "want"),
+        [
+            pytest.param(
+                [athlete(LEVAR, 1), athlete(BRETT, 2), athlete(PATRICK, 3)],
+                [athlete(LEVAR, 1), athlete(BRETT, 2)],
+                id="no_ties",
             ),
-            AthleteScoresWithAthleteInfo(
-                first_name="Brett",
-                last_name="Spiner",
-                bib_number="2",
-                athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=2,
-            ),
-        ]
-        got = get_top_n_paddlers_for_phase(
-            phase_scores=PhaseScoresResponse(
-                phase_id="5883532e-0a9e-4f95-ac95-293dfcb36872",
-                scores=[
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Levar",
-                        last_name="Burton",
-                        bib_number="1",
-                        athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=1,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Brett",
-                        last_name="Spiner",
-                        bib_number="2",
-                        athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=2,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Patrick",
-                        last_name="Stewart",
-                        bib_number="2",
-                        athlete_id="addb7085-0c24-4440-a25e-9b73bb111b04",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=3,
-                    ),
+            pytest.param(
+                [
+                    athlete(LEVAR, 1),
+                    athlete(BRETT, 2),
+                    athlete(JONATHAN, 0),
+                    athlete(PATRICK, 3),
                 ],
+                [athlete(LEVAR, 1), athlete(BRETT, 2)],
+                id="rejects_paddlers_with_no_rank",
             ),
-            number_of_paddlers=2,
-        )
-
-        assert got == want
-
-    def test_it_returns_the_top_n_paddlers_with_and_rejects_paddlers_with_no_rank(
-        self,
+            pytest.param(
+                [
+                    athlete(LEVAR, 1),
+                    athlete(BRETT, 2),
+                    athlete(JONATHAN, 2),
+                    athlete(PATRICK, 3),
+                ],
+                [athlete(LEVAR, 1), athlete(BRETT, 2), athlete(JONATHAN, 2)],
+                id="includes_both_paddlers_in_nth_place_if_tied",
+            ),
+        ],
+    )
+    def test_it_returns_the_top_two_paddlers(
+        self, scores: list[AthleteScoresWithAthleteInfo], want: list
     ) -> None:
-        want = [
-            AthleteScoresWithAthleteInfo(
-                first_name="Levar",
-                last_name="Burton",
-                bib_number="1",
-                athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=1,
-            ),
-            AthleteScoresWithAthleteInfo(
-                first_name="Brett",
-                last_name="Spiner",
-                bib_number="2",
-                athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=2,
-            ),
-        ]
         got = get_top_n_paddlers_for_phase(
             phase_scores=PhaseScoresResponse(
-                phase_id="5883532e-0a9e-4f95-ac95-293dfcb36872",
-                scores=[
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Levar",
-                        last_name="Burton",
-                        bib_number="1",
-                        athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=1,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Brett",
-                        last_name="Spiner",
-                        bib_number="2",
-                        athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=2,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Jonathan",
-                        last_name="Frakes",
-                        bib_number="2",
-                        athlete_id="db0b0953-1e9b-4ebe-a1dd-5abef970dd2a",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=0,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Patrick",
-                        last_name="Stewart",
-                        bib_number="2",
-                        athlete_id="addb7085-0c24-4440-a25e-9b73bb111b04",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=3,
-                    ),
-                ],
-            ),
-            number_of_paddlers=2,
-        )
-
-        assert got == want
-
-    def test_it_returns_the_top_n_paddlers_and_both_paddlers_in_nth_place_if_tied(
-        self,
-    ) -> None:
-        want = [
-            AthleteScoresWithAthleteInfo(
-                first_name="Levar",
-                last_name="Burton",
-                bib_number="1",
-                athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=1,
-            ),
-            AthleteScoresWithAthleteInfo(
-                first_name="Brett",
-                last_name="Spiner",
-                bib_number="2",
-                athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=2,
-            ),
-            AthleteScoresWithAthleteInfo(
-                first_name="Jonathan",
-                last_name="Frakes",
-                bib_number="2",
-                athlete_id="db0b0953-1e9b-4ebe-a1dd-5abef970dd2a",
-                run_scores=[],
-                highest_scoring_move=0,
-                ranking=2,
-            ),
-        ]
-        got = get_top_n_paddlers_for_phase(
-            phase_scores=PhaseScoresResponse(
-                phase_id="5883532e-0a9e-4f95-ac95-293dfcb36872",
-                scores=[
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Levar",
-                        last_name="Burton",
-                        bib_number="1",
-                        athlete_id="7223c15d-18c1-440c-813c-9358de2844e2",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=1,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Brett",
-                        last_name="Spiner",
-                        bib_number="2",
-                        athlete_id="7486220f-ed09-4e9c-a105-fb448a198cfe",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=2,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Jonathan",
-                        last_name="Frakes",
-                        bib_number="2",
-                        athlete_id="db0b0953-1e9b-4ebe-a1dd-5abef970dd2a",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=2,
-                    ),
-                    AthleteScoresWithAthleteInfo(
-                        first_name="Patrick",
-                        last_name="Stewart",
-                        bib_number="2",
-                        athlete_id="addb7085-0c24-4440-a25e-9b73bb111b04",
-                        run_scores=[],
-                        highest_scoring_move=0,
-                        ranking=3,
-                    ),
-                ],
+                phase_id="5883532e-0a9e-4f95-ac95-293dfcb36872", scores=scores
             ),
             number_of_paddlers=2,
         )

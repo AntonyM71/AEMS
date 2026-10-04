@@ -1,5 +1,24 @@
 import { http, HttpResponse } from "msw"
 
+const echoPost = (path: string) =>
+	http.post(path, async ({ request }) =>
+		HttpResponse.json(await request.json())
+	)
+
+const lockedRun = (
+	didNotStart: boolean,
+	meanRunScore: number,
+	judgeScores: number[]
+) => ({
+	locked: true,
+	did_not_start: didNotStart,
+	mean_run_score: meanRunScore,
+	judge_scores: judgeScores.map((score, index) => ({
+		judge_id: String(index + 1),
+		score_info: { score }
+	}))
+})
+
 export const handlers = [
 	http.get("/api/phase/:id", ({ params }) =>
 		HttpResponse.json({
@@ -18,36 +37,8 @@ export const handlers = [
 					ranking: 1,
 					total_score: 85.5,
 					run_scores: [
-						{
-							locked: true,
-							did_not_start: false,
-							mean_run_score: 85.5,
-							judge_scores: [
-								{
-									judge_id: "1",
-									score_info: { score: 85 }
-								},
-								{
-									judge_id: "2",
-									score_info: { score: 86 }
-								}
-							]
-						},
-						{
-							locked: true,
-							did_not_start: false,
-							mean_run_score: 85.5,
-							judge_scores: [
-								{
-									judge_id: "1",
-									score_info: { score: 85 }
-								},
-								{
-									judge_id: "2",
-									score_info: { score: 86 }
-								}
-							]
-						}
+						lockedRun(false, 85.5, [85, 86]),
+						lockedRun(false, 85.5, [85, 86])
 					]
 				}
 			]
@@ -66,12 +57,7 @@ export const handlers = [
 			{ id: "2", name: "Scoresheet 2" }
 		])
 	),
-	http.post("/api/scoresheet", async ({ request }) => {
-		const body = await request.json()
-
-		return HttpResponse.json(body)
-	}),
-	// Existing handlers
+	echoPost("/api/scoresheet"),
 	http.get("/api/availablemoves", ({ request }) => {
 		const url = new URL(request.url)
 		const idList = url.searchParams.get("idList")?.split(",")
@@ -114,11 +100,7 @@ export const handlers = [
 			{ id: "2", name: "Competition 2" }
 		])
 	),
-	http.post("/api/competition", async ({ request }) => {
-		const body = await request.json()
-
-		return HttpResponse.json(body)
-	}),
+	echoPost("/api/competition"),
 	http.get("/api/competition/:competitionPkId/event", ({ params }) => {
 		const { competitionPkId } = params
 
@@ -164,11 +146,7 @@ export const handlers = [
 			competition_id: "1"
 		})
 	),
-	http.post("/api/event", async ({ request }) => {
-		const body = await request.json()
-
-		return HttpResponse.json(body)
-	}),
+	echoPost("/api/event"),
 	http.get("/api/heat", ({ request }) => {
 		const url = new URL(request.url, "http://localhost")
 		const competitionIdList = url.searchParams.get("competitionIdList")
@@ -202,11 +180,7 @@ export const handlers = [
 
 		return HttpResponse.json([])
 	}),
-	http.post("/api/heat", async ({ request }) => {
-		const body = await request.json()
-
-		return HttpResponse.json(body)
-	}),
+	echoPost("/api/heat"),
 	http.get("/api/heat/:id", ({ params }) => {
 		const { id } = params
 
@@ -225,36 +199,8 @@ export const handlers = [
 					first_name: "John",
 					last_name: "Doe",
 					run_scores: [
-						{
-							locked: true,
-							did_not_start: false,
-							mean_run_score: 85.5,
-							judge_scores: [
-								{
-									judge_id: "1",
-									score_info: { score: 85 }
-								},
-								{
-									judge_id: "2",
-									score_info: { score: 86 }
-								}
-							]
-						},
-						{
-							locked: true,
-							did_not_start: true,
-							mean_run_score: 0,
-							judge_scores: [
-								{
-									judge_id: "1",
-									score_info: { score: 0 }
-								},
-								{
-									judge_id: "2",
-									score_info: { score: 0 }
-								}
-							]
-						}
+						lockedRun(false, 85.5, [85, 86]),
+						lockedRun(true, 0, [0, 0])
 					]
 				}
 			]
