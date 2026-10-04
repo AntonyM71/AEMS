@@ -485,10 +485,7 @@ const PixiFrameSequenceOverlay = ({
 		return () => {
 			isDisposed = true
 		}
-		// configAttempt reloads frames on a retry even when the config resolves
-		// to the same URLs, so a frame that failed gets another chance.
 	}, [
-		configAttempt,
 		isAppReady,
 		resolvedFrameUrls,
 		resolvedHoldImage,
@@ -528,6 +525,9 @@ const PixiFrameSequenceOverlay = ({
 		}
 
 		if (isVisible) {
+			// Clearing the old config makes the frames reload once the retried
+			// one arrives, even when it resolves to the same URLs as before.
+			setRemoteConfig(null)
 			setConfigAttempt((attempt) => attempt + 1)
 
 			return
@@ -614,9 +614,10 @@ const PixiFrameSequenceOverlay = ({
 	const shouldShowChildren = isVisible && (isFallback || !isAnimationActive)
 	// Hold fallback content at full opacity while the caller's own exit
 	// transition plays, then cut it; a plain fade would dim that transition.
+	const fallbackHideDelayMs = isVisible ? 0 : fallbackExitMs
 	const childrenTransition =
 		isFallback && fallbackExitMs !== undefined
-			? `opacity 0ms linear ${isVisible ? 0 : fallbackExitMs}ms`
+			? `opacity 0ms linear ${fallbackHideDelayMs}ms`
 			: `opacity ${CONTENT_FADE_MS}ms ease-in-out`
 
 	return (

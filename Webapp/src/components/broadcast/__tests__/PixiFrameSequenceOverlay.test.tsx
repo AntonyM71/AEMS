@@ -338,6 +338,60 @@ describe("PixiFrameSequenceOverlay fallback mode", () => {
 		)
 	})
 
+	it("loads frames from the retried config, not the stale one, after a frame failure", async () => {
+		let configRequests = 0
+		server.use(
+			http.get("/componentInfo/pack1", () => {
+				configRequests += 1
+
+				return HttpResponse.json(
+					configRequests === 1
+						? pack1Config
+						: {
+								...pack1Config,
+								path: "https://graphics.local/packs/pack2"
+						  }
+				)
+			})
+		)
+		mockAssetsLoad.mockImplementation((url: string) =>
+			url.endsWith("pack1/frame_02.png")
+				? Promise.reject(new Error("404"))
+				: Promise.resolve()
+		)
+		const overlay = (isVisible: boolean) => (
+			<PixiFrameSequenceOverlay
+				configName="pack1"
+				isVisible={isVisible}
+				fps={1000}
+			>
+				<div data-testid="content">Content</div>
+			</PixiFrameSequenceOverlay>
+		)
+
+		const { rerender } = render(overlay(true))
+		await expectFallbackShown()
+
+		rerender(overlay(false))
+		rerender(overlay(true))
+
+		await waitFor(() =>
+			expect(contentWrapper()).not.toHaveClass("AemsOverlay-fallback")
+		)
+		const loadedUrls = (mockAssetsLoad.mock.calls as [string][]).map(
+			([url]) => url
+		)
+		expect(loadedUrls).toEqual([
+			"https://graphics.local/packs/pack1/frame_01.png",
+			"https://graphics.local/packs/pack1/frame_02.png",
+			"https://graphics.local/packs/pack2/frame_01.png",
+			"https://graphics.local/packs/pack2/frame_02.png"
+		])
+		expect(mockTextureFrom).not.toHaveBeenCalledWith(
+			"https://graphics.local/packs/pack1/frame_01.png"
+		)
+	})
+
 	it("shows content without fallback mode when no frame source is given", async () => {
 		render(
 			<PixiFrameSequenceOverlay isVisible>

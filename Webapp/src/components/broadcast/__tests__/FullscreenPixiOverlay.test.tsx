@@ -1,10 +1,8 @@
 import { ThemeProvider } from "@mui/material/styles"
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
-import { competitionInitialState } from "../../../redux/atoms/competitions"
-import { setupStore } from "../../../redux/store"
+import { renderWithProviders } from "../../../testUtils"
 import { HeatListModal } from "../Cards/HeatListModal"
 import { icfWhite, lightTheme } from "../overlayTheme"
 
@@ -46,19 +44,11 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 			)
 		)
 
-		render(
-			<Provider
-				store={setupStore({
-					competitions: {
-						...competitionInitialState,
-						selectedHeat: "1"
-					}
-				})}
-			>
-				<ThemeProvider theme={lightTheme}>
-					<HeatListModal isVisible />
-				</ThemeProvider>
-			</Provider>
+		renderWithProviders(
+			<ThemeProvider theme={lightTheme}>
+				<HeatListModal isVisible />
+			</ThemeProvider>,
+			{ preloadedState: { competitions: { selectedHeat: "1" } } }
 		)
 
 		const athleteCell = await screen.findByText("John SMITH")
