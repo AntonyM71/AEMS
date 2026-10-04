@@ -2,7 +2,6 @@ import functools
 import math
 import operator
 import random
-from io import BytesIO
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -23,7 +22,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.competition_management.create_competition_from_xlsx import (
+    ColumnTypeError,
+    InvalidFileTypeError,
+    MissingColumnError,
+    NoHeatInfoForNonRandomHeatError,
     process_competitors_df,
+    read_start_list,
     validate_columns_and_data_types,
 )
 from app.scoring.customScoringEndpoints import (
@@ -37,10 +41,6 @@ from db.models import AthleteHeat, Heat, Phase
 competition_management_router = APIRouter(
     prefix="/competition_management", tags=["competition management"]
 )
-
-
-class InvalidFileTypeError(Exception):
-    pass
 
 
 @competition_management_router.post(
@@ -82,16 +82,18 @@ def upload(
     if number_of_runs_for_score > number_of_runs:
         msg = "number_of_runs_for_score cannot exceed number_of_runs"
         raise HTTPException(status_code=422, detail=msg)
-    if file.filename.endswith(".xlsx"):
-        sheets_dict = pd.read_excel(BytesIO(file.file.read()), sheet_name=None)
-        competitors_df = pd.concat(sheets_dict.values(), ignore_index=True)
-    elif file.filename.endswith(".csv"):
-        competitors_df = pd.read_csv(BytesIO(file.file.read()))
-
-    else:
-        msg = f"File: {file.filename} must have suffix '.xlsx' or  '.csv'"
-        raise InvalidFileTypeError(msg)
-    validate_columns_and_data_types(competitors_df, random_heats=random_heats)
+    try:
+        competitors_df = read_start_list(file.filename, file.file.read())
+        validate_columns_and_data_types(competitors_df, random_heats=random_heats)
+    except (
+        InvalidFileTypeError,
+        MissingColumnError,
+        ColumnTypeError,
+        NoHeatInfoForNonRandomHeatError,
+        pd.errors.ParserError,
+        pd.errors.EmptyDataError,
+    ) as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     number_of_paddlers_added, skipped_rows = process_competitors_df(
         competitors_df=competitors_df,
         competition_name=competition_name,

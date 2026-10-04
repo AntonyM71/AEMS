@@ -1,4 +1,5 @@
 import uuid
+from io import BytesIO, StringIO
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,49 @@ class MissingColumnError(Exception):
 
 class ColumnTypeError(Exception):
     pass
+
+
+class InvalidFileTypeError(Exception):
+    pass
+
+
+def read_start_list(filename: str, data: bytes) -> pd.DataFrame:
+    """Reads CSVs as Excel saves them: UTF-8 or Windows-1252, comma or semicolon."""
+    lowered_filename = filename.lower()
+    if lowered_filename.endswith(".xlsx"):
+        sheets = pd.read_excel(BytesIO(data), sheet_name=None)
+        competitors_df = pd.concat(sheets.values(), ignore_index=True)
+    elif lowered_filename.endswith(".csv"):
+        competitors_df = _read_excel_csv(data)
+    else:
+        msg = f"File: {filename} must have suffix '.xlsx' or '.csv'"
+        raise InvalidFileTypeError(msg)
+    return _drop_blank_rows(competitors_df)
+
+
+def _read_excel_csv(data: bytes) -> pd.DataFrame:
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = data.decode("cp1252")
+    header = next(iter(text.splitlines()), "")
+    # Comma-decimal locales make Excel separate fields with ';'.
+    is_semicolon_separated = ";" in header and "," not in header
+    return pd.read_csv(StringIO(text), sep=";" if is_semicolon_separated else ",")
+
+
+def _drop_blank_rows(competitors_df: pd.DataFrame) -> pd.DataFrame:
+    competitors_df = competitors_df.replace(r"^\s*$", np.nan, regex=True).dropna(
+        how="all"
+    )
+    # Blank rows force these columns to float while they are read; downcast
+    # restores int only when no value is missing or fractional.
+    for column in ("bib", "Heat"):
+        if column in competitors_df and ptypes.is_float_dtype(competitors_df[column]):
+            competitors_df[column] = pd.to_numeric(
+                competitors_df[column], downcast="integer"
+            )
+    return competitors_df
 
 
 def generate_uuid() -> str:
@@ -269,19 +313,19 @@ def validate_columns_and_data_types(
         msg = "No heat information provided, and random heat allocation is disabled"
         raise (NoHeatInfoForNonRandomHeatError(msg))
 
-    if not random_heats and not ptypes.is_integer_dtype(competition_df["Heat"]):
-        msg = f"Column 'Heat' is not of type '{ptypes.is_integer_dtype}', instead it is of type '{competition_df['Heat'].dtype}'"
-        raise ColumnTypeError(msg)
-
-    expected_dtypes = {
-        "first_name": ptypes.is_string_dtype,
-        "last_name": ptypes.is_string_dtype,
-        "Event": ptypes.is_string_dtype,
-        "bib": ptypes.is_integer_dtype,
+    expected_contents = {
+        "first_name": (ptypes.is_string_dtype, "text"),
+        "last_name": (ptypes.is_string_dtype, "text"),
+        "Event": (ptypes.is_string_dtype, "text"),
+        "bib": (ptypes.is_integer_dtype, "whole numbers"),
     }
+    if not random_heats:
+        expected_contents["Heat"] = (ptypes.is_integer_dtype, "whole numbers")
 
-    for column, check_dtype in expected_dtypes.items():
-        actual_dtype = competition_df[column].dtype
-        if not check_dtype(competition_df[column]):
-            msg = f"Column '{column}' is not of type '{check_dtype}', instead it is of type '{actual_dtype}'"
+    for column, (holds_expected_type, contents) in expected_contents.items():
+        if competition_df[column].isna().any():
+            msg = f"Column '{column}' has a blank value"
+            raise ColumnTypeError(msg)
+        if not holds_expected_type(competition_df[column]):
+            msg = f"Column '{column}' must contain only {contents}"
             raise ColumnTypeError(msg)
