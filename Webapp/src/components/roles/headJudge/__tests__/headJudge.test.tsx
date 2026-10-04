@@ -441,6 +441,21 @@ describe("HeadJudge position publishing", () => {
 		return store
 	}
 
+	it("publishes the athlete's affiliation so displays can show it", async () => {
+		mountHeadJudge()
+
+		await waitFor(() =>
+			expect(positionsSent()).toContainEqual(
+				expect.objectContaining({
+					athlete: expect.objectContaining({
+						id: "athlete-1",
+						affiliation: "GBR"
+					})
+				})
+			)
+		)
+	})
+
 	it("publishes the next paddler when the head judge steps forward", async () => {
 		mountHeadJudge()
 		await waitFor(() =>
