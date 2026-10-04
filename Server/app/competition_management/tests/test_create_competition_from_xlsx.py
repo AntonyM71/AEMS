@@ -367,12 +367,10 @@ class TestValidateColumnsAndDataTypes:
 @pytest.mark.parametrize(
     "column, incorrect_value",
     [
-        ("first_name", 123),  # Incorrect type (int instead of string)
-        ("last_name", 456),  # Incorrect type (int instead of string)
-        ("Event", 789),  # Incorrect type (int instead of string)
-        # Incorrect type (string instead of int)
+        ("first_name", 123),
+        ("last_name", 456),
+        ("Event", 789),
         ("Heat", "one"),
-        # Incorrect type (string instead of int)
         ("bib", "two"),
     ],
 )
@@ -384,9 +382,6 @@ def test_incorrect_dtype_raises_error(
         ColumnTypeError, match=f"Column '{column}' is not of type '<function is_[^']+'"
     ):
         validate_columns_and_data_types(test_df, random_heats=False)
-
-
-# Import the function to be tested
 
 
 class TestMakeRandomHeats:

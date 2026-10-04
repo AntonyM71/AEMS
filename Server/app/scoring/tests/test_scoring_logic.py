@@ -947,6 +947,7 @@ class TestAthleteRankCalculation:
         ]
 
         unresolved = "Tie unresolved - athletes remain tied: #3, #4"
+        # The next athlete skips to 3rd because two share 1st.
         want = _with_ranks(scores, (1, unresolved), (1, unresolved), (3, None))
 
         got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
@@ -1025,8 +1026,8 @@ class TestAthleteRankCalculation:
     def test_it_ranks_a_resolved_pair_above_a_lower_scoring_tied_pair(
         self,
     ) -> None:
-        # Issue #410: Freddie & Paul (215.0, separated by their best run) must
-        # sit at 1 and 2, and Brian & Ringo (200.0, fully tied) at 3 and 3 -
+        # Issue #410: Freddie & Paul (50.0, separated by their best run) must
+        # sit at 1 and 2, and Brian & Ringo (40.0, fully tied) at 3 and 3 -
         # not above the higher-scoring pair as the stale rank counter did.
         freddie = "c7476320-6c48-11ee-b962-0242ac120001"
         paul = ATHLETE_ID
