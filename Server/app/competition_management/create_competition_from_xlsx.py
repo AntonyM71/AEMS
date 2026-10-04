@@ -1,4 +1,5 @@
 import uuid
+from io import BytesIO, StringIO
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,64 @@ class MissingColumnError(Exception):
 
 class ColumnTypeError(Exception):
     pass
+
+
+class InvalidFileTypeError(Exception):
+    pass
+
+
+WHOLE_NUMBER_COLUMNS = ("bib", "Heat")
+
+
+def read_start_list(filename: str, data: bytes) -> pd.DataFrame:
+    """Accepts CSVs as Excel saves them: any line ending, UTF-8 (with or without
+    BOM) or Windows-1252, comma or semicolon separated. Rows that are blank in
+    every column are dropped from CSV and XLSX files alike.
+    """
+    lowered_filename = filename.lower()
+    if lowered_filename.endswith(".xlsx"):
+        sheets = pd.read_excel(BytesIO(data), sheet_name=None)
+        competitors_df = pd.concat(sheets.values(), ignore_index=True)
+    elif lowered_filename.endswith(".csv"):
+        competitors_df = _read_excel_csv(data)
+    else:
+        msg = f"File: {filename} must have suffix '.xlsx' or '.csv'"
+        raise InvalidFileTypeError(msg)
+    return _drop_blank_rows(competitors_df)
+
+
+def _read_excel_csv(data: bytes) -> pd.DataFrame:
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = data.decode("cp1252")
+    header = next(iter(text.splitlines()), "")
+    # Comma-decimal locales make Excel separate fields with ';'.
+    is_semicolon_separated = ";" in header and "," not in header
+    return pd.read_csv(StringIO(text), sep=";" if is_semicolon_separated else ",")
+
+
+def _drop_blank_rows(competitors_df: pd.DataFrame) -> pd.DataFrame:
+    competitors_df = competitors_df.replace(r"^\s*$", np.nan, regex=True).dropna(
+        how="all"
+    )
+    # Blank rows force these columns to float while they are read.
+    return competitors_df.astype(
+        {
+            column: "int64"
+            for column in WHOLE_NUMBER_COLUMNS
+            if column in competitors_df
+            and _holds_only_whole_numbers(competitors_df[column])
+        }
+    )
+
+
+def _holds_only_whole_numbers(column: pd.Series) -> bool:
+    return (
+        ptypes.is_float_dtype(column)
+        and column.notna().all()
+        and (column % 1 == 0).all()
+    )
 
 
 def generate_uuid() -> str:
