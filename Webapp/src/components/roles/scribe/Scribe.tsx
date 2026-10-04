@@ -199,7 +199,8 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 	)
 
 	if (athleteData?.[currentPaddlerIndex]?.athlete_id) {
-		const isMoveEntryDisabled = (runStatus?.locked ?? false) || isRunOutOfRange
+		const isMoveEntryDisabled =
+			(runStatus?.locked ?? false) || isRunOutOfRange
 
 		return (
 			<Grid container spacing={1}>
@@ -211,9 +212,11 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 					)}
 					{isRunOutOfRange && (
 						<Alert severity="error" sx={{ marginBottom: "0.5em" }}>
-							Invalid run: {athleteData[currentPaddlerIndex].first_name}{" "}
+							Invalid run:{" "}
+							{athleteData[currentPaddlerIndex].first_name}{" "}
 							{athleteData[currentPaddlerIndex].last_name} is only
-							scored for {athleteData[currentPaddlerIndex].number_of_runs}{" "}
+							scored for{" "}
+							{athleteData[currentPaddlerIndex].number_of_runs}{" "}
 							run(s). Select a valid run before scoring.
 						</Alert>
 					)}

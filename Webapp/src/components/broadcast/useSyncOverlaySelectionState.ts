@@ -16,13 +16,12 @@ const useSyncOverlaySelectionState = (
 	const dispatch = useDispatch()
 
 	useEffect(() => {
-		if (overlayControlState.selectedCompetition) {
-			dispatch(
-				updateSelectedCompetition(
-					overlayControlState.selectedCompetition
-				)
-			)
-		}
+		// Competition and heat are set even when empty, so a heat taken from
+		// the head judge while following is cleared on returning to Manual.
+		dispatch(
+			updateSelectedCompetition(overlayControlState.selectedCompetition)
+		)
+		dispatch(updateSelectedHeat(overlayControlState.selectedHeat))
 
 		if (overlayControlState.selectedEvent) {
 			dispatch(updateSelectedEvent(overlayControlState.selectedEvent))
@@ -30,10 +29,6 @@ const useSyncOverlaySelectionState = (
 
 		if (overlayControlState.selectedPhase) {
 			dispatch(updateSelectedPhase(overlayControlState.selectedPhase))
-		}
-
-		if (overlayControlState.selectedHeat) {
-			dispatch(updateSelectedHeat(overlayControlState.selectedHeat))
 		}
 
 		dispatch(updateRun(overlayControlState.selectedRun))

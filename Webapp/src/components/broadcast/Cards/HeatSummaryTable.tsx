@@ -49,7 +49,7 @@ export const HeatSummaryTable = (inProps: HeatSummaryTableProps = {}) => {
 				    comes from AemsHeatSummary.spacerHeight. */}
 				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
-					data={processAthleteData(athletes?.data ?? []) ?? []}
+					data={processAthleteData(athletes?.currentData ?? []) ?? []}
 					pageChangeTime={5}
 				/>
 			</Stack>
@@ -60,7 +60,8 @@ const HeatDetails = ({
 	titleAlign
 }: Required<Pick<AemsCardHeaderThemeProps, "titleAlign">>) => {
 	const selectedHeat = useSelector(getSelectedHeat)
-	const { data: heatData } = useGetOneByPrimaryKeyHeatIdGetQuery(
+	// currentData, not data: a skipped query still reports the last heat's data.
+	const { currentData: heatData } = useGetOneByPrimaryKeyHeatIdGetQuery(
 		{ id: selectedHeat },
 		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
 	)

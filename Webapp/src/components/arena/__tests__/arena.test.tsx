@@ -109,4 +109,152 @@ describe("Arena", () => {
 			)
 		)
 	})
+
+	describe("following the head judge", () => {
+		const headJudgeAthlete = {
+			id: "athlete-2",
+			first_name: "Sam",
+			last_name: "Jones",
+			bib: "7",
+			scoresheet: "sheet-1"
+		}
+		const headJudgePosition = {
+			competitionId: "comp-1",
+			heatId: "2",
+			athlete: headJudgeAthlete,
+			runNumber: 1
+		}
+
+		const publishPosition = (position = headJudgePosition) =>
+			act(() => {
+				socketHub.emit(
+					"head_judge_selection",
+					"head_judge_selection",
+					position
+				)
+			})
+
+		const renderFollowingArena = async (
+			state: Partial<typeof defaultOverlayControllerState> = {}
+		) => {
+			renderWithProviders(<Arena />)
+			await waitFor(() =>
+				expect(
+					socketHub.openCount("broadcast_control")
+				).toBeGreaterThan(0)
+			)
+			broadcast({
+				selectedHeat: "1",
+				selectedAthlete,
+				followHeadJudge: true,
+				...state
+			})
+			await waitFor(() =>
+				expect(
+					socketHub.openCount("head_judge_selection")
+				).toBeGreaterThan(0)
+			)
+		}
+
+		it("shows the head judge's paddler without the controller emitting anything", async () => {
+			await renderFollowingArena()
+
+			publishPosition()
+
+			expect(await screen.findByText("JONES")).toBeInTheDocument()
+			expect(screen.queryByText("RIVERA")).not.toBeInTheDocument()
+		})
+
+		it("shows the controller's athlete until a head judge position arrives", async () => {
+			await renderFollowingArena()
+
+			expect(await screen.findByText("RIVERA")).toBeInTheDocument()
+		})
+
+		it("asks the head judge for its position on entering follow, and adopts the answer", async () => {
+			await renderFollowingArena()
+
+			act(() => {
+				socketHub.emit("head_judge_selection", "connect")
+			})
+			expect(socketHub.emittedOn("head_judge_selection")).toContainEqual([
+				"request_head_judge_selection"
+			])
+
+			publishPosition()
+			expect(await screen.findByText("JONES")).toBeInTheDocument()
+		})
+
+		it("shows the head judge's heat in the heat summary", async () => {
+			await renderFollowingArena({ showHeatSummary: true })
+
+			publishPosition()
+
+			expect(await screen.findByText("Heat detail 2")).toBeInTheDocument()
+			expect(screen.queryByText("Heat detail 1")).not.toBeInTheDocument()
+		})
+
+		it("keeps the operator's phase in the phase results", async () => {
+			server.use(
+				http.get("/api/phase/:id", ({ params }) =>
+					HttpResponse.json({
+						id: params.id,
+						name: `Phase detail ${String(params.id)}`,
+						number_of_runs: 2
+					})
+				)
+			)
+			await renderFollowingArena({
+				selectedPhase: "operator-phase",
+				showPhaseResults: true
+			})
+
+			publishPosition()
+			await screen.findByText("JONES")
+
+			expect(
+				await screen.findByText("Phase detail operator-phase")
+			).toBeInTheDocument()
+		})
+
+		it("ignores the head judge's athlete and heat after returning to Manual", async () => {
+			await renderFollowingArena({
+				selectedHeat: "",
+				showHeatSummary: true
+			})
+			publishPosition()
+			expect(await screen.findByText("JONES")).toBeInTheDocument()
+			expect(await screen.findByText("Heat detail 2")).toBeInTheDocument()
+
+			broadcast({
+				selectedHeat: "",
+				selectedAthlete,
+				showHeatSummary: true
+			})
+			publishPosition()
+
+			expect(await screen.findByText("RIVERA")).toBeInTheDocument()
+			expect(screen.queryByText("JONES")).not.toBeInTheDocument()
+			await waitFor(() =>
+				expect(
+					screen.queryByText("Heat detail 2")
+				).not.toBeInTheDocument()
+			)
+		})
+	})
+
+	it("asks for the current control state when it connects", async () => {
+		renderWithProviders(<Arena />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+
+		act(() => {
+			socketHub.emit("broadcast_control", "connect")
+		})
+
+		expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
+			"request_broadcast_control"
+		])
+	})
 })

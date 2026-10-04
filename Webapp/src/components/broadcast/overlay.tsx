@@ -1,12 +1,11 @@
 import { ThemeProvider } from "@mui/material/styles"
 import React from "react"
-import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 
-import { defaultOverlayControllerState } from "../Interfaces"
 import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatListModal } from "./Cards/HeatListModal"
 import { PhaseResultsModal } from "./Cards/PhaseResultsModal"
 import { lightTheme } from "./overlayTheme"
+import useDisplayedOverlayState from "./useDisplayedOverlayState"
 import useSyncOverlaySelectionState from "./useSyncOverlaySelectionState"
 
 type OverlayComponent = (() => React.JSX.Element) & {
@@ -14,8 +13,7 @@ type OverlayComponent = (() => React.JSX.Element) & {
 }
 
 const Overlay: OverlayComponent = () => {
-	const { data: overlayControlState = defaultOverlayControllerState } =
-		useBroadcastControlStreamQuery()
+	const overlayControlState = useDisplayedOverlayState()
 	useSyncOverlaySelectionState(overlayControlState)
 
 	return (
