@@ -157,7 +157,9 @@ def add_update_scoresheet(
         bonus_ids_to_remove = _ids_to_remove(
             set(existing_bonuses), {bonus.id for bonus in scoresheet.bonuses}
         )
-        scored_move_ids = _referenced_ids(db, ScoredMoves.move_id, move_ids_to_remove)
+        scored_move_ids = _referenced_ids(
+            db, ScoredMoves.move_id, move_ids_to_remove
+        )
         scored_bonus_ids = _referenced_ids(
             db, ScoredBonuses.bonus_id, bonus_ids_to_remove
         )

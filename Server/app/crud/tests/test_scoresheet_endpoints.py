@@ -70,9 +70,7 @@ def _bonus_to_request_dict(bonus, display_order=None):  # noqa: ANN001, ANN202
         "move_id": str(bonus.move_id),
         "name": bonus.name,
         "score": bonus.score,
-        "display_order": bonus.display_order
-        if display_order is None
-        else display_order,
+        "display_order": bonus.display_order if display_order is None else display_order,
     }
 
 
@@ -100,9 +98,7 @@ def _create_referenced_move_and_bonus(
 
 
 def _setup_referenced_item_mocks(
-    mock_db_session: Session,
-    move,
-    bonus,  # noqa: ANN001
+    mock_db_session: Session, move, bonus  # noqa: ANN001
 ) -> None:
     mock_db_session.query.side_effect = [
         _build_query_mock([move]),
