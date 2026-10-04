@@ -1,9 +1,12 @@
+import Alert from "@mui/material/Alert"
+import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
 import Skeleton from "@mui/material/Skeleton"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { v4 } from "uuid"
 import {
+	AvailableMovesResponse,
 	PydanticAvailableMoves,
 	useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation,
 	useGetManyAvailablebonusesGetQuery,
@@ -19,9 +22,11 @@ import { ScoresheetBuilderHeader } from "./Header"
 const SWAP_HIGHLIGHT_MS = 500
 
 export const ScoresheetMoves = ({
-	selectedScoresheet
+	selectedScoresheet,
+	onUnsavedChangesChange
 }: {
 	selectedScoresheet: string
+	onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void
 }) => {
 	const moves = useGetManyAvailablemovesGetQuery(
 		{
@@ -58,15 +63,8 @@ export const ScoresheetMoves = ({
 		const orderedBonuses = Array.isArray(bonusInfo.data)
 			? [...bonusInfo.data].sort(sortBonuses)
 			: []
-		setNewBonusInfo((orderedBonuses as NewBonusInfo[]) || [])
-		const uniqueBonusNames = uniqBy(orderedBonuses || [], "name")
-		const originalUniqueBonusNameList: string[] = []
-		uniqueBonusNames.forEach((b) => {
-			if (b?.name) {
-				originalUniqueBonusNameList.push(b.name)
-			}
-		})
-		setUniqueBonusNamesList(originalUniqueBonusNameList)
+		setNewBonusInfo(orderedBonuses as NewBonusInfo[])
+		setUniqueBonusNamesList(bonusTypeNames(orderedBonuses))
 	}, [bonusInfo.data])
 
 	const [newBonusInfo, setNewBonusInfo] = useState<NewBonusInfo[]>([])
@@ -234,6 +232,21 @@ export const ScoresheetMoves = ({
 		})
 	}, [uniqueBonusNamesList])
 
+	const savedBonuses = (bonusInfo.data ?? []) as NewBonusInfo[]
+	const hasUnsavedChanges =
+		!moves.isFetching &&
+		!bonusInfo.isFetching &&
+		serialiseScoresheet(newMoves, newBonusInfo, uniqueBonusNamesList) !==
+			serialiseScoresheet(
+				[...(moves.data ?? [])].sort(sortMoves),
+				savedBonuses,
+				bonusTypeNames([...savedBonuses].sort(sortBonuses))
+			)
+
+	useEffect(() => {
+		onUnsavedChangesChange?.(hasUnsavedChanges)
+	}, [hasUnsavedChanges])
+
 	const [updateScoresheetMoves] =
 		useAddUpdateScoresheetAddUpdateScoresheetScoresheetIdPostMutation()
 	const submitDataToDB = async () => {
@@ -292,14 +305,30 @@ export const ScoresheetMoves = ({
 				/>
 			))}
 			<AddNewMove bonuses={uniqueBonusNamesList} addMove={addNewMove} />
-			<Button
-				onClick={() => void submitDataToDB()}
-				variant="contained"
-				color="secondary"
-				sx={{ mt: 2 }}
+			<Box
+				sx={{
+					position: "sticky",
+					bottom: 0,
+					zIndex: 1,
+					py: 1,
+					mt: 1,
+					bgcolor: "background.paper"
+				}}
 			>
-				Update Scoresheet
-			</Button>
+				{hasUnsavedChanges && (
+					<Alert severity="warning" sx={{ mb: 1 }}>
+						You have unsaved changes. Press Update Scoresheet to
+						keep them.
+					</Alert>
+				)}
+				<Button
+					onClick={() => void submitDataToDB()}
+					variant="contained"
+					color="secondary"
+				>
+					Update Scoresheet
+				</Button>
+			</Box>
 		</>
 	)
 }
@@ -326,3 +355,29 @@ export const sortByDisplayOrder = (
 
 export const sortBonuses = sortByDisplayOrder
 export const sortMoves = sortByDisplayOrder
+
+const bonusTypeNames = (orderedBonuses: { name?: string | null }[]) =>
+	uniqBy(orderedBonuses, "name")
+		.map((b) => b.name)
+		.filter((name): name is string => !!name)
+
+// Scores go through String() because edited fields hold the raw input text;
+// Number() would turn an emptied field into 0 and hide the edit.
+const serialiseScoresheet = (
+	moves: AvailableMovesResponse[],
+	bonuses: NewBonusInfo[],
+	bonusTypeOrder: string[]
+) =>
+	JSON.stringify({
+		moves: moves.map((m) => [
+			m.id,
+			m.name,
+			m.direction,
+			String(m.fl_score),
+			String(m.rb_score)
+		]),
+		bonuses: [...bonuses]
+			.sort((a, b) => a.id.localeCompare(b.id))
+			.map((b) => [b.id, b.move_id, b.name, String(b.score)]),
+		bonusTypeOrder
+	})

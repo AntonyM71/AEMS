@@ -39,6 +39,17 @@ describe("handleErrors", () => {
 		)
 	})
 
+	it("does not report a deliberately cancelled route change", () => {
+		const cancelledRouteChange = {
+			reason: Object.assign(new Error("Route change aborted"), {
+				cancelled: true
+			})
+		}
+		handleErrors(cancelledRouteChange)
+
+		expect(toast.error).not.toHaveBeenCalled()
+	})
+
 	it("should handle undefined error gracefully", () => {
 		handleErrors(undefined)
 
