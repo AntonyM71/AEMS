@@ -86,8 +86,11 @@ def assert_competition_events_and_phases(adapters: SimpleNamespace) -> None:
         [{"name": "test_comp", "id": uid(1)}], db=ANY
     )
     assert adapters.get_scoresheets.call_count == 1
-    events = [(2, "Senior Elite C1M"), (4, "Senior Intermediate K1M")]
-    events.append((6, "Junior Elite K1W"))
+    events = [
+        (2, "Senior Elite C1M"),
+        (4, "Senior Intermediate K1M"),
+        (6, "Junior Elite K1W"),
+    ]
     for event_id, name in events:
         assert (
             single({"name": name, "id": uid(event_id), "competition_id": uid(1)})

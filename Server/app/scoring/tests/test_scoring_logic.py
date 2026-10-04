@@ -1,3 +1,4 @@
+from functools import partial
 from uuid import UUID
 
 import pytest
@@ -45,14 +46,32 @@ def _move(
     )
 
 
-def _bonus(
-    id: str,
-    move_id: str,
-    bonus_id: str,
-    judge_id: str = "meg",
-) -> PydanticScoredBonusesResponse:
-    return PydanticScoredBonusesResponse(
-        id=id, move_id=move_id, bonus_id=bonus_id, judge_id=judge_id
+_bonus = partial(PydanticScoredBonusesResponse, judge_id="meg")
+
+
+def _judge_score(judge_id: str, score: float, highest_move: float) -> JudgeScores:
+    return JudgeScores(
+        judge_id=judge_id,
+        score_info=AthleteScoreInfo(score=score, highest_scoring_move=highest_move),
+    )
+
+
+def _run_scores(
+    run_number: int,
+    judge_scores: list[JudgeScores],
+    mean_run_score: float,
+    highest_scoring_move: float,
+    *,
+    locked: bool = False,
+    did_not_start: bool = False,
+) -> RunScores:
+    return RunScores(
+        run_number=run_number,
+        judge_scores=judge_scores,
+        mean_run_score=mean_run_score,
+        highest_scoring_move=highest_scoring_move,
+        locked=locked,
+        did_not_start=did_not_start,
     )
 
 
@@ -949,36 +968,8 @@ class TestAthleteScoreCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=8.33,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=6.67,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
                 ],
                 highest_scoring_move=25.0,
                 total_score=8.33,
@@ -1051,36 +1042,10 @@ class TestAthleteScoreCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=True,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=8.33,
-                        highest_scoring_move=25.0,
+                    _run_scores(
+                        1, [_judge_score("meg", 25, 25)], 8.33, 25.0, locked=True
                     ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=6.67,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
                 ],
                 highest_scoring_move=25.0,
                 total_score=8.33,
@@ -1163,36 +1128,10 @@ class TestAthleteScoreCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=True,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=0,
-                        highest_scoring_move=0,
+                    _run_scores(
+                        1, [_judge_score("meg", 25, 25)], 0, 0, did_not_start=True
                     ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=6.67,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
                 ],
                 highest_scoring_move=20.0,
                 total_score=6.67,
@@ -1396,38 +1335,16 @@ class TestAthleteScoreCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            ),
-                            JudgeScores(
-                                judge_id="josh",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            ),
-                            JudgeScores(
-                                judge_id="Ibbo",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            ),
-                            JudgeScores(
-                                judge_id="Jon",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            ),
+                    _run_scores(
+                        1,
+                        [
+                            _judge_score("meg", 25, 25),
+                            _judge_score("josh", 25, 25),
+                            _judge_score("Ibbo", 25, 25),
+                            _judge_score("Jon", 25, 25),
                         ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
+                        25.0,
+                        25.0,
                     ),
                 ],
                 highest_scoring_move=25.0,
@@ -1501,36 +1418,8 @@ class TestAthleteScoreCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=8.33,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=6.67,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
                 ],
                 highest_scoring_move=25.0,
                 total_score=45 / 3,
@@ -1574,35 +1463,11 @@ class TestAthleteRankCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=True,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
+                    _run_scores(
+                        1, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
                     ),
-                    RunScores(
-                        did_not_start=True,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
+                    _run_scores(
+                        2, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
                     ),
                 ],
                 highest_scoring_move=25.0,
@@ -1611,36 +1476,8 @@ class TestAthleteRankCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(1, [_judge_score("meg", 25, 25)], 25.0, 25.0),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 20.0, 20.0),
                 ],
                 highest_scoring_move=25.0,
                 total_score=45,
@@ -1651,35 +1488,11 @@ class TestAthleteRankCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=True,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
+                    _run_scores(
+                        1, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
                     ),
-                    RunScores(
-                        did_not_start=True,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
+                    _run_scores(
+                        2, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
                     ),
                 ],
                 highest_scoring_move=25.0,
@@ -1689,36 +1502,8 @@ class TestAthleteRankCalculation:
             AthleteScores(
                 athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
                 run_scores=[
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=1,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=25, highest_scoring_move=25
-                                ),
-                            )
-                        ],
-                        mean_run_score=25.0,
-                        highest_scoring_move=25.0,
-                    ),
-                    RunScores(
-                        did_not_start=False,
-                        locked=False,
-                        run_number=2,
-                        judge_scores=[
-                            JudgeScores(
-                                judge_id="meg",
-                                score_info=AthleteScoreInfo(
-                                    score=20, highest_scoring_move=20
-                                ),
-                            )
-                        ],
-                        mean_run_score=20.0,
-                        highest_scoring_move=20.0,
-                    ),
+                    _run_scores(1, [_judge_score("meg", 25, 25)], 25.0, 25.0),
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 20.0, 20.0),
                 ],
                 highest_scoring_move=25.0,
                 ranking=1,
@@ -2275,20 +2060,8 @@ class TestAthleteRankCalculation:
         non_starter = AthleteScores(
             athlete_id=UUID(non_starter_id),
             run_scores=[
-                RunScores(
-                    run_number=1,
-                    judge_scores=[
-                        JudgeScores(
-                            judge_id="j",
-                            score_info=AthleteScoreInfo(
-                                score=99.0, highest_scoring_move=99.0
-                            ),
-                        )
-                    ],
-                    mean_run_score=99.0,
-                    highest_scoring_move=99.0,
-                    locked=False,
-                    did_not_start=True,
+                _run_scores(
+                    1, [_judge_score("j", 99.0, 99.0)], 99.0, 99.0, did_not_start=True
                 )
             ],
             highest_scoring_move=99.0,
@@ -2316,20 +2089,8 @@ class TestAthleteRankCalculation:
         non_starter = AthleteScores(
             athlete_id=UUID(non_starter_id),
             run_scores=[
-                RunScores(
-                    run_number=1,
-                    judge_scores=[
-                        JudgeScores(
-                            judge_id="j",
-                            score_info=AthleteScoreInfo(
-                                score=0.0, highest_scoring_move=0.0
-                            ),
-                        )
-                    ],
-                    mean_run_score=0.0,
-                    highest_scoring_move=0.0,
-                    locked=False,
-                    did_not_start=True,
+                _run_scores(
+                    1, [_judge_score("j", 0.0, 0.0)], 0.0, 0.0, did_not_start=True
                 )
             ],
             highest_scoring_move=0.0,
@@ -2376,16 +2137,7 @@ class TestAthleteRankCalculation:
         scores = [
             AthleteScores(
                 athlete_id=UUID(i),
-                run_scores=[
-                    RunScores(
-                        run_number=1,
-                        judge_scores=[],
-                        mean_run_score=0.0,
-                        highest_scoring_move=0.0,
-                        locked=False,
-                        did_not_start=True,
-                    )
-                ],
+                run_scores=[_run_scores(1, [], 0.0, 0.0, did_not_start=True)],
                 highest_scoring_move=0.0,
                 total_score=0.0,
             )
