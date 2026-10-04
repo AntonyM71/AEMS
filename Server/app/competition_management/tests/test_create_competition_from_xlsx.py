@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Iterator
+from contextlib import ExitStack
 from types import SimpleNamespace
 from typing import NamedTuple
 from unittest.mock import ANY, MagicMock, call, patch
@@ -65,17 +66,18 @@ def test_df() -> pd.DataFrame:
 
 @pytest.fixture
 def adapters() -> Iterator[SimpleNamespace]:
-    mocks = {}
-    patchers = [patch(f"{MODULE}.{name}") for name in ADAPTER_NAMES]
-    manager = patch(f"{MODULE}.transaction_session_context_manager")
-    uuid_patcher = patch.object(uuid, "uuid4", side_effect=mock_uuid)
-    for name, patcher in zip(ADAPTER_NAMES, patchers, strict=True):
-        mocks[name] = patcher.start()
-    manager.start().return_value.__enter__.return_value = MagicMock()
-    uuid_patcher.start()
-    mocks["get_scoresheets"].return_value = [{"name": "icf", "id": SCORESHEET_ID}]
-    yield SimpleNamespace(**mocks)
-    patch.stopall()
+    with ExitStack() as stack:
+        mocks = {
+            name: stack.enter_context(patch(f"{MODULE}.{name}"))
+            for name in ADAPTER_NAMES
+        }
+        manager = stack.enter_context(
+            patch(f"{MODULE}.transaction_session_context_manager")
+        )
+        manager.return_value.__enter__.return_value = MagicMock()
+        stack.enter_context(patch.object(uuid, "uuid4", side_effect=mock_uuid))
+        mocks["get_scoresheets"].return_value = [{"name": "icf", "id": SCORESHEET_ID}]
+        yield SimpleNamespace(**mocks)
 
 
 def single(item: dict) -> object:
