@@ -135,6 +135,15 @@ def test_a_start_list_missing_a_column_is_rejected_naming_the_column() -> None:
     assert response.json()["detail"] == "Column 'first_name' is missing from the file"
 
 
+def test_a_whitespace_only_event_is_rejected_naming_the_column() -> None:
+    csv = b"first_name,last_name,bib,Event,Heat\nJames,Wilkinson,1, ,1\n"
+
+    response = _post(VALID_FORM, csv=csv)
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Column 'Event' has a blank value"
+
+
 def test_a_file_that_is_not_csv_or_xlsx_is_rejected_naming_the_accepted_types() -> None:
     response = _post(VALID_FORM, filename="competitors.txt")
 

@@ -21,7 +21,6 @@ In `UploadCsv.tsx`, the `.catch` calls `toast.error(error.message)`, which ignor
 - Turn file-content rejections into 422s carrying the existing exception messages.
 
 **Non-Goals:**
-- Rewording the existing validation messages. They already name the column, which is what the operator needs.
 - Changing the catch-all 500 handler for other endpoints.
 
 ## Decisions
@@ -44,6 +43,9 @@ Dropping the rows leaves the column dtype at `float64`, because pandas has alrea
 **5. Map rejections to 422 in `upload()`.**
 Wrap the read and validate calls in `except (InvalidFileTypeError, MissingColumnError, ColumnTypeError, NoHeatInfoForNonRandomHeatError, pd.errors.ParserError, pd.errors.EmptyDataError) as e: raise HTTPException(422, detail=str(e)) from e`. The endpoint's documented 422 schema already includes the `{"detail": string}` shape, so the OpenAPI contract and `aemsApi.ts` are unchanged.
 - *Alternative considered:* registering a FastAPI exception handler per error class. Rejected because these errors come from one endpoint, and handlers would hide that mapping in `main.py`.
+
+**5a. Reword the column-content errors for operators.**
+`validate_columns_and_data_types` used to report `Column 'Event' is not of type '<function is_string_dtype at 0x…>'`, which leaks a Python repr into the toast. It now checks each column for blanks first (`Column 'Event' has a blank value`), then for content (`Column 'bib' must contain only whole numbers`). A whitespace-only cell counts as blank, because empty-row handling turns whitespace into a missing value.
 
 **6. Webapp: show `error.response?.data?.detail` when it is a string, otherwise keep `error.message`.**
 Pydantic form-validation 422s carry `detail` as an array, so those keep falling back to the existing message.

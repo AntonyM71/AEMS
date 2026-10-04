@@ -79,6 +79,10 @@ The server SHALL require the `first_name`, `last_name`, `bib`, and `Event` colum
 - **WHEN** an uploaded file has a non-numeric `bib` or `Heat` value, or an athlete row with no `Heat`, while random heat allocation is not selected
 - **THEN** the upload is rejected with a 422 response whose `detail` names the offending column
 
+#### Scenario: A name or Event cell is blank
+- **WHEN** an athlete row's `first_name`, `last_name`, or `Event` cell is empty or holds only whitespace
+- **THEN** the upload is rejected with a 422 response whose `detail` names the column and says it has a blank value
+
 #### Scenario: The webapp shows why an upload was rejected
 - **WHEN** the server rejects an upload with a 422 response carrying a text `detail`
 - **THEN** the webapp's error message shows that `detail` text instead of a generic HTTP status message

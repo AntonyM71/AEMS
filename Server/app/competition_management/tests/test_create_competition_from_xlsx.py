@@ -1288,25 +1288,39 @@ class TestValidateColumnsAndDataTypes:
 
 
 @pytest.mark.parametrize(
-    "column, incorrect_value",
+    "column, incorrect_value, expected_contents",
     [
-        ("first_name", 123),  # Incorrect type (int instead of string)
-        ("last_name", 456),  # Incorrect type (int instead of string)
-        ("Event", 789),  # Incorrect type (int instead of string)
-        # Incorrect type (string instead of int)
-        ("Heat", "one"),
-        # Incorrect type (string instead of int)
-        ("bib", "two"),
+        ("first_name", 123, "text"),
+        ("last_name", 456, "text"),
+        ("Event", 789, "text"),
+        ("Heat", "one", "whole numbers"),
+        ("bib", "two", "whole numbers"),
     ],
 )
 def test_incorrect_dtype_raises_error(
-    column: str, incorrect_value: str | int, test_df: pd.DataFrame
+    column: str,
+    incorrect_value: str | int,
+    expected_contents: str,
+    test_df: pd.DataFrame,
 ) -> None:
+    test_df[column] = test_df[column].astype(object)
     test_df.loc[0, column] = incorrect_value
-    with pytest.raises(
-        ColumnTypeError, match=f"Column '{column}' is not of type '<function is_[^']+'"
-    ):
+    with pytest.raises(ColumnTypeError) as excinfo:
         validate_columns_and_data_types(test_df, random_heats=False)
+    assert (
+        str(excinfo.value) == f"Column '{column}' must contain only {expected_contents}"
+    )
+
+
+@pytest.mark.parametrize("column", ["first_name", "last_name", "Event", "bib", "Heat"])
+def test_a_blank_value_is_rejected_naming_the_column(
+    column: str, test_df: pd.DataFrame
+) -> None:
+    test_df[column] = test_df[column].astype(object)
+    test_df.loc[0, column] = None
+    with pytest.raises(ColumnTypeError) as excinfo:
+        validate_columns_and_data_types(test_df, random_heats=False)
+    assert str(excinfo.value) == f"Column '{column}' has a blank value"
 
 
 # Import the function to be tested

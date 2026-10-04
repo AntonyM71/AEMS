@@ -43,10 +43,7 @@ class InvalidFileTypeError(Exception):
 
 
 def read_start_list(filename: str, data: bytes) -> pd.DataFrame:
-    """Accepts CSVs as Excel saves them: any line ending, UTF-8 (with or without
-    BOM) or Windows-1252, comma or semicolon separated. Rows that are blank in
-    every column are dropped from CSV and XLSX files alike.
-    """
+    """Reads CSVs as Excel saves them: UTF-8 or Windows-1252, comma or semicolon."""
     lowered_filename = filename.lower()
     if lowered_filename.endswith(".xlsx"):
         sheets = pd.read_excel(BytesIO(data), sheet_name=None)
@@ -316,19 +313,19 @@ def validate_columns_and_data_types(
         msg = "No heat information provided, and random heat allocation is disabled"
         raise (NoHeatInfoForNonRandomHeatError(msg))
 
-    if not random_heats and not ptypes.is_integer_dtype(competition_df["Heat"]):
-        msg = f"Column 'Heat' is not of type '{ptypes.is_integer_dtype}', instead it is of type '{competition_df['Heat'].dtype}'"
-        raise ColumnTypeError(msg)
-
-    expected_dtypes = {
-        "first_name": ptypes.is_string_dtype,
-        "last_name": ptypes.is_string_dtype,
-        "Event": ptypes.is_string_dtype,
-        "bib": ptypes.is_integer_dtype,
+    expected_contents = {
+        "first_name": (ptypes.is_string_dtype, "text"),
+        "last_name": (ptypes.is_string_dtype, "text"),
+        "Event": (ptypes.is_string_dtype, "text"),
+        "bib": (ptypes.is_integer_dtype, "whole numbers"),
     }
+    if not random_heats:
+        expected_contents["Heat"] = (ptypes.is_integer_dtype, "whole numbers")
 
-    for column, check_dtype in expected_dtypes.items():
-        actual_dtype = competition_df[column].dtype
-        if not check_dtype(competition_df[column]):
-            msg = f"Column '{column}' is not of type '{check_dtype}', instead it is of type '{actual_dtype}'"
+    for column, (holds_expected_type, contents) in expected_contents.items():
+        if competition_df[column].isna().any():
+            msg = f"Column '{column}' has a blank value"
+            raise ColumnTypeError(msg)
+        if not holds_expected_type(competition_df[column]):
+            msg = f"Column '{column}' must contain only {contents}"
             raise ColumnTypeError(msg)
