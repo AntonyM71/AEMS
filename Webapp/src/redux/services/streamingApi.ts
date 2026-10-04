@@ -1,6 +1,7 @@
 import { Socket } from "socket.io-client"
 import {
 	defaultOverlayControllerState,
+	HeadJudgePosition,
 	OverlayControlState
 } from "../../components/Interfaces"
 import {
@@ -10,6 +11,7 @@ import {
 import {
 	connectBroadcastControlSocket,
 	connectCurrentScoreStatusSocket,
+	connectHeadJudgeSelectionSocket,
 	connectTimerSocket,
 	connectWebRunStatusSocket
 } from "../../components/roles/headJudge/WebSocketConnections"
@@ -22,9 +24,11 @@ import { emptySplitApi } from "./emptyApi"
 const emitSockets: {
 	run_status: Socket | null
 	broadcast_control: Socket | null
+	head_judge_selection: Socket | null
 } = {
 	run_status: null,
-	broadcast_control: null
+	broadcast_control: null,
+	head_judge_selection: null
 }
 
 // Track all active run_status sockets so we can reuse any live connection and
@@ -89,6 +93,34 @@ const emitWithSocketReuse = async (
 			}
 		}
 	}
+}
+
+// Counts incoming `requestEvent`s so a component can list the count in an
+// effect's dependencies and re-send its state whenever someone asks for it.
+const countRequests = async (
+	connect: () => Socket,
+	requestEvent: string,
+	{
+		updateCachedData,
+		cacheEntryRemoved
+	}: {
+		updateCachedData: (recipe: (draft: number) => number) => void
+		cacheEntryRemoved: Promise<void>
+	},
+	emitSocketKey?: "head_judge_selection"
+): Promise<void> => {
+	const socket = connect()
+	if (emitSocketKey) {
+		emitSockets[emitSocketKey] ??= socket
+	}
+	socket.on(requestEvent, () => {
+		updateCachedData((count) => count + 1)
+	})
+	await cacheEntryRemoved
+	if (emitSocketKey && emitSockets[emitSocketKey] === socket) {
+		emitSockets[emitSocketKey] = null
+	}
+	socket.disconnect()
 }
 
 export interface TimerStreamData {
@@ -246,6 +278,11 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				socketRef.current = connectBroadcastControlSocket()
 				// Register for reuse by emitBroadcastControl mutation.
 				emitSockets.broadcast_control = socketRef.current
+				// Fires again on every reconnect, so a display that dropped
+				// out also asks the open controller for its current state.
+				socketRef.current.on("connect", () => {
+					socketRef.current?.emit("request_broadcast_control")
+				})
 				socketRef.current.on(
 					"broadcast_control",
 					(data: OverlayControlState) => {
@@ -258,6 +295,51 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				}
 				socketRef.current?.disconnect()
 				socketRef.current = null
+			}
+		}),
+
+		broadcastControlRequestStream: build.query<number, void>({
+			queryFn: () => ({ data: 0 }),
+			keepUnusedDataFor: 0,
+			onCacheEntryAdded: (_, lifecycle) =>
+				countRequests(
+					connectBroadcastControlSocket,
+					"request_broadcast_control",
+					lifecycle
+				)
+		}),
+
+		headJudgeSelectionRequestStream: build.query<number, void>({
+			queryFn: () => ({ data: 0 }),
+			keepUnusedDataFor: 0,
+			onCacheEntryAdded: (_, lifecycle) =>
+				countRequests(
+					connectHeadJudgeSelectionSocket,
+					"request_head_judge_selection",
+					lifecycle,
+					"head_judge_selection"
+				)
+		}),
+
+		headJudgePositionStream: build.query<HeadJudgePosition | null, void>({
+			queryFn: () => ({ data: null }),
+			keepUnusedDataFor: 0,
+			async onCacheEntryAdded(
+				_,
+				{ updateCachedData, cacheEntryRemoved }
+			) {
+				const socket = connectHeadJudgeSelectionSocket()
+				socket.on("connect", () => {
+					socket.emit("request_head_judge_selection")
+				})
+				socket.on(
+					"head_judge_selection",
+					(position: HeadJudgePosition) => {
+						updateCachedData(() => position)
+					}
+				)
+				await cacheEntryRemoved
+				socket.disconnect()
 			}
 		}),
 
@@ -279,6 +361,16 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 					"broadcast_control",
 					overlayControlState
 				)
+		}),
+
+		emitHeadJudgePosition: build.mutation<null, HeadJudgePosition>({
+			queryFn: (position) =>
+				emitWithSocketReuse(
+					emitSockets.head_judge_selection,
+					connectHeadJudgeSelectionSocket,
+					"head_judge_selection",
+					position
+				)
 		})
 	}),
 	overrideExisting: false
@@ -289,6 +381,10 @@ export const {
 	useRunStatusStreamQuery,
 	useAthleteMovesAndBonusesStreamQuery,
 	useBroadcastControlStreamQuery,
+	useBroadcastControlRequestStreamQuery,
+	useHeadJudgeSelectionRequestStreamQuery,
+	useHeadJudgePositionStreamQuery,
 	useEmitRunStatusMutation,
-	useEmitBroadcastControlMutation
+	useEmitBroadcastControlMutation,
+	useEmitHeadJudgePositionMutation
 } = streamingApi

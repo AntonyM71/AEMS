@@ -3,22 +3,20 @@ import GlobalStyles from "@mui/material/GlobalStyles"
 import Grid2 from "@mui/material/Grid2"
 import { ThemeProvider } from "@mui/material/styles"
 import React from "react"
-import { useBroadcastControlStreamQuery } from "../../redux/services/streamingApi"
 import { AthleteInfo } from "../broadcast/Cards/AthleteInfoCard"
 import { EventTitle } from "../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../broadcast/Cards/HeatSummaryTable"
 import { SubscribedFinalScore } from "../broadcast/Cards/LiveRunScore"
 import { PhaseScoreTable } from "../broadcast/Cards/PhaseResultsTable"
 import { RunDetails } from "../broadcast/Cards/RunCard"
-import { defaultOverlayControllerState } from "../Interfaces"
 import SlidingModal from "../broadcast/SlidingModal"
+import useDisplayedOverlayState from "../broadcast/useDisplayedOverlayState"
 import useSyncOverlaySelectionState from "../broadcast/useSyncOverlaySelectionState"
 import { darkTheme } from "./arenaTheme"
 import LiveTimerArena from "./liveTimerArena"
 
 const Arena = () => {
-	const { data: overlayControlState = defaultOverlayControllerState } =
-		useBroadcastControlStreamQuery()
+	const overlayControlState = useDisplayedOverlayState()
 	useSyncOverlaySelectionState(overlayControlState)
 
 	return (

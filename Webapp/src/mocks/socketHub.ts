@@ -1,5 +1,5 @@
 // Test double for the Socket.IO layer. streamingApi.ts is the only consumer of
-// the four connect*Socket factories in components/roles/headJudge/WebSocketConnections,
+// the connect*Socket factories in components/roles/headJudge/WebSocketConnections,
 // so a manual mock of that module (see its __mocks__ folder) wired to this hub
 // lets a test push inbound events through the real streamingApi code and assert
 // on what the UI renders.
@@ -9,6 +9,7 @@ export type SocketChannel =
 	| "run_status"
 	| "current_scores"
 	| "broadcast_control"
+	| "head_judge_selection"
 
 export interface MockSocket {
 	on: jest.Mock
@@ -24,7 +25,8 @@ class SocketHub {
 		timer: [],
 		run_status: [],
 		current_scores: [],
-		broadcast_control: []
+		broadcast_control: [],
+		head_judge_selection: []
 	}
 
 	private readonly echoing = new Set<SocketChannel>()

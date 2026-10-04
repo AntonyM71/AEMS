@@ -5,11 +5,14 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
-import { getSelectedHeat } from "../../../redux/atoms/competitions"
+import {
+	getSelectedCompetition,
+	getSelectedHeat
+} from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun
@@ -43,6 +46,7 @@ import { FinalScore } from "./FinalScore"
 import { JudgeCard } from "./JudgeCard"
 import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
+import usePublishHeadJudgePosition from "./usePublishHeadJudgePosition"
 
 export default ({
 	changeRunStatus = true,
@@ -113,6 +117,30 @@ export default ({
 		}
 	}, [currentPaddlerIndex, athleteData, selectedHeat])
 
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	// The commentator page reuses this screen read-only; only the real head
+	// judge may publish, or displays following the head judge would flip-flop.
+	const isHeadJudge = changeRunStatus
+	const headJudgePosition = useMemo(
+		() =>
+			isHeadJudge && selectedHeat && selectedAthlete
+				? {
+						competitionId: selectedCompetition,
+						heatId: selectedHeat,
+						athlete: selectedAthlete,
+						runNumber: selectedRun
+				  }
+				: undefined,
+		[
+			isHeadJudge,
+			selectedCompetition,
+			selectedHeat,
+			selectedAthlete,
+			selectedRun
+		]
+	)
+	usePublishHeadJudgePosition(headJudgePosition)
+
 	const httpRunStatus = useRunStatusStreamQuery(
 		{
 			heatId: selectedHeat,
@@ -182,9 +210,8 @@ export default ({
 					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
 					[],
 				bonuses:
-					streamMoveData.bonuses?.filter(
-						(b) => b.judge_id === jid
-					) ?? []
+					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
+					[]
 			}
 			newScores[jid] = calculateMoveAndBonusScore(
 				filteredData,
@@ -214,8 +241,7 @@ export default ({
 				void emitRunStatus({
 					id: runStatus.id ?? v4(),
 					run_number: selectedRun,
-					phase_id:
-						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
 					heat_id: selectedHeat,
 					athlete_id: selectedAthlete.id,
 					locked: locked ?? runStatus.locked ?? false,
@@ -226,8 +252,7 @@ export default ({
 				void emitRunStatus({
 					id: v4(),
 					run_number: selectedRun,
-					phase_id:
-						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
 					heat_id: selectedHeat,
 					athlete_id: selectedAthlete.id,
 					locked: locked ?? false,
