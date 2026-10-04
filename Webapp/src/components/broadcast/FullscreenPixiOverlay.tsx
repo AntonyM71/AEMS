@@ -1,5 +1,7 @@
+import Box from "@mui/material/Box"
 import dynamic from "next/dynamic"
 import { ReactNode } from "react"
+import { OVERLAY_FALLBACK_EXIT_MS, overlayFallbackSx } from "./overlayFallback"
 
 const PixiFrameSequenceOverlay = dynamic(
 	() => import("./PixiFrameSequenceOverlay"),
@@ -25,13 +27,16 @@ const FullscreenPixiOverlay = ({
 	configName,
 	isVisible
 }: FullscreenPixiOverlayProps): React.JSX.Element => (
-	<PixiFrameSequenceOverlay
-		configName={configName}
-		isVisible={isVisible}
-		style={fullscreenOverlayStyle}
-	>
-		{children}
-	</PixiFrameSequenceOverlay>
+	<Box sx={overlayFallbackSx}>
+		<PixiFrameSequenceOverlay
+			configName={configName}
+			isVisible={isVisible}
+			style={fullscreenOverlayStyle}
+			fallbackExitMs={OVERLAY_FALLBACK_EXIT_MS}
+		>
+			{children}
+		</PixiFrameSequenceOverlay>
+	</Box>
 )
 
 export default FullscreenPixiOverlay

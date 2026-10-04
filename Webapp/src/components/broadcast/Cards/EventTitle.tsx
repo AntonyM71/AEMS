@@ -65,6 +65,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 		<Paper className="AemsEventTitle-root">
 			<Stack spacing={stackSpacing}>
 				<Box
+					className="AemsEventTitle-heading"
 					sx={{
 						display: "flex",
 						flexDirection: "column",
@@ -107,6 +108,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 				</Box>
 				<Divider />
 				<Box
+					className="AemsEventTitle-runs"
 					sx={{
 						display: "flex",
 						gap: "0.75rem",
