@@ -82,13 +82,13 @@ export default ({
 		{
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
 		},
-		{ skip: !selectedAthlete?.scoresheet }
+		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
 	)
 	const availableMoves = useGetManyAvailablemovesGetQuery(
 		{
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
 		},
-		{ skip: !selectedAthlete?.scoresheet }
+		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
 	)
 	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
 		{

@@ -68,9 +68,14 @@ const renderScoresheet = (store: ReturnType<typeof createTestStore>) =>
 	)
 
 const waitForScoresheetToLoad = async (timeout?: number) => {
-	await waitFor(() => {
-		expect(screen.queryByTestId("loading-skeleton")).not.toBeInTheDocument()
-	}, timeout ? { timeout } : undefined)
+	await waitFor(
+		() => {
+			expect(
+				screen.queryByTestId("loading-skeleton")
+			).not.toBeInTheDocument()
+		},
+		timeout ? { timeout } : undefined
+	)
 }
 
 const buildMove = (

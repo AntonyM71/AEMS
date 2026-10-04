@@ -85,9 +85,7 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 const PhaseDetails = ({
 	titleAlign,
 	detailRows
-}: Required<
-	Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">
->) => {
+}: Required<Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">>) => {
 	const selectedPhase = useSelector(getSelectedPhase)
 	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{ id: selectedPhase },
@@ -110,7 +108,10 @@ const PhaseDetails = ({
 		</>
 	)
 	const runs = (
-		<Typography variant="h5" sx={{ color: "text.primary", fontWeight: 400 }}>
+		<Typography
+			variant="h5"
+			sx={{ color: "text.primary", fontWeight: 400 }}
+		>
 			{phaseData?.number_of_runs
 				? `Runs: ${phaseData.number_of_runs}`
 				: null}

@@ -154,18 +154,15 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 						runStatusSockets.add(socketRef.current)
 						emitSockets.run_status = socketRef.current
 					}
-					socketRef.current.on(
-						"run_status",
-						(data: RunStatus) => {
-							if (
-								data?.run_number === runNumber &&
-								data?.athlete_id === athleteId &&
-								data?.heat_id === heatId
-							) {
-								updateCachedData(() => data)
-							}
+					socketRef.current.on("run_status", (data: RunStatus) => {
+						if (
+							data?.run_number === runNumber &&
+							data?.athlete_id === athleteId &&
+							data?.heat_id === heatId
+						) {
+							updateCachedData(() => data)
 						}
-					)
+					})
 				} catch {
 					// no-op if cacheEntryRemoved resolves before cacheDataLoaded
 				}
@@ -213,21 +210,15 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 								updateCachedData((draft) => {
 									draft.moves = [
 										...(draft.moves?.filter(
-											(m) =>
-												m.judge_id !==
-												judgeIdStr
+											(m) => m.judge_id !== judgeIdStr
 										) ?? []),
-										...(data.movesAndBonuses
-											.moves ?? [])
+										...(data.movesAndBonuses.moves ?? [])
 									]
 									draft.bonuses = [
 										...(draft.bonuses?.filter(
-											(b) =>
-												b.judge_id !==
-												judgeIdStr
+											(b) => b.judge_id !== judgeIdStr
 										) ?? []),
-										...(data.movesAndBonuses
-											.bonuses ?? [])
+										...(data.movesAndBonuses.bonuses ?? [])
 									]
 								})
 							}

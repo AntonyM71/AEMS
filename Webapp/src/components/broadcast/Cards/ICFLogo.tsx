@@ -8,10 +8,7 @@ export const SlidingImageCard = ({
 }: {
 	overlayControlState: OverlayControlState
 }) => (
-	<SlidingWrapper
-		show={overlayControlState.showImageCard}
-		direction="down"
-	>
+	<SlidingWrapper show={overlayControlState.showImageCard} direction="down">
 		<Paper>
 			<CardMedia
 				component="img"

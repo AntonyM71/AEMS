@@ -192,7 +192,10 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		{
 			sheetIdList: [athleteData?.[currentPaddlerIndex]?.scoresheet ?? ""]
 		},
-		{ skip: !athleteData?.[currentPaddlerIndex]?.scoresheet }
+		{
+			skip: !athleteData?.[currentPaddlerIndex]?.scoresheet,
+			refetchOnReconnect: true
+		}
 	)
 
 	if (athleteData?.[currentPaddlerIndex]?.athlete_id) {

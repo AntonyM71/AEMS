@@ -31,14 +31,19 @@ const renderTwoPaddlerHeat = async (
 	]
 
 	server.use(
-		http.get("/api/getHeatInfo/:heatId", () => HttpResponse.json(mockPaddlers))
+		http.get("/api/getHeatInfo/:heatId", () =>
+			HttpResponse.json(mockPaddlers)
+		)
 	)
 
 	const { store } = renderWithProviders(
 		<PaddlerSelector paddlerInfo={mockPaddlers[0]} />,
 		{
 			preloadedState: {
-				competitions: { selectedHeat: "heat-1", ...competitionsOverrides }
+				competitions: {
+					selectedHeat: "heat-1",
+					...competitionsOverrides
+				}
 			}
 		}
 	)
