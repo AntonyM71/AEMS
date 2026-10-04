@@ -61,7 +61,7 @@ export const ScoresheetMoves = ({
 	)
 	useEffect(() => {
 		const orderedBonuses = Array.isArray(bonusInfo.data)
-			? [...bonusInfo.data].sort(sortBonuses)
+			? bonusInfo.data.map((bonus) => ({ ...bonus })).sort(sortBonuses)
 			: []
 		setNewBonusInfo(orderedBonuses as NewBonusInfo[])
 		setUniqueBonusNamesList(bonusTypeNames(orderedBonuses))
@@ -234,8 +234,8 @@ export const ScoresheetMoves = ({
 
 	const savedBonuses = (bonusInfo.data ?? []) as NewBonusInfo[]
 	const hasUnsavedChanges =
-		!moves.isFetching &&
-		!bonusInfo.isFetching &&
+		!moves.isLoading &&
+		!bonusInfo.isLoading &&
 		serialiseScoresheet(newMoves, newBonusInfo, uniqueBonusNamesList) !==
 			serialiseScoresheet(
 				[...(moves.data ?? [])].sort(sortMoves),
@@ -361,14 +361,15 @@ const bonusTypeNames = (orderedBonuses: { name?: string | null }[]) =>
 		.map((b) => b.name)
 		.filter((name): name is string => !!name)
 
-// Edited fields hold raw input text, so "140.0" must match a saved 140. A
-// blank or non-numeric entry stays as typed: Number("") is 0 and would hide the edit.
+const DECIMAL_INTEGER = /^-?\d+(\.0+)?$/
+
+// Edited fields hold raw input text, so "140.0" must match a saved 140. Any
+// other text stays as typed: Number("") is 0 and Number("0x10") is 16, both
+// of which would hide an edit the server rejects or reads differently.
 const scoreKey = (score: number | string) => {
 	const text = String(score).trim()
 
-	return text === "" || Number.isNaN(Number(text))
-		? text
-		: String(Number(text))
+	return DECIMAL_INTEGER.test(text) ? String(Number(text)) : text
 }
 
 const serialiseScoresheet = (

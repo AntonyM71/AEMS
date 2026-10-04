@@ -25,6 +25,7 @@ interface AvailableBonuses {
 	move_id: string
 	name: string
 	score: number
+	display_order?: number
 }
 
 const mockMoves: AvailableMoves[] = [
@@ -770,6 +771,64 @@ describe("ScoresheetMoves", () => {
 			})
 
 			expect(unsavedWarning()).not.toBeInTheDocument()
+		})
+
+		it("is shown for a score typed as hexadecimal text of the saved value", async () => {
+			useScoresheetHandlers()
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("10"), {
+				target: { value: "0x0A" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("is shown for a bonus edit when saved bonuses already have a display order", async () => {
+			useScoresheetHandlers({
+				bonuses: [{ ...mockBonuses[0], display_order: 0 }]
+			})
+			await loadScoresheet()
+
+			fireEvent.change(screen.getByDisplayValue("5"), {
+				target: { value: "7" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
+		})
+
+		it("is shown for an edit made while the saved data is refetching", async () => {
+			let saved = false
+			let refetchRequested = false
+			server.use(
+				http.get("/api/availablemoves", async () => {
+					if (saved) {
+						refetchRequested = true
+						await delay(500)
+					}
+
+					return HttpResponse.json(mockMoves)
+				}),
+				http.get("/api/availablebonuses", () =>
+					HttpResponse.json(mockBonuses)
+				),
+				http.post("/api/addUpdateScoresheet/:id", () => {
+					saved = true
+
+					return HttpResponse.json({ success: true })
+				})
+			)
+			await loadScoresheet()
+
+			fireEvent.click(
+				screen.getByRole("button", { name: "Update Scoresheet" })
+			)
+			await waitFor(() => expect(refetchRequested).toBe(true))
+			fireEvent.change(screen.getByDisplayValue("Test Move"), {
+				target: { value: "Edited during refetch" }
+			})
+
+			expect(unsavedWarning()).toBeInTheDocument()
 		})
 
 		it("stays after a failed save", async () => {

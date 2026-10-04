@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { http, HttpResponse } from "msw"
+import { http, HttpResponse, delay } from "msw"
 import Router from "next/router"
 import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
@@ -223,6 +223,29 @@ describe("ScoresheetBuilderPage", () => {
 			await screen.findByText(/unsaved changes/i)
 
 			expect(dispatchBeforeUnload().defaultPrevented).toBe(true)
+		})
+
+		it("asks before switching to a new scoresheet when edits were made while it was being created", async () => {
+			server.use(
+				http.post("/api/scoresheet", async () => {
+					await delay(300)
+
+					return HttpResponse.json({ success: true })
+				})
+			)
+			await openSheetA(false)
+			confirmSpy.mockReturnValue(false)
+
+			await user.type(
+				screen.getByRole("textbox", { name: "New Scoresheet" }),
+				"Brand New{enter}"
+			)
+			await user.type(screen.getByDisplayValue("Loop"), " Edited")
+			await screen.findByText(/unsaved changes/i)
+
+			await waitFor(() => expect(confirmSpy).toHaveBeenCalledTimes(1))
+			expect(scoresheetCombobox()).toHaveValue("Sheet A")
+			expect(screen.getByDisplayValue("Loop Edited")).toBeInTheDocument()
 		})
 
 		it("aborts in-app navigation when the operator cancels", async () => {

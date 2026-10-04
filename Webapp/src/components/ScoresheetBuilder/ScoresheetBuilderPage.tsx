@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Router from "next/router"
-import { SetStateAction, useEffect, useState } from "react"
+import { SetStateAction, useEffect, useRef, useState } from "react"
 import { SelectScoresheet } from "../competition/ScoresheetSelector"
 import { AddScoresheet } from "./AddScoresheet"
 import { ScoresheetMoves } from "./ScoresheetBuilder"
@@ -13,8 +13,16 @@ export const ScoresheetBuilder = () => {
 	const [selectedScoresheet, setSelectedScoresheet] = useState<string>("")
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
+	// AddScoresheet calls switchScoresheet after awaiting requests, so it must
+	// read the latest value rather than the one captured when the call began.
+	const hasUnsavedChangesRef = useRef(hasUnsavedChanges)
+	hasUnsavedChangesRef.current = hasUnsavedChanges
+
 	const switchScoresheet = (scoresheet: SetStateAction<string>) => {
-		if (!hasUnsavedChanges || window.confirm(DISCARD_CHANGES_PROMPT)) {
+		if (
+			!hasUnsavedChangesRef.current ||
+			window.confirm(DISCARD_CHANGES_PROMPT)
+		) {
 			setSelectedScoresheet(scoresheet)
 		}
 	}
