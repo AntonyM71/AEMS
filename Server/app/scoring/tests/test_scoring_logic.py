@@ -75,6 +75,61 @@ def _run_scores(
     )
 
 
+MOVE_1 = "17e3baf1-ce39-4a1f-971b-efea37d84aae"
+TROPHY = "17e3baf1-ce39-4a1f-971b-efea37d84aad"
+SCORED_A = "e2d65876-01b5-4607-8caf-ad0740f9e3e2"
+SCORED_B = "e2d65876-01b5-4607-8caf-ad0740f9e3e1"
+SCORED_C = "e677b594-f4a8-4549-a5a2-642e4c29a33a"
+BONUS_1 = "3883d4f2-7592-45a2-b7d4-22ca20d546b3"
+BONUS_2 = "3883d4f2-7592-45a2-b7d4-22ca20d546b2"
+ATHLETE_ID = "c7476320-6c48-11ee-b962-0242ac120002"
+SCORED_BONUS_ID = "6a6ec3f8-a251-44c6-b7df-93543a7a5dbe"
+
+
+def _bonus_on(move_id: str, bonus_id: str = BONUS_1) -> PydanticScoredBonusesResponse:
+    return _bonus(id=SCORED_BONUS_ID, move_id=move_id, bonus_id=bonus_id)
+
+
+BACK_A = _move(SCORED_A, MOVE_1, "B")
+BACK_B = _move(SCORED_B, MOVE_1, "B")
+BACK_C = _move(SCORED_C, MOVE_1, "B")
+FRONT_A = _move(SCORED_A, MOVE_1, "F")
+FRONT_B = _move(SCORED_B, MOVE_1, "F")
+FRONT_C = _move(SCORED_C, MOVE_1, "F")
+TROPHY_A = _move(SCORED_A, TROPHY, "S")
+TROPHY_C = _move(SCORED_C, TROPHY, "S")
+
+
+def _judge_moves(
+    judge_id: str,
+    scored_moves: list[PydanticScoredMovesResponse],
+    scored_bonuses: list[PydanticScoredBonusesResponse],
+) -> JudgeMoves:
+    return JudgeMoves(
+        judge_id=judge_id, scored_moves=scored_moves, scored_bonuses=scored_bonuses
+    )
+
+
+def _run_moves(run: int, judge_moves: list[JudgeMoves]) -> RunMoves:
+    return RunMoves(run=run, judge_moves=judge_moves)
+
+
+ID_3 = "c7476320-6c48-11ee-b962-0242ac120003"
+ID_4 = "c7476320-6c48-11ee-b962-0242ac120004"
+ID_5 = "c7476320-6c48-11ee-b962-0242ac120005"
+BIB_NUMBERS = {UUID(ID_3): "3", UUID(ID_4): "4", UUID(ID_5): "5"}
+
+
+def _with_ranks(
+    athletes: list[AthleteScores], *ranks_and_reasons: tuple[int | None, str | None]
+) -> list[AthleteScores]:
+    ranked = [athlete.model_copy(deep=True) for athlete in athletes]
+    for athlete, (ranking, reason) in zip(ranked, ranks_and_reasons, strict=True):
+        athlete.ranking = ranking
+        athlete.reason = reason
+    return ranked
+
+
 def _tied_athlete(
     athlete_id: str,
     run_means: list[float],
@@ -148,513 +203,163 @@ def available_bonuses() -> list[AvailableBonuses]:
     ]
 
 
+@pytest.fixture
+def athlete_moves() -> list[AthleteMovesWithJudgeInfo]:
+    return [
+        AthleteMovesWithJudgeInfo(
+            number_of_judges=3,
+            athlete_id=ATHLETE_ID,
+            run_moves=[
+                _run_moves(
+                    1,
+                    [
+                        _judge_moves(
+                            "meg",
+                            [BACK_A],
+                            [_bonus_on(SCORED_A)],
+                        )
+                    ],
+                ),
+                _run_moves(
+                    2,
+                    [
+                        _judge_moves(
+                            "meg",
+                            [
+                                _move(
+                                    id=SCORED_B,
+                                    move_id=MOVE_1,
+                                    run_number="2",
+                                    direction="B",
+                                )
+                            ],
+                            [],
+                        )
+                    ],
+                ),
+            ],
+        )
+    ]
+
+
 class TestScoring:
-    def test_it_returns_zero_with_no_moves(self) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = []
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-        available_moves: list[AvailableMoves] = []
-        available_bonuses: list[AvailableBonuses] = []
-
+    @pytest.mark.parametrize(
+        ("scored_moves", "scored_bonuses", "want"),
+        [
+            pytest.param([], [], 0, id="no_moves"),
+            pytest.param([FRONT_A], [], 10, id="front_move"),
+            pytest.param([FRONT_A, FRONT_C], [], 10, id="duplicated_front_move"),
+            pytest.param([TROPHY_A, TROPHY_C], [], 9, id="duplicated_trophy_move"),
+            pytest.param([BACK_A], [], 20, id="back_move"),
+            pytest.param([BACK_A, FRONT_C], [], 30, id="front_and_back_move"),
+            pytest.param([BACK_A, BACK_C], [], 20, id="duplicated_back_move"),
+            pytest.param(
+                [BACK_A], [_bonus_on(SCORED_A)], 25, id="back_move_with_bonus"
+            ),
+            pytest.param(
+                [BACK_A, FRONT_B],
+                [_bonus_on(SCORED_A)],
+                35,
+                id="back_and_front_move_with_bonus",
+            ),
+            pytest.param(
+                [BACK_A],
+                [_bonus_on(SCORED_A), _bonus_on(SCORED_A)],
+                25,
+                id="duplicated_bonus",
+            ),
+            pytest.param(
+                [BACK_A, BACK_B],
+                [_bonus_on(SCORED_A), _bonus_on(SCORED_B, BONUS_2)],
+                30,
+                id="same_move_with_different_bonuses",
+            ),
+        ],
+    )
+    def test_it_scores_a_run(
+        self,
+        available_moves: list[AvailableMoves],
+        available_bonuses: list[AvailableBonuses],
+        scored_moves: list[PydanticScoredMovesResponse],
+        scored_bonuses: list[PydanticScoredBonusesResponse],
+        want: float,
+    ) -> None:
         got = calculate_run_score(
             scored_moves,
             scored_bonuses,
             available_bonuses=available_bonuses,
             available_moves=available_moves,
         )
+
+        assert got.score == want
+
+    def test_it_returns_zero_with_no_moves_and_no_scoresheet(self) -> None:
+        got = calculate_run_score([], [], available_bonuses=[], available_moves=[])
 
         assert got.score == 0
-
-    def test_it_returns_zero_with_no_moves_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = []
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 0
-
-    def test_it_returns_10_with_scored_front_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            )
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 10
-
-    def test_it_returns_10_with_a_duplicated_scored_front_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 10
-
-    def test_it_returns_9_with_a_duplicated_scored_trophy_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
-                direction="S",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aad",
-                direction="S",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 9
-
-    def test_it_returns_20_with_scored_back_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            )
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 20
-
-    def test_it_returns_30_with_scored_front_and_back_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 30
-
-    def test_it_returns_25_with_scored_back_move_with_a_bonus_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            )
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            )
-        ]
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 25
-
-    def test_it_returns_35_with_scored_back_and_front_move_with_a_bonus_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            )
-        ]
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 35
-
-    def test_it_returns_25_with_scored_back_move_with_a_duplicated_bonus_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            )
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-        ]
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 25
-
-    def test_it_returns_30_with_two_of_the_same_moves_that_have_different_bonuses_scored(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b2",
-            ),
-        ]
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 30
-
-    def test_it_returns_20_with_a_duplicated_scored_back_move_and_a_valid_scoresheet(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-
-        got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-        )
-
-        assert got.score == 20
 
     def test_it_returns_the_highest_scoring_move(
         self,
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
     ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="F",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-        ]
-
         got = calculate_run_score(
-            scored_moves,
-            scored_bonuses,
+            [BACK_A, FRONT_B],
+            [_bonus_on(SCORED_A)],
             available_bonuses=available_bonuses,
             available_moves=available_moves,
         )
 
         assert got.highest_scoring_move == 25
 
-    def test_it_raises_an_error_for_moves_with_different_judges(
+    @pytest.mark.parametrize(
+        ("different_move", "field"),
+        [
+            pytest.param(_move(SCORED_C, MOVE_1, "B", judge_id="dave"), "judges"),
+            pytest.param(_move(SCORED_C, MOVE_1, "B", run_number="2"), "run_numbers"),
+            pytest.param(
+                _move(
+                    SCORED_C,
+                    MOVE_1,
+                    "B",
+                    athlete_id="c7476320-6c48-11ee-b962-0242ac120001",
+                ),
+                "athlete_ids",
+            ),
+            pytest.param(
+                _move(
+                    SCORED_C,
+                    MOVE_1,
+                    "B",
+                    heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676c",
+                ),
+                "heat_ids",
+            ),
+            pytest.param(
+                _move(
+                    SCORED_C,
+                    MOVE_1,
+                    "B",
+                    phase_id="942e908e-b074-48b7-926a-59b9dd214dc6",
+                ),
+                "phase_ids",
+            ),
+        ],
+    )
+    def test_it_raises_an_error_for_moves_that_differ_by(
         self,
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
+        different_move: PydanticScoredMovesResponse,
+        field: str,
     ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                judge_id="dave",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
         with pytest.raises(
             MixedUpScoresheetExceptionError,
-            match="Move List contains moves from different judges",
+            match=f"Move List contains moves from different {field}",
         ):
             calculate_run_score(
-                scored_moves,
-                scored_bonuses,
-                available_bonuses=available_bonuses,
-                available_moves=available_moves,
-            )
-
-    def test_it_raises_an_error_for_moves_with_different_run_numbers(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                run_number="2",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-        with pytest.raises(
-            MixedUpScoresheetExceptionError,
-            match="Move List contains moves from different run_numbers",
-        ):
-            calculate_run_score(
-                scored_moves,
-                scored_bonuses,
-                available_bonuses=available_bonuses,
-                available_moves=available_moves,
-            )
-
-    def test_it_raises_an_error_for_moves_with_different_athlete_ids(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120001",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-        with pytest.raises(
-            MixedUpScoresheetExceptionError,
-            match="Move List contains moves from different athlete_ids",
-        ):
-            calculate_run_score(
-                scored_moves,
-                scored_bonuses,
-                available_bonuses=available_bonuses,
-                available_moves=available_moves,
-            )
-
-    def test_it_raises_an_error_for_moves_with_different_heat_ids(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676c",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-        with pytest.raises(
-            MixedUpScoresheetExceptionError,
-            match="Move List contains moves from different heat_ids",
-        ):
-            calculate_run_score(
-                scored_moves,
-                scored_bonuses,
-                available_bonuses=available_bonuses,
-                available_moves=available_moves,
-            )
-
-    def test_it_raises_an_error_for_moves_with_different_phase_ids(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e677b594-f4a8-4549-a5a2-642e4c29a33a",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                phase_id="942e908e-b074-48b7-926a-59b9dd214dc6",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = []
-        with pytest.raises(
-            MixedUpScoresheetExceptionError,
-            match="Move List contains moves from different phase_ids",
-        ):
-            calculate_run_score(
-                scored_moves,
-                scored_bonuses,
+                [BACK_A, different_move],
+                [],
                 available_bonuses=available_bonuses,
                 available_moves=available_moves,
             )
@@ -668,13 +373,7 @@ class TestMoveOrganising:
         assert got == want
 
     def test_it_returns_a_pydantic_class_for_one_athlete(self) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            )
-        ]
+        scored_moves: list[PydanticScoredMovesResponse] = [BACK_A]
         got = organise_moves_by_athlete_run_judge(
             scored_moves,
             [],
@@ -682,21 +381,15 @@ class TestMoveOrganising:
 
         want: list[AthleteMoves] = [
             AthleteMoves(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [],
                             )
                         ],
                     )
@@ -707,17 +400,8 @@ class TestMoveOrganising:
 
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_judges(self) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                judge_id="dave",
-                direction="B",
-            ),
+            BACK_A,
+            _move(id=SCORED_A, move_id=MOVE_1, judge_id="dave", direction="B"),
         ]
         got = organise_moves_by_athlete_run_judge(
             scored_moves,
@@ -726,33 +410,27 @@ class TestMoveOrganising:
 
         want: list[AthleteMoves] = [
             AthleteMoves(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="dave",
-                                scored_moves=[
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "dave",
+                                [
                                     _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        id=SCORED_A,
+                                        move_id=MOVE_1,
                                         judge_id="dave",
                                         direction="B",
                                     )
                                 ],
-                                scored_bonuses=[],
+                                [],
                             ),
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [],
                             ),
                         ],
                     )
@@ -763,17 +441,8 @@ class TestMoveOrganising:
 
     def test_it_returns_a_pydantic_class_for_one_athlete_with_two_runs(self) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                run_number="2",
-                direction="B",
-            ),
+            BACK_A,
+            _move(id=SCORED_A, move_id=MOVE_1, run_number="2", direction="B"),
         ]
         got = organise_moves_by_athlete_run_judge(
             scored_moves,
@@ -782,38 +451,32 @@ class TestMoveOrganising:
 
         want: list[AthleteMoves] = [
             AthleteMoves(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [],
                             )
                         ],
                     ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
+                    _run_moves(
+                        2,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [
                                     _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        id=SCORED_A,
+                                        move_id=MOVE_1,
                                         run_number="2",
                                         direction="B",
                                     )
                                 ],
-                                scored_bonuses=[],
+                                [],
                             )
                         ],
                     ),
@@ -826,29 +489,12 @@ class TestMoveOrganising:
         self,
     ) -> None:
         scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                run_number="2",
-                direction="B",
-            ),
+            BACK_A,
+            _move(id=SCORED_B, move_id=MOVE_1, run_number="2", direction="B"),
         ]
         scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
+            _bonus_on(SCORED_A),
+            _bonus_on(SCORED_B),
         ]
         got = organise_moves_by_athlete_run_judge(
             scored_moves,
@@ -857,50 +503,32 @@ class TestMoveOrganising:
 
         want: list[AthleteMoves] = [
             AthleteMoves(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             )
                         ],
                     ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
+                    _run_moves(
+                        2,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [
                                     _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        id=SCORED_B,
+                                        move_id=MOVE_1,
                                         run_number="2",
                                         direction="B",
                                     )
                                 ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                                [_bonus_on(SCORED_B)],
                             )
                         ],
                     ),
@@ -911,338 +539,76 @@ class TestMoveOrganising:
 
 
 class TestAthleteScoreCalculation:
+    @pytest.mark.parametrize(
+        ("run_status", "want_run_1", "want_highest_move", "want_total"),
+        [
+            pytest.param(
+                None,
+                _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0),
+                25.0,
+                8.33,
+                id="no_run_status",
+            ),
+            pytest.param(
+                {"locked": True, "did_not_start": False},
+                _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0, locked=True),
+                25.0,
+                8.33,
+                id="locked",
+            ),
+            pytest.param(
+                {"locked": False, "did_not_start": True},
+                _run_scores(1, [_judge_score("meg", 25, 25)], 0, 0, did_not_start=True),
+                20.0,
+                6.67,
+                id="did_not_start",
+            ),
+        ],
+    )
     def test_it_returns_a_scores_object_for_a_set_of_athlete_moves(
         self,
         available_moves: list[AvailableMoves],
         available_bonuses: list[AvailableBonuses],
+        athlete_moves: list[AthleteMovesWithJudgeInfo],
+        run_status: dict[str, bool] | None,
+        want_run_1: RunScores,
+        want_highest_move: float,
+        want_total: float,
     ) -> None:
-        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
-            AthleteMovesWithJudgeInfo(
-                number_of_judges=3,
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
-                            )
-                        ],
-                    ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        run_number="2",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
-                            )
-                        ],
-                    ),
-                ],
-            )
-        ]
-
-        want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
-                run_scores=[
-                    _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0),
-                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
-                ],
-                highest_scoring_move=25.0,
-                total_score=8.33,
-            )
-        ]
-        got = calculate_heat_scores(
-            athlete_moves_list=athlete_moves,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-            run_statuses=[],
-            scoring_runs=1,
-        )
-
-        assert got == want
-
-    def test_it_assigns_a_run_as_locked_based_on_its_runstatus(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
-            AthleteMovesWithJudgeInfo(
-                number_of_judges=3,
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
-                            )
-                        ],
-                    ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        run_number="2",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
-                            )
-                        ],
-                    ),
-                ],
-            )
-        ]
-
-        want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
-                run_scores=[
-                    _run_scores(
-                        1, [_judge_score("meg", 25, 25)], 8.33, 25.0, locked=True
-                    ),
-                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
-                ],
-                highest_scoring_move=25.0,
-                total_score=8.33,
-            )
-        ]
-        got = calculate_heat_scores(
-            athlete_moves_list=athlete_moves,
-            available_bonuses=available_bonuses,
-            available_moves=available_moves,
-            run_statuses=[
+        run_statuses = (
+            [
                 PydanticRunStatus(
-                    id="c7476320-6c48-11ee-b962-0242ac120002",
-                    athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                    id=ATHLETE_ID,
+                    athlete_id=ATHLETE_ID,
                     heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
                     run_number=1,
                     phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                    locked=True,
-                    did_not_start=False,
+                    **run_status,
                 )
-            ],
-            scoring_runs=1,
+            ]
+            if run_status
+            else []
         )
 
-        assert got == want
-
-    def test_it_assigns_a_run_as_dns_based_on_its_runstatus(
-        self,
-        available_moves: list[AvailableMoves],
-        available_bonuses: list[AvailableBonuses],
-    ) -> None:
-        athlete_moves: list[AthleteMovesWithJudgeInfo] = [
-            AthleteMovesWithJudgeInfo(
-                number_of_judges=3,
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
-                            )
-                        ],
-                    ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        run_number="2",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[],
-                            )
-                        ],
-                    ),
-                ],
-            )
-        ]
-
-        want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
-                run_scores=[
-                    _run_scores(
-                        1, [_judge_score("meg", 25, 25)], 0, 0, did_not_start=True
-                    ),
-                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
-                ],
-                highest_scoring_move=20.0,
-                total_score=6.67,
-            )
-        ]
         got = calculate_heat_scores(
             athlete_moves_list=athlete_moves,
             available_bonuses=available_bonuses,
             available_moves=available_moves,
-            run_statuses=[
-                PydanticRunStatus(
-                    id="c7476320-6c48-11ee-b962-0242ac120002",
-                    athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                    heat_id="8fa0fe12-12e3-4020-892a-ffffe96f676d",
-                    run_number=1,
-                    phase_id="942e908e-b074-48b7-926a-59b9dd214dc7",
-                    locked=False,
-                    did_not_start=True,
-                )
-            ],
+            run_statuses=run_statuses,
             scoring_runs=1,
         )
 
-        assert got == want
-
-    def test_it_returns_a_pydantic_class_for_one_athlete_with_two_runs_and_bonuses(
-        self,
-    ) -> None:
-        scored_moves: list[PydanticScoredMovesResponse] = [
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                direction="B",
-            ),
-            _move(
-                id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                run_number="2",
-                direction="B",
-            ),
-        ]
-        scored_bonuses: list[PydanticScoredBonusesResponse] = [
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-            _bonus(
-                id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-            ),
-        ]
-        got = organise_moves_by_athlete_run_judge(
-            scored_moves,
-            scored_bonuses,
-        )
-
-        want: list[AthleteMoves] = [
-            AthleteMoves(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
-                run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
-                            )
-                        ],
-                    ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        run_number="2",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
-                            )
-                        ],
-                    ),
+        assert got == [
+            AthleteScores(
+                athlete_id=ATHLETE_ID,
+                run_scores=[
+                    want_run_1,
+                    _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
                 ],
+                highest_scoring_move=want_highest_move,
+                total_score=want_total,
             )
         ]
-        assert got == want
 
     def test_it_handles_too_many_judges_gracefully(
         self,
@@ -1252,78 +618,30 @@ class TestAthleteScoreCalculation:
         athlete_moves: list[AthleteMovesWithJudgeInfo] = [
             AthleteMovesWithJudgeInfo(
                 number_of_judges=3,
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             ),
-                            JudgeMoves(
-                                judge_id="josh",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                            _judge_moves(
+                                "josh",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             ),
-                            JudgeMoves(
-                                judge_id="Ibbo",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                            _judge_moves(
+                                "Ibbo",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             ),
-                            JudgeMoves(
-                                judge_id="Jon",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                            _judge_moves(
+                                "Jon",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             ),
                         ],
                     ),
@@ -1333,7 +651,7 @@ class TestAthleteScoreCalculation:
 
         want = [
             AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
+                athlete_id=ATHLETE_ID,
                 run_scores=[
                     _run_scores(
                         1,
@@ -1368,45 +686,33 @@ class TestAthleteScoreCalculation:
     ) -> None:
         athlete_moves: list[AthleteMovesWithJudgeInfo] = [
             AthleteMovesWithJudgeInfo(
-                athlete_id="c7476320-6c48-11ee-b962-0242ac120002",
+                athlete_id=ATHLETE_ID,
                 number_of_judges=3,
                 run_moves=[
-                    RunMoves(
-                        run=1,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
-                                    _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
-                                        direction="B",
-                                    )
-                                ],
-                                scored_bonuses=[
-                                    _bonus(
-                                        id="6a6ec3f8-a251-44c6-b7df-93543a7a5dbe",
-                                        move_id="e2d65876-01b5-4607-8caf-ad0740f9e3e2",
-                                        bonus_id="3883d4f2-7592-45a2-b7d4-22ca20d546b3",
-                                    )
-                                ],
+                    _run_moves(
+                        1,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [BACK_A],
+                                [_bonus_on(SCORED_A)],
                             )
                         ],
                     ),
-                    RunMoves(
-                        run=2,
-                        judge_moves=[
-                            JudgeMoves(
-                                judge_id="meg",
-                                scored_moves=[
+                    _run_moves(
+                        2,
+                        [
+                            _judge_moves(
+                                "meg",
+                                [
                                     _move(
-                                        id="e2d65876-01b5-4607-8caf-ad0740f9e3e1",
-                                        move_id="17e3baf1-ce39-4a1f-971b-efea37d84aae",
+                                        id=SCORED_B,
+                                        move_id=MOVE_1,
                                         run_number="2",
                                         direction="B",
                                     )
                                 ],
-                                scored_bonuses=[],
+                                [],
                             )
                         ],
                     ),
@@ -1416,7 +722,7 @@ class TestAthleteScoreCalculation:
 
         want = [
             AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120002"),
+                athlete_id=ATHLETE_ID,
                 run_scores=[
                     _run_scores(1, [_judge_score("meg", 25, 25)], 8.33, 25.0),
                     _run_scores(2, [_judge_score("meg", 20, 20)], 6.67, 20.0),
@@ -1446,12 +752,7 @@ class TestAthleteRankCalculation:
             _tied_athlete(aid, [25.0, 20.0], highest_move=25.0, total_score=45.0),
         ]
 
-        want = [
-            _tied_athlete(aid, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(aid, [25.0, 20.0], highest_move=25.0, total_score=45.0),
-        ]
-        want[0].ranking = 1
-        want[1].ranking = 2
+        want = _with_ranks(scores, (1, None), (2, None))
 
         got = calculate_rank(scores)
         assert got == want
@@ -1459,22 +760,19 @@ class TestAthleteRankCalculation:
     def test_it_doesnt_give_a_rank_to_a_paddler_that_dns_all_rides(
         self,
     ) -> None:
+        did_not_start_run = _judge_score("meg", 25, 25)
         scores = [
             AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
+                athlete_id=ID_3,
                 run_scores=[
-                    _run_scores(
-                        1, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
-                    ),
-                    _run_scores(
-                        2, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
-                    ),
+                    _run_scores(1, [did_not_start_run], 25.0, 25.0, did_not_start=True),
+                    _run_scores(2, [did_not_start_run], 25.0, 25.0, did_not_start=True),
                 ],
                 highest_scoring_move=25.0,
                 total_score=50,
             ),
             AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
+                athlete_id=ID_3,
                 run_scores=[
                     _run_scores(1, [_judge_score("meg", 25, 25)], 25.0, 25.0),
                     _run_scores(2, [_judge_score("meg", 20, 20)], 20.0, 20.0),
@@ -1483,33 +781,7 @@ class TestAthleteRankCalculation:
                 total_score=45,
             ),
         ]
-
-        want = [
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    _run_scores(
-                        1, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
-                    ),
-                    _run_scores(
-                        2, [_judge_score("meg", 25, 25)], 25.0, 25.0, did_not_start=True
-                    ),
-                ],
-                highest_scoring_move=25.0,
-                ranking=None,
-                total_score=50,
-            ),
-            AthleteScores(
-                athlete_id=("c7476320-6c48-11ee-b962-0242ac120003"),
-                run_scores=[
-                    _run_scores(1, [_judge_score("meg", 25, 25)], 25.0, 25.0),
-                    _run_scores(2, [_judge_score("meg", 20, 20)], 20.0, 20.0),
-                ],
-                highest_scoring_move=25.0,
-                ranking=1,
-                total_score=45,
-            ),
-        ]
+        want = _with_ranks(scores, (None, None), (1, None))
 
         got = calculate_rank(scores)
         assert got == want
@@ -1517,65 +789,38 @@ class TestAthleteRankCalculation:
     def test_it_breaks_a_tie_with_highest_scoring_run(
         self,
     ) -> None:
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
+            _tied_athlete(ID_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(ID_4, [30.0, 20.0], highest_move=25.0),
         ]
 
         reason = "Tie resolved by highest scoring run: #4 (30.00), #3 (25.00)"
-        want = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [30.0, 20.0], highest_move=25.0),
-        ]
-        want[0].ranking = 2
-        want[0].reason = reason
-        want[1].ranking = 1
-        want[1].reason = reason
+        want = _with_ranks(scores, (2, reason), (1, reason))
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_tie_with_dropped_run_run(
         self,
     ) -> None:
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            _tied_athlete(id_3, [25.0, 25.0, 5.0], highest_move=25.0),
-            _tied_athlete(id_4, [25.0, 25.0, 10.0], highest_move=25.0),
+            _tied_athlete(ID_3, [25.0, 25.0, 5.0], highest_move=25.0),
+            _tied_athlete(ID_4, [25.0, 25.0, 10.0], highest_move=25.0),
         ]
 
         reason = "Tie resolved by 3rd highest scoring run: #4 (10.00), #3 (5.00)"
-        want = [
-            _tied_athlete(id_3, [25.0, 25.0, 5.0], highest_move=25.0),
-            _tied_athlete(id_4, [25.0, 25.0, 10.0], highest_move=25.0),
-        ]
-        want[0].ranking = 2
-        want[0].reason = reason
-        want[1].ranking = 1
-        want[1].reason = reason
+        want = _with_ranks(scores, (2, reason), (1, reason))
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scoring_run(
         self,
     ) -> None:
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [30.0, 20.0], highest_move=30.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
+            _tied_athlete(ID_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(ID_4, [30.0, 20.0], highest_move=30.0),
+            _tied_athlete(ID_5, [35.0, 15.0], highest_move=35.0),
         ]
 
         # All three are pairwise distinct on the very first criterion, so the
@@ -1583,22 +828,9 @@ class TestAthleteRankCalculation:
         top_reason = (
             "Tie resolved by highest scoring run: #5 (35.00), #4 (30.00), #3 (25.00)"
         )
-        want = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [30.0, 20.0], highest_move=30.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
-        ]
-        want[0].ranking = 3
-        want[0].reason = top_reason
-        want[1].ranking = 2
-        want[1].reason = top_reason
-        want[2].ranking = 1
-        want[2].reason = top_reason
+        want = _with_ranks(scores, (3, top_reason), (2, top_reason), (1, top_reason))
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_three_way_tie_by_third_run_then_highest_move(
@@ -1606,14 +838,11 @@ class TestAthleteRankCalculation:
     ) -> None:
         # #5 clears the field on the 3rd run; #3 and #4 tie on every run and
         # are split only by the highest scoring move.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         # deliberately not in finishing order
         scores = [
-            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
-            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
-            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
+            _tied_athlete(ID_4, [30.0, 30.0, 10.0], highest_move=20.0),
+            _tied_athlete(ID_3, [30.0, 30.0, 10.0], highest_move=25.0),
+            _tied_athlete(ID_5, [30.0, 30.0, 20.0], highest_move=15.0),
         ]
 
         # #4 also scored 10 on the 3rd run, tied with #3 there, so the run-based
@@ -1624,35 +853,24 @@ class TestAthleteRankCalculation:
             "Tie resolved by 3rd highest scoring run: #5 (20.00), #3 (10.00), "
             "#4 (10.00)"
         )
-        want = [
-            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=20.0),
-            _tied_athlete(id_3, [30.0, 30.0, 10.0], highest_move=25.0),
-            _tied_athlete(id_5, [30.0, 30.0, 20.0], highest_move=15.0),
-        ]
-        want[0].ranking = 3
-        want[0].reason = "Tie resolved by highest scoring move: #3 (25.00), #4 (20.00)"
-        want[1].ranking = 2
-        want[1].reason = run_reason
-        want[2].ranking = 1
-        want[2].reason = run_reason
-
-        got = calculate_rank(
+        want = _with_ranks(
             scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+            (3, "Tie resolved by highest scoring move: #3 (25.00), #4 (20.00)"),
+            (2, run_reason),
+            (1, run_reason),
         )
+
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_three_way_tie_across_successive_runs(
         self,
     ) -> None:
         # highest run peels off #3, second-highest run splits #4 from #5.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
-            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
-            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(ID_5, [30.0, 25.0, 10.0], highest_move=10.0),
+            _tied_athlete(ID_4, [30.0, 30.0, 10.0], highest_move=10.0),
+            _tied_athlete(ID_3, [40.0, 30.0, 10.0], highest_move=10.0),
         ]
 
         # #5 also scored 30 on the highest run, tied with #4 there, so #3's and
@@ -1662,37 +880,24 @@ class TestAthleteRankCalculation:
         top_reason = (
             "Tie resolved by highest scoring run: #3 (40.00), #4 (30.00), #5 (30.00)"
         )
-        want = [
-            _tied_athlete(id_5, [30.0, 25.0, 10.0], highest_move=10.0),
-            _tied_athlete(id_4, [30.0, 30.0, 10.0], highest_move=10.0),
-            _tied_athlete(id_3, [40.0, 30.0, 10.0], highest_move=10.0),
-        ]
-        want[0].ranking = 3
-        want[
-            0
-        ].reason = "Tie resolved by 2nd highest scoring run: #4 (30.00), #5 (25.00)"
-        want[1].ranking = 2
-        want[1].reason = top_reason
-        want[2].ranking = 1
-        want[2].reason = top_reason
-
-        got = calculate_rank(
+        want = _with_ranks(
             scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+            (3, "Tie resolved by 2nd highest scoring run: #4 (30.00), #5 (25.00)"),
+            (2, top_reason),
+            (1, top_reason),
         )
+
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_three_way_tie_entirely_on_the_highest_move(
         self,
     ) -> None:
         # identical on every run; only the highest scoring move separates them.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
-            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
-            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
+            _tied_athlete(ID_5, [30.0, 30.0], highest_move=10.0),
+            _tied_athlete(ID_4, [30.0, 30.0], highest_move=20.0),
+            _tied_athlete(ID_3, [30.0, 30.0], highest_move=30.0),
         ]
 
         # All three share identical run scores, so nothing separates any pair of
@@ -1701,34 +906,18 @@ class TestAthleteRankCalculation:
         top_reason = (
             "Tie resolved by highest scoring move: #3 (30.00), #4 (20.00), #5 (10.00)"
         )
-        want = [
-            _tied_athlete(id_5, [30.0, 30.0], highest_move=10.0),
-            _tied_athlete(id_4, [30.0, 30.0], highest_move=20.0),
-            _tied_athlete(id_3, [30.0, 30.0], highest_move=30.0),
-        ]
-        want[0].ranking = 3
-        want[0].reason = top_reason
-        want[1].ranking = 2
-        want[1].reason = top_reason
-        want[2].ranking = 1
-        want[2].reason = top_reason
+        want = _with_ranks(scores, (3, top_reason), (2, top_reason), (1, top_reason))
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_breaks_a_tie_with_three_paddlers_using_highest_scored_move(
         self,
     ) -> None:
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=20.0),
-            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
+            _tied_athlete(ID_3, [25.0, 25.0], highest_move=20.0),
+            _tied_athlete(ID_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(ID_5, [35.0, 15.0], highest_move=35.0),
         ]
 
         # #3 also scored 25 on the highest run, tied with #4 there, so #4's and
@@ -1738,53 +927,29 @@ class TestAthleteRankCalculation:
         top_reason = (
             "Tie resolved by highest scoring run: #5 (35.00), #4 (25.00), #3 (25.00)"
         )
-        want = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=20.0),
-            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_5, [35.0, 15.0], highest_move=35.0),
-        ]
-        want[0].ranking = 3
-        want[0].reason = "Tie resolved by highest scoring move: #4 (25.00), #3 (20.00)"
-        want[1].ranking = 2
-        want[1].reason = top_reason
-        want[2].ranking = 1
-        want[2].reason = top_reason
-
-        got = calculate_rank(
+        want = _with_ranks(
             scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
+            (3, "Tie resolved by highest scoring move: #4 (25.00), #3 (20.00)"),
+            (2, top_reason),
+            (1, top_reason),
         )
+
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_it_returns_tied_ranks_for_an_actual_tie(
         self,
     ) -> None:
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
-        id_5 = "c7476320-6c48-11ee-b962-0242ac120005"
         scores = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_5, [30.0, 15.0], highest_move=30.0, total_score=45.0),
+            _tied_athlete(ID_3, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(ID_4, [25.0, 25.0], highest_move=25.0),
+            _tied_athlete(ID_5, [30.0, 15.0], highest_move=30.0, total_score=45.0),
         ]
 
         unresolved = "Tie unresolved - athletes remain tied: #3, #4"
-        want = [
-            _tied_athlete(id_3, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_4, [25.0, 25.0], highest_move=25.0),
-            _tied_athlete(id_5, [30.0, 15.0], highest_move=30.0, total_score=45.0),
-        ]
-        want[0].ranking = 1
-        want[0].reason = unresolved
-        want[1].ranking = 1
-        want[1].reason = unresolved
-        # #3 and #4 are tied for 1st, so the next athlete is 3rd (gap after the tie).
-        want[2].ranking = 3
+        want = _with_ranks(scores, (1, unresolved), (1, unresolved), (3, None))
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4", UUID(id_5): "5"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
         assert got == want
 
     def test_two_totals_equal_to_two_decimals_are_treated_as_a_tie(
@@ -1794,25 +959,20 @@ class TestAthleteRankCalculation:
         # only the raw total_score float differs by a ULP (0.1 + 0.2 ==
         # 0.30000000000000004, not 0.3). calculate_rank must still call it a
         # fully tied pair, not rank one a full place above the other.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            _tied_athlete(id_3, [15.0, 15.0], highest_move=15.0, total_score=0.1 + 0.2),
-            _tied_athlete(id_4, [15.0, 15.0], highest_move=15.0, total_score=0.3),
+            _tied_athlete(ID_3, [15.0, 15.0], highest_move=15.0, total_score=0.1 + 0.2),
+            _tied_athlete(ID_4, [15.0, 15.0], highest_move=15.0, total_score=0.3),
         ]
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
 
         by_id = {a.athlete_id: a for a in got}
-        assert by_id[UUID(id_3)].ranking == 1
-        assert by_id[UUID(id_4)].ranking == 1
-        assert by_id[UUID(id_3)].reason == (
+        assert by_id[UUID(ID_3)].ranking == 1
+        assert by_id[UUID(ID_4)].ranking == 1
+        assert by_id[UUID(ID_3)].reason == (
             "Tie unresolved - athletes remain tied: #3, #4"
         )
-        assert by_id[UUID(id_4)].reason == (
+        assert by_id[UUID(ID_4)].reason == (
             "Tie unresolved - athletes remain tied: #3, #4"
         )
 
@@ -1823,24 +983,19 @@ class TestAthleteRankCalculation:
         # differ, so the tiebreak engine resolves it - #3's better run wins.
         # #4 must rank immediately below at 2, not 3: being matched into #3's
         # tie group must not *also* count #3 as "ranked above" #4.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            _tied_athlete(id_3, [0.1, 0.2], highest_move=0.2, total_score=0.1 + 0.2),
+            _tied_athlete(ID_3, [0.1, 0.2], highest_move=0.2, total_score=0.1 + 0.2),
             _tied_athlete(
-                id_4, [0.15, 0.15], highest_move=0.2, total_score=0.15 + 0.15
+                ID_4, [0.15, 0.15], highest_move=0.2, total_score=0.15 + 0.15
             ),
         ]
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
 
         by_id = {a.athlete_id: a for a in got}
-        assert by_id[UUID(id_3)].ranking == 1
-        assert by_id[UUID(id_4)].ranking == 2
-        assert by_id[UUID(id_3)].reason == (
+        assert by_id[UUID(ID_3)].ranking == 1
+        assert by_id[UUID(ID_4)].ranking == 2
+        assert by_id[UUID(ID_3)].reason == (
             "Tie resolved by highest scoring run: #3 (0.20), #4 (0.15)"
         )
 
@@ -1851,24 +1006,19 @@ class TestAthleteRankCalculation:
         # draw on every criterion once the missing run counts as 0. They must
         # share a rank AND be reported as an unresolved tie - not one above
         # the other.
-        id_3 = "c7476320-6c48-11ee-b962-0242ac120003"
-        id_4 = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
-            _tied_athlete(id_3, [10.0], highest_move=5.0, total_score=10.0),
-            _tied_athlete(id_4, [10.0, 0.0], highest_move=5.0, total_score=10.0),
+            _tied_athlete(ID_3, [10.0], highest_move=5.0, total_score=10.0),
+            _tied_athlete(ID_4, [10.0, 0.0], highest_move=5.0, total_score=10.0),
         ]
 
-        got = calculate_rank(
-            scores,
-            bib_numbers={UUID(id_3): "3", UUID(id_4): "4"},
-        )
+        got = calculate_rank(scores, bib_numbers=BIB_NUMBERS)
 
         by_id = {a.athlete_id: a for a in got}
-        assert by_id[UUID(id_3)].ranking == by_id[UUID(id_4)].ranking
-        assert by_id[UUID(id_3)].reason == (
+        assert by_id[UUID(ID_3)].ranking == by_id[UUID(ID_4)].ranking
+        assert by_id[UUID(ID_3)].reason == (
             "Tie unresolved - athletes remain tied: #3, #4"
         )
-        assert by_id[UUID(id_4)].reason == (
+        assert by_id[UUID(ID_4)].reason == (
             "Tie unresolved - athletes remain tied: #3, #4"
         )
 
@@ -1879,7 +1029,7 @@ class TestAthleteRankCalculation:
         # sit at 1 and 2, and Brian & Ringo (200.0, fully tied) at 3 and 3 -
         # not above the higher-scoring pair as the stale rank counter did.
         freddie = "c7476320-6c48-11ee-b962-0242ac120001"
-        paul = "c7476320-6c48-11ee-b962-0242ac120002"
+        paul = ATHLETE_ID
         brian = "c7476320-6c48-11ee-b962-0242ac120003"
         ringo = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
@@ -2024,7 +1174,7 @@ class TestAthleteRankCalculation:
 
     def test_a_partially_resolved_group_of_three_below_a_solo(self) -> None:
         solo = "c7476320-6c48-11ee-b962-0242ac120001"
-        clear = "c7476320-6c48-11ee-b962-0242ac120002"
+        clear = ATHLETE_ID
         tied_a = "c7476320-6c48-11ee-b962-0242ac120003"
         tied_b = "c7476320-6c48-11ee-b962-0242ac120004"
         scores = [
@@ -2056,7 +1206,7 @@ class TestAthleteRankCalculation:
     def test_a_non_starter_with_the_top_score_does_not_push_down_a_tie(self) -> None:
         non_starter_id = "c7476320-6c48-11ee-b962-0242ac120009"
         id_1 = "c7476320-6c48-11ee-b962-0242ac120001"
-        id_2 = "c7476320-6c48-11ee-b962-0242ac120002"
+        id_2 = ATHLETE_ID
         non_starter = AthleteScores(
             athlete_id=UUID(non_starter_id),
             run_scores=[
@@ -2113,7 +1263,7 @@ class TestAthleteRankCalculation:
         # computed. That athlete is unranked, like a non-starter - not
         # lumped in with the genuine zero-scorers (total_score == 0.0).
         no_score_id = "c7476320-6c48-11ee-b962-0242ac120001"
-        zero_id = "c7476320-6c48-11ee-b962-0242ac120002"
+        zero_id = ATHLETE_ID
         scores = [
             _tied_athlete(no_score_id, [0.0], highest_move=0.0, total_score=None),
             _tied_athlete(zero_id, [0.0], highest_move=0.0, total_score=0.0),
@@ -2132,7 +1282,7 @@ class TestAthleteRankCalculation:
     def test_a_field_where_everyone_did_not_start_gets_no_rankings(self) -> None:
         ids = [
             "c7476320-6c48-11ee-b962-0242ac120001",
-            "c7476320-6c48-11ee-b962-0242ac120002",
+            ATHLETE_ID,
         ]
         scores = [
             AthleteScores(
@@ -2160,7 +1310,7 @@ class TestAthleteRankCalculation:
 
     def test_the_reason_falls_back_to_athlete_id_when_no_bibs_are_given(self) -> None:
         id_1 = "c7476320-6c48-11ee-b962-0242ac120001"
-        id_2 = "c7476320-6c48-11ee-b962-0242ac120002"
+        id_2 = ATHLETE_ID
         scores = [
             _tied_athlete(id_1, [30.0, 20.0], highest_move=10.0, total_score=50.0),
             _tied_athlete(id_2, [25.0, 25.0], highest_move=10.0, total_score=50.0),
@@ -2177,7 +1327,7 @@ class TestAthleteRankCalculation:
 
 
 A = "c7476320-6c48-11ee-b962-0242ac120001"
-B = "c7476320-6c48-11ee-b962-0242ac120002"
+B = ATHLETE_ID
 C = "c7476320-6c48-11ee-b962-0242ac120003"
 
 
