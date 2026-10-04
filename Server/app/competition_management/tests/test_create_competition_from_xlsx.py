@@ -1,6 +1,7 @@
 import uuid
 from collections.abc import Iterator
 from types import SimpleNamespace
+from typing import NamedTuple
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pandas as pd
@@ -115,13 +116,38 @@ def assert_competition_events_and_phases(adapters: SimpleNamespace) -> None:
     )
 
 
+class Athlete(NamedTuple):
+    id: int
+    first_name: str
+    last_name: str
+    bib: str
+    affiliation: str
+
+
 ATHLETES = [
-    # (id, first_name, last_name, bib, affiliation)
-    (9, "James", "Wilkinson", "1", "England"),
-    (11, "John", "Hutchinson", "126", "England"),
-    (13, "Elizabeth", "Taylor", "110", "England"),
-    (15, "Connor", "Keegan", "91", "Scotland"),
-    (17, "James", "Blunt", "99", "Wales"),
+    Athlete(
+        id=9, first_name="James", last_name="Wilkinson", bib="1", affiliation="England"
+    ),
+    Athlete(
+        id=11,
+        first_name="John",
+        last_name="Hutchinson",
+        bib="126",
+        affiliation="England",
+    ),
+    Athlete(
+        id=13,
+        first_name="Elizabeth",
+        last_name="Taylor",
+        bib="110",
+        affiliation="England",
+    ),
+    Athlete(
+        id=15, first_name="Connor", last_name="Keegan", bib="91", affiliation="Scotland"
+    ),
+    Athlete(
+        id=17, first_name="James", last_name="Blunt", bib="99", affiliation="Wales"
+    ),
 ]
 ATHLETE_PHASES = [3, 5, 7, 5, 5]
 
@@ -140,14 +166,14 @@ def assert_athletes_and_heats(
         [
             single(
                 {
-                    "id": uid(athlete_id),
-                    "first_name": first,
-                    "last_name": last,
-                    "bib": bib,
-                    "affiliation": affiliation if affiliated else None,
+                    "id": uid(athlete.id),
+                    "first_name": athlete.first_name,
+                    "last_name": athlete.last_name,
+                    "bib": athlete.bib,
+                    "affiliation": athlete.affiliation if affiliated else None,
                 }
             )
-            for athlete_id, first, last, bib, affiliation in ATHLETES
+            for athlete in ATHLETES
         ],
         any_order=True,
     )
@@ -156,14 +182,14 @@ def assert_athletes_and_heats(
         [
             single(
                 {
-                    "id": uid(athlete_id + 1),
+                    "id": uid(athlete.id + 1),
                     "heat_id": uid(8),
-                    "athlete_id": uid(athlete_id),
+                    "athlete_id": uid(athlete.id),
                     "phase_id": uid(phase_id),
                     "last_phase_rank": rank,
                 }
             )
-            for (athlete_id, *_), phase_id, rank in zip(
+            for athlete, phase_id, rank in zip(
                 ATHLETES, ATHLETE_PHASES, ranks, strict=True
             )
         ],
@@ -230,13 +256,13 @@ class TestScoring:
                 single(
                     {
                         "id": ANY,
-                        "first_name": first,
-                        "last_name": last,
-                        "bib": bib,
-                        "affiliation": affiliation,
+                        "first_name": athlete.first_name,
+                        "last_name": athlete.last_name,
+                        "bib": athlete.bib,
+                        "affiliation": athlete.affiliation,
                     }
                 )
-                for _, first, last, bib, affiliation in ATHLETES
+                for athlete in ATHLETES
             ],
             any_order=True,
         )
