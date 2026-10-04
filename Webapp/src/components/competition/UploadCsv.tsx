@@ -170,9 +170,11 @@ const UploadForm = () => {
 						toast.success("Competition uploaded")
 					}
 				})
-				.catch((error: AxiosError) => {
-					// handle errors
-					toast.error(error.message.toString())
+				.catch((error: AxiosError<{ detail?: unknown }>) => {
+					const detail = error.response?.data?.detail
+					toast.error(
+						typeof detail === "string" ? detail : error.message
+					)
 				})
 		} else {
 			toast.error("Please ensure all options are selected")

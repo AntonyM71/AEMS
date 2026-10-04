@@ -1,16 +1,21 @@
 import uuid
+from io import BytesIO
 from unittest.mock import ANY, MagicMock, call, patch
 
+import openpyxl
 import pandas as pd
+import pandas.api.types as ptypes
 import pytest
 
 from app.competition_management.create_competition_from_xlsx import (
     ColumnTypeError,
+    InvalidFileTypeError,
     MissingColumnError,
     NoHeatInfoForNonRandomHeatError,
     ScoresheetWithSpecifiedNameDoesNotExistError,
     make_random_heats,
     process_competitors_df,
+    read_start_list,
     validate_columns_and_data_types,
 )
 
@@ -1153,6 +1158,84 @@ class TestScoring:
         mock_post_athlete_heat.assert_not_called()
 
 
+START_LIST_ROWS = [
+    ["first_name", "last_name", "bib", "Heat", "Event"],
+    ["José", "Smith", "1", "1", "K1M"],
+    ["Ann", "Lee", "2", "1", "K1W"],
+]
+
+
+def _excel_csv(
+    *,
+    newline: str = "\r\n",
+    encoding: str = "utf-8",
+    delimiter: str = ",",
+    trailer: str = "",
+) -> bytes:
+    lines = [delimiter.join(row) for row in START_LIST_ROWS]
+    return (newline.join(lines) + newline + trailer).encode(encoding)
+
+
+def _xlsx_with_blank_looking_rows() -> bytes:
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    for row in START_LIST_ROWS:
+        sheet.append([int(cell) if cell.isdigit() else cell for cell in row])
+    sheet.cell(row=len(START_LIST_ROWS) + 1, column=1).value = " "
+    buffer = BytesIO()
+    workbook.save(buffer)
+    return buffer.getvalue()
+
+
+class TestReadStartList:
+    @pytest.mark.parametrize(
+        ("filename", "data"),
+        [
+            pytest.param("start.csv", _excel_csv(newline="\n"), id="lf"),
+            pytest.param("start.csv", _excel_csv(newline="\r"), id="cr-only"),
+            pytest.param("start.csv", b"\xef\xbb\xbf" + _excel_csv(), id="crlf-bom"),
+            pytest.param("start.csv", _excel_csv(encoding="cp1252"), id="cp1252"),
+            pytest.param(
+                "start.csv",
+                _excel_csv(encoding="cp1252", delimiter=";"),
+                id="semicolon-cp1252",
+            ),
+            pytest.param(
+                "start.csv",
+                _excel_csv(trailer=",,,,\r\n , ,,,\r\n"),
+                id="trailing-empty-rows",
+            ),
+            pytest.param("START.CSV", _excel_csv(), id="upper-case-extension"),
+            pytest.param(
+                "start.xlsx", _xlsx_with_blank_looking_rows(), id="xlsx-blank-rows"
+            ),
+        ],
+    )
+    def test_excel_saved_start_lists_read_as_the_same_athletes(
+        self, filename: str, data: bytes
+    ) -> None:
+        competitors_df = read_start_list(filename, data)
+
+        assert competitors_df["first_name"].tolist() == ["José", "Ann"]
+        assert ptypes.is_integer_dtype(competitors_df["Heat"])
+        assert ptypes.is_integer_dtype(competitors_df["bib"])
+        validate_columns_and_data_types(competitors_df, random_heats=False)
+
+    def test_it_rejects_a_file_that_is_not_csv_or_xlsx(self) -> None:
+        data = _excel_csv()
+
+        with pytest.raises(InvalidFileTypeError, match=r"start\.txt"):
+            read_start_list("start.txt", data)
+
+    def test_an_athlete_without_a_heat_still_fails_validation(self) -> None:
+        data = _excel_csv(trailer="Bob,Hall,3,,K1M\r\n")
+
+        competitors_df = read_start_list("start.csv", data)
+
+        with pytest.raises(ColumnTypeError, match="Column 'Heat'"):
+            validate_columns_and_data_types(competitors_df, random_heats=False)
+
+
 MANDATORY_COLUMNS = ["first_name", "last_name", "bib", "Event"]
 
 
@@ -1205,25 +1288,39 @@ class TestValidateColumnsAndDataTypes:
 
 
 @pytest.mark.parametrize(
-    "column, incorrect_value",
+    "column, incorrect_value, expected_contents",
     [
-        ("first_name", 123),  # Incorrect type (int instead of string)
-        ("last_name", 456),  # Incorrect type (int instead of string)
-        ("Event", 789),  # Incorrect type (int instead of string)
-        # Incorrect type (string instead of int)
-        ("Heat", "one"),
-        # Incorrect type (string instead of int)
-        ("bib", "two"),
+        ("first_name", 123, "text"),
+        ("last_name", 456, "text"),
+        ("Event", 789, "text"),
+        ("Heat", "one", "whole numbers"),
+        ("bib", "two", "whole numbers"),
     ],
 )
 def test_incorrect_dtype_raises_error(
-    column: str, incorrect_value: str | int, test_df: pd.DataFrame
+    column: str,
+    incorrect_value: str | int,
+    expected_contents: str,
+    test_df: pd.DataFrame,
 ) -> None:
+    test_df[column] = test_df[column].astype(object)
     test_df.loc[0, column] = incorrect_value
-    with pytest.raises(
-        ColumnTypeError, match=f"Column '{column}' is not of type '<function is_[^']+'"
-    ):
+    with pytest.raises(ColumnTypeError) as excinfo:
         validate_columns_and_data_types(test_df, random_heats=False)
+    assert (
+        str(excinfo.value) == f"Column '{column}' must contain only {expected_contents}"
+    )
+
+
+@pytest.mark.parametrize("column", ["first_name", "last_name", "Event", "bib", "Heat"])
+def test_a_blank_value_is_rejected_naming_the_column(
+    column: str, test_df: pd.DataFrame
+) -> None:
+    test_df[column] = test_df[column].astype(object)
+    test_df.loc[0, column] = None
+    with pytest.raises(ColumnTypeError) as excinfo:
+        validate_columns_and_data_types(test_df, random_heats=False)
+    assert str(excinfo.value) == f"Column '{column}' has a blank value"
 
 
 # Import the function to be tested

@@ -1,6 +1,6 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import axios from "axios"
+import axios, { AxiosError, AxiosResponse } from "axios"
 import toast from "react-hot-toast"
 import { renderWithProviders } from "../../../testUtils"
 import UploadCsv from "../UploadCsv"
@@ -126,6 +126,30 @@ describe("UploadCsv", () => {
 			expect.stringContaining("Jane Doe (Event 'Unknown' not found)")
 		)
 		expect(toast.success).not.toHaveBeenCalled()
+
+		post.mockRestore()
+	})
+
+	it("shows why the server rejected the file instead of a bare status code", async () => {
+		const detail = "Column 'first_name' is missing from the file"
+		const post = jest
+			.spyOn(axios, "post")
+			.mockRejectedValue(
+				new AxiosError(
+					"Request failed with status code 422",
+					"ERR_BAD_REQUEST",
+					undefined,
+					undefined,
+					{ status: 422, data: { detail } } as AxiosResponse
+				)
+			)
+		const user = userEvent.setup({ delay: null })
+		renderWithProviders(<UploadCsv />)
+
+		await fillCompleteForm(user)
+		await user.click(screen.getByRole("button", { name: "Submit" }))
+
+		await waitFor(() => expect(toast.error).toHaveBeenCalledWith(detail))
 
 		post.mockRestore()
 	})
