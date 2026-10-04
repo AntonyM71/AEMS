@@ -110,7 +110,8 @@ export default ({
 				first_name: athleteData[currentPaddlerIndex].first_name,
 				last_name: athleteData[currentPaddlerIndex].last_name,
 				bib: athleteData[currentPaddlerIndex].bib,
-				scoresheet: athleteData[currentPaddlerIndex].scoresheet
+				scoresheet: athleteData[currentPaddlerIndex].scoresheet,
+				affiliation: athleteData[currentPaddlerIndex].affiliation
 			})
 		} else {
 			setSelectedAthlete(undefined)
