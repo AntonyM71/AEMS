@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
@@ -9,6 +9,7 @@ import { socketHub } from "../../../../mocks/socketHub"
 import {
 	competitionInitialState,
 	competitionsReducer,
+	updateSelectedHeat,
 	updateSelectedPhase
 } from "../../../../redux/atoms/competitions"
 import {
@@ -480,6 +481,41 @@ describe("HeadJudge position publishing", () => {
 					})
 				})
 			)
+		)
+	})
+
+	it("never pairs a new heat with the previous heat's paddler while it loads", async () => {
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", async ({ params }) => {
+				if (params.heatId === "heat-2") {
+					await delay(200)
+
+					return HttpResponse.json([athleteRow("athlete-3", "Brown")])
+				}
+
+				return HttpResponse.json([athleteRow("athlete-1", "Smith")])
+			})
+		)
+		const store = mountHeadJudge()
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+
+		act(() => {
+			store.dispatch(updateSelectedHeat("heat-2"))
+		})
+
+		await waitFor(() =>
+			expect(positionsSent().at(-1)).toEqual(
+				expect.objectContaining({
+					heatId: "heat-2",
+					athlete: expect.objectContaining({ id: "athlete-3" })
+				})
+			)
+		)
+		expect(positionsSent()).not.toContainEqual(
+			expect.objectContaining({
+				heatId: "heat-2",
+				athlete: expect.objectContaining({ id: "athlete-1" })
+			})
 		)
 	})
 
