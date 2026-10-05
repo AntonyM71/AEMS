@@ -77,14 +77,14 @@ The athlete overview and run corner SHALL each be presented through a fullscreen
 ## MODIFIED Requirements
 
 ### Requirement: Independent visibility toggles
-The control state SHALL carry independent boolean flags (`showImageCard`, `showEventTitle`, `showHeatSummary`, `showPhaseResults`, `showLiveRunScore`, `showAthleteOverview`) that the operator can flip one at a time without affecting the others.
+The control state SHALL carry independent boolean flags (`showImageCard`, `showEventTitle`, `showHeatSummary`, `showPhaseResults`, `showLiveRunScore`, `showAthleteOverview`, `showCompetitionOverview`) that the operator can flip one at a time without affecting the others.
 
 #### Scenario: Operator toggles a flag
 - **WHEN** the operator clicks a visibility toggle button on the controller
 - **THEN** only that flag's value is inverted in the emitted control state
 
 ### Requirement: Some toggles require a prerequisite selection
-Toggling `showEventTitle`, `showHeatSummary`, or `showPhaseResults` on SHALL require, respectively, a selected event, heat, or phase. Toggling `showLiveRunScore` or `showAthleteOverview` on SHALL require a selected athlete. When the required selection is missing, the controller SHALL show an error message instead of changing the flag.
+Toggling `showEventTitle`, `showHeatSummary`, or `showPhaseResults` on SHALL require, respectively, a selected event, heat, or phase. Toggling `showLiveRunScore` or `showAthleteOverview` on SHALL require a selected athlete. Toggling `showCompetitionOverview` on SHALL require a selected competition. When the required selection is missing, the controller SHALL show an error message instead of changing the flag. Turning a flag that is already on off SHALL NOT require a selection.
 
 #### Scenario: Toggling heat summary without a selected heat
 - **WHEN** the operator clicks "Show Heat Summary Modal" with no heat selected
@@ -94,8 +94,16 @@ Toggling `showEventTitle`, `showHeatSummary`, or `showPhaseResults` on SHALL req
 - **WHEN** the operator clicks "Show Athlete Overview" with no athlete selected
 - **THEN** the controller shows an error message and `showAthleteOverview` is not changed
 
+#### Scenario: Toggling the competition overview without a selected competition
+- **WHEN** the operator clicks "Show Competition Overview" with no competition selected
+- **THEN** the controller shows an error message and `showCompetitionOverview` is not changed
+
+#### Scenario: Turning a graphic off without its selection
+- **WHEN** a graphic is on and its required selection is no longer present
+- **THEN** clicking its toggle turns it off without an error message
+
 ### Requirement: Fullscreen overlays draw ICF-coloured fallback backdrops that contrast with their text
-In fallback mode, the fullscreen broadcast overlays (event title, heat summary, phase results, athlete overview, run corner) SHALL draw their own backdrops with plain page styling and no external assets. The backdrops SHALL use ICF colours with simple gradients. White heading and footer text SHALL sit on a dark ICF-blue panel, and dark-blue table rows and run counts SHALL sit on a light panel, so every line of overlay text contrasts with the colour behind it over any live video.
+In fallback mode, the fullscreen broadcast overlays (event title, heat summary, phase results, athlete overview, run corner, competition overview) SHALL draw their own backdrops with plain page styling and no external assets. The backdrops SHALL use ICF colours with simple gradients. White heading and footer text SHALL sit on a dark ICF-blue panel, and dark-blue table rows and run counts SHALL sit on a light panel, so every line of overlay text contrasts with the colour behind it over any live video.
 
 #### Scenario: Scoreboard overlay in fallback mode
 - **WHEN** the heat summary or phase results overlay is visible in fallback mode
@@ -108,3 +116,7 @@ In fallback mode, the fullscreen broadcast overlays (event title, heat summary, 
 #### Scenario: Lower third in fallback mode
 - **WHEN** the athlete overview or run corner is visible in fallback mode
 - **THEN** its name and event rows are drawn on a dark ICF-blue panel, its run or clock row on a light panel, and its bib tile and score box in the alternate colour
+
+#### Scenario: Competition overview in fallback mode
+- **WHEN** the competition overview is visible in fallback mode
+- **THEN** the competition name is drawn on a dark ICF-blue band, the rail of events or heats on a light band, and the current entry in the alternate colour
