@@ -23,7 +23,8 @@ export async function setupTestData(
 	request: APIRequestContext
 ): Promise<TestData> {
 	const competitionId = randomUUID()
-	const competitionName = `E2E WS Competition ${Date.now()}`
+	const uniqueSuffix = `${Date.now()} ${randomUUID().slice(0, 8)}`
+	const competitionName = `E2E WS Competition ${uniqueSuffix}`
 
 	const compResponse = await request.post(`${BACKEND_URL}/competition/`, {
 		data: [{ id: competitionId, name: competitionName }]
@@ -77,7 +78,7 @@ export async function setupTestData(
 	expect(athleteResponse.status()).toBe(201)
 
 	const heatId = randomUUID()
-	const heatName = `E2E Heat ${Date.now()}`
+	const heatName = `E2E Heat ${uniqueSuffix}`
 	const heatResponse = await request.post(`${BACKEND_URL}/heat/`, {
 		data: [{ id: heatId, competition_id: competitionId, name: heatName }]
 	})
