@@ -97,9 +97,7 @@ const lockedOrDnsRuns = (
 // Mirrors the server's phase total (calculate_heat_scores), restricted to
 // locked runs: the server's own total also counts runs still being judged.
 const bestRunsTotal = (scores: number[], scoringRuns: number): number =>
-	scoringRuns > 0
-		? [...scores]
-				.sort((a, b) => b - a)
-				.slice(0, scoringRuns)
-				.reduce((sum, score) => sum + score, 0)
-		: 0
+	[...scores]
+		.sort((x, y) => y - x)
+		.slice(0, scoringRuns)
+		.reduce((sum, score) => sum + score, 0)

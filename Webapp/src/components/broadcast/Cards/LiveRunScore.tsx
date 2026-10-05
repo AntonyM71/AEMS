@@ -58,9 +58,9 @@ export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
 		if (!streamMoveData) {
 			return newScores
 		}
-		const judgeNumbers = new Array(maxJudges)
-			.fill(null)
-			.map((_, i) => String(i + 1))
+		const judgeNumbers = Array.from({ length: maxJudges }, (_, i) =>
+			String(i + 1)
+		)
 		judgeNumbers.forEach((jid) => {
 			const filteredData: ScoredMovesAndBonusesResponse = {
 				moves:

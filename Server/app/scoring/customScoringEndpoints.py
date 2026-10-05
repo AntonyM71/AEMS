@@ -524,17 +524,17 @@ def _score_for_missing_athlete(
 
 
 def _missing_athlete_started(
-    athlete_id: UUID, run_statuses: list[RunStatus], number_of_runs: int | None
+    athlete_id: UUID, run_statuses: list[RunStatus], number_of_runs: int
 ) -> bool:
     """An entrant with no scored moves did not start only when every run in
-    the phase is marked did-not-start. Without the phase's run count, every
-    status they have must say so."""
-    own = _own_run_statuses(athlete_id, run_statuses)
-    did_not_start_runs = {rs.run_number for rs in own if rs.did_not_start}
-    if number_of_runs:
-        return len(did_not_start_runs) < number_of_runs
+    the phase is marked did-not-start."""
+    did_not_start_runs = {
+        rs.run_number
+        for rs in _own_run_statuses(athlete_id, run_statuses)
+        if rs.did_not_start
+    }
 
-    return not (own and len(did_not_start_runs) == len(own))
+    return len(did_not_start_runs) < number_of_runs
 
 
 def assemble_phase_scores(
@@ -542,7 +542,8 @@ def assemble_phase_scores(
     ranked_scores: list[AthleteScores],
     athletes: list[Athlete],
     run_statuses: list[RunStatus] | None = None,
-    number_of_runs: int | None = None,
+    *,
+    number_of_runs: int,
 ) -> PhaseScoresResponse:
     """Order a phase's athletes: ranked (by rank, then bib) first, then
     started-but-unranked and did-not-start athletes, each by bib.
@@ -654,7 +655,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_scores_with_rank,
         athletes,
         run_statuses,
-        phase.number_of_runs,
+        number_of_runs=phase.number_of_runs,
     )
 
 

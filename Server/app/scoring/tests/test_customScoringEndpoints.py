@@ -408,6 +408,7 @@ class TestAssemblePhaseScores:
             PHASE_ID,
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1)],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A)]
@@ -420,6 +421,7 @@ class TestAssemblePhaseScores:
             PHASE_ID,
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1), _make_athlete(_B, bib=2)],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
@@ -438,6 +440,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_B, bib=2),
                 _make_athlete(_C, bib=3),
             ],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B), UUID(_C)]
@@ -456,6 +459,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_B, bib=2),
                 _make_athlete(_C, bib=3),
             ],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B), UUID(_C)]
@@ -470,6 +474,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_B, bib=1),
                 _make_athlete(_C, bib=2),
             ],
+            number_of_runs=2,
         )
 
         assert [s.bib_number for s in got.scores] == [1, 2, 3]
@@ -488,6 +493,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_B, bib=1),
                 _make_athlete(_C, bib=2),
             ],
+            number_of_runs=2,
         )
 
         assert [s.bib_number for s in got.scores] == [1, 2, 3]
@@ -500,6 +506,7 @@ class TestAssemblePhaseScores:
                 _make_score(_B, ranking=1, dns_per_run=[False]),
             ],
             [_make_athlete(_A, bib=5), _make_athlete(_B, bib=2)],
+            number_of_runs=2,
         )
 
         assert [s.bib_number for s in got.scores] == [2, 5]
@@ -518,6 +525,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_B, bib=2),
                 _make_athlete(_C, bib=3),
             ],
+            number_of_runs=2,
         )
 
         assert [s.ranking for s in got.scores] == [1, 1, 3]
@@ -530,6 +538,7 @@ class TestAssemblePhaseScores:
             PHASE_ID,
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1), _make_athlete(_B, bib=2)],
+            number_of_runs=2,
         )
 
         synthesised = next(s for s in got.scores if s.athlete_id == UUID(_B))
@@ -546,12 +555,13 @@ class TestAssemblePhaseScores:
                 _make_score(_B, ranking=2, dns_per_run=[False]),
             ],
             [_make_athlete(_A, bib=1)],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A)]
 
     def test_an_empty_phase_returns_no_scores(self) -> None:
-        got = assemble_phase_scores(PHASE_ID, [], [])
+        got = assemble_phase_scores(PHASE_ID, [], [], number_of_runs=2)
 
         assert got.scores == []
         assert str(got.phase_id) == PHASE_ID
@@ -561,6 +571,7 @@ class TestAssemblePhaseScores:
             PHASE_ID,
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1, affiliation="Team GB")],
+            number_of_runs=2,
         )
 
         assert got.scores[0].affiliation == "Team GB"
@@ -578,6 +589,7 @@ class TestAssemblePhaseScores:
                 _make_score(_B, ranking=None, dns_per_run=[True, True]),
             ],
             [_make_athlete(_A, bib=9), _make_athlete(_B, bib=1)],
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
@@ -606,6 +618,7 @@ class TestAssemblePhaseScores:
                 _make_athlete(_C, bib=9),
             ],
             run_statuses,
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_C), UUID(_B)]
@@ -630,6 +643,7 @@ class TestAssemblePhaseScores:
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1), _make_athlete(_B, bib=5)],
             run_statuses,
+            number_of_runs=2,
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
@@ -655,6 +669,7 @@ class TestAssemblePhaseScores:
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1), _make_athlete(_B, bib=5)],
             run_statuses,
+            number_of_runs=2,
         )
 
         runs = got.scores[-1].run_scores
@@ -678,6 +693,7 @@ class TestAssemblePhaseScores:
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=9), _make_athlete(_B, bib=1)],
             run_statuses,
+            number_of_runs=2,
         )
 
         # _B is still riding, so it is not bucketed as DNS (which sorts last).
@@ -723,6 +739,7 @@ class TestAssemblePhaseScores:
             [_make_score(_A, ranking=1, dns_per_run=[False])],
             [_make_athlete(_A, bib=1), _make_athlete(_B, bib=5)],
             run_statuses,
+            number_of_runs=2,
         )
 
         assert got.scores[-1].run_scores == []
@@ -755,7 +772,7 @@ class TestAssemblePhaseScores:
             _make_score(dns, ranking=None, dns_per_run=[True, True]),
         ]
 
-        got = assemble_phase_scores(PHASE_ID, ranked_scores, athletes)
+        got = assemble_phase_scores(PHASE_ID, ranked_scores, athletes, number_of_runs=2)
 
         # ranked (by rank then bib), then no-moves (by bib), then DNS (by bib)
         assert [s.athlete_id for s in got.scores] == [
