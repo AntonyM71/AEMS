@@ -1,3 +1,4 @@
+import Alert from "@mui/material/Alert"
 import Button from "@mui/material/Button"
 import Grid from "@mui/material/Grid2"
 import ToggleButton from "@mui/material/ToggleButton"
@@ -18,17 +19,31 @@ import {
 } from "../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../redux/services/aemsApi"
 import {
+	useBroadcastControlRequestStreamQuery,
+	useBroadcastControlStreamQuery,
 	useEmitBroadcastControlMutation,
-	useBroadcastControlStreamQuery
+	useHeadJudgePositionStreamQuery
 } from "../../redux/services/streamingApi"
 import { SelectorDisplay } from "../competition/MainSelector"
 import {
 	defaultOverlayControllerState,
+	HeadJudgePosition,
 	OverlayControlState
 } from "../Interfaces"
 import { AthleteInfo } from "../roles/scribe/InfoBar"
 import { PaddlerSelector } from "../roles/scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../roles/scribe/InfoBar/Runselector"
+
+const describeFollowedPosition = (position?: HeadJudgePosition | null) => {
+	if (!position) {
+		return "Waiting for head judge."
+	}
+	const { first_name, last_name } = position.athlete
+
+	return `Currently on ${first_name} ${last_name}, run ${
+		position.runNumber + 1
+	}.`
+}
 
 const OverlayController: React.FC = () => {
 	const [overlayControlState, setOverlayControlState] = React.useState(
@@ -91,6 +106,16 @@ const OverlayController: React.FC = () => {
 	// Subscribe to the broadcast control stream to maintain a persistent socket
 	// connection. The emitBroadcastControl mutation reuses this socket.
 	useBroadcastControlStreamQuery()
+	const { data: stateRequestCount } = useBroadcastControlRequestStreamQuery()
+	const { followHeadJudge } = overlayControlState
+	const { data: headJudgePosition } = useHeadJudgePositionStreamQuery(
+		undefined,
+		{ skip: !followHeadJudge }
+	)
+	const displayedHeat =
+		followHeadJudge && headJudgePosition
+			? headJudgePosition.heatId
+			: overlayControlState.selectedHeat
 	const toggleKey = (key: keyof OverlayControlState) => {
 		setOverlayControlState((prevState) => ({
 			...prevState,
@@ -108,7 +133,24 @@ const OverlayController: React.FC = () => {
 
 	useEffect(() => {
 		void emitBroadcastControl(overlayControlState)
-	}, [overlayControlState, emitBroadcastControl])
+	}, [overlayControlState, stateRequestCount, emitBroadcastControl])
+
+	const athletePickers = selectedAthlete ? (
+		<Grid size={6}>
+			<Grid container direction="row" spacing={2}>
+				<Grid size={6}>
+					<PaddlerSelector paddlerInfo={selectedAthlete} />
+				</Grid>
+				<Grid size={6}>
+					<RunSelector />
+				</Grid>
+			</Grid>
+		</Grid>
+	) : (
+		<Grid size={12}>
+			<Typography>Please Select a heat to get started</Typography>{" "}
+		</Grid>
+	)
 
 	return (
 		<Grid
@@ -122,23 +164,64 @@ const OverlayController: React.FC = () => {
 				<Typography variant="h4">Overlay Controller</Typography>
 			</Grid>
 			<Grid size={12}>
-				<SelectorDisplay />
+				<ToggleButtonGroup
+					exclusive
+					color="primary"
+					value={followHeadJudge ? "follow" : "manual"}
+					onChange={(_, mode: string | null) => {
+						if (mode) {
+							setOverlayControlState((prevState) => ({
+								...prevState,
+								followHeadJudge: mode === "follow"
+							}))
+						}
+					}}
+				>
+					<ToggleButton value="manual">Manual</ToggleButton>
+					<ToggleButton value="follow">
+						Follow head judge
+					</ToggleButton>
+				</ToggleButtonGroup>
 			</Grid>
-			{selectedAthlete ? (
-				<Grid size={6}>
-					<Grid container direction="row" spacing={2}>
-						<Grid size={6}>
-							<PaddlerSelector paddlerInfo={selectedAthlete} />
-						</Grid>
-						<Grid size={6}>
-							<RunSelector />
-						</Grid>
+			{followHeadJudge ? (
+				<>
+					<Grid size={12}>
+						<Alert severity="info">
+							Competition, heat, paddler and run are disabled: the
+							displays are following the head judge.{" "}
+							{describeFollowedPosition(headJudgePosition)}
+						</Alert>
 					</Grid>
-				</Grid>
+					<Grid size={12}>
+						<SelectorDisplay
+							showCompetition={false}
+							showHeat={false}
+						/>
+					</Grid>
+					<Grid
+						size={12}
+						container
+						spacing={2}
+						inert
+						data-testid="followed-pickers"
+						sx={{ opacity: 0.5 }}
+					>
+						<Grid size={12}>
+							<SelectorDisplay
+								showEvent={false}
+								showPhase={false}
+							/>
+						</Grid>
+						{athletePickers}
+					</Grid>
+				</>
 			) : (
-				<Grid size={12}>
-					<Typography>Please Select a heat to get started</Typography>{" "}
-				</Grid>
+				<>
+					<Grid size={12}>
+						<SelectorDisplay />
+					</Grid>
+					{athletePickers}
+				</>
 			)}
 			<Grid size={12}>
 				<ConfigurableButton
@@ -168,7 +251,7 @@ const OverlayController: React.FC = () => {
 					label="Show Heat Summary Modal"
 					active={overlayControlState.showHeatSummary}
 					onClick={() => {
-						if (overlayControlState.selectedHeat) {
+						if (displayedHeat) {
 							toggleKey("showHeatSummary")
 						} else {
 							toast.error(

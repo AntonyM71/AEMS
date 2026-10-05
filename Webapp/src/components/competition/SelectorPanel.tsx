@@ -118,9 +118,7 @@ export const SelectorPanel = ({
 						</Select>
 					</FormControl>
 				</Grid>
-				{showDetailed && (
-					<Grid size={addFormGridSize}>{addForm}</Grid>
-				)}
+				{showDetailed && <Grid size={addFormGridSize}>{addForm}</Grid>}
 			</Grid>
 		</Paper>
 	)

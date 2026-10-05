@@ -5,11 +5,14 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
-import { getSelectedHeat } from "../../../redux/atoms/competitions"
+import {
+	getSelectedCompetition,
+	getSelectedHeat
+} from "../../../redux/atoms/competitions"
 import {
 	getCurrentPaddlerIndex,
 	getSelectedRun
@@ -43,6 +46,7 @@ import { FinalScore } from "./FinalScore"
 import { JudgeCard } from "./JudgeCard"
 import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
+import usePublishHeadJudgePosition from "./usePublishHeadJudgePosition"
 
 export default ({
 	changeRunStatus = true,
@@ -65,19 +69,33 @@ export default ({
 
 	const handleListOpen = () => setListOpen(true)
 	const handleListClose = () => setListOpen(false)
-	const [selectedAthlete, setSelectedAthlete] = useState<
-		AthleteInfo | undefined
-	>(undefined)
 	const selectedHeat = useSelector(getSelectedHeat)
 	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
 	const selectedRun = useSelector(getSelectedRun)
-	const { data: athleteData } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: selectedHeat
-		},
-		{ skip: !selectedHeat }
-	)
+	// currentData, not data: data still holds the previous heat's paddlers
+	// while a new heat loads, which would publish them under the new heat.
+	const { currentData: athleteData } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{
+				heatId: selectedHeat
+			},
+			{ skip: !selectedHeat }
+		)
+	const selectedAthlete = useMemo((): AthleteInfo | undefined => {
+		const athlete = athleteData?.[currentPaddlerIndex]
+
+		return (
+			athlete && {
+				id: athlete.athlete_id,
+				first_name: athlete.first_name,
+				last_name: athlete.last_name,
+				bib: athlete.bib,
+				scoresheet: athlete.scoresheet,
+				affiliation: athlete.affiliation
+			}
+		)
+	}, [athleteData, currentPaddlerIndex])
 	const availableBonuses = useGetManyAvailablebonusesGetQuery(
 		{
 			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
@@ -99,19 +117,29 @@ export default ({
 		{ skip: !selectedHeat || !selectedAthlete?.id }
 	)
 
-	useEffect(() => {
-		if (athleteData) {
-			setSelectedAthlete({
-				id: athleteData[currentPaddlerIndex].athlete_id,
-				first_name: athleteData[currentPaddlerIndex].first_name,
-				last_name: athleteData[currentPaddlerIndex].last_name,
-				bib: athleteData[currentPaddlerIndex].bib,
-				scoresheet: athleteData[currentPaddlerIndex].scoresheet
-			})
-		} else {
-			setSelectedAthlete(undefined)
-		}
-	}, [currentPaddlerIndex, athleteData, selectedHeat])
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	// The commentator page reuses this screen read-only; only the real head
+	// judge may publish, or displays following the head judge would flip-flop.
+	const isHeadJudge = changeRunStatus
+	const headJudgePosition = useMemo(
+		() =>
+			isHeadJudge && selectedHeat && selectedAthlete
+				? {
+						competitionId: selectedCompetition,
+						heatId: selectedHeat,
+						athlete: selectedAthlete,
+						runNumber: selectedRun
+				  }
+				: undefined,
+		[
+			isHeadJudge,
+			selectedCompetition,
+			selectedHeat,
+			selectedAthlete,
+			selectedRun
+		]
+	)
+	usePublishHeadJudgePosition(headJudgePosition)
 
 	const httpRunStatus = useRunStatusStreamQuery(
 		{
@@ -182,9 +210,8 @@ export default ({
 					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
 					[],
 				bonuses:
-					streamMoveData.bonuses?.filter(
-						(b) => b.judge_id === jid
-					) ?? []
+					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
+					[]
 			}
 			newScores[jid] = calculateMoveAndBonusScore(
 				filteredData,
@@ -214,8 +241,7 @@ export default ({
 				void emitRunStatus({
 					id: runStatus.id ?? v4(),
 					run_number: selectedRun,
-					phase_id:
-						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
 					heat_id: selectedHeat,
 					athlete_id: selectedAthlete.id,
 					locked: locked ?? runStatus.locked ?? false,
@@ -226,8 +252,7 @@ export default ({
 				void emitRunStatus({
 					id: v4(),
 					run_number: selectedRun,
-					phase_id:
-						athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
 					heat_id: selectedHeat,
 					athlete_id: selectedAthlete.id,
 					locked: locked ?? false,

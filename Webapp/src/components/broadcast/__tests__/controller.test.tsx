@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { Provider } from "react-redux"
@@ -12,6 +12,7 @@ import {
 import { setupStore } from "../../../redux/store"
 import { renderWithProviders } from "../../../testUtils"
 import Arena from "../../arena/arena"
+import HeadJudge from "../../roles/headJudge/headJudge"
 import OverlayController from "../controller"
 
 jest.mock("../../roles/headJudge/WebSocketConnections")
@@ -247,6 +248,265 @@ describe("OverlayController", () => {
 					selectedCompetition: "1"
 				})
 			])
+		)
+	})
+
+	describe("Follow head judge mode", () => {
+		const headJudgePosition = {
+			competitionId: "comp-1",
+			heatId: "heat-9",
+			athlete: {
+				id: "athlete-2",
+				first_name: "Sam",
+				last_name: "Jones",
+				bib: "7",
+				scoresheet: "sheet-1"
+			},
+			runNumber: 1
+		}
+
+		const lastBroadcast = () =>
+			socketHub
+				.emittedOn("broadcast_control")
+				.filter(([event]) => event === "broadcast_control")
+				.at(-1)?.[1]
+
+		const mountController = () => {
+			render(
+				<Provider
+					store={setupStore({
+						competitions: {
+							...competitionInitialState,
+							selectedCompetition: "comp-1"
+						}
+					})}
+				>
+					<OverlayController />
+				</Provider>
+			)
+
+			return userEvent.setup({ delay: null })
+		}
+
+		it("switching to Follow emits followHeadJudge with the visibility flags unchanged", async () => {
+			const user = mountController()
+			await waitFor(() =>
+				expect(lastBroadcast()).toEqual(
+					expect.objectContaining({
+						followHeadJudge: false,
+						showImageCard: true
+					})
+				)
+			)
+
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+
+			await waitFor(() =>
+				expect(lastBroadcast()).toEqual(
+					expect.objectContaining({
+						followHeadJudge: true,
+						showImageCard: true,
+						showLiveRunScore: false
+					})
+				)
+			)
+		})
+
+		it("disables competition, heat, paddler and run but not event and phase", async () => {
+			const user = mountController()
+			await screen.findByText("Select Event")
+
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+
+			const followedPickers = await screen.findByTestId(
+				"followed-pickers"
+			)
+			expect(followedPickers).toHaveAttribute("inert")
+			expect(
+				within(followedPickers).getByText("Select Competition")
+			).toBeInTheDocument()
+			expect(
+				within(followedPickers).queryByText("Select Event")
+			).not.toBeInTheDocument()
+			expect(screen.getByText("Select Event")).toBeInTheDocument()
+			expect(screen.getByRole("alert")).toHaveTextContent(
+				"Waiting for head judge"
+			)
+		})
+
+		it("names the head judge's athlete and run in the info message", async () => {
+			const user = mountController()
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+			await waitFor(() =>
+				expect(
+					socketHub.openCount("head_judge_selection")
+				).toBeGreaterThan(0)
+			)
+
+			act(() => {
+				socketHub.emit(
+					"head_judge_selection",
+					"head_judge_selection",
+					headJudgePosition
+				)
+			})
+
+			await waitFor(() =>
+				expect(screen.getByRole("alert")).toHaveTextContent(
+					"Sam Jones, run 2"
+				)
+			)
+		})
+
+		it("shows the heat summary from the controller's own heat until a head judge position arrives", async () => {
+			const store = setupStore({
+				competitions: {
+					...competitionInitialState,
+					selectedCompetition: "comp-1",
+					selectedHeat: "heat-1"
+				}
+			})
+			render(
+				<Provider store={store}>
+					<OverlayController />
+				</Provider>
+			)
+			const user = userEvent.setup({ delay: null })
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+			await screen.findByTestId("followed-pickers")
+
+			await user.click(
+				screen.getByRole("button", { name: "Show Heat Summary Modal" })
+			)
+
+			await waitFor(() =>
+				expect(lastBroadcast()).toEqual(
+					expect.objectContaining({
+						followHeadJudge: true,
+						showHeatSummary: true
+					})
+				)
+			)
+		})
+
+		it("switching back to Manual re-enables every picker and turns following off", async () => {
+			const user = mountController()
+			await user.click(
+				screen.getByRole("button", { name: "Follow head judge" })
+			)
+			await screen.findByTestId("followed-pickers")
+
+			await user.click(screen.getByRole("button", { name: "Manual" }))
+
+			await waitFor(() =>
+				expect(lastBroadcast()).toEqual(
+					expect.objectContaining({ followHeadJudge: false })
+				)
+			)
+			expect(
+				screen.queryByTestId("followed-pickers")
+			).not.toBeInTheDocument()
+			expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+			expect(screen.getByText("Select Competition")).toBeInTheDocument()
+		})
+	})
+
+	it("re-sends its current state when a display asks for it", async () => {
+		const user = userEvent.setup({ delay: null })
+		render(
+			<Provider store={setupStore()}>
+				<OverlayController />
+			</Provider>
+		)
+		await user.click(
+			screen.getByRole("button", { name: "Follow head judge" })
+		)
+		const broadcasts = () =>
+			socketHub
+				.emittedOn("broadcast_control")
+				.filter(([event]) => event === "broadcast_control")
+		await waitFor(() =>
+			expect(broadcasts().at(-1)?.[1]).toEqual(
+				expect.objectContaining({ followHeadJudge: true })
+			)
+		)
+		const sentBeforeRequest = broadcasts().length
+
+		act(() => {
+			socketHub.emit("broadcast_control", "request_broadcast_control")
+		})
+
+		await waitFor(() =>
+			expect(broadcasts().length).toBeGreaterThan(sentBeforeRequest)
+		)
+		expect(broadcasts().at(-1)?.[1]).toEqual(
+			expect.objectContaining({ followHeadJudge: true })
+		)
+	})
+
+	// The controller, head judge and arena each run on their own store, as on
+	// separate devices; the echoing hub stands in for the server relay.
+	it("a reloaded arena recovers Follow mode and shows the head judge's athlete", async () => {
+		socketHub.enableEcho("broadcast_control")
+		socketHub.enableEcho("head_judge_selection")
+		const user = userEvent.setup({ delay: null })
+
+		render(
+			<>
+				<Provider store={setupStore()}>
+					<OverlayController />
+				</Provider>
+				<Provider
+					store={setupStore({
+						competitions: {
+							...competitionInitialState,
+							selectedCompetition: "comp-1",
+							selectedHeat: "heat-1"
+						}
+					})}
+				>
+					<HeadJudge />
+				</Provider>
+			</>
+		)
+		await user.click(
+			screen.getByRole("button", { name: "Follow head judge" })
+		)
+		await screen.findByTestId("head-judge-page")
+		// The controller and head judge each hold a head_judge_selection
+		// socket; wait for both so the arena's own socket is the next one.
+		await waitFor(() =>
+			expect(socketHub.openCount("head_judge_selection")).toBe(2)
+		)
+
+		// The arena opens after the controller and head judge have settled,
+		// as a display reloaded mid-event would.
+		render(
+			<Provider store={setupStore()}>
+				<Arena />
+			</Provider>
+		)
+		act(() => {
+			socketHub.emit("broadcast_control", "connect")
+		})
+		await waitFor(() =>
+			expect(socketHub.openCount("head_judge_selection")).toBe(3)
+		)
+		act(() => {
+			socketHub.emit("head_judge_selection", "connect")
+		})
+
+		// "SMITH" also appears on the head judge's own paddler picker.
+		await waitFor(() =>
+			expect(screen.getAllByText("SMITH").length).toBeGreaterThan(1)
 		)
 	})
 })

@@ -1,18 +1,21 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
 import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
 import { socketHub } from "../../../../mocks/socketHub"
 import {
 	competitionInitialState,
-	competitionsReducer
+	competitionsReducer,
+	updateSelectedHeat,
+	updateSelectedPhase
 } from "../../../../redux/atoms/competitions"
 import {
 	scoringInitialState,
-	scoringReducer
+	scoringReducer,
+	updateRun
 } from "../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../redux/services/aemsApi"
 import HeadJudge from "../headJudge"
@@ -391,5 +394,199 @@ describe("HeadJudge", () => {
 		expect(screen.queryByTestId("lock-run-button")).not.toBeInTheDocument()
 		expect(screen.getByTestId("heat-list-button")).toBeInTheDocument()
 		expect(screen.getByTestId("heat-scores-button")).toBeInTheDocument()
+	})
+})
+
+describe("HeadJudge position publishing", () => {
+	const athleteRow = (id: string, lastName: string) => ({
+		athlete_heat_id: `ah-${id}`,
+		heat_id: "heat-1",
+		athlete_id: id,
+		phase_id: "phase-1",
+		number_of_runs: 3,
+		number_of_runs_for_score: 2,
+		scoresheet: "sheet-1",
+		first_name: "Test",
+		last_name: lastName,
+		affiliation: "GBR",
+		bib: "1",
+		event_name: "Test Event"
+	})
+
+	const positionsSent = () =>
+		socketHub
+			.emittedOn("head_judge_selection")
+			.filter(([event]) => event === "head_judge_selection")
+			.map(([, position]) => position)
+
+	beforeEach(() => {
+		socketHub.reset()
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					athleteRow("athlete-1", "Smith"),
+					athleteRow("athlete-2", "Jones")
+				])
+			)
+		)
+	})
+
+	const mountHeadJudge = (changeRunStatus = true) => {
+		const store = makeStore(competitionsWithHeat)
+		render(
+			<Provider store={store}>
+				<HeadJudge changeRunStatus={changeRunStatus} />
+			</Provider>
+		)
+
+		return store
+	}
+
+	it("publishes the athlete's affiliation so displays can show it", async () => {
+		mountHeadJudge()
+
+		await waitFor(() =>
+			expect(positionsSent()).toContainEqual(
+				expect.objectContaining({
+					athlete: expect.objectContaining({
+						id: "athlete-1",
+						affiliation: "GBR"
+					})
+				})
+			)
+		)
+	})
+
+	it("publishes the next paddler when the head judge steps forward", async () => {
+		mountHeadJudge()
+		await waitFor(() =>
+			expect(positionsSent()).toContainEqual(
+				expect.objectContaining({
+					competitionId: "comp-1",
+					heatId: "heat-1",
+					runNumber: 1,
+					athlete: expect.objectContaining({ id: "athlete-1" })
+				})
+			)
+		)
+
+		await userEvent.click(screen.getByTestId("button-next-paddler"))
+
+		await waitFor(() =>
+			expect(positionsSent().at(-1)).toEqual(
+				expect.objectContaining({
+					athlete: expect.objectContaining({
+						id: "athlete-2",
+						last_name: "Jones"
+					})
+				})
+			)
+		)
+	})
+
+	it("never pairs a new heat with the previous heat's paddler while it loads", async () => {
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", async ({ params }) => {
+				if (params.heatId === "heat-2") {
+					await delay(200)
+
+					return HttpResponse.json([athleteRow("athlete-3", "Brown")])
+				}
+
+				return HttpResponse.json([athleteRow("athlete-1", "Smith")])
+			})
+		)
+		const store = mountHeadJudge()
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+
+		act(() => {
+			store.dispatch(updateSelectedHeat("heat-2"))
+		})
+
+		await waitFor(() =>
+			expect(positionsSent().at(-1)).toEqual(
+				expect.objectContaining({
+					heatId: "heat-2",
+					athlete: expect.objectContaining({ id: "athlete-3" })
+				})
+			)
+		)
+		expect(positionsSent()).not.toContainEqual(
+			expect.objectContaining({
+				heatId: "heat-2",
+				athlete: expect.objectContaining({ id: "athlete-1" })
+			})
+		)
+	})
+
+	it("publishes the new run, but nothing for a phase-only change", async () => {
+		const store = mountHeadJudge()
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+
+		act(() => {
+			store.dispatch(updateRun(2))
+		})
+		await waitFor(() =>
+			expect(positionsSent().at(-1)).toEqual(
+				expect.objectContaining({ runNumber: 2 })
+			)
+		)
+
+		const sentBeforePhaseChange = positionsSent().length
+		act(() => {
+			store.dispatch(updateSelectedPhase("phase-2"))
+		})
+		// Give a stray emit time to appear before asserting there was none.
+		await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+		expect(positionsSent()).toHaveLength(sentBeforePhaseChange)
+	})
+
+	it("re-sends its position when a display asks for it", async () => {
+		mountHeadJudge()
+		await waitFor(() =>
+			expect(socketHub.openCount("head_judge_selection")).toBeGreaterThan(
+				0
+			)
+		)
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+		const sentBeforeRequest = positionsSent().length
+
+		act(() => {
+			socketHub.emit(
+				"head_judge_selection",
+				"request_head_judge_selection"
+			)
+		})
+
+		await waitFor(() =>
+			expect(positionsSent().length).toBeGreaterThan(sentBeforeRequest)
+		)
+		expect(positionsSent().at(-1)).toEqual(
+			expect.objectContaining({
+				athlete: expect.objectContaining({ id: "athlete-1" })
+			})
+		)
+	})
+
+	it("re-sends its position when its own socket reconnects, in case a display's request was lost", async () => {
+		mountHeadJudge()
+		await waitFor(() => expect(positionsSent().length).toBeGreaterThan(0))
+		const sentBeforeReconnect = positionsSent().length
+
+		act(() => {
+			socketHub.emit("head_judge_selection", "connect")
+		})
+
+		await waitFor(() =>
+			expect(positionsSent().length).toBeGreaterThan(sentBeforeReconnect)
+		)
+	})
+
+	it("publishes nothing from the read-only commentator view", async () => {
+		mountHeadJudge(false)
+		await screen.findByTestId("head-judge-page")
+		await screen.findByText("SMITH")
+
+		expect(socketHub.openCount("head_judge_selection")).toBe(0)
 	})
 })
