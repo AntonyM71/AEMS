@@ -1,9 +1,9 @@
 import { createTheme } from "@mui/material/styles"
 import "@mui/x-data-grid/themeAugmentation"
 import "./themeAugmentation"
-const icfLightBlue = "rgb(28, 154, 215)"
-const icfDarkBlue = "rgb(12, 40, 80)"
-const icfWhite = "#f8f9fc"
+export const icfLightBlue = "rgb(28, 154, 215)"
+export const icfDarkBlue = "rgb(12, 40, 80)"
+export const icfWhite = "#f8f9fc"
 // Shared by the table and its card so they stay registered with the same
 // width of background artwork.
 const scoreboardCardMaxWidth = 1150

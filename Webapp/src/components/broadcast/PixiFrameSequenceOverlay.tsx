@@ -39,6 +39,9 @@ export interface PixiFrameSequenceOverlayProps {
 	className?: string
 	style?: CSSProperties
 	onExitComplete?: () => void
+	/** How long a fallback-mode exit transition runs before the content is
+	 * hidden and `onExitComplete` fires. */
+	fallbackExitMs?: number
 }
 
 const normalizeBasePath = (basePath: string): string =>
@@ -115,7 +118,8 @@ const PixiFrameSequenceOverlay = ({
 	frameUrls,
 	className,
 	style,
-	onExitComplete
+	onExitComplete,
+	fallbackExitMs = CONTENT_FADE_MS
 }: PixiFrameSequenceOverlayProps): React.JSX.Element => {
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const appRef = useRef<Application | null>(null)
@@ -133,6 +137,9 @@ const PixiFrameSequenceOverlay = ({
 	const [phase, setPhase] = useState<PlaybackPhase>("loading")
 	const [remoteConfig, setRemoteConfig] =
 		useState<RemoteFrameSequenceConfig | null>(null)
+	const [isFallback, setIsFallback] = useState<boolean>(false)
+	const [configAttempt, setConfigAttempt] = useState<number>(0)
+	const previousIsVisibleRef = useRef<boolean>(isVisible)
 
 	const resolvedBasePath = basePath ?? remoteConfig?.path ?? ""
 	const resolvedFrameCount = frameCount ?? remoteConfig?.frameCount ?? 0
@@ -328,8 +335,9 @@ const PixiFrameSequenceOverlay = ({
 				})
 			} catch (error) {
 				if (!isDisposed && !abortController.signal.aborted) {
-					console.error("Unable to load frame sequence config", error)
+					console.warn("Unable to load frame sequence config", error)
 					setRemoteConfig(null)
+					setIsFallback(true)
 				}
 			}
 		}
@@ -340,7 +348,7 @@ const PixiFrameSequenceOverlay = ({
 			isDisposed = true
 			abortController.abort()
 		}
-	}, [configEndpointBase, configName])
+	}, [configAttempt, configEndpointBase, configName])
 
 	useEffect(() => {
 		let isDisposed = false
@@ -352,12 +360,22 @@ const PixiFrameSequenceOverlay = ({
 			}
 
 			const app = new Application()
-			await app.init({
-				antialias: true,
-				backgroundAlpha: 0,
-				resizeTo: container,
-				autoDensity: true
-			})
+			try {
+				await app.init({
+					antialias: true,
+					backgroundAlpha: 0,
+					resizeTo: container,
+					autoDensity: true
+				})
+			} catch (error) {
+				if (!isDisposed) {
+					console.warn("Unable to start the Pixi renderer", error)
+					setIsFallback(true)
+					setPlaybackPhase("done")
+				}
+
+				return
+			}
 
 			if (isDisposed) {
 				app.destroy(true, { children: true, texture: false })
@@ -386,7 +404,7 @@ const PixiFrameSequenceOverlay = ({
 				appRef.current = null
 			}
 		}
-	}, [])
+	}, [setPlaybackPhase])
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -426,7 +444,7 @@ const PixiFrameSequenceOverlay = ({
 			setPlaybackPhase("loading")
 			setIsReady(false)
 
-			await Promise.allSettled(
+			const frameLoads = await Promise.allSettled(
 				resolvedFrameUrls.map((url) => Assets.load(url))
 			)
 
@@ -434,6 +452,17 @@ const PixiFrameSequenceOverlay = ({
 				return
 			}
 
+			// A partly loaded sequence would still flash blank frames.
+			if (frameLoads.some((load) => load.status === "rejected")) {
+				console.warn("Unable to load every overlay frame")
+				texturesRef.current = []
+				setIsFallback(true)
+				setPlaybackPhase("done")
+
+				return
+			}
+
+			setIsFallback(false)
 			const loadedTextures = resolvedFrameUrls.map((url) =>
 				Texture.from(url)
 			)
@@ -487,6 +516,31 @@ const PixiFrameSequenceOverlay = ({
 			exitRequestedRef.current = true
 		}
 	}, [isReady, isVisible, startIntro, startOutro])
+
+	useEffect(() => {
+		const wasVisible = previousIsVisibleRef.current
+		previousIsVisibleRef.current = isVisible
+		if (!isFallback || wasVisible === isVisible) {
+			return
+		}
+
+		if (isVisible) {
+			// Clearing the old config makes the frames reload once the retried
+			// one arrives, even when it resolves to the same URLs as before.
+			setRemoteConfig(null)
+			setConfigAttempt((attempt) => attempt + 1)
+
+			return
+		}
+
+		const exitTimer = globalThis.setTimeout(() => {
+			onExitCompleteRef.current?.()
+		}, fallbackExitMs)
+
+		return () => {
+			globalThis.clearTimeout(exitTimer)
+		}
+	}, [fallbackExitMs, isFallback, isVisible])
 
 	useEffect(() => {
 		if (!isReady) {
@@ -556,7 +610,14 @@ const PixiFrameSequenceOverlay = ({
 	const shouldRenderSequence = isVisible || phase !== "done"
 	const isAnimationActive =
 		phase === "loading" || phase === "intro" || phase === "outro"
-	const shouldShowChildren = isVisible && !isAnimationActive
+	// A fallback overlay keeps its content up while a retry reloads frames.
+	const shouldShowChildren = isVisible && (isFallback || !isAnimationActive)
+	// Hold fallback content at full opacity while the caller's own exit
+	// transition plays, then cut it; a plain fade would dim that transition.
+	const fallbackHideDelayMs = isVisible ? 0 : fallbackExitMs
+	const childrenTransition = isFallback
+		? `opacity 0ms linear ${fallbackHideDelayMs}ms`
+		: `opacity ${CONTENT_FADE_MS}ms ease-in-out`
 
 	return (
 		<div
@@ -581,13 +642,15 @@ const PixiFrameSequenceOverlay = ({
 				}}
 			/>
 			<div
+				className={isFallback ? "AemsOverlay-fallback" : undefined}
+				data-visible={isFallback ? String(isVisible) : undefined}
 				style={{
 					position: "relative",
 					zIndex: 1,
 					width: "100%",
 					height: "100%",
 					opacity: shouldShowChildren ? 1 : 0,
-					transition: `opacity ${CONTENT_FADE_MS}ms ease-in-out`,
+					transition: childrenTransition,
 					willChange: "opacity",
 					pointerEvents: "none"
 				}}
