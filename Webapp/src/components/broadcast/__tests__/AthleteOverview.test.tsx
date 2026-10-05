@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@mui/material/styles"
 import { act, screen, waitFor, within } from "@testing-library/react"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import { server } from "../../../mocks/server"
 import { socketHub } from "../../../mocks/socketHub"
 import { renderWithProviders } from "../../../testUtils"
@@ -114,6 +114,50 @@ describe("AthleteOverview", () => {
 		expect(await runCells().findByText("DNS")).toBeInTheDocument()
 		// One cell and the total (340.00 + DNS as 0).
 		expect(screen.getAllByText("340.00")).toHaveLength(2)
+	})
+
+	it("shows a locked run that scored nothing as 0.00, not a dash", async () => {
+		servePhaseScores([run(0, 0)])
+
+		renderOverview()
+
+		expect(await runCells().findByText("0.00")).toBeInTheDocument()
+		expect(runCells().getAllByText("-")).toHaveLength(2)
+		expect(runCells().queryByText("DNS")).not.toBeInTheDocument()
+		expect(screen.getAllByText("0.00")).toHaveLength(2)
+	})
+
+	it("drops the previous selection's runs while the new heat loads", async () => {
+		servePhaseScores([run(0, 340)])
+		const state = {
+			...defaultOverlayControllerState,
+			selectedHeat: "heat-1",
+			selectedAthlete: athlete,
+			showAthleteOverview: true
+		}
+		const { rerender } = renderWithProviders(
+			<ThemeProvider theme={lightTheme}>
+				<AthleteOverview overlayControlState={state} />
+			</ThemeProvider>
+		)
+		expect(await runCells().findByText("340.00")).toBeInTheDocument()
+		server.use(
+			http.get("/api/getHeatInfo/heat-2", async () => {
+				await delay("infinite")
+			})
+		)
+
+		rerender(
+			<ThemeProvider theme={lightTheme}>
+				<AthleteOverview
+					overlayControlState={{ ...state, selectedHeat: "heat-2" }}
+				/>
+			</ThemeProvider>
+		)
+
+		await waitFor(() =>
+			expect(screen.queryByText("340.00")).not.toBeInTheDocument()
+		)
 	})
 
 	it("shows a header for every run before any run is final", async () => {

@@ -90,11 +90,11 @@ export const RunCorner = ({
 	const numberOfRuns = useRunCount(overlayControlState)
 	const { selectedEvent, selectedHeat, selectedAthlete, selectedRun } =
 		overlayControlState
-	const { data: event } = useGetOneByPrimaryKeyEventIdGetQuery(
+	const { currentData: event } = useGetOneByPrimaryKeyEventIdGetQuery(
 		{ id: selectedEvent },
 		{ skip: !selectedEvent }
 	)
-	const { data: heat } = useGetOneByPrimaryKeyHeatIdGetQuery(
+	const { currentData: heat } = useGetOneByPrimaryKeyHeatIdGetQuery(
 		{ id: selectedHeat },
 		{ skip: !selectedHeat }
 	)

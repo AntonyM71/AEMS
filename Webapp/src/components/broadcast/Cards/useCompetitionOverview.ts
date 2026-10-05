@@ -51,15 +51,15 @@ export const useCompetitionOverview = (
 		competitionOverviewList
 	} = overlayControlState
 	const listsEvents = competitionOverviewList === "events"
-	const { data: competitions } = useGetManyCompetitionGetQuery(
+	const { currentData: competitions } = useGetManyCompetitionGetQuery(
 		{ idList: [selectedCompetition] },
 		{ skip: !selectedCompetition }
 	)
-	const { data: events } = useGetManyEventGetQuery(
+	const { currentData: events } = useGetManyEventGetQuery(
 		{ competitionIdList: [selectedCompetition] },
 		{ skip: !selectedCompetition || !listsEvents }
 	)
-	const { data: heats } = useGetManyHeatGetQuery(
+	const { currentData: heats } = useGetManyHeatGetQuery(
 		{ competitionIdList: [selectedCompetition] },
 		{ skip: !selectedCompetition || listsEvents }
 	)

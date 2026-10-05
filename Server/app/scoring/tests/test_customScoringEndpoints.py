@@ -613,13 +613,16 @@ class TestAssemblePhaseScores:
         assert dns.ranking is None
         assert [r.did_not_start for r in dns.run_scores] == [True, True]
 
-    def test_an_entrant_with_a_non_dns_run_status_stays_unscored(self) -> None:
-        # _B has a run status but it is not a DNS (e.g. a locked run) and there
-        # is no score - not a DNS, so _B stays in the unscored bucket.
+    def test_a_locked_run_with_no_scored_moves_is_a_locked_zero_run(self) -> None:
+        # _B's head judge locked run 1 with nothing scored: it is a real zero,
+        # not a DNS, so _B stays out of the DNS bucket and run 1 reports 0.
         run_statuses = [
             RunStatus(
                 athlete_id=UUID(_B), run_number=1, locked=True, did_not_start=False
-            )
+            ),
+            RunStatus(
+                athlete_id=UUID(_B), run_number=2, locked=True, did_not_start=True
+            ),
         ]
 
         got = assemble_phase_scores(
@@ -630,7 +633,27 @@ class TestAssemblePhaseScores:
         )
 
         assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
-        assert got.scores[-1].ranking is None
+        runs = got.scores[-1].run_scores
+        assert [(r.run_number, r.locked, r.did_not_start) for r in runs] == [
+            (1, True, False),
+            (2, True, True),
+        ]
+        assert [r.mean_run_score for r in runs] == [0, 0]
+
+    def test_an_entrant_with_only_an_unlocked_run_status_stays_unscored(self) -> None:
+        run_statuses = [
+            RunStatus(
+                athlete_id=UUID(_B), run_number=1, locked=False, did_not_start=False
+            )
+        ]
+
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=1), _make_athlete(_B, bib=5)],
+            run_statuses,
+        )
+
         assert got.scores[-1].run_scores == []
 
     def test_a_full_phase_orders_ranked_then_unscored_then_dns(self) -> None:

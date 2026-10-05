@@ -42,15 +42,16 @@ export const useAthleteRunScores = (
 	heatId: string,
 	athleteId: string | undefined
 ): { runs: AthleteRunLabel[]; total: number | undefined } => {
-	const { data: heatInfo } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+	const { currentData: heatInfo } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{ heatId },
 		{ skip: !heatId || !athleteId }
 	)
 	const athleteHeat = heatInfo?.find((a) => a.athlete_id === athleteId)
-	const { data, refetch } = useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
-		{ phaseId: athleteHeat?.phase_id ?? "" },
-		{ skip: !athleteHeat, pollingInterval: SCORES_BACKSTOP_POLL_MS }
-	)
+	const { currentData: data, refetch } =
+		useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery(
+			{ phaseId: athleteHeat?.phase_id ?? "" },
+			{ skip: !athleteHeat, pollingInterval: SCORES_BACKSTOP_POLL_MS }
+		)
 	useRefetchOnRunStatus(heatId, athleteId, refetch, Boolean(athleteHeat))
 	const finalRuns = lockedOrDnsRuns(data, athleteId)
 	// Every run in the phase gets a cell, so the graphic keeps one width as

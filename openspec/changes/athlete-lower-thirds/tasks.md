@@ -56,6 +56,12 @@
 - [x] 6.2 Raise a GitHub issue for affiliation flags. It should cover an IOC-to-ISO lookup, bundled SVG flags with a text fallback for clubs, and the note that emoji flags don't render on Windows/OBS. Link it from this change's proposal.
 - [x] 6.3 Confirm ADR011 is listed in `docs/architecture.md`'s decisions section, if that section lists ADRs.
 
+## 8. Review follow-ups
+
+- [x] 8.1 Scope each selection-keyed query in the overlay data hooks and cards to `currentData`, so a previous selection's runs, names and scores never show against a new one. Test by switching heat or event while the new request is pending, and confirm the old content disappears.
+- [x] 8.2 Phase scores report a locked run with no scored moves as a locked zero run (`scoring` spec delta), so the overview shows "0.00". Test at the server with `assemble_phase_scores`, and in the overview with a locked zero run.
+- [x] 8.3 Let an already-active graphic toggle be turned off without a selected athlete; only turning it on requires one.
+
 ## 7. Verification
 
 - [x] 7.1 Run `npm run precommit` and `npm test` in `Webapp/`, and confirm both pass.

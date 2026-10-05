@@ -99,7 +99,7 @@ const OverlayController: React.FC = () => {
 	}
 
 	const toggleIfAthleteSelected = (key: keyof OverlayControlState) => {
-		if (overlayControlState.selectedAthlete) {
+		if (overlayControlState[key] || overlayControlState.selectedAthlete) {
 			toggleKey(key)
 		} else {
 			toast.error("Please select an athlete to use this feature")

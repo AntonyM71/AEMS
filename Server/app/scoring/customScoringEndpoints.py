@@ -494,14 +494,19 @@ def _with_athlete_info(
 def _score_for_missing_athlete(
     athlete_id: UUID, run_statuses: list[RunStatus]
 ) -> AthleteScores:
-    """Stand-in score for an entrant with no scored moves: did-not-start runs
-    when every one of their run statuses says so, otherwise an empty run list
-    (present but scored nothing)."""
+    """Stand-in score for an entrant with no scored moves: a zero-score run for
+    each locked or did-not-start run status. An unlocked status that isn't a
+    did-not-start is still in progress, so it only keeps the athlete off the
+    did-not-start list when every other status is did-not-start."""
     own_statuses = sorted(
         (rs for rs in run_statuses if rs.athlete_id == athlete_id),
         key=lambda rs: rs.run_number,
     )
-    dns_runs = (
+    all_did_not_start = bool(own_statuses) and all(
+        rs.did_not_start for rs in own_statuses
+    )
+    has_locked_ride = any(rs.locked and not rs.did_not_start for rs in own_statuses)
+    zero_runs = (
         [
             RunScores(
                 run_number=rs.run_number,
@@ -509,15 +514,16 @@ def _score_for_missing_athlete(
                 mean_run_score=0,
                 highest_scoring_move=0,
                 locked=rs.locked,
-                did_not_start=True,
+                did_not_start=rs.did_not_start,
             )
             for rs in own_statuses
+            if rs.locked or rs.did_not_start
         ]
-        if own_statuses and all(rs.did_not_start for rs in own_statuses)
+        if all_did_not_start or has_locked_ride
         else []
     )
     return AthleteScores(
-        athlete_id=athlete_id, highest_scoring_move=0, run_scores=dns_runs
+        athlete_id=athlete_id, highest_scoring_move=0, run_scores=zero_runs
     )
 
 

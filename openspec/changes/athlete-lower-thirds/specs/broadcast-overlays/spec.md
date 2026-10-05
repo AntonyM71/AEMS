@@ -23,6 +23,10 @@ A run is final once the head judge locks it or marks it did-not-start. A run tha
 - **WHEN** the operator shows the athlete overview for an athlete in a three-run phase with no final runs
 - **THEN** the lower third shows "Run 1", "Run 2" and "Run 3" cells, each with "-"
 
+#### Scenario: A locked run that scored nothing
+- **WHEN** the head judge locks an athlete's run that has no scored moves
+- **THEN** that run's cell shows "0.00", not "-" or "DNS", and the run counts as zero towards the total
+
 #### Scenario: A did-not-start run
 - **WHEN** one of the athlete's runs is marked did-not-start
 - **THEN** that run's cell shows "DNS"

@@ -1,5 +1,5 @@
 import { Variant } from "@mui/material/styles/createTypography"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import {
 	ScoredMovesAndBonusesResponse,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
@@ -18,10 +18,6 @@ import { movesType } from "../../roles/scribe/Interfaces"
 /** Live average of every judge's score for the selected athlete's run, with
  * its locked and did-not-start status, kept current from the score streams. */
 export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
-	const [allJudgeScores, setAllJudgeScores] = useState<
-		Record<string, number>
-	>({})
-
 	const { selectedHeat, selectedRun } = overlayControlState
 	const selectedAthlete = overlayControlState.selectedAthlete
 	const scoresheet = selectedAthlete?.scoresheet
@@ -51,22 +47,20 @@ export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
 		athleteId: selectedAthleteId,
 		runNumber: selectedRun
 	}
-	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
-		streamArgs,
-		{ skip: !canQuery }
-	)
-	const { data: runStatus } = useRunStatusStreamQuery(streamArgs, {
+	const { currentData: streamMoveData } =
+		useAthleteMovesAndBonusesStreamQuery(streamArgs, { skip: !canQuery })
+	const { currentData: runStatus } = useRunStatusStreamQuery(streamArgs, {
 		skip: !canQuery
 	})
 
-	useEffect(() => {
+	const allJudgeScores = useMemo(() => {
+		const newScores: Record<string, number> = {}
 		if (!streamMoveData) {
-			return
+			return newScores
 		}
 		const judgeNumbers = new Array(maxJudges)
 			.fill(null)
 			.map((_, i) => String(i + 1))
-		const newScores: Record<string, number> = {}
 		judgeNumbers.forEach((jid) => {
 			const filteredData: ScoredMovesAndBonusesResponse = {
 				moves:
@@ -82,7 +76,8 @@ export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
 				(availableBonuses.data ?? []) as AvailableBonusType[]
 			)
 		})
-		setAllJudgeScores(newScores)
+
+		return newScores
 	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
 	const status = runStatus ?? { locked: false, did_not_start: false }

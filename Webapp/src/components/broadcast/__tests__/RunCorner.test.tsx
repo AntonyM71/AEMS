@@ -1,5 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles"
 import { act, screen, waitFor } from "@testing-library/react"
+import { delay, http } from "msw"
+import { server } from "../../../mocks/server"
 import { socketHub } from "../../../mocks/socketHub"
 import { renderWithProviders } from "../../../testUtils"
 import { defaultOverlayControllerState } from "../../Interfaces"
@@ -64,6 +66,40 @@ describe("RunCorner", () => {
 		expect(await screen.findByText("· Run 2/3")).toBeInTheDocument()
 		expect(screen.getByTestId("final-score-value")).toHaveTextContent(
 			"0.00"
+		)
+	})
+
+	it("drops the previous event's name while the new event loads", async () => {
+		const state = {
+			...defaultOverlayControllerState,
+			selectedEvent: "event-1",
+			selectedHeat: "heat-1",
+			selectedRun: 1,
+			selectedAthlete: athlete,
+			showLiveRunScore: true
+		}
+		const { rerender } = renderWithProviders(
+			<ThemeProvider theme={lightTheme}>
+				<RunCorner overlayControlState={state} />
+			</ThemeProvider>
+		)
+		expect(await screen.findByText("Test Event")).toBeInTheDocument()
+		server.use(
+			http.get("/api/event/event-2", async () => {
+				await delay("infinite")
+			})
+		)
+
+		rerender(
+			<ThemeProvider theme={lightTheme}>
+				<RunCorner
+					overlayControlState={{ ...state, selectedEvent: "event-2" }}
+				/>
+			</ThemeProvider>
+		)
+
+		await waitFor(() =>
+			expect(screen.queryByText("Test Event")).not.toBeInTheDocument()
 		)
 	})
 
