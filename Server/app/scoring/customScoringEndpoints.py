@@ -523,12 +523,18 @@ def _score_for_missing_athlete(
     )
 
 
-def _missing_athlete_started(athlete_id: UUID, run_statuses: list[RunStatus]) -> bool:
-    """An entrant with no scored moves did not start only when every run
-    status they have says so."""
+def _missing_athlete_started(
+    athlete_id: UUID, run_statuses: list[RunStatus], number_of_runs: int | None
+) -> bool:
+    """An entrant with no scored moves did not start only when every run in
+    the phase is marked did-not-start. Without the phase's run count, every
+    status they have must say so."""
     own = _own_run_statuses(athlete_id, run_statuses)
+    did_not_start_runs = {rs.run_number for rs in own if rs.did_not_start}
+    if number_of_runs:
+        return len(did_not_start_runs) < number_of_runs
 
-    return not (own and all(rs.did_not_start for rs in own))
+    return not (own and len(did_not_start_runs) == len(own))
 
 
 def assemble_phase_scores(
@@ -536,6 +542,7 @@ def assemble_phase_scores(
     ranked_scores: list[AthleteScores],
     athletes: list[Athlete],
     run_statuses: list[RunStatus] | None = None,
+    number_of_runs: int | None = None,
 ) -> PhaseScoresResponse:
     """Order a phase's athletes: ranked (by rank, then bib) first, then
     started-but-unranked and did-not-start athletes, each by bib.
@@ -554,7 +561,7 @@ def assemble_phase_scores(
     for entrant in athletes:
         score = scores_by_athlete.get(entrant.id)
         if score is None:
-            started = _missing_athlete_started(entrant.id, run_statuses)
+            started = _missing_athlete_started(entrant.id, run_statuses, number_of_runs)
             score = _score_for_missing_athlete(entrant.id, run_statuses)
         else:
             started = check_athlete_started_at_least_one_ride(score)
@@ -643,7 +650,11 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_scores, bib_numbers={a.id: a.bib for a in athletes}
     )
     return assemble_phase_scores(
-        phase_id, athlete_scores_with_rank, athletes, run_statuses
+        phase_id,
+        athlete_scores_with_rank,
+        athletes,
+        run_statuses,
+        phase.number_of_runs,
     )
 
 

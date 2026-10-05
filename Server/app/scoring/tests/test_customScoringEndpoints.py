@@ -685,6 +685,32 @@ class TestAssemblePhaseScores:
         runs = got.scores[-1].run_scores
         assert [(r.run_number, r.did_not_start) for r in runs] == [(0, True)]
 
+    def test_an_entrant_is_dns_only_once_every_run_of_the_phase_is(self) -> None:
+        # _B has no moves. With bib 1 it sorts ahead of the unscored _C (bib 5)
+        # unless it is bucketed as DNS, which sorts last.
+        def order(statuses: list[RunStatus]) -> list[UUID]:
+            got = assemble_phase_scores(
+                PHASE_ID,
+                [_make_score(_A, ranking=1, dns_per_run=[False])],
+                [
+                    _make_athlete(_A, bib=9),
+                    _make_athlete(_B, bib=1),
+                    _make_athlete(_C, bib=5),
+                ],
+                statuses,
+                number_of_runs=2,
+            )
+
+            return [s.athlete_id for s in got.scores]
+
+        dns_run = lambda n: RunStatus(  # noqa: E731
+            athlete_id=UUID(_B), run_number=n, locked=True, did_not_start=True
+        )
+
+        # No status yet for run 1: _B may still ride it.
+        assert order([dns_run(0)]) == [UUID(_A), UUID(_B), UUID(_C)]
+        assert order([dns_run(0), dns_run(1)]) == [UUID(_A), UUID(_C), UUID(_B)]
+
     def test_an_entrant_with_only_an_unlocked_run_status_stays_unscored(self) -> None:
         run_statuses = [
             RunStatus(
