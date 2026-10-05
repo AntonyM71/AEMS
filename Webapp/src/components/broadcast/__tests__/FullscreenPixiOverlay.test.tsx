@@ -11,24 +11,18 @@ import { icfWhite, lightTheme } from "../overlayTheme"
 
 jest.mock(
 	"next/dynamic",
-	() => () =>
-		jest.requireActual<typeof import("../PixiFrameSequenceOverlay")>(
-			"../PixiFrameSequenceOverlay"
-		).default
+	() =>
+		jest.requireActual<typeof import("../../../mocks/nextDynamicPixiMock")>(
+			"../../../mocks/nextDynamicPixiMock"
+		).nextDynamicPixiMock
 )
-
-jest.mock("pixi.js", () => ({
-	__esModule: true,
-	Application: jest.fn(() => ({
-		canvas: document.createElement("canvas"),
-		stage: { addChild: jest.fn() },
-		init: () => Promise.resolve(),
-		destroy: () => undefined
-	})),
-	Sprite: jest.fn(() => ({ anchor: { set: jest.fn() } })),
-	Texture: { EMPTY: {}, from: jest.fn() },
-	Assets: { load: jest.fn(() => Promise.resolve()) }
-}))
+jest.mock(
+	"pixi.js",
+	() =>
+		jest.requireActual<typeof import("../../../mocks/pixiMock")>(
+			"../../../mocks/pixiMock"
+		).pixiMock
+)
 
 const hexToRgb = (hex: string): string => {
 	const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
