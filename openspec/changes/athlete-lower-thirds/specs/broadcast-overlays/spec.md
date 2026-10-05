@@ -9,7 +9,7 @@ The broadcast overlay SHALL show an athlete overview lower third while `showAthl
 - a second row with one cell for every run in the athlete's phase, in run order, each labelled "Run n" above its score, so the graphic keeps one width as runs are scored;
 - the athlete's total, labelled "Total", at the end of the second row in a box of the alternate colour.
 
-A run is final once the head judge locks it or marks it did-not-start. A run that is not final SHALL show "-" instead of its score, so a partly judged score never goes to air. A did-not-start run SHALL show "DNS" in a muted colour. The total SHALL be the sum of the athlete's best final run scores, up to the phase's number of scoring runs, with a did-not-start run counting as zero.
+A run is final once the head judge locks it or marks it did-not-start. A run that is not final SHALL show "-" instead of its score, so a partly judged score never goes to air. A did-not-start run SHALL show "DNS" in a muted colour. The total SHALL be the sum of the athlete's best final run scores, up to the phase's number of scoring runs, with a did-not-start run counting as zero. Once every run in the athlete's phase is marked did-not-start, the total SHALL show "DNS" instead.
 
 #### Scenario: Athlete with two locked runs
 - **WHEN** the operator shows the athlete overview for an athlete in a phase with two scoring runs, whose locked runs scored 340.00 and 512.50
@@ -30,6 +30,14 @@ A run is final once the head judge locks it or marks it did-not-start. A run tha
 #### Scenario: A did-not-start run
 - **WHEN** one of the athlete's runs is marked did-not-start
 - **THEN** that run's cell shows "DNS"
+
+#### Scenario: Every run did-not-start
+- **WHEN** every run in the athlete's three-run phase is marked did-not-start
+- **THEN** each run's cell and the "Total" box show "DNS", not "0.00"
+
+#### Scenario: Did-not-start runs with a run still to ride
+- **WHEN** an athlete in a three-run phase has runs 1 and 2 marked did-not-start and run 3 not yet final
+- **THEN** runs 1 and 2 show "DNS", run 3 shows "-", and the total shows "0.00", because run 3 may still be ridden
 
 #### Scenario: A newly locked run appears without a reload
 - **WHEN** the head judge locks a run, or marks it did-not-start, while the athlete overview is visible

@@ -116,6 +116,24 @@ describe("AthleteOverview", () => {
 		expect(screen.getAllByText("340.00")).toHaveLength(2)
 	})
 
+	it("shows DNS for the total once every run is did-not-start", async () => {
+		servePhaseScores([0, 1, 2].map((n) => run(n, 0, { didNotStart: true })))
+
+		renderOverview()
+
+		expect(await screen.findAllByText("DNS")).toHaveLength(4)
+		expect(screen.queryByText("0.00")).not.toBeInTheDocument()
+	})
+
+	it("keeps a numeric total while a run may still be ridden", async () => {
+		servePhaseScores([0, 1].map((n) => run(n, 0, { didNotStart: true })))
+
+		renderOverview()
+
+		expect(await runCells().findAllByText("DNS")).toHaveLength(2)
+		expect(screen.getByText("0.00")).toBeInTheDocument()
+	})
+
 	it("shows a locked run that scored nothing as 0.00, not a dash", async () => {
 		servePhaseScores([run(0, 0)])
 

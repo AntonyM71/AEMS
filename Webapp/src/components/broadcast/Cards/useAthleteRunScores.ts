@@ -35,13 +35,13 @@ const useRefetchOnRunStatus = (
 }
 
 /** One entry per run in the athlete's phase (1-based), labelled "340.00",
- * "DNS", or "-" until the run is final, and their total over final runs. A run stays
- * off air until the head judge locks it or marks it did-not-start, so a
- * half-scored run never shows. */
+ * "DNS", or "-" until the run is final, and their total over final runs, or
+ * "DNS" once every run is. A run stays off air until the head judge locks it
+ * or marks it did-not-start, so a half-scored run never shows. */
 export const useAthleteRunScores = (
 	heatId: string,
 	athleteId: string | undefined
-): { runs: AthleteRunLabel[]; total: number | undefined } => {
+): { runs: AthleteRunLabel[]; total: string | undefined } => {
 	const { currentData: heatInfo } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{ heatId },
 		{ skip: !heatId || !athleteId }
@@ -66,6 +66,9 @@ export const useAthleteRunScores = (
 	if (finalRuns.length === 0) {
 		return { runs, total: undefined }
 	}
+	if (runs.every((run) => run.label === "DNS")) {
+		return { runs, total: "DNS" }
+	}
 
 	return {
 		runs,
@@ -74,7 +77,7 @@ export const useAthleteRunScores = (
 				run.did_not_start ? 0 : run.mean_run_score
 			),
 			athleteHeat?.number_of_runs_for_score ?? 0
-		)
+		).toFixed(2)
 	}
 }
 

@@ -126,7 +126,7 @@ export const AthleteOverview = ({
 				>
 					<Box sx={{ ...smallLabelSx, fontSize: 16 }}>Total</Box>
 					<Box sx={{ fontSize: 42, fontWeight: 900 }}>
-						{total?.toFixed(2) ?? "-"}
+						{total ?? "-"}
 					</Box>
 				</Box>
 			</Box>
