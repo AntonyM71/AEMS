@@ -137,6 +137,24 @@ export const lightTheme = createTheme({
 				}
 			}
 		},
+		// Graphics pinned to fixed spots in the 1920x1080 frame. The competition
+		// overview sits left of the event title's indent so eight long event
+		// names fit on one rail.
+		AemsCompetitionOverview: {
+			defaultProps: {
+				rootSx: { position: "absolute", left: 120, top: "56%" }
+			}
+		},
+		AemsAthleteOverview: {
+			defaultProps: {
+				rootSx: { position: "absolute", left: 96, bottom: 84 }
+			}
+		},
+		AemsRunCorner: {
+			defaultProps: {
+				rootSx: { position: "absolute", right: 72, bottom: 72 }
+			}
+		},
 		MuiTable: {
 			styleOverrides: {
 				root: {

@@ -39,12 +39,21 @@ export interface AemsEventTitleThemeProps {
 	stackSpacing?: number
 }
 
+export interface AemsPositionedThemeProps {
+	/** Where the graphic sits on screen. The overlay pins it to a fixed spot
+	 *  in the 1920x1080 frame so it registers with its artwork. */
+	rootSx?: SxProps<Theme>
+}
+
 declare module "@mui/material/styles" {
 	interface ComponentsPropsList {
 		AemsBasicTable: AemsBasicTableThemeProps
 		AemsHeatSummary: AemsCardHeaderThemeProps
 		AemsPhaseResults: AemsPhaseResultsThemeProps
 		AemsEventTitle: AemsEventTitleThemeProps
+		AemsAthleteOverview: AemsPositionedThemeProps
+		AemsRunCorner: AemsPositionedThemeProps
+		AemsCompetitionOverview: AemsPositionedThemeProps
 	}
 
 	interface Components {
@@ -59,6 +68,15 @@ declare module "@mui/material/styles" {
 		}
 		AemsEventTitle?: {
 			defaultProps?: ComponentsPropsList["AemsEventTitle"]
+		}
+		AemsAthleteOverview?: {
+			defaultProps?: ComponentsPropsList["AemsAthleteOverview"]
+		}
+		AemsRunCorner?: {
+			defaultProps?: ComponentsPropsList["AemsRunCorner"]
+		}
+		AemsCompetitionOverview?: {
+			defaultProps?: ComponentsPropsList["AemsCompetitionOverview"]
 		}
 	}
 }

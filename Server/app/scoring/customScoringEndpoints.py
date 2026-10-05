@@ -491,34 +491,50 @@ def _with_athlete_info(
     )
 
 
-def _score_for_missing_athlete(
+def _own_run_statuses(
     athlete_id: UUID, run_statuses: list[RunStatus]
-) -> AthleteScores:
-    """Stand-in score for an entrant with no scored moves: did-not-start runs
-    when every one of their run statuses says so, otherwise an empty run list
-    (present but scored nothing)."""
-    own_statuses = sorted(
+) -> list[RunStatus]:
+    return sorted(
         (rs for rs in run_statuses if rs.athlete_id == athlete_id),
         key=lambda rs: rs.run_number,
     )
-    dns_runs = (
-        [
-            RunScores(
-                run_number=rs.run_number,
-                judge_scores=[],
-                mean_run_score=0,
-                highest_scoring_move=0,
-                locked=rs.locked,
-                did_not_start=True,
-            )
-            for rs in own_statuses
-        ]
-        if own_statuses and all(rs.did_not_start for rs in own_statuses)
-        else []
-    )
+
+
+def _score_for_missing_athlete(
+    athlete_id: UUID, run_statuses: list[RunStatus]
+) -> AthleteScores:
+    """Stand-in score for an entrant with no scored moves: a zero-score run for
+    each of their locked or did-not-start run statuses, judged one run at a
+    time. Whether the athlete started at all is decided separately."""
+    zero_runs = [
+        RunScores(
+            run_number=rs.run_number,
+            judge_scores=[],
+            mean_run_score=0,
+            highest_scoring_move=0,
+            locked=rs.locked,
+            did_not_start=rs.did_not_start,
+        )
+        for rs in _own_run_statuses(athlete_id, run_statuses)
+        if rs.locked or rs.did_not_start
+    ]
     return AthleteScores(
-        athlete_id=athlete_id, highest_scoring_move=0, run_scores=dns_runs
+        athlete_id=athlete_id, highest_scoring_move=0, run_scores=zero_runs
     )
+
+
+def _missing_athlete_started(
+    athlete_id: UUID, run_statuses: list[RunStatus], number_of_runs: int
+) -> bool:
+    """An entrant with no scored moves did not start only when every run in
+    the phase is marked did-not-start."""
+    did_not_start_runs = {
+        rs.run_number
+        for rs in _own_run_statuses(athlete_id, run_statuses)
+        if rs.did_not_start
+    }
+
+    return len(did_not_start_runs) < number_of_runs
 
 
 def assemble_phase_scores(
@@ -526,14 +542,17 @@ def assemble_phase_scores(
     ranked_scores: list[AthleteScores],
     athletes: list[Athlete],
     run_statuses: list[RunStatus] | None = None,
+    *,
+    number_of_runs: int,
 ) -> PhaseScoresResponse:
     """Order a phase's athletes: ranked (by rank, then bib) first, then
     started-but-unranked and did-not-start athletes, each by bib.
 
     ``ranked_scores`` is the output of ``calculate_rank``; ``athletes`` is
-    every athlete entered in the phase. An athlete with no scored moves is
-    represented with an empty run list, or with did-not-start runs when every
-    one of their run statuses says so.
+    every athlete entered in the phase. An athlete with no scored moves gets a
+    zero-score run for each locked or did-not-start run, each reported from its
+    own status. The athlete counts as did-not-start only when all
+    ``number_of_runs`` runs are marked did-not-start.
     """
     run_statuses = run_statuses or []
     scores_by_athlete = {s.athlete_id: s for s in ranked_scores}
@@ -544,9 +563,12 @@ def assemble_phase_scores(
     for entrant in athletes:
         score = scores_by_athlete.get(entrant.id)
         if score is None:
+            started = _missing_athlete_started(entrant.id, run_statuses, number_of_runs)
             score = _score_for_missing_athlete(entrant.id, run_statuses)
+        else:
+            started = check_athlete_started_at_least_one_ride(score)
         athlete = _with_athlete_info(score, entrant)
-        if not check_athlete_started_at_least_one_ride(athlete):
+        if not started:
             did_not_start.append(athlete)
         elif athlete.ranking:
             ranked.append(athlete)
@@ -630,7 +652,11 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         athlete_scores, bib_numbers={a.id: a.bib for a in athletes}
     )
     return assemble_phase_scores(
-        phase_id, athlete_scores_with_rank, athletes, run_statuses
+        phase_id,
+        athlete_scores_with_rank,
+        athletes,
+        run_statuses,
+        number_of_runs=phase.number_of_runs,
     )
 
 

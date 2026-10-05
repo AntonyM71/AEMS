@@ -123,6 +123,14 @@ const OverlayController: React.FC = () => {
 		}))
 	}
 
+	const toggleIfAthleteSelected = (key: keyof OverlayControlState) => {
+		if (overlayControlState[key] || overlayControlState.selectedAthlete) {
+			toggleKey(key)
+		} else {
+			toast.error("Please select an athlete to use this feature")
+		}
+	}
+
 	useEffect(() => {
 		void emitBroadcastControl(overlayControlState)
 	}, [overlayControlState, stateRequestCount, emitBroadcastControl])
@@ -270,16 +278,48 @@ const OverlayController: React.FC = () => {
 				<ConfigurableButton
 					label="Show Live Run Score"
 					active={overlayControlState.showLiveRunScore}
-					onClick={() => toggleKey("showLiveRunScore")}
+					onClick={() => toggleIfAthleteSelected("showLiveRunScore")}
 				/>
 				<ConfigurableButton
-					label="Show Timer"
-					active={overlayControlState.showTimer}
-					onClick={() => toggleKey("showTimer")}
-					activeColor="green"
-					inactiveColor="red"
-					textColor="white"
+					label="Show Athlete Overview"
+					active={overlayControlState.showAthleteOverview}
+					onClick={() =>
+						toggleIfAthleteSelected("showAthleteOverview")
+					}
 				/>
+			</Grid>
+			<Grid size={12}>
+				<ConfigurableButton
+					label="Show Competition Overview"
+					active={overlayControlState.showCompetitionOverview}
+					onClick={() => {
+						if (overlayControlState.selectedCompetition) {
+							toggleKey("showCompetitionOverview")
+						} else {
+							toast.error(
+								"Please select a competition to use this feature"
+							)
+						}
+					}}
+				/>
+				<ToggleButtonGroup
+					exclusive
+					size="small"
+					aria-label="Competition overview lists"
+					value={overlayControlState.competitionOverviewList}
+					onChange={(_, list: "events" | "heats" | null) => {
+						// Clicking the selected option again would clear it.
+						if (list) {
+							setOverlayControlState((prevState) => ({
+								...prevState,
+								competitionOverviewList: list
+							}))
+						}
+					}}
+				>
+					<ToggleButton value="events">Events</ToggleButton>
+					<ToggleButton value="heats">Heats</ToggleButton>
+				</ToggleButtonGroup>
 			</Grid>
 		</Grid>
 	)

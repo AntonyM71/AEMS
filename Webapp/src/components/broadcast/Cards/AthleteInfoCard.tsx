@@ -1,28 +1,8 @@
-import Collapse from "@mui/material/Collapse"
 import Grid2 from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import { Variant } from "@mui/material/styles/createTypography"
 import { OverlayControlState } from "../../Interfaces"
-
-const AthleteInfoCard = ({
-	overlayControlState,
-	textSize = "h5"
-}: {
-	overlayControlState: OverlayControlState
-	textSize?: Variant
-}) => (
-	<Collapse
-		in={overlayControlState.showLiveRunScore}
-		orientation="horizontal"
-		sx={{ display: "flex", justifyContent: "flex-end" }}
-	>
-		<AthleteInfo
-			overlayControlState={overlayControlState}
-			textSize={textSize}
-		/>
-	</Collapse>
-)
 
 export const AthleteInfo = ({
 	overlayControlState,
@@ -93,5 +73,3 @@ export const AthleteInfo = ({
 		</Grid2>
 	</Paper>
 )
-
-export default AthleteInfoCard

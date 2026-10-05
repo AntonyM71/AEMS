@@ -1,9 +1,12 @@
 import { ThemeProvider } from "@mui/material/styles"
 import React from "react"
 
+import { AthleteOverviewModal } from "./Cards/AthleteOverview"
+import { CompetitionOverviewModal } from "./Cards/CompetitionOverview"
 import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatListModal } from "./Cards/HeatListModal"
 import { PhaseResultsModal } from "./Cards/PhaseResultsModal"
+import { RunCornerModal } from "./Cards/RunCorner"
 import { lightTheme } from "./overlayTheme"
 import useDisplayedOverlayState from "./useDisplayedOverlayState"
 import useSyncOverlaySelectionState from "./useSyncOverlaySelectionState"
@@ -24,8 +27,6 @@ const Overlay: OverlayComponent = () => {
 					overflow: "clip"
 				}}
 			>
-				{/* Non-Pixi overlay cards are intentionally disabled while we migrate
-				to always-mounted Pixi-driven visibility control. */}
 				<EventTitleModal
 					isVisible={overlayControlState.showEventTitle}
 				/>
@@ -34,6 +35,13 @@ const Overlay: OverlayComponent = () => {
 				/>
 				<PhaseResultsModal
 					isVisible={overlayControlState.showPhaseResults}
+					overlayControlState={overlayControlState}
+				/>
+				<AthleteOverviewModal
+					overlayControlState={overlayControlState}
+				/>
+				<RunCornerModal overlayControlState={overlayControlState} />
+				<CompetitionOverviewModal
 					overlayControlState={overlayControlState}
 				/>
 			</div>

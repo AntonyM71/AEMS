@@ -1,6 +1,5 @@
-import Collapse from "@mui/material/Collapse"
 import { Variant } from "@mui/material/styles/createTypography"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import {
 	ScoredMovesAndBonusesResponse,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
@@ -16,36 +15,9 @@ import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
-export const LiveRunScoreSpace = ({
-	overlayControlState,
-	textSize = "h5"
-}: {
-	overlayControlState: OverlayControlState
-	textSize?: Variant
-}) => (
-	<Collapse
-		in={overlayControlState.showLiveRunScore}
-		orientation="horizontal"
-		sx={{ display: "flex", justifyContent: "flex-end" }}
-	>
-		<SubscribedFinalScore
-			overlayControlState={overlayControlState}
-			textSize={textSize}
-		/>
-	</Collapse>
-)
-
-export const SubscribedFinalScore = ({
-	overlayControlState,
-	textSize = "h5"
-}: {
-	overlayControlState: OverlayControlState
-	textSize?: Variant
-}) => {
-	const [allJudgeScores, setAllJudgeScores] = useState<
-		Record<string, number>
-	>({})
-
+/** Every judge's live score for the selected athlete's run, with its locked
+ * and did-not-start status, kept current from the score streams. */
+export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
 	const { selectedHeat, selectedRun } = overlayControlState
 	const selectedAthlete = overlayControlState.selectedAthlete
 	const scoresheet = selectedAthlete?.scoresheet
@@ -75,22 +47,20 @@ export const SubscribedFinalScore = ({
 		athleteId: selectedAthleteId,
 		runNumber: selectedRun
 	}
-	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
-		streamArgs,
-		{ skip: !canQuery }
-	)
-	const { data: runStatus } = useRunStatusStreamQuery(streamArgs, {
+	const { currentData: streamMoveData } =
+		useAthleteMovesAndBonusesStreamQuery(streamArgs, { skip: !canQuery })
+	const { currentData: runStatus } = useRunStatusStreamQuery(streamArgs, {
 		skip: !canQuery
 	})
 
-	useEffect(() => {
-		if (!streamMoveData) {
-			return
-		}
-		const judgeNumbers = new Array(maxJudges)
-			.fill(null)
-			.map((_, i) => String(i + 1))
+	const allJudgeScores = useMemo(() => {
 		const newScores: Record<string, number> = {}
+		if (!streamMoveData) {
+			return newScores
+		}
+		const judgeNumbers = Array.from({ length: maxJudges }, (_, i) =>
+			String(i + 1)
+		)
 		judgeNumbers.forEach((jid) => {
 			const filteredData: ScoredMovesAndBonusesResponse = {
 				moves:
@@ -106,16 +76,34 @@ export const SubscribedFinalScore = ({
 				(availableBonuses.data ?? []) as AvailableBonusType[]
 			)
 		})
-		setAllJudgeScores(newScores)
+
+		return newScores
 	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
 
 	const status = runStatus ?? { locked: false, did_not_start: false }
 
+	return {
+		allJudgeScores,
+		locked: status.locked,
+		didNotStart: status.did_not_start
+	}
+}
+
+export const SubscribedFinalScore = ({
+	overlayControlState,
+	textSize = "h5"
+}: {
+	overlayControlState: OverlayControlState
+	textSize?: Variant
+}) => {
+	const { allJudgeScores, locked, didNotStart } =
+		useLiveRunScore(overlayControlState)
+
 	return (
 		<FinalScore
 			allJudgeScores={allJudgeScores}
-			locked={status.locked}
-			did_not_start={status.did_not_start}
+			locked={locked}
+			did_not_start={didNotStart}
 			textSize={textSize}
 			direction="row"
 		/>

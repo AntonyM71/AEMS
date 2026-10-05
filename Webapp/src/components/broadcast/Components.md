@@ -70,7 +70,7 @@ If the config, any frame, or the Pixi renderer fails to load, the overlay enters
 
 When `configName` is provided, the component fetches `{configEndpointBase}/{configName}` and resolves frame URLs from the returned config `path` (or `frameUrls`) before preloading textures. Local path props remain available as fallback.
 
-**Example**: `Cards/AthleteCardWithAnimation.tsx`
+**Example**: `Cards/HeatListModal.tsx`, through `FullscreenPixiOverlay`
 
 ---
 
@@ -80,14 +80,15 @@ When `configName` is provided, the component fetches `{configEndpointBase}/{conf
 
 -   ~~**Phase Scoreboard**: Displays the current score of the Phase.~~
 -   **Competition & Event Title Card**: Shows the title of the current Competition & Event
+-   ~~**Competition Overview**: The competition's events or heats as a rail, current one marked~~ (`Cards/CompetitionOverview.tsx`)
 -   ~~**Heat List**: Shows athletes in a heat~~
 
 ### Lower Third Overlay
 
--   **Athlete Live Run Score**: Displays the current scored points for the run
+-   ~~**Athlete Live Run Score**: Displays the current scored points for the run~~ (Run Corner, `Cards/RunCorner.tsx`)
 -   ~~**Timer**: Shows the run countdown.~~
 -   ~~**Athlete Card**: Displays player names, affiliation, bib.~~
--   **Athlete Run Scores**: Athlete Card Plus: individual run scores, final score, current ranking(?)
+-   ~~**Athlete Run Scores**: Athlete Card Plus: individual run scores, final score~~ (Athlete Overview, `Cards/AthleteOverview.tsx`; current ranking not shown)
 -   **Custom Text**: Overlay displaying custom text for delays etc.
 -   **Cut off Score**: Show the score needed to make the "cut" to the next round.
 
