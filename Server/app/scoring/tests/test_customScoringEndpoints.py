@@ -663,6 +663,28 @@ class TestAssemblePhaseScores:
             (1, False),
         ]
 
+    def test_a_did_not_start_run_shows_while_a_later_run_is_unlocked(self) -> None:
+        run_statuses = [
+            RunStatus(
+                athlete_id=UUID(_B), run_number=0, locked=True, did_not_start=True
+            ),
+            RunStatus(
+                athlete_id=UUID(_B), run_number=1, locked=False, did_not_start=False
+            ),
+        ]
+
+        got = assemble_phase_scores(
+            PHASE_ID,
+            [_make_score(_A, ranking=1, dns_per_run=[False])],
+            [_make_athlete(_A, bib=9), _make_athlete(_B, bib=1)],
+            run_statuses,
+        )
+
+        # _B is still riding, so it is not bucketed as DNS (which sorts last).
+        assert [s.athlete_id for s in got.scores] == [UUID(_A), UUID(_B)]
+        runs = got.scores[-1].run_scores
+        assert [(r.run_number, r.did_not_start) for r in runs] == [(0, True)]
+
     def test_an_entrant_with_only_an_unlocked_run_status_stays_unscored(self) -> None:
         run_statuses = [
             RunStatus(

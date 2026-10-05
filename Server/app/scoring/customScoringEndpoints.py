@@ -491,40 +491,44 @@ def _with_athlete_info(
     )
 
 
+def _own_run_statuses(
+    athlete_id: UUID, run_statuses: list[RunStatus]
+) -> list[RunStatus]:
+    return sorted(
+        (rs for rs in run_statuses if rs.athlete_id == athlete_id),
+        key=lambda rs: rs.run_number,
+    )
+
+
 def _score_for_missing_athlete(
     athlete_id: UUID, run_statuses: list[RunStatus]
 ) -> AthleteScores:
     """Stand-in score for an entrant with no scored moves: a zero-score run for
-    each locked or did-not-start run status. An unlocked status that isn't a
-    did-not-start is still in progress, so it only keeps the athlete off the
-    did-not-start list when every other status is did-not-start."""
-    own_statuses = sorted(
-        (rs for rs in run_statuses if rs.athlete_id == athlete_id),
-        key=lambda rs: rs.run_number,
-    )
-    all_did_not_start = bool(own_statuses) and all(
-        rs.did_not_start for rs in own_statuses
-    )
-    has_locked_ride = any(rs.locked and not rs.did_not_start for rs in own_statuses)
-    zero_runs = (
-        [
-            RunScores(
-                run_number=rs.run_number,
-                judge_scores=[],
-                mean_run_score=0,
-                highest_scoring_move=0,
-                locked=rs.locked,
-                did_not_start=rs.did_not_start,
-            )
-            for rs in own_statuses
-            if rs.locked or rs.did_not_start
-        ]
-        if all_did_not_start or has_locked_ride
-        else []
-    )
+    each of their locked or did-not-start run statuses, judged one run at a
+    time. Whether the athlete started at all is decided separately."""
+    zero_runs = [
+        RunScores(
+            run_number=rs.run_number,
+            judge_scores=[],
+            mean_run_score=0,
+            highest_scoring_move=0,
+            locked=rs.locked,
+            did_not_start=rs.did_not_start,
+        )
+        for rs in _own_run_statuses(athlete_id, run_statuses)
+        if rs.locked or rs.did_not_start
+    ]
     return AthleteScores(
         athlete_id=athlete_id, highest_scoring_move=0, run_scores=zero_runs
     )
+
+
+def _missing_athlete_started(athlete_id: UUID, run_statuses: list[RunStatus]) -> bool:
+    """An entrant with no scored moves did not start only when every run
+    status they have says so."""
+    own = _own_run_statuses(athlete_id, run_statuses)
+
+    return not (own and all(rs.did_not_start for rs in own))
 
 
 def assemble_phase_scores(
@@ -550,9 +554,12 @@ def assemble_phase_scores(
     for entrant in athletes:
         score = scores_by_athlete.get(entrant.id)
         if score is None:
+            started = _missing_athlete_started(entrant.id, run_statuses)
             score = _score_for_missing_athlete(entrant.id, run_statuses)
+        else:
+            started = check_athlete_started_at_least_one_ride(score)
         athlete = _with_athlete_info(score, entrant)
-        if not check_athlete_started_at_least_one_ride(athlete):
+        if not started:
             did_not_start.append(athlete)
         elif athlete.ranking:
             ranked.append(athlete)
