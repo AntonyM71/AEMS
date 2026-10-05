@@ -74,8 +74,7 @@ const RideClock = () => {
 }
 
 /** Lower-right corner: who is on the water, the ride clock, the live score,
- * and which event, heat and run it is. Positioned by the active theme's
- * `AemsRunCorner` slot. */
+ * and which event, heat and run it is. */
 export const RunCorner = ({
 	overlayControlState
 }: {

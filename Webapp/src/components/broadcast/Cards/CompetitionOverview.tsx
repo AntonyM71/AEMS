@@ -17,8 +17,7 @@ const stepClassName = (isCurrent: boolean, isPast: boolean): string => {
 }
 
 /** The competition's name over a rail of its events or heats, with the
- * current one marked. Positioned by the theme's `AemsCompetitionOverview`
- * slot. */
+ * current one marked. */
 export const CompetitionOverview = ({
 	overlayControlState
 }: {

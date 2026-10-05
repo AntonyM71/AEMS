@@ -39,8 +39,6 @@ export interface CompetitionOverviewStep {
 	isPast: boolean
 }
 
-/** The competition's events or heats (per `competitionOverviewList`), in
- * name order and windowed around the selected one. */
 export const useCompetitionOverview = (
 	overlayControlState: OverlayControlState
 ) => {

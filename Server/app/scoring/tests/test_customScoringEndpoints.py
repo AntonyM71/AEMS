@@ -719,9 +719,10 @@ class TestAssemblePhaseScores:
 
             return [s.athlete_id for s in got.scores]
 
-        dns_run = lambda n: RunStatus(  # noqa: E731
-            athlete_id=UUID(_B), run_number=n, locked=True, did_not_start=True
-        )
+        def dns_run(n: int) -> RunStatus:
+            return RunStatus(
+                athlete_id=UUID(_B), run_number=n, locked=True, did_not_start=True
+            )
 
         # No status yet for run 1: _B may still ride it.
         assert order([dns_run(0)]) == [UUID(_A), UUID(_B), UUID(_C)]

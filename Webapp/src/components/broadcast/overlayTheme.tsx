@@ -145,7 +145,6 @@ export const lightTheme = createTheme({
 				rootSx: { position: "absolute", left: 120, top: "56%" }
 			}
 		},
-		// Lower thirds pinned to the frame's corners, in 1920x1080 frame pixels.
 		AemsAthleteOverview: {
 			defaultProps: {
 				rootSx: { position: "absolute", left: 96, bottom: 84 }

@@ -15,8 +15,8 @@ import { FinalScore } from "../../roles/headJudge/FinalScore"
 import { calculateMoveAndBonusScore } from "../../roles/headJudge/headJudge"
 import { AvailableBonusType } from "../../roles/scribe/InfoBar/ScoredMove"
 import { movesType } from "../../roles/scribe/Interfaces"
-/** Live average of every judge's score for the selected athlete's run, with
- * its locked and did-not-start status, kept current from the score streams. */
+/** Every judge's live score for the selected athlete's run, with its locked
+ * and did-not-start status, kept current from the score streams. */
 export const useLiveRunScore = (overlayControlState: OverlayControlState) => {
 	const { selectedHeat, selectedRun } = overlayControlState
 	const selectedAthlete = overlayControlState.selectedAthlete

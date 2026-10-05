@@ -8,8 +8,8 @@ import { useAthleteRunScores } from "./useAthleteRunScores"
 
 const smallLabelSx = { fontSize: 15, fontWeight: 700, letterSpacing: "0.08em" }
 
-/** Lower third: bib tile, name and affiliation, a cell per scored run, and
- * the total. Positioned by the active theme's `AemsAthleteOverview` slot. */
+/** Lower third: bib tile, name and affiliation, a cell per run, and the
+ * total. */
 export const AthleteOverview = ({
 	overlayControlState
 }: {

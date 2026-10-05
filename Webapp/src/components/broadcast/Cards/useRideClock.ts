@@ -6,9 +6,7 @@ const SQUIRT_RIDE_SECONDS = 60
 // The Timer buzzes once at this point; the overlay warns from the same moment.
 const FINAL_WARNING_SECONDS = 10
 
-/** Seconds left in the current ride and the fraction of it remaining. The
- * timer stream carries no total, so the ride length is inferred from the
- * Timer's two modes. */
+/** Seconds left in the current ride and the fraction of it remaining. */
 export const useRideClock = () => {
 	const { data } = useTimerStreamQuery()
 	const secondsRemaining = Math.round(data?.time_remaining ?? 0)
