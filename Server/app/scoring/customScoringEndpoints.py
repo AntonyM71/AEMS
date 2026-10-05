@@ -549,9 +549,10 @@ def assemble_phase_scores(
     started-but-unranked and did-not-start athletes, each by bib.
 
     ``ranked_scores`` is the output of ``calculate_rank``; ``athletes`` is
-    every athlete entered in the phase. An athlete with no scored moves is
-    represented with an empty run list, or with did-not-start runs when every
-    one of their run statuses says so.
+    every athlete entered in the phase. An athlete with no scored moves gets a
+    zero-score run for each locked or did-not-start run, each reported from its
+    own status. The athlete counts as did-not-start only when all
+    ``number_of_runs`` runs are marked did-not-start.
     """
     run_statuses = run_statuses or []
     scores_by_athlete = {s.athlete_id: s for s in ranked_scores}
