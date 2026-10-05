@@ -29,11 +29,42 @@ const CLIP_SHOWN = "polygon(-8% -12%, 116% -12%, 108% 112%, -8% 112%)"
 const fallback = "& .AemsOverlay-fallback"
 const shown = '& .AemsOverlay-fallback[data-visible="true"]'
 const card = ".AemsTableCard-root"
-const heading = ".AemsEventTitle-heading"
-const runs = ".AemsEventTitle-runs"
+// Title graphics: a navy heading band with a light band beneath that wipes in
+// just after it.
+const titleHeadings = [
+	".AemsEventTitle-heading",
+	".AemsCompetitionOverview-heading"
+]
+const titleSecondBands = [
+	".AemsEventTitle-runs",
+	".AemsCompetitionOverview-rail"
+]
+// Root-prefixed so the stagger outranks the shared wipe delay.
+const staggeredTitleSecondBands = [
+	".AemsEventTitle-root .AemsEventTitle-runs",
+	".AemsCompetitionOverview-root .AemsCompetitionOverview-rail"
+]
+const navyBands = [
+	".AemsAthleteOverview-name",
+	".AemsRunCorner-name",
+	".AemsRunCorner-event"
+]
+const lightBands = [".AemsAthleteOverview-runs", ".AemsRunCorner-clock"]
+const scoreBoxes = [".AemsAthleteOverview-bib", ".AemsAthleteOverview-total"]
+const lowerThirdPanels = [...navyBands, ...lightBands, ...scoreBoxes]
 
 const panels = (root: string, suffix = ""): string =>
-	[card, heading, runs].map((panel) => `${root} ${panel}${suffix}`).join(", ")
+	[card, ...titleHeadings, ...titleSecondBands, ...lowerThirdPanels]
+		.map((panel) => `${root} ${panel}${suffix}`)
+		.join(", ")
+const each = (selectors: string[], root = fallback): string =>
+	selectors.map((selector) => `${root} ${selector}`).join(", ")
+
+const altBox = {
+	backgroundColor: icfLightBlue,
+	backgroundImage: `linear-gradient(180deg, #49b3e6 0%, ${icfLightBlue} 100%)`,
+	color: icfDarkBlue
+}
 
 const titleBand = {
 	marginLeft: "-1.5rem",
@@ -73,29 +104,60 @@ export const overlayFallbackSx: SxProps<Theme> = {
 	},
 	[`${fallback} .MuiTableCell-root:first-of-type`]: { paddingLeft: "20px" },
 
-	[`${fallback} ${heading}`]: {
+	[each(titleHeadings)]: {
 		...titleBand,
 		backgroundColor: icfDarkBlue,
 		backgroundImage: `linear-gradient(90deg, ${icfNavyLift} 0%, ${icfDarkBlue} 70%, rgba(12, 40, 80, 0) 100%)`
 	},
-	[`${fallback} ${runs}`]: {
+	[each(titleSecondBands)]: {
 		...titleBand,
 		backgroundColor: icfWhite,
 		backgroundImage: `linear-gradient(90deg, ${icfWhite} 0%, ${icfMist} 70%, rgba(227, 238, 247, 0) 100%)`
+	},
+
+	[each(navyBands)]: {
+		backgroundColor: icfDarkBlue,
+		backgroundImage: `linear-gradient(100deg, ${icfNavyLift} 0%, ${icfDarkBlue} 55%, ${icfNavyDeep} 100%)`,
+		color: "white"
+	},
+	[each(lightBands)]: {
+		backgroundColor: icfWhite,
+		backgroundImage: `linear-gradient(180deg, #ffffff 0%, ${icfWhite} 40%, ${icfMist} 100%)`,
+		color: icfDarkBlue
+	},
+	[each([...scoreBoxes, ".AemsRunCorner-score"])]: altBox,
+	[each(navyBands.map((band) => `${band} .AemsAffiliationPill`))]: {
+		color: icfTint
+	},
+	[`${fallback} .AemsAthleteOverview-runs > *`]: {
+		borderRight: `2px solid ${icfTint}`
+	},
+	[`${fallback} .AemsCompetitionOverview-rail`]: {
+		padding: "0 4rem 0 1.5rem"
+	},
+	[`${fallback} .AemsCompetitionOverview-step`]: {
+		borderRight: `2px solid ${icfTint}`
+	},
+	[`${fallback} .AemsCompetitionOverview-current`]: {
+		...altBox,
+		borderRightColor: "transparent"
+	},
+	[each([".AemsAthleteOverview-muted", ".AemsCompetitionOverview-past"])]: {
+		color: "#7a8aa3"
 	},
 
 	[panels(fallback)]: {
 		clipPath: CLIP_HIDDEN,
 		transition: `clip-path ${WIPE_MS}ms cubic-bezier(0.22, 0.8, 0.24, 1) ${WIPE_OUT_DELAY_MS}ms`
 	},
-	[`${fallback} .AemsEventTitle-root ${runs}`]: {
+	[each(staggeredTitleSecondBands)]: {
 		transitionDelay: `${WIPE_OUT_DELAY_MS + RUNS_STAGGER_OUT_MS}ms`
 	},
 	[panels(shown)]: {
 		clipPath: CLIP_SHOWN,
 		transitionDelay: "0ms"
 	},
-	[`${shown} .AemsEventTitle-root ${runs}`]: {
+	[each(staggeredTitleSecondBands, shown)]: {
 		transitionDelay: "90ms"
 	},
 	[panels(fallback, " > *")]: {

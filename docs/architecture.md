@@ -325,10 +325,11 @@ Network Configuration:
    - Simplified deployment and scaling
    - Isolated service architecture
 
-7. **Pixi.js/WebGL Broadcast Overlays** (see ADR005, ADR007)
+7. **Pixi.js/WebGL Broadcast Overlays** (see ADR005, ADR007, ADR011)
    - GPU-accelerated playback of PNG frame-sequence graphics packs
    - Graphics packs hosted on a separate Nginx server, keeping licensed assets out of the open-source codebase
    - Reusable React wrapper for intro/hold/outro overlay animation
+   - Data logic components and hooks shared by the overlay and arena, framed by per-screen presentation wrappers and themes
 
 ## 10. Quality Requirements
 

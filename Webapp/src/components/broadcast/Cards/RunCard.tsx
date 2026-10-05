@@ -1,4 +1,3 @@
-import Collapse from "@mui/material/Collapse"
 import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
@@ -6,24 +5,22 @@ import { Variant } from "@mui/material/styles/createTypography"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
 
-const RunCard = ({
-	overlayControlState,
-	textSize = "h5"
-}: {
-	overlayControlState: OverlayControlState
-	textSize?: Variant
-}) => (
-	<Collapse
-		in={overlayControlState.showLiveRunScore}
-		orientation="horizontal"
-		sx={{ display: "flex", justifyContent: "flex-end" }}
-	>
-		<RunDetails
-			overlayControlState={overlayControlState}
-			textSize={textSize}
-		/>
-	</Collapse>
-)
+/** How many runs the selected athlete has in the selected heat, or 0 before
+ * the heat info arrives. */
+export const useRunCount = (overlayControlState: OverlayControlState) => {
+	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{
+			heatId: overlayControlState.selectedHeat
+		},
+		{ skip: !overlayControlState.selectedHeat }
+	)
+
+	return (
+		athletes.data?.find(
+			(a) => a.athlete_id === overlayControlState.selectedAthlete?.id
+		)?.number_of_runs ?? 0
+	)
+}
 
 export const RunDetails = ({
 	overlayControlState,
@@ -32,17 +29,7 @@ export const RunDetails = ({
 	overlayControlState: OverlayControlState
 	textSize?: Variant
 }) => {
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: overlayControlState.selectedHeat
-		},
-		{ skip: !overlayControlState.selectedHeat }
-	)
-
-	const numberOfRuns =
-		athletes.data?.filter(
-			(a) => a.athlete_id === overlayControlState.selectedAthlete?.id
-		)?.[0]?.number_of_runs ?? 0
+	const numberOfRuns = useRunCount(overlayControlState)
 
 	return (
 		<Paper
@@ -70,5 +57,3 @@ export const RunDetails = ({
 		</Paper>
 	)
 }
-
-export default RunCard

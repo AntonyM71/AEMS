@@ -121,6 +121,31 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 			}
 		}),
 
+		/** The latest run-status message (lock or DNS) for any of one athlete's
+		 * runs in a heat, or null until one arrives. Listen-only: unlike
+		 * runStatusStream it never becomes the socket emitRunStatus reuses. */
+		athleteRunStatusStream: build.query<
+			RunStatus | null,
+			{ heatId: string; athleteId: string }
+		>({
+			queryFn: () => ({ data: null }),
+			async onCacheEntryAdded(
+				{ heatId, athleteId },
+				{ updateCachedData, cacheEntryRemoved }
+			) {
+				const socket = connectWebRunStatusSocket()
+				socket.on("run_status", (data: RunStatus) => {
+					if (
+						data?.athlete_id === athleteId &&
+						data?.heat_id === heatId
+					) {
+						updateCachedData(() => data)
+					}
+				})
+				await cacheEntryRemoved
+				socket.disconnect()
+			}
+		}),
 		runStatusStream: build.query<
 			RunStatus | undefined,
 			{ heatId: string; athleteId: string; runNumber: number }
@@ -287,6 +312,7 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 export const {
 	useTimerStreamQuery,
 	useRunStatusStreamQuery,
+	useAthleteRunStatusStreamQuery,
 	useAthleteMovesAndBonusesStreamQuery,
 	useBroadcastControlStreamQuery,
 	useEmitRunStatusMutation,
