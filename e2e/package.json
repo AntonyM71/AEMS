@@ -4,7 +4,8 @@
 	"description": "End-to-end Playwright tests for AEMS",
 	"scripts": {
 		"test": "playwright test",
-		"test:report": "playwright show-report"
+		"test:report": "playwright show-report",
+		"smoke": "playwright test -c smoke/playwright.config.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.49.1",
