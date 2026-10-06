@@ -24,6 +24,7 @@ import {
 	useUpdateAthleteScoreAddUpdateAthleteScoreHeatIdAthleteIdRunNumberJudgeIdPostMutation
 } from "../../../redux/services/aemsApi"
 import { useRunStatusStreamQuery } from "../../../redux/services/streamingApi"
+import { HeadJudgeMismatchBanner } from "./HeadJudgeMismatchBanner"
 import { InfoBar, isRunOutOfRangeForAthlete } from "./InfoBar"
 import {
 	directionType,
@@ -205,6 +206,7 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 		return (
 			<Grid container spacing={1}>
 				<Grid size={7}>
+					<HeadJudgeMismatchBanner />
 					{runStatus?.locked && (
 						<Alert severity="info" sx={{ marginBottom: "0.5em" }}>
 							Run has been locked by head judge
