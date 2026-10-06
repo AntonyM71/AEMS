@@ -1,10 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse, delay } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import HeatSelector from "../HeatSelector"
+import { renderWithProviders } from "../../../testUtils"
 
 interface HeatUpdateBody {
 	name?: string
@@ -23,11 +23,7 @@ describe("HeatSelector", () => {
 				numberOfRuns: 2
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector />, { store })
 		// The component should render an empty fragment
 		expect(document.body).toHaveTextContent("")
 	})
@@ -49,11 +45,7 @@ describe("HeatSelector", () => {
 				numberOfRuns: 2
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector />, { store })
 		// Wait for the skeleton to appear
 		const skeleton = await screen.findByTestId("skeleton")
 		expect(skeleton).toBeInTheDocument()
@@ -72,11 +64,7 @@ describe("HeatSelector", () => {
 				numberOfRuns: 2
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector />, { store })
 
 		expect(
 			await screen.findByText("Failed to get data from the server")
@@ -107,11 +95,9 @@ describe("HeatSelector", () => {
 				numberOfRuns: 2
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector showDetailed={true} />, {
+			store
+		})
 		// Check for "No Heats" message
 		expect(
 			await screen.findByText("No Heats in Competition")
@@ -166,11 +152,7 @@ describe("HeatSelector", () => {
 				userRole: ""
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector />, { store })
 		// Wait for select component to be loaded
 		const select = await screen.findByRole("combobox", {
 			name: /select heat/i
@@ -235,11 +217,9 @@ describe("HeatSelector", () => {
 				numberOfRuns: 2
 			}
 		})
-		render(
-			<Provider store={store}>
-				<HeatSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector showDetailed={true} />, {
+			store
+		})
 		// Wait for form to load and get input element
 		const input = await screen.findByRole("textbox", { name: /new heat/i })
 		expect(input).toBeInTheDocument()
@@ -313,11 +293,9 @@ describe("HeatSelector", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<HeatSelector showDetailed={true} />, {
+			store
+		})
 
 		// Wait for component to load
 		await screen.findByText("Select a Heat")

@@ -1,9 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { delay, http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
 import { socketHub } from "../../../../mocks/socketHub"
 import {
@@ -19,6 +18,7 @@ import {
 } from "../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../redux/services/aemsApi"
 import HeadJudge from "../headJudge"
+import { renderWithProviders } from "../../../../testUtils"
 
 jest.mock("../WebSocketConnections")
 
@@ -93,11 +93,7 @@ describe("HeadJudge", () => {
 	})
 
 	it("should render selector display when no heat is selected", async () => {
-		render(
-			<Provider store={store}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, { store })
 
 		// Should show loading skeleton first
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
@@ -110,11 +106,9 @@ describe("HeadJudge", () => {
 	it("shows DNS once the server reports the run did not start", async () => {
 		runStatusResponse({ did_not_start: true })
 
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		await screen.findByTestId("head-judge-page")
 
@@ -129,11 +123,9 @@ describe("HeadJudge", () => {
 	it("refuses to set DNS while the run is locked", async () => {
 		runStatusResponse({ locked: true })
 
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		await screen.findByTestId("head-judge-page")
 		await waitFor(() =>
@@ -209,11 +201,9 @@ describe("HeadJudge", () => {
 			}
 		})
 
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 		await screen.findByTestId("head-judge-page")
 		await waitFor(() =>
 			expect(socketHub.openCount("current_scores")).toBeGreaterThan(0)
@@ -264,11 +254,9 @@ describe("HeadJudge", () => {
 	})
 
 	it("only shows the run locked once the server confirms it, not on click", async () => {
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		await screen.findByTestId("head-judge-page")
 		await waitFor(() =>
@@ -322,11 +310,9 @@ describe("HeadJudge", () => {
 	})
 
 	it("should show loading skeleton before showing the page", async () => {
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		// First check that loading skeleton is shown
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
@@ -341,11 +327,9 @@ describe("HeadJudge", () => {
 	})
 
 	it("should show initial score as 0.00 when heat is selected", async () => {
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		// Wait for loading to finish
 		await screen.findByTestId("head-judge-page")
@@ -356,11 +340,9 @@ describe("HeadJudge", () => {
 	})
 
 	it("should show all controls when heat is selected", async () => {
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		// Wait for loading to finish
 		await screen.findByTestId("head-judge-page")
@@ -379,11 +361,9 @@ describe("HeadJudge", () => {
 		)
 	})
 	it("should show does not show lock and dns controls when changeRunStatus is false", async () => {
-		render(
-			<Provider store={makeStore(competitionsWithHeat)}>
-				<HeadJudge changeRunStatus={false} />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge changeRunStatus={false} />, {
+			store: makeStore(competitionsWithHeat)
+		})
 
 		// Wait for loading to finish
 		await screen.findByTestId("head-judge-page")
@@ -433,11 +413,9 @@ describe("HeadJudge position publishing", () => {
 
 	const mountHeadJudge = (changeRunStatus = true) => {
 		const store = makeStore(competitionsWithHeat)
-		render(
-			<Provider store={store}>
-				<HeadJudge changeRunStatus={changeRunStatus} />
-			</Provider>
-		)
+		renderWithProviders(<HeadJudge changeRunStatus={changeRunStatus} />, {
+			store
+		})
 
 		return store
 	}

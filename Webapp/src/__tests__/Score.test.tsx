@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import Score from "../pages/Score"
-import { setupStore } from "../redux/store"
+import { renderWithProviders } from "../testUtils"
 
 // Mock the PhaseScoreTable component
 jest.mock("../components/competition/PhaseScoretable", () => ({
@@ -12,11 +11,7 @@ jest.mock("../components/competition/PhaseScoretable", () => ({
 
 describe("Score Page", () => {
 	it("renders phase score table component", () => {
-		render(
-			<Provider store={setupStore()}>
-				<Score />
-			</Provider>
-		)
+		renderWithProviders(<Score />)
 
 		expect(screen.getByTestId("phase-score-table")).toBeInTheDocument()
 	})

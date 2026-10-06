@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import { setupStore } from "../../../redux/store"
 import { SelectorDisplay } from "../MainSelector"
+import { renderWithProviders } from "../../../testUtils"
 
 const store = setupStore()
 
@@ -28,11 +28,7 @@ jest.mock("../HeatSelector", () => ({
 
 describe("SelectorDisplay", () => {
 	const renderComponent = (props = {}) =>
-		render(
-			<Provider store={store}>
-				<SelectorDisplay {...props} />
-			</Provider>
-		)
+		renderWithProviders(<SelectorDisplay {...props} />, { store })
 
 	it("renders all selectors by default", () => {
 		renderComponent()

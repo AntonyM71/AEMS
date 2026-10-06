@@ -1,15 +1,13 @@
-import { render } from "@testing-library/react"
-import { Provider } from "react-redux"
 import { setupStore } from "../../../redux/store"
+import { renderWithProviders } from "../../../testUtils"
 import { HeatSummaryTable } from "./HeatSummaryTable"
 
 describe("HeatSummaryTable", () => {
 	it("renders nothing when isVisible is false", () => {
 		const store = setupStore()
-		const { container } = render(
-			<Provider store={store}>
-				<HeatSummaryTable isVisible={false} />
-			</Provider>
+		const { container } = renderWithProviders(
+			<HeatSummaryTable isVisible={false} />,
+			{ store }
 		)
 
 		expect(container).toBeEmptyDOMElement()
@@ -17,11 +15,9 @@ describe("HeatSummaryTable", () => {
 
 	it("renders the table container when isVisible is true (default)", () => {
 		const store = setupStore()
-		const { container } = render(
-			<Provider store={store}>
-				<HeatSummaryTable />
-			</Provider>
-		)
+		const { container } = renderWithProviders(<HeatSummaryTable />, {
+			store
+		})
 
 		expect(container).not.toBeEmptyDOMElement()
 	})

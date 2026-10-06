@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
-import { Provider } from "react-redux"
 import configureStore from "redux-mock-store"
 import { updatePreferDark } from "../../../redux/atoms/utilities"
 import Header, { DarkModeButton } from "../Header"
+import { renderWithProviders } from "../../../testUtils"
 
 // Mock next/image since it's not available in test environment
 
@@ -35,31 +35,19 @@ describe("Header Component", () => {
 	})
 
 	it("renders the logo", () => {
-		render(
-			<Provider store={store}>
-				<Header />
-			</Provider>
-		)
+		renderWithProviders(<Header />, { store })
 		const logo = screen.getByAltText("Hurley Foundation Events Logo")
 		expect(logo).toBeInTheDocument()
 		expect(logo).toHaveAttribute("src", "/images/icon.png")
 	})
 
 	it("displays the user role", () => {
-		render(
-			<Provider store={store}>
-				<Header />
-			</Provider>
-		)
+		renderWithProviders(<Header />, { store })
 		expect(screen.getByText("Judge")).toBeInTheDocument()
 	})
 
 	it("renders all navigation links with correct hrefs", () => {
-		render(
-			<Provider store={store}>
-				<Header />
-			</Provider>
-		)
+		renderWithProviders(<Header />, { store })
 
 		const links = [
 			{ text: "Judging", href: "/Judging" },
@@ -89,20 +77,12 @@ describe("DarkModeButton Component", () => {
 	})
 
 	it("renders the dark mode button", () => {
-		render(
-			<Provider store={store}>
-				<DarkModeButton />
-			</Provider>
-		)
+		renderWithProviders(<DarkModeButton />, { store })
 		expect(screen.getByTestId("darkModeButton")).toBeInTheDocument()
 	})
 
 	it("dispatches updatePreferDark action when clicked", async () => {
-		render(
-			<Provider store={store}>
-				<DarkModeButton />
-			</Provider>
-		)
+		renderWithProviders(<DarkModeButton />, { store })
 
 		const button = screen.getByTestId("darkModeButton")
 		const user = userEvent.setup()

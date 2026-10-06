@@ -60,7 +60,7 @@ export const renderWithProviders = (
 	}: ExtendedRenderOptions = {}
 ): { store: EnhancedStore<RootState> } & Pick<
 	ReturnType<typeof render>,
-	"rerender"
+	"rerender" | "unmount"
 > => {
 	const Wrapper = ({ children }: PropsWithChildren<unknown>): JSX.Element => (
 		<Provider store={store}>{children}</Provider>

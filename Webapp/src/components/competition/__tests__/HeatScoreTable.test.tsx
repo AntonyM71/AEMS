@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import { HeatScoreTable } from "../HeatScoreTable"
+import { renderWithProviders } from "../../../testUtils"
 
 interface GridProps {
 	columns: { field: string; headerName: string }[]
@@ -100,11 +100,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
 	})
@@ -120,11 +116,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for heat name and grid to appear
 		expect(await screen.findByText("Heat: Test Heat")).toBeInTheDocument()
@@ -176,11 +168,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -219,11 +207,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		expect(
 			await screen.findByText("Something went wrong")
@@ -241,11 +225,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -309,11 +289,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -356,11 +332,7 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Get grid props and verify empty rows
 		const grid = await screen.findByTestId("mock-data-grid")
@@ -381,11 +353,9 @@ describe("HeatScoreTable", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<HeatScoreTable defaultShowJudgeScores={true} />
-			</Provider>
-		)
+		renderWithProviders(<HeatScoreTable defaultShowJudgeScores={true} />, {
+			store
+		})
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")

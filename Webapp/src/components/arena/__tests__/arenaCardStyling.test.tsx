@@ -1,14 +1,13 @@
 import { ThemeProvider } from "@mui/material/styles"
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import { competitionInitialState } from "../../../redux/atoms/competitions"
 import { setupStore } from "../../../redux/store"
 import { EventTitle } from "../../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../../broadcast/Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../../broadcast/Cards/PhaseResultsTable"
-import { closestPaper } from "../../../testUtils"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import { darkTheme } from "../arenaTheme"
+import { closestPaper, renderWithProviders } from "../../../testUtils"
 
 // The mirror of overlayCardStyling.test.tsx: the same shared Cards, rendered
 // under the arena's theme, must come out as self-contained dark panels with
@@ -16,21 +15,17 @@ import { darkTheme } from "../arenaTheme"
 // positioning, no fixed row heights, no blank padding rows).
 
 const renderArena = (ui: React.ReactElement) =>
-	render(
-		<Provider
-			store={setupStore({
-				competitions: {
-					...competitionInitialState,
-					selectedCompetition: "1",
-					selectedEvent: "1",
-					selectedPhase: "1",
-					selectedHeat: "1"
-				}
-			})}
-		>
-			<ThemeProvider theme={darkTheme}>{ui}</ThemeProvider>
-		</Provider>
-	)
+	renderWithProviders(<ThemeProvider theme={darkTheme}>{ui}</ThemeProvider>, {
+		store: setupStore({
+			competitions: {
+				...competitionInitialState,
+				selectedCompetition: "1",
+				selectedEvent: "1",
+				selectedPhase: "1",
+				selectedHeat: "1"
+			}
+		})
+	})
 
 describe("arena card styling", () => {
 	describe("HeatSummaryTable", () => {

@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import { competitionInitialState } from "../../../redux/atoms/competitions"
 import { setupStore } from "../../../redux/store"
 import { defaultOverlayControllerState } from "../../Interfaces"
+import { renderWithProviders } from "../../../testUtils"
 import { PhaseScoreTable } from "./PhaseResultsTable"
 
 describe("PhaseScoreTable", () => {
@@ -10,13 +10,12 @@ describe("PhaseScoreTable", () => {
 		const store = setupStore({
 			competitions: { ...competitionInitialState, selectedPhase: "1" }
 		})
-		const { container } = render(
-			<Provider store={store}>
-				<PhaseScoreTable
-					overlayControlState={defaultOverlayControllerState}
-					isVisible={false}
-				/>
-			</Provider>
+		const { container } = renderWithProviders(
+			<PhaseScoreTable
+				overlayControlState={defaultOverlayControllerState}
+				isVisible={false}
+			/>,
+			{ store }
 		)
 
 		expect(container).toBeEmptyDOMElement()
@@ -26,13 +25,12 @@ describe("PhaseScoreTable", () => {
 		const store = setupStore({
 			competitions: { ...competitionInitialState, selectedPhase: "1" }
 		})
-		render(
-			<Provider store={store}>
-				<PhaseScoreTable
-					overlayControlState={defaultOverlayControllerState}
-					isVisible={true}
-				/>
-			</Provider>
+		renderWithProviders(
+			<PhaseScoreTable
+				overlayControlState={defaultOverlayControllerState}
+				isVisible={true}
+			/>,
+			{ store }
 		)
 
 		expect(await screen.findByText("Runs: 2")).toBeInTheDocument()

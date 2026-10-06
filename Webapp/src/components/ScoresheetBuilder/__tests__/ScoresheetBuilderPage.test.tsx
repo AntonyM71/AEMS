@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse, delay } from "msw"
 import Router from "next/router"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import { ScoresheetBuilder } from "../ScoresheetBuilderPage"
+import { renderWithProviders } from "../../../testUtils"
 
 // Create a test store
 const createTestStore = () =>
@@ -28,11 +28,7 @@ describe("ScoresheetBuilderPage", () => {
 	})
 
 	it("shows initial empty state message when no scoresheet is selected", () => {
-		render(
-			<Provider store={store}>
-				<ScoresheetBuilder />
-			</Provider>
-		)
+		renderWithProviders(<ScoresheetBuilder />, { store })
 
 		expect(
 			screen.getByText(
@@ -54,11 +50,7 @@ describe("ScoresheetBuilderPage", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<ScoresheetBuilder />
-			</Provider>
-		)
+		renderWithProviders(<ScoresheetBuilder />, { store })
 
 		// Wait for the Autocomplete to be loaded
 		const combobox = await screen.findByRole("combobox")
@@ -99,11 +91,7 @@ describe("ScoresheetBuilderPage", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<ScoresheetBuilder />
-			</Provider>
-		)
+		renderWithProviders(<ScoresheetBuilder />, { store })
 
 		// Find the textfield and enter a new scoresheet name
 		const textField = screen.getByRole("textbox", {
@@ -162,11 +150,7 @@ describe("ScoresheetBuilderPage", () => {
 		}
 
 		const openSheetA = async (withEdit: boolean) => {
-			render(
-				<Provider store={store}>
-					<ScoresheetBuilder />
-				</Provider>
-			)
+			renderWithProviders(<ScoresheetBuilder />, { store })
 			await screen.findByRole("combobox", { name: "Scoresheet" })
 			await selectScoresheet("Sheet A")
 			const moveName = await screen.findByDisplayValue("Loop")

@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import ScoresheetBuilderPage from "../pages/ScoresheetBuilder"
-import { setupStore } from "../redux/store"
+import { renderWithProviders } from "../testUtils"
 
 // Mock the dynamic import
 jest.mock("next/dynamic", () => () => () => (
@@ -10,11 +9,7 @@ jest.mock("next/dynamic", () => () => () => (
 
 describe("ScoresheetBuilder Page", () => {
 	it("renders scoresheet builder component", () => {
-		render(
-			<Provider store={setupStore()}>
-				<ScoresheetBuilderPage />
-			</Provider>
-		)
+		renderWithProviders(<ScoresheetBuilderPage />)
 
 		expect(screen.getByTestId("scoresheet-builder")).toBeInTheDocument()
 	})

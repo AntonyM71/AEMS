@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse, delay } from "msw"
 import { Toaster, toast } from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import { ScoresheetMoves } from "../ScoresheetBuilder"
+import { renderWithProviders } from "../../../testUtils"
 
 interface AvailableMoves {
 	id: string
@@ -61,11 +61,12 @@ const createTestStore = () =>
 	})
 
 const renderScoresheet = (store: ReturnType<typeof createTestStore>) =>
-	render(
-		<Provider store={store}>
+	renderWithProviders(
+		<>
 			<Toaster />
 			<ScoresheetMoves selectedScoresheet="test-id" />
-		</Provider>
+		</>,
+		{ store }
 	)
 
 const waitForScoresheetToLoad = async (timeout?: number) => {

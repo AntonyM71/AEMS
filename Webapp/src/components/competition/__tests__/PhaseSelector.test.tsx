@@ -1,18 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
-import {
-	fireEvent,
-	render,
-	screen,
-	waitFor,
-	within
-} from "@testing-library/react"
+import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import PhaseSelector from "../PhaseSelector"
+import { renderWithProviders } from "../../../testUtils"
 
 interface PhasePostBody {
 	name: string
@@ -115,22 +109,14 @@ describe("PhaseSelector", () => {
 	})
 
 	it("should render loading skeleton when fetching phases", () => {
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		expect(screen.getByTestId("phase-selector-loading")).toBeInTheDocument()
 	})
 
 	it("should display phases when data is loaded", async () => {
 		const user = userEvent.setup({ delay: null })
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		// Wait for loading state to finish and component to be ready
 		await screen.findByText("Select Phase")
@@ -150,11 +136,7 @@ describe("PhaseSelector", () => {
 
 	it("should allow selecting a phase", async () => {
 		const user = userEvent.setup({ delay: null })
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		// Wait for loading state to finish and component to be ready
 		await screen.findByText("Select Phase")
@@ -180,11 +162,7 @@ describe("PhaseSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		expect(
 			await screen.findByText("Failed to get data from the server")
@@ -202,11 +180,7 @@ describe("PhaseSelector", () => {
 			http.get("/api/phase", () => HttpResponse.json(null))
 		)
 
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		// Wait for loading to finish and check for no phases message
 		expect(
@@ -230,11 +204,9 @@ describe("PhaseSelector", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<PhaseSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector showDetailed={true} />, {
+			store
+		})
 
 		await screen.findByText("Add New Phase")
 
@@ -268,11 +240,9 @@ describe("PhaseSelector", () => {
 	})
 
 	it("warns when scoring runs exceed total runs and clears the warning once fixed", async () => {
-		render(
-			<Provider store={store}>
-				<PhaseSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector showDetailed={true} />, {
+			store
+		})
 
 		await screen.findByText("Add New Phase")
 
@@ -321,11 +291,7 @@ describe("PhaseSelector", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<PhaseSelector />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector />, { store })
 
 		// Component should render empty fragment
 		expect(screen.queryByText("Select Phase")).not.toBeInTheDocument()
@@ -375,11 +341,9 @@ describe("PhaseSelector", () => {
 			}
 		})
 
-		render(
-			<Provider store={store}>
-				<PhaseSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<PhaseSelector showDetailed={true} />, {
+			store
+		})
 
 		await screen.findByText("Select Phase")
 

@@ -1,7 +1,6 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react"
+import { act, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import toast from "react-hot-toast"
 import { socketHub } from "../../../mocks/socketHub"
 import { server } from "../../../mocks/server"
@@ -33,11 +32,7 @@ beforeEach(() => {
 
 describe("OverlayController", () => {
 	it("closes its broadcast socket when it unmounts", async () => {
-		const { unmount } = render(
-			<Provider store={setupStore()}>
-				<OverlayController />
-			</Provider>
-		)
+		const { unmount } = renderWithProviders(<OverlayController />)
 
 		await waitFor(() =>
 			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
@@ -52,20 +47,16 @@ describe("OverlayController", () => {
 	})
 
 	it("carries the pre-selected competition, event and heat into the first broadcast", async () => {
-		render(
-			<Provider
-				store={setupStore({
-					competitions: {
-						...competitionInitialState,
-						selectedCompetition: "comp-1",
-						selectedEvent: "event-1",
-						selectedHeat: "heat-1"
-					}
-				})}
-			>
-				<OverlayController />
-			</Provider>
-		)
+		renderWithProviders(<OverlayController />, {
+			store: setupStore({
+				competitions: {
+					...competitionInitialState,
+					selectedCompetition: "comp-1",
+					selectedEvent: "event-1",
+					selectedHeat: "heat-1"
+				}
+			})
+		})
 
 		await waitFor(() =>
 			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
@@ -81,11 +72,7 @@ describe("OverlayController", () => {
 
 	it("emits the ICF-logo toggle to subscribers", async () => {
 		const user = userEvent.setup({ delay: null })
-		render(
-			<Provider store={setupStore()}>
-				<OverlayController />
-			</Provider>
-		)
+		renderWithProviders(<OverlayController />)
 		await waitFor(() =>
 			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
 		)
@@ -117,16 +104,8 @@ describe("OverlayController", () => {
 		const user = userEvent.setup({ delay: null })
 		const controllerStore = setupStore()
 
-		render(
-			<>
-				<Provider store={controllerStore}>
-					<OverlayController />
-				</Provider>
-				<Provider store={setupStore()}>
-					<Arena />
-				</Provider>
-			</>
-		)
+		renderWithProviders(<OverlayController />, { store: controllerStore })
+		renderWithProviders(<Arena />)
 
 		await waitFor(() =>
 			expect(
@@ -272,18 +251,14 @@ describe("OverlayController", () => {
 				.at(-1)?.[1]
 
 		const mountController = () => {
-			render(
-				<Provider
-					store={setupStore({
-						competitions: {
-							...competitionInitialState,
-							selectedCompetition: "comp-1"
-						}
-					})}
-				>
-					<OverlayController />
-				</Provider>
-			)
+			renderWithProviders(<OverlayController />, {
+				store: setupStore({
+					competitions: {
+						...competitionInitialState,
+						selectedCompetition: "comp-1"
+					}
+				})
+			})
 
 			return userEvent.setup({ delay: null })
 		}
@@ -372,11 +347,7 @@ describe("OverlayController", () => {
 					selectedHeat: "heat-1"
 				}
 			})
-			render(
-				<Provider store={store}>
-					<OverlayController />
-				</Provider>
-			)
+			renderWithProviders(<OverlayController />, { store })
 			const user = userEvent.setup({ delay: null })
 			await user.click(
 				screen.getByRole("button", { name: "Follow head judge" })
@@ -421,11 +392,7 @@ describe("OverlayController", () => {
 
 	it("re-sends its current state when a display asks for it", async () => {
 		const user = userEvent.setup({ delay: null })
-		render(
-			<Provider store={setupStore()}>
-				<OverlayController />
-			</Provider>
-		)
+		renderWithProviders(<OverlayController />)
 		await user.click(
 			screen.getByRole("button", { name: "Follow head judge" })
 		)
@@ -459,24 +426,15 @@ describe("OverlayController", () => {
 		socketHub.enableEcho("head_judge_selection")
 		const user = userEvent.setup({ delay: null })
 
-		render(
-			<>
-				<Provider store={setupStore()}>
-					<OverlayController />
-				</Provider>
-				<Provider
-					store={setupStore({
-						competitions: {
-							...competitionInitialState,
-							selectedCompetition: "comp-1",
-							selectedHeat: "heat-1"
-						}
-					})}
-				>
-					<HeadJudge />
-				</Provider>
-			</>
-		)
+		renderWithProviders(<OverlayController />)
+		renderWithProviders(<HeadJudge />, {
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "comp-1",
+					selectedHeat: "heat-1"
+				}
+			}
+		})
 		await user.click(
 			screen.getByRole("button", { name: "Follow head judge" })
 		)
@@ -489,11 +447,7 @@ describe("OverlayController", () => {
 
 		// The arena opens after the controller and head judge have settled,
 		// as a display reloaded mid-event would.
-		render(
-			<Provider store={setupStore()}>
-				<Arena />
-			</Provider>
-		)
+		renderWithProviders(<Arena />)
 		act(() => {
 			socketHub.emit("broadcast_control", "connect")
 		})

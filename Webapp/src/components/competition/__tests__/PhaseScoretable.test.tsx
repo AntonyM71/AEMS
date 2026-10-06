@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import { PhaseScoreTable } from "../PhaseScoretable"
+import { renderWithProviders } from "../../../testUtils"
 
 interface RootState {
 	competitions: {
@@ -135,21 +135,13 @@ describe("PhaseScoreTable", () => {
 			payload: "1"
 		})
 
-		render(
-			<Provider store={store}>
-				<PhaseScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<PhaseScoreTable />, { store })
 
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
 	})
 
 	it("should display phase data when loaded", async () => {
-		render(
-			<Provider store={store}>
-				<PhaseScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<PhaseScoreTable />, { store })
 
 		// First verify loading state
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
@@ -176,11 +168,7 @@ describe("PhaseScoreTable", () => {
 			payload: "1"
 		})
 
-		render(
-			<Provider store={store}>
-				<PhaseScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<PhaseScoreTable />, { store })
 
 		// Wait for phase name to appear
 		const phaseName = await screen.findByTestId("phase-name")
@@ -205,11 +193,7 @@ describe("PhaseScoreTable", () => {
 			payload: "1"
 		})
 
-		render(
-			<Provider store={store}>
-				<PhaseScoreTable />
-			</Provider>
-		)
+		renderWithProviders(<PhaseScoreTable />, { store })
 
 		// Wait for download button to appear
 		const downloadButton = await screen.findByTestId("download-pdf-button")
