@@ -150,6 +150,44 @@ const EditHeatDialog = ({
 	)
 }
 
+const CompetitionAutocomplete = ({
+	competitionId,
+	onChange
+}: {
+	competitionId: string
+	onChange: (competitionId: string) => void
+}) => {
+	const { data } = useGetManyCompetitionGetQuery({})
+	const options: CompetitionOptions[] | undefined = data
+		?.filter((d) => !!d.id && !!d.name)
+		.map((d) => ({ value: d.id, label: d.name }))
+	if (!options) {
+		return <></>
+	}
+	const selected = options.find((s) => s.value === competitionId)
+
+	return (
+		<Autocomplete
+			options={options}
+			value={selected ?? null}
+			inputValue={selected?.label ?? ""}
+			fullWidth
+			renderInput={(params) => (
+				<TextField
+					{...params}
+					label="Competition"
+					data-testid="competition-input"
+				/>
+			)}
+			onChange={(event, newValue) => {
+				if (newValue) {
+					onChange(newValue.value)
+				}
+			}}
+		/>
+	)
+}
+
 const AddHeat = ({
 	refetch,
 	existingHeatData
@@ -167,12 +205,6 @@ const AddHeat = ({
 	const [postNewHeat] = useInsertManyHeatPostMutation()
 	const [updateExistingHeat] =
 		usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation()
-	const { data } = useGetManyCompetitionGetQuery({})
-
-	const options: CompetitionOptions[] | undefined = data
-		?.filter((d) => !!d.id && !!d.name)
-
-		.map((d) => ({ value: d.id, label: d.name }))
 
 	const submitNewHeat = async () => {
 		if (!existingHeatData) {
@@ -239,34 +271,10 @@ const AddHeat = ({
 				/>
 			</Grid>
 			<Grid size={12}>
-				{options ? (
-					<Autocomplete
-						options={options}
-						value={
-							options.find((s) => s.value === competitionId) ??
-							null
-						}
-						inputValue={
-							options.find((s) => s.value === competitionId)
-								?.label ?? ""
-						}
-						fullWidth
-						renderInput={(params) => (
-							<TextField
-								{...params}
-								label="Competition"
-								data-testid="competition-input"
-							/>
-						)}
-						onChange={(event, newValue) => {
-							if (newValue) {
-								setCompetitionId(newValue.value)
-							}
-						}}
-					/>
-				) : (
-					<></>
-				)}
+				<CompetitionAutocomplete
+					competitionId={competitionId}
+					onChange={setCompetitionId}
+				/>
 			</Grid>
 			<Grid size={12}>
 				<Button

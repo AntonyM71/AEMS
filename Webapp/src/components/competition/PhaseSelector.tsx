@@ -160,34 +160,56 @@ const EditPhaseDialog = ({
 	)
 }
 
-const AddPhase = ({
-	refetch,
-	existingPhaseData
+const initialPhaseFields = (existing: ExistingPhaseData = {}) => ({
+	name: existing.name ?? "",
+	scoresheet: existing.scoresheet ?? "",
+	...initialRunCounts(existing)
+})
+
+const initialRunCounts = (existing: ExistingPhaseData) => ({
+	numberOfRuns: existing.number_of_runs ?? 3,
+	numberOfJudges: existing.number_of_judges ?? 3,
+	numberOfScoringRuns: existing.number_of_runs_for_score ?? 2
+})
+
+const NumberField = ({
+	label,
+	testId,
+	value,
+	onChange,
+	error = false,
+	helperText
 }: {
-	refetch: () => Promise<any>
-	existingPhaseData?: ExistingPhaseData
+	label: string
+	testId: string
+	value: number
+	onChange: (value: number) => void
+	error?: boolean
+	helperText?: string
+}) => (
+	<TextField
+		label={label}
+		variant="outlined"
+		fullWidth
+		type="number"
+		data-testid={testId}
+		error={error}
+		helperText={error && helperText}
+		onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
+			onChange(Number(event.target.value))
+		}
+		value={value}
+	/>
+)
+
+const EventAutocomplete = ({
+	eventId,
+	onChange
+}: {
+	eventId: string
+	onChange: (eventId: string) => void
 }) => {
-	const [phaseName, setPhaseName] = useState<string>(
-		existingPhaseData?.name ?? ""
-	)
-	const [numberOfRuns, setNumberOfRuns] = useState<number>(
-		existingPhaseData?.number_of_runs ?? 3
-	)
-	const [numberOfJudges, setNumberOfJudges] = useState<number>(
-		existingPhaseData?.number_of_judges ?? 3
-	)
-	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(
-		existingPhaseData?.number_of_runs_for_score ?? 2
-	)
-	const [selectedScoresheet, setSelectedScoresheet] = useState<string>(
-		existingPhaseData?.scoresheet ?? ""
-	)
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	const selectedEvent = useSelector(getSelectedEvent)
-	const [eventId, setEventId] = useState<string>(selectedEvent || "")
-	const [postNewPhase] = useInsertManyPhasePostMutation()
-	const [updateExistingPhase] =
-		usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation()
 	const { data } =
 		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
 			competitionPkId: selectedCompetition,
@@ -196,22 +218,68 @@ const AddPhase = ({
 	const options: CompetitionOptions[] | undefined = data
 		?.filter((d) => !!d.id && !!d.name)
 		.map((d) => ({ value: d.id ?? "", label: d.name ?? "" }))
+	if (!options) {
+		return <> </>
+	}
+	const selected = options.find((s) => s.value === eventId)
+
+	return (
+		<Autocomplete
+			options={options}
+			value={selected}
+			inputValue={selected?.label ?? ""}
+			fullWidth
+			renderInput={(params) => <TextField {...params} label="Event" />}
+			onChange={(event, newValue) => {
+				if (newValue) {
+					onChange(newValue.value)
+				}
+			}}
+		/>
+	)
+}
+
+const AddPhase = ({
+	refetch,
+	existingPhaseData
+}: {
+	refetch: () => Promise<any>
+	existingPhaseData?: ExistingPhaseData
+}) => {
+	const initial = initialPhaseFields(existingPhaseData)
+	const [phaseName, setPhaseName] = useState<string>(initial.name)
+	const [numberOfRuns, setNumberOfRuns] = useState<number>(
+		initial.numberOfRuns
+	)
+	const [numberOfJudges, setNumberOfJudges] = useState<number>(
+		initial.numberOfJudges
+	)
+	const [numberOfScoringRuns, setNumberOfScoringRuns] = useState<number>(
+		initial.numberOfScoringRuns
+	)
+	const [selectedScoresheet, setSelectedScoresheet] = useState<string>(
+		initial.scoresheet
+	)
+	const selectedCompetition = useSelector(getSelectedCompetition)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const [eventId, setEventId] = useState<string>(selectedEvent || "")
+	const [postNewPhase] = useInsertManyPhasePostMutation()
+	const [updateExistingPhase] =
+		usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation()
+	const phaseFields = {
+		name: phaseName,
+		event_id: eventId,
+		number_of_runs: numberOfRuns,
+		number_of_runs_for_score: numberOfScoringRuns,
+		scoresheet: selectedScoresheet,
+		number_of_judges: numberOfJudges
+	}
 
 	const submitNewPhase = async () => {
 		if (!existingPhaseData) {
 			HandlePostResponse(
 				await postNewPhase({
-					phases: [
-						{
-							name: phaseName,
-							id: uuid4(),
-							event_id: eventId,
-							number_of_runs: numberOfRuns,
-							number_of_runs_for_score: numberOfScoringRuns,
-							scoresheet: selectedScoresheet,
-							number_of_judges: numberOfJudges
-						}
-					]
+					phases: [{ ...phaseFields, id: uuid4() }]
 				})
 			)
 			setPhaseName("")
@@ -219,14 +287,7 @@ const AddPhase = ({
 			HandlePostResponse(
 				await updateExistingPhase({
 					id: existingPhaseData.id ?? "",
-					phaseUpdate: {
-						name: phaseName,
-						event_id: eventId,
-						number_of_runs: numberOfRuns,
-						number_of_runs_for_score: numberOfScoringRuns,
-						scoresheet: selectedScoresheet,
-						number_of_judges: numberOfJudges
-					}
+					phaseUpdate: phaseFields
 				})
 			)
 		}
@@ -265,27 +326,7 @@ const AddPhase = ({
 				/>
 			</Grid>
 			<Grid size={12}>
-				{options ? (
-					<Autocomplete
-						options={options}
-						value={options.find((s) => s.value === eventId)}
-						inputValue={
-							options.find((s) => s.value === eventId)?.label ??
-							""
-						}
-						fullWidth
-						renderInput={(params) => (
-							<TextField {...params} label="Event" />
-						)}
-						onChange={(event, newValue) => {
-							if (newValue) {
-								setEventId(newValue.value)
-							}
-						}}
-					/>
-				) : (
-					<> </>
-				)}
+				<EventAutocomplete eventId={eventId} onChange={setEventId} />
 			</Grid>
 			<Grid size="grow">
 				<SelectScoresheet
@@ -294,49 +335,29 @@ const AddPhase = ({
 				/>
 			</Grid>
 			<Grid size={12}>
-				<TextField
+				<NumberField
 					label="Number of Runs"
-					variant="outlined"
-					fullWidth
-					type="number"
-					data-testid="number-of-runs-input"
-					onChange={(
-						event: React.ChangeEvent<HTMLInputElement>
-					): void => setNumberOfRuns(Number(event.target.value))}
+					testId="number-of-runs-input"
 					value={numberOfRuns}
+					onChange={setNumberOfRuns}
 				/>
 			</Grid>
 			<Grid size={12}>
-				<TextField
+				<NumberField
 					label="Number of Scoring Runs"
-					variant="outlined"
-					fullWidth
-					type="number"
-					data-testid="number-of-scoring-runs-input"
-					error={numberOfScoringRuns > numberOfRuns}
-					helperText={
-						numberOfScoringRuns > numberOfRuns &&
-						`Cannot have more scoring runs per paddler than total runs (${numberOfRuns})`
-					}
-					onChange={(
-						event: React.ChangeEvent<HTMLInputElement>
-					): void =>
-						setNumberOfScoringRuns(Number(event.target.value))
-					}
+					testId="number-of-scoring-runs-input"
 					value={numberOfScoringRuns}
+					onChange={setNumberOfScoringRuns}
+					error={numberOfScoringRuns > numberOfRuns}
+					helperText={`Cannot have more scoring runs per paddler than total runs (${numberOfRuns})`}
 				/>
 			</Grid>
 			<Grid size={12}>
-				<TextField
+				<NumberField
 					label="Number of Judges"
-					variant="outlined"
-					fullWidth
-					type="number"
-					data-testid="number-of-judges-input"
-					onChange={(
-						event: React.ChangeEvent<HTMLInputElement>
-					): void => setNumberOfJudges(Number(event.target.value))}
+					testId="number-of-judges-input"
 					value={numberOfJudges}
+					onChange={setNumberOfJudges}
 				/>
 			</Grid>
 			<Grid size={12}>

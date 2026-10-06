@@ -5,7 +5,7 @@ import Modal from "@mui/material/Modal"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
 import Stack from "@mui/material/Stack"
-import { useEffect, useMemo, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import { v4 } from "uuid"
@@ -18,6 +18,7 @@ import {
 	getSelectedRun
 } from "../../../redux/atoms/scoring"
 import {
+	HeatInfoResponse,
 	ScoredMovesAndBonusesResponse,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
@@ -48,79 +49,232 @@ import LiveTimer from "./LiveTimer"
 import { RunStatus } from "./RunStatus"
 import usePublishHeadJudgePosition from "./usePublishHeadJudgePosition"
 
-export default ({
-	changeRunStatus = true,
-	showLiveTimer = false
+const PAPER_MODAL_SX = {
+	position: "absolute",
+	top: "50%",
+	left: "50%",
+	transform: "translate(-50%, -50%)",
+	width: "70%",
+	height: "80%",
+	bgcolor: "background.paper",
+	boxShadow: 24,
+	p: 4
+} as const
+
+const PaperModal = ({
+	open,
+	onClose,
+	children
 }: {
-	changeRunStatus?: boolean
-	showLiveTimer?: boolean
-}) => {
-	const [scoresOpen, setScoresOpen] = useState(false)
+	open: boolean
+	onClose: () => void
+	children: ReactNode
+}) => (
+	<Modal
+		open={open}
+		onClose={onClose}
+		aria-labelledby="modal-modal-title"
+		aria-describedby="modal-modal-description"
+	>
+		<Paper sx={PAPER_MODAL_SX}>{children}</Paper>
+	</Modal>
+)
+
+const toAthleteInfo = (
+	athlete: HeatInfoResponse | undefined
+): AthleteInfo | undefined =>
+	athlete && {
+		id: athlete.athlete_id,
+		first_name: athlete.first_name,
+		last_name: athlete.last_name,
+		bib: athlete.bib,
+		scoresheet: athlete.scoresheet,
+		affiliation: athlete.affiliation
+	}
+
+const judgeIdsFor = (maxJudges: number): string[] =>
+	Array.from({ length: maxJudges }, (_, i) => String(i + 1))
+
+const useJudgeScores = (
+	maxJudges: number,
+	streamMoveData: ScoredMovesAndBonusesResponse | undefined,
+	availableMoves: movesType[],
+	availableBonuses: AvailableBonusType[]
+) => {
 	const [allJudgeScores, setAllJudgeScores] = useState<
 		Record<string, number>
 	>({})
 	const [allJudgeMoveAndBonusData, setAllJudgeMoveAndBonusData] = useState<
 		Record<string, ScoredMovesAndBonusesResponse>
 	>({})
-	const handleScoresOpen = () => setScoresOpen(true)
-	const handleScoresClose = () => setScoresOpen(false)
 
-	const [listOpen, setListOpen] = useState(false)
-
-	const handleListOpen = () => setListOpen(true)
-	const handleListClose = () => setListOpen(false)
-	const selectedHeat = useSelector(getSelectedHeat)
-	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
-	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const selectedRun = useSelector(getSelectedRun)
-	// currentData, not data: data still holds the previous heat's paddlers
-	// while a new heat loads, which would publish them under the new heat.
-	const { currentData: athleteData } =
-		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-			{
-				heatId: selectedHeat
-			},
-			{ skip: !selectedHeat }
+	useEffect(() => {
+		const judgeIds = judgeIdsFor(maxJudges)
+		setAllJudgeScores(Object.fromEntries(judgeIds.map((id) => [id, 0])))
+		setAllJudgeMoveAndBonusData(
+			Object.fromEntries(
+				judgeIds.map((id) => [id, { moves: [], bonuses: [] }])
+			)
 		)
-	const selectedAthlete = useMemo((): AthleteInfo | undefined => {
-		const athlete = athleteData?.[currentPaddlerIndex]
+	}, [maxJudges])
 
-		return (
-			athlete && {
-				id: athlete.athlete_id,
-				first_name: athlete.first_name,
-				last_name: athlete.last_name,
-				bib: athlete.bib,
-				scoresheet: athlete.scoresheet,
-				affiliation: athlete.affiliation
+	useEffect(() => {
+		if (!streamMoveData) {
+			return
+		}
+		const newScores: Record<string, number> = {}
+		const newData: Record<string, ScoredMovesAndBonusesResponse> = {}
+		judgeIdsFor(maxJudges).forEach((jid) => {
+			const filteredData: ScoredMovesAndBonusesResponse = {
+				moves:
+					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
+					[],
+				bonuses:
+					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
+					[]
 			}
-		)
-	}, [athleteData, currentPaddlerIndex])
-	const availableBonuses = useGetManyAvailablebonusesGetQuery(
-		{
-			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
-		},
-		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
-	)
-	const availableMoves = useGetManyAvailablemovesGetQuery(
-		{
-			sheetIdList: [selectedAthlete?.scoresheet ?? ""]
-		},
-		{ skip: !selectedAthlete?.scoresheet, refetchOnReconnect: true }
-	)
-	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
-		{
-			heatId: selectedHeat,
-			athleteId: selectedAthlete?.id ?? "",
-			runNumber: selectedRun
-		},
-		{ skip: !selectedHeat || !selectedAthlete?.id }
-	)
+			newScores[jid] = calculateMoveAndBonusScore(
+				filteredData,
+				availableMoves,
+				availableBonuses
+			)
+			newData[jid] = filteredData
+		})
+		setAllJudgeScores(newScores)
+		setAllJudgeMoveAndBonusData(newData)
+	}, [streamMoveData, maxJudges, availableMoves, availableBonuses])
 
+	return { allJudgeScores, allJudgeMoveAndBonusData }
+}
+
+interface RunStatusTarget {
+	runNumber: number
+	phaseId: string
+	heatId: string
+	athleteId: string
+}
+
+// An unspecified flag keeps the current status's value.
+const buildRunStatusUpdate = (
+	target: RunStatusTarget,
+	current: RunStatus | undefined,
+	locked?: boolean,
+	did_not_start?: boolean
+) => ({
+	id: current?.id ?? v4(),
+	run_number: target.runNumber,
+	phase_id: target.phaseId,
+	heat_id: target.heatId,
+	athlete_id: target.athleteId,
+	locked: locked ?? current?.locked ?? false,
+	did_not_start: did_not_start ?? current?.did_not_start ?? false
+})
+
+const LockRunButton = ({
+	runStatus,
+	onUpdate
+}: {
+	runStatus: RunStatus | undefined
+	onUpdate: (locked: boolean, didNotStart: boolean) => void
+}) => (
+	<Grid size={1}>
+		<Button
+			data-testid="lock-run-button"
+			variant="contained"
+			fullWidth
+			sx={{ height: "100%" }}
+			color={runStatus?.locked ? "success" : "primary"}
+			onClick={() =>
+				onUpdate(!runStatus?.locked, runStatus?.did_not_start ?? false)
+			}
+		>
+			{runStatus?.locked ? "Unlock Run" : "Lock Run"}
+		</Button>
+	</Grid>
+)
+
+const DnsButton = ({
+	runStatus,
+	onUpdate
+}: {
+	runStatus: RunStatus | undefined
+	onUpdate: (locked: boolean, didNotStart: boolean) => void
+}) => (
+	<Grid size={1}>
+		<Button
+			data-testid="dns-button"
+			variant="contained"
+			fullWidth
+			sx={{ height: "100%" }}
+			color={runStatus?.did_not_start ? "error" : "primary"}
+			onClick={() => {
+				if (runStatus?.locked) {
+					toast.error("Please unlock run before setting DNS")
+				} else {
+					onUpdate(false, !runStatus?.did_not_start)
+				}
+			}}
+		>
+			{runStatus?.did_not_start ? "Unset DNS" : "SET DNS"}
+		</Button>
+	</Grid>
+)
+
+const RunFinalScore = ({
+	runStatus,
+	allJudgeScores
+}: {
+	runStatus: RunStatus | undefined
+	allJudgeScores: Record<string, number>
+}) => (
+	<Grid size={1}>
+		<FinalScore
+			locked={runStatus?.locked ?? false}
+			did_not_start={runStatus?.did_not_start ?? false}
+			allJudgeScores={allJudgeScores}
+		/>
+	</Grid>
+)
+
+const RunStatusButtons = ({
+	runStatus,
+	onUpdate
+}: {
+	runStatus: RunStatus | undefined
+	onUpdate: (locked: boolean, didNotStart: boolean) => void
+}) => (
+	<>
+		{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN && (
+			<LockRunButton runStatus={runStatus} onUpdate={onUpdate} />
+		)}
+		<DnsButton runStatus={runStatus} onUpdate={onUpdate} />
+	</>
+)
+
+const useRunStatus = (
+	heatId: string,
+	athleteId: string | undefined,
+	runNumber: number
+): RunStatus | undefined => {
+	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
+	const httpRunStatus = useRunStatusStreamQuery(
+		{ heatId, athleteId: athleteId ?? "", runNumber },
+		{ skip: !heatId || !athleteId }
+	)
+	useEffect(() => {
+		setRunStatus(httpRunStatus.data ? httpRunStatus.data : undefined)
+	}, [httpRunStatus])
+
+	return runStatus
+}
+
+const useHeadJudgePublishing = (
+	isHeadJudge: boolean,
+	selectedAthlete: AthleteInfo | undefined
+) => {
+	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedCompetition = useSelector(getSelectedCompetition)
-	// The commentator page reuses this screen read-only; only the real head
-	// judge may publish, or displays following the head judge would flip-flop.
-	const isHeadJudge = changeRunStatus
+	const selectedRun = useSelector(getSelectedRun)
 	const headJudgePosition = useMemo(
 		() =>
 			isHeadJudge && selectedHeat && selectedAthlete
@@ -140,89 +294,174 @@ export default ({
 		]
 	)
 	usePublishHeadJudgePosition(headJudgePosition)
+}
 
-	const httpRunStatus = useRunStatusStreamQuery(
+const useAvailableScoringItems = (scoresheet: string | undefined) => {
+	const query = { sheetIdList: [scoresheet ?? ""] }
+	const options = { skip: !scoresheet, refetchOnReconnect: true }
+	const bonuses = useGetManyAvailablebonusesGetQuery(query, options)
+	const moves = useGetManyAvailablemovesGetQuery(query, options)
+
+	return {
+		availableMoves: (moves.data ?? []) as movesType[],
+		availableBonuses: (bonuses.data ?? []) as AvailableBonusType[]
+	}
+}
+
+const useHeadJudgeHeatData = () => {
+	const selectedHeat = useSelector(getSelectedHeat)
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	const selectedRun = useSelector(getSelectedRun)
+	// currentData, not data: data still holds the previous heat's paddlers
+	// while a new heat loads, which would publish them under the new heat.
+	const { currentData: athleteData } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{
+				heatId: selectedHeat
+			},
+			{ skip: !selectedHeat }
+		)
+	const selectedAthlete = useMemo(
+		() => toAthleteInfo(athleteData?.[currentPaddlerIndex]),
+		[athleteData, currentPaddlerIndex]
+	)
+	const { availableMoves, availableBonuses } = useAvailableScoringItems(
+		selectedAthlete?.scoresheet
+	)
+	const { data: streamMoveData } = useAthleteMovesAndBonusesStreamQuery(
 		{
 			heatId: selectedHeat,
 			athleteId: selectedAthlete?.id ?? "",
 			runNumber: selectedRun
 		},
-		{
-			skip: !selectedHeat || !selectedAthlete?.id
-		}
+		{ skip: !selectedHeat || !selectedAthlete?.id }
 	)
-
-	const [emitRunStatus] = useEmitRunStatusMutation()
-
-	useEffect(() => {
-		if (httpRunStatus.data) {
-			setRunStatus(httpRunStatus.data)
-		} else {
-			setRunStatus(undefined)
-		}
-	}, [httpRunStatus])
 	const { data: phaseData, isLoading: isPhaseDataLoading } =
 		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
 			{ heatId: selectedHeat },
 			{ skip: !selectedHeat }
 		)
-	const maxJudges =
-		(phaseData &&
-			Math.max(...phaseData.map((p) => p.number_of_judges), 1)) ??
+	const maxJudges = Math.max(
+		...(phaseData ?? []).map((p) => p.number_of_judges),
 		1
-	const judgeNumberArray = new Array(maxJudges)
-		.fill(null)
-		.map((_, i) => i + 1)
+	)
 
-	useEffect(() => {
-		// Example: get judgeIds from phaseData or another source
-		const judgeIds: string[] = Array.from({ length: maxJudges }, (_, i) =>
-			String(i + 1)
-		)
+	return {
+		selectedHeat,
+		selectedRun,
+		athleteData,
+		currentPaddlerIndex,
+		selectedAthlete,
+		streamMoveData,
+		isPhaseDataLoading,
+		maxJudges,
+		availableMoves,
+		availableBonuses
+	}
+}
 
-		const initialScores: Record<string, number> = {}
-		judgeIds.forEach((jid) => {
-			initialScores[jid] = 0
-		})
-		setAllJudgeScores(initialScores)
-		const initialMovesAndBonuses: Record<
-			string,
-			ScoredMovesAndBonusesResponse
-		> = {}
-		judgeIds.forEach((jid) => {
-			initialMovesAndBonuses[jid] = { moves: [], bonuses: [] }
-		})
-		setAllJudgeMoveAndBonusData(initialMovesAndBonuses)
-	}, [maxJudges, phaseData])
+const HeatListAndScoresButtons = ({
+	onOpenList,
+	onOpenScores
+}: {
+	onOpenList: () => void
+	onOpenScores: () => void
+}) => (
+	<Grid size={1}>
+		<Stack
+			spacing={2}
+			sx={{
+				justifyContent: "space-between",
+				alignItems: "center",
+				height: "100%"
+			}}
+		>
+			<Button
+				data-testid="heat-list-button"
+				onClick={onOpenList}
+				variant="contained"
+				fullWidth
+				sx={{ height: "100%" }}
+			>
+				Heat List
+			</Button>
 
-	useEffect(() => {
-		if (!streamMoveData) {
-			return
-		}
-		const judgeNumbers = new Array(maxJudges)
-			.fill(null)
-			.map((_, i) => String(i + 1))
-		const newScores: Record<string, number> = {}
-		const newData: Record<string, ScoredMovesAndBonusesResponse> = {}
-		judgeNumbers.forEach((jid) => {
-			const filteredData: ScoredMovesAndBonusesResponse = {
-				moves:
-					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
-					[],
-				bonuses:
-					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
-					[]
-			}
-			newScores[jid] = calculateMoveAndBonusScore(
-				filteredData,
-				(availableMoves.data ?? []) as movesType[],
-				(availableBonuses.data ?? []) as AvailableBonusType[]
-			)
-			newData[jid] = filteredData
-		})
-		setAllJudgeScores(newScores)
-		setAllJudgeMoveAndBonusData(newData)
-	}, [streamMoveData, maxJudges, availableMoves.data, availableBonuses.data])
+			<Button
+				data-testid="heat-scores-button"
+				onClick={onOpenScores}
+				variant="contained"
+				fullWidth
+				sx={{ height: "100%" }}
+			>
+				Heat Scores
+			</Button>
+		</Stack>
+	</Grid>
+)
+
+const JudgeCards = ({
+	maxJudges,
+	selectedAthlete,
+	allJudgeMoveAndBonusData,
+	allJudgeScores
+}: {
+	maxJudges: number
+	selectedAthlete: AthleteInfo
+	allJudgeMoveAndBonusData: Record<string, ScoredMovesAndBonusesResponse>
+	allJudgeScores: Record<string, number>
+}) => (
+	<>
+		{judgeIdsFor(maxJudges).map((jn) => (
+			<Grid key={jn} size={Math.floor(12 / maxJudges)}>
+				<JudgeCard
+					judge={Number(jn)}
+					selectedAthlete={selectedAthlete}
+					moveAndBonusData={allJudgeMoveAndBonusData[jn]}
+					currentScore={allJudgeScores[jn]}
+				/>
+			</Grid>
+		))}
+	</>
+)
+
+export default ({
+	changeRunStatus = true,
+	showLiveTimer = false
+}: {
+	changeRunStatus?: boolean
+	showLiveTimer?: boolean
+}) => {
+	const [scoresOpen, setScoresOpen] = useState(false)
+	const [listOpen, setListOpen] = useState(false)
+	const {
+		selectedHeat,
+		selectedRun,
+		athleteData,
+		currentPaddlerIndex,
+		selectedAthlete,
+		streamMoveData,
+		isPhaseDataLoading,
+		maxJudges,
+		availableMoves,
+		availableBonuses
+	} = useHeadJudgeHeatData()
+
+	// The commentator page reuses this screen read-only; only the real head
+	// judge may publish, or displays following the head judge would flip-flop.
+	useHeadJudgePublishing(changeRunStatus, selectedAthlete)
+
+	const runStatus = useRunStatus(
+		selectedHeat,
+		selectedAthlete?.id,
+		selectedRun
+	)
+	const [emitRunStatus] = useEmitRunStatusMutation()
+	const { allJudgeScores, allJudgeMoveAndBonusData } = useJudgeScores(
+		maxJudges,
+		streamMoveData,
+		availableMoves,
+		availableBonuses
+	)
 
 	if (!selectedHeat) {
 		return (
@@ -234,218 +473,83 @@ export default ({
 			/>
 		)
 	}
-	if (selectedAthlete && !isPhaseDataLoading) {
-		// eslint-disable-next-line complexity
-		const updateRunStatus = (locked?: boolean, did_not_start?: boolean) => {
-			if (runStatus) {
-				void emitRunStatus({
-					id: runStatus.id ?? v4(),
-					run_number: selectedRun,
-					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
-					heat_id: selectedHeat,
-					athlete_id: selectedAthlete.id,
-					locked: locked ?? runStatus.locked ?? false,
-					did_not_start:
-						did_not_start ?? runStatus.did_not_start ?? false
-				})
-			} else {
-				void emitRunStatus({
-					id: v4(),
-					run_number: selectedRun,
-					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
-					heat_id: selectedHeat,
-					athlete_id: selectedAthlete.id,
-					locked: locked ?? false,
-					did_not_start: did_not_start ?? false
-				})
-			}
-		}
-
-		return (
-			<div data-testid="head-judge-page">
-				<Modal
-					open={scoresOpen}
-					onClose={handleScoresClose}
-					aria-labelledby="modal-modal-title"
-					aria-describedby="modal-modal-description"
-				>
-					<Paper
-						sx={{
-							position: "absolute",
-							top: "50%",
-							left: "50%",
-							transform: "translate(-50%, -50%)",
-							width: "70%",
-							height: "80%",
-							bgcolor: "background.paper",
-							boxShadow: 24,
-							p: 4
-						}}
-					>
-						<HeatScoreTable defaultShowJudgeScores={true} />
-					</Paper>
-				</Modal>
-				<Modal
-					open={listOpen}
-					onClose={handleListClose}
-					aria-labelledby="modal-modal-title"
-					aria-describedby="modal-modal-description"
-				>
-					<Paper
-						sx={{
-							position: "absolute",
-							top: "50%",
-							left: "50%",
-							transform: "translate(-50%, -50%)",
-							width: "70%",
-							height: "80%",
-							bgcolor: "background.paper",
-							boxShadow: 24,
-							p: 4
-						}}
-					>
-						<HeatSummaryTable />
-					</Paper>
-				</Modal>
-				<Grid
-					container
-					spacing={2}
-					alignItems={"stretch"}
-					sx={{ marginTop: "0.5em" }}
-				>
-					<Grid size={5}>
-						<SelectorDisplay
-							showDetailed={false}
-							showEvent={false}
-							showPhase={false}
-						/>
-					</Grid>
-					<Grid size={2}>
-						<PaddlerSelector paddlerInfo={selectedAthlete} />
-					</Grid>
-					<Grid size={1}>
-						<RunSelector />
-					</Grid>{" "}
-					<Grid size={1}>
-						<FinalScore
-							locked={runStatus?.locked ?? false}
-							did_not_start={runStatus?.did_not_start ?? false}
-							allJudgeScores={allJudgeScores}
-						/>
-					</Grid>
-					{process.env.NEXT_PUBLIC_SHOW_LOCK_RUN &&
-						changeRunStatus && (
-							<Grid size={1}>
-								<Button
-									data-testid="lock-run-button"
-									variant="contained"
-									fullWidth
-									sx={{ height: "100%" }}
-									color={
-										runStatus?.locked
-											? "success"
-											: "primary"
-									}
-									onClick={() =>
-										void updateRunStatus(
-											!runStatus?.locked,
-											runStatus?.did_not_start ?? false
-										)
-									}
-								>
-									{runStatus?.locked
-										? "Unlock Run"
-										: "Lock Run"}
-								</Button>
-							</Grid>
-						)}
-					{changeRunStatus && (
-						<Grid size={1}>
-							<Button
-								data-testid="dns-button"
-								variant="contained"
-								fullWidth
-								sx={{
-									height: "100%"
-								}}
-								color={
-									runStatus?.did_not_start
-										? "error"
-										: "primary"
-								}
-								onClick={() => {
-									if (runStatus?.locked) {
-										toast.error(
-											"Please unlock run before setting DNS"
-										)
-									} else {
-										void updateRunStatus(
-											runStatus?.locked ?? false,
-											!runStatus?.did_not_start
-										)
-									}
-								}}
-							>
-								{runStatus?.did_not_start
-									? "Unset DNS"
-									: "SET DNS"}
-							</Button>
-						</Grid>
-					)}
-					{showLiveTimer && (
-						<Grid size={1}>
-							<LiveTimer />
-						</Grid>
-					)}
-					<Grid size={1}>
-						<Stack
-							spacing={2}
-							sx={{
-								justifyContent: "space-between",
-								alignItems: "center",
-								height: "100%"
-							}}
-						>
-							<Button
-								data-testid="heat-list-button"
-								onClick={handleListOpen}
-								variant="contained"
-								fullWidth
-								sx={{ height: "100%" }}
-							>
-								Heat List
-							</Button>
-
-							<Button
-								data-testid="heat-scores-button"
-								onClick={handleScoresOpen}
-								variant="contained"
-								fullWidth
-								sx={{ height: "100%" }}
-							>
-								Heat Scores
-							</Button>
-						</Stack>
-					</Grid>
-					<Grid size={12}>
-						<Divider />
-					</Grid>
-					{judgeNumberArray.map((jn) => (
-						<Grid key={jn} size={Math.floor(12 / maxJudges)}>
-							<JudgeCard
-								judge={jn}
-								selectedAthlete={selectedAthlete}
-								moveAndBonusData={allJudgeMoveAndBonusData[jn]}
-								currentScore={allJudgeScores[jn]}
-							/>
-						</Grid>
-					))}
-				</Grid>
-			</div>
-		)
+	if (!selectedAthlete || isPhaseDataLoading) {
+		return <Skeleton data-testid="loading-skeleton" />
 	}
 
-	return <Skeleton data-testid="loading-skeleton" />
+	const updateRunStatus = (locked?: boolean, did_not_start?: boolean) =>
+		void emitRunStatus(
+			buildRunStatusUpdate(
+				{
+					runNumber: selectedRun,
+					phaseId: athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					heatId: selectedHeat,
+					athleteId: selectedAthlete.id
+				},
+				runStatus,
+				locked,
+				did_not_start
+			)
+		)
+
+	return (
+		<div data-testid="head-judge-page">
+			<PaperModal open={scoresOpen} onClose={() => setScoresOpen(false)}>
+				<HeatScoreTable defaultShowJudgeScores={true} />
+			</PaperModal>
+			<PaperModal open={listOpen} onClose={() => setListOpen(false)}>
+				<HeatSummaryTable />
+			</PaperModal>
+			<Grid
+				container
+				spacing={2}
+				alignItems={"stretch"}
+				sx={{ marginTop: "0.5em" }}
+			>
+				<Grid size={5}>
+					<SelectorDisplay
+						showDetailed={false}
+						showEvent={false}
+						showPhase={false}
+					/>
+				</Grid>
+				<Grid size={2}>
+					<PaddlerSelector paddlerInfo={selectedAthlete} />
+				</Grid>
+				<Grid size={1}>
+					<RunSelector />
+				</Grid>{" "}
+				<RunFinalScore
+					runStatus={runStatus}
+					allJudgeScores={allJudgeScores}
+				/>
+				{changeRunStatus && (
+					<RunStatusButtons
+						runStatus={runStatus}
+						onUpdate={updateRunStatus}
+					/>
+				)}
+				{showLiveTimer && (
+					<Grid size={1}>
+						<LiveTimer />
+					</Grid>
+				)}
+				<HeatListAndScoresButtons
+					onOpenList={() => setListOpen(true)}
+					onOpenScores={() => setScoresOpen(true)}
+				/>
+				<Grid size={12}>
+					<Divider />
+				</Grid>
+				<JudgeCards
+					maxJudges={maxJudges}
+					selectedAthlete={selectedAthlete}
+					allJudgeMoveAndBonusData={allJudgeMoveAndBonusData}
+					allJudgeScores={allJudgeScores}
+				/>
+			</Grid>
+		</div>
+	)
 }
 
 export const calculateMoveAndBonusScore = (

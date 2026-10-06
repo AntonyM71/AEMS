@@ -8,21 +8,29 @@ export const registerRejectedPromise = () => {
 	}
 }
 
+const ERROR_MESSAGE_PATHS = [
+	["statusText"],
+	["message"],
+	["reason", "message"],
+	["reason"],
+	["data", "detail"],
+	["payload", "error"],
+	["payload", "data", "detail"],
+	["error", "message"]
+]
+
+const valueAtPath = (error: any, path: string[]): any =>
+	path.reduce((value, key) => value?.[key], error)
+
 const extractErrorMessage = (error: any): string => {
 	if (typeof error === "string") {
 		return error
 	}
 
 	return (
-		error?.statusText ??
-		error?.message ??
-		error?.reason?.message ??
-		error?.reason ??
-		error?.data?.detail ??
-		error?.payload?.error ??
-		error?.payload?.data?.detail ??
-		error?.error?.message ??
-		"Undefined Error"
+		ERROR_MESSAGE_PATHS.map((path) => valueAtPath(error, path)).find(
+			(value) => value !== undefined && value !== null
+		) ?? "Undefined Error"
 	)
 }
 
