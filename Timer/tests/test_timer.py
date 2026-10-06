@@ -517,3 +517,13 @@ class TestLoadTimerSettings:
         assert enabled is False
         assert url == str(TimerSettings.model_fields["socketio_url"].default)
         assert url != "http://example.com:1234/"
+
+
+def test_fake_timer_ride_counts_down_then_finishes() -> None:
+    import fake_timer
+
+    messages = list(fake_timer.ride_messages(45))
+
+    assert [m["time_remaining"] for m in messages] == list(range(45, -1, -1))
+    assert all(m["status"] == "running" for m in messages[:-1])
+    assert messages[-1] == {"status": "finished", "time_remaining": 0}

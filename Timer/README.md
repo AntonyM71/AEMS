@@ -60,7 +60,7 @@ This script simulates a timer device for testing Socket.IO communication with th
 **Features:**
 
 - Connects to the backend Socket.IO server (default: `http://localhost:8000`, `/timer` namespace). Override with the `SOCKETIO_URL` environment variable.
-- Periodically sends JSON messages containing a random `time_remaining` value and a fixed `status` field (`"running"`), mimicking timer updates.
+- Loops real rides forever, alternating a 60 s ride and a 45 s ride. Each second it sends `running` with the seconds remaining, then `finished` at 0, and pauses 5 s before the next ride.
 - Useful for testing and debugging backend Socket.IO handling logic without requiring real hardware.
 
 **Usage:**
