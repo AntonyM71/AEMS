@@ -25,10 +25,17 @@ export const HeadJudgeMismatchBanner = () => {
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedRun = useSelector(getSelectedRun)
 	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	const { data: athletes } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+	// currentData, not data: data keeps the previous heat's roster while a new
+	// heat loads, which would pair the new heat with the wrong athletes.
+	const { currentData: athletes } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
 		{ heatId: selectedHeat },
 		{ skip: !selectedHeat }
 	)
+	const { currentData: headJudgeHeatAthletes } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{ heatId: headJudge?.heatId ?? "" },
+			{ skip: !headJudge?.heatId }
+		)
 
 	if (!headJudge || !athletes) {
 		return null
@@ -43,20 +50,21 @@ export const HeadJudgeMismatchBanner = () => {
 		return null
 	}
 
-	const headJudgeHeatName = `${headJudge.athlete.first_name} ${headJudge.athlete.last_name}`
-	const myName = `${myAthlete.first_name} ${myAthlete.last_name}`
+	const headJudgeAthleteName = `${headJudge.athlete.first_name} ${headJudge.athlete.last_name}`
+	const headJudgeAthleteIndex =
+		headJudgeHeatAthletes?.findIndex(
+			(a) => a.athlete_id === headJudge.athlete.id
+		) ?? -1
+	const canJumpToHeadJudge = headJudgeAthleteIndex >= 0
 
 	const jumpToHeadJudge = () => {
 		if (isDifferentHeat) {
 			dispatch(updateSelectedCompetition(headJudge.competitionId))
 			dispatch(updateSelectedHeat(headJudge.heatId))
 		}
-		const headJudgeAthleteIndex = athletes.findIndex(
-			(a) => a.athlete_id === headJudge.athlete.id
-		)
 		dispatch(
 			updatePaddlerAndRun({
-				paddler: Math.max(headJudgeAthleteIndex, 0),
+				paddler: headJudgeAthleteIndex,
 				run: headJudge.runNumber
 			})
 		)
@@ -72,6 +80,7 @@ export const HeadJudgeMismatchBanner = () => {
 					color="inherit"
 					variant="outlined"
 					size="small"
+					disabled={!canJumpToHeadJudge}
 					onClick={jumpToHeadJudge}
 				>
 					{isDifferentHeat ? "Switch heat" : "Go to head judge's run"}
@@ -81,12 +90,15 @@ export const HeadJudgeMismatchBanner = () => {
 			<AlertTitle>
 				{isDifferentHeat
 					? "Head judge is scoring a different heat"
-					: `Head judge is on ${headJudgeHeatName}, run ${
+					: `Head judge is on ${headJudgeAthleteName}, run ${
 							headJudge.runNumber + 1
 					  }`}
 			</AlertTitle>
 			{!isDifferentHeat &&
-				`You are scoring ${myName}, run ${selectedRun + 1}`}
+				myAthlete &&
+				`You are scoring ${myAthlete.first_name} ${
+					myAthlete.last_name
+				}, run ${selectedRun + 1}`}
 		</Alert>
 	)
 }
