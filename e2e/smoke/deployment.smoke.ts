@@ -167,12 +167,16 @@ test("a deployed AEMS server runs a competition end to end", async ({
 
 	await test.step("locking a run reaches every scribe live and blocks scoring", async () => {
 		await headJudge.getByTestId("lock-run-button").click()
-		for (const scribe of [scribe1, scribe2]) {
-			await expect(
-				scribe.getByText("Run has been locked by head judge")
-			).toBeVisible({ timeout: 10000 })
-			await expect(scribe.getByLabel("button1").first()).toBeDisabled()
-		}
+		await Promise.all(
+			[scribe1, scribe2].map(async (scribe) => {
+				await expect(
+					scribe.getByText("Run has been locked by head judge")
+				).toBeVisible({ timeout: 10000 })
+				await expect(
+					scribe.getByLabel("button1").first()
+				).toBeDisabled()
+			})
+		)
 		await headJudge.getByTestId("lock-run-button").click()
 		await expect(scribe1.getByLabel("button1").first()).toBeEnabled({
 			timeout: 10000
@@ -180,15 +184,17 @@ test("a deployed AEMS server runs a competition end to end", async ({
 	})
 
 	await test.step("results PDFs generate", async () => {
-		for (const path of [
-			`/phase_pdf/${phaseId}`,
-			`/heat_results_pdf?heat_id=${heat1.id}`
-		]) {
-			const response = await fetch(`${api}${path}`)
-			expect(response.headers.get("content-type"), path).toContain(
-				"application/pdf"
-			)
-		}
+		await Promise.all(
+			[
+				`/phase_pdf/${phaseId}`,
+				`/heat_results_pdf?heat_id=${heat1.id}`
+			].map(async (path) => {
+				const response = await fetch(`${api}${path}`)
+				expect(response.headers.get("content-type"), path).toContain(
+					"application/pdf"
+				)
+			})
+		)
 	})
 
 	await test.step("moving a scored athlete to another heat keeps their scores", async () => {
@@ -207,16 +213,15 @@ test("a deployed AEMS server runs a competition end to end", async ({
 	await test.step("display pages load", async () => {
 		// Read-only: the broadcast controller is left alone, since changing it
 		// would change what real arena and overlay screens show.
-		for (const path of [
-			"/Arena",
-			"/Broadcast/Overlay",
-			"/Commentator",
-			"/Score"
-		]) {
-			const display = await openPage(browser, path)
-			await display.goto(path)
-			await display.waitForLoadState("networkidle")
-		}
+		await Promise.all(
+			["/Arena", "/Broadcast/Overlay", "/Commentator", "/Score"].map(
+				async (path) => {
+					const display = await openPage(browser, path)
+					await display.goto(path)
+					await display.waitForLoadState("networkidle")
+				}
+			)
+		)
 	})
 
 	expect(problems, "page errors or server 5xx responses").toEqual([])

@@ -16,7 +16,9 @@ YYYY-MM-DD** (today's date):
 6. The Arena, Overlay, Commentator and Score pages load.
 
 It fails on any page error or server 5xx, except 502s from the optional graphics
-server. It never touches the broadcast controller, so real screens are unaffected.
+server. It never changes the broadcast controller, but its head judge page does
+publish a position: any Arena or Overlay screen set to follow the head judge
+will jump to the smoke heat while it runs.
 
 ## Running it
 
