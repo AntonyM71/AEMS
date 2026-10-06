@@ -28,6 +28,13 @@ describe("Arena", () => {
 	beforeEach(() => {
 		socketHub.reset()
 		server.use(
+			http.get("/api/phase/:id", ({ params }) =>
+				HttpResponse.json({
+					id: params.id,
+					name: `Phase detail ${String(params.id)}`,
+					number_of_runs: 2
+				})
+			),
 			http.get("/api/heat/:id", ({ params }) =>
 				HttpResponse.json({
 					// Distinct from the global /api/heat *list* fixture
@@ -69,6 +76,75 @@ describe("Arena", () => {
 			expect(screen.queryByText("Heat detail 1")).not.toBeInTheDocument()
 		)
 		expect(screen.getByText("RIVERA")).toBeInTheDocument()
+	})
+
+	it("slides the phase results in and out as the broadcast operator toggles them", async () => {
+		renderWithProviders(<Arena />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+
+		broadcast({ selectedPhase: "phase-1", showPhaseResults: true })
+
+		expect(
+			await screen.findByText("Phase detail phase-1")
+		).toBeInTheDocument()
+		expect(await screen.findByText("John DOE")).toBeInTheDocument()
+
+		broadcast({ selectedPhase: "phase-1", showPhaseResults: false })
+
+		await waitFor(() =>
+			expect(
+				screen.queryByText("Phase detail phase-1")
+			).not.toBeInTheDocument()
+		)
+	})
+
+	it("slides the event title in and out as the broadcast operator toggles it", async () => {
+		server.use(
+			http.get("/api/competition", ({ request }) => {
+				const id = new URL(request.url).searchParams.get("id____list")
+
+				return HttpResponse.json([
+					{ id, name: `Competition detail ${String(id)}` }
+				])
+			}),
+			http.get("/api/event/:id", ({ params }) =>
+				HttpResponse.json({
+					id: params.id,
+					name: `Event detail ${String(params.id)}`
+				})
+			)
+		)
+		renderWithProviders(<Arena />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+		const titleState = {
+			selectedCompetition: "1",
+			selectedEvent: "event-1",
+			selectedPhase: "phase-1"
+		}
+
+		broadcast({ ...titleState, showEventTitle: true })
+
+		expect(
+			await screen.findByText("Competition detail 1")
+		).toBeInTheDocument()
+		expect(
+			screen.getByText("Event : Event detail event-1")
+		).toBeInTheDocument()
+		expect(
+			screen.getByText("Phase : Phase detail phase-1")
+		).toBeInTheDocument()
+
+		broadcast({ ...titleState, showEventTitle: false })
+
+		await waitFor(() =>
+			expect(
+				screen.queryByText("Competition detail 1")
+			).not.toBeInTheDocument()
+		)
 	})
 
 	it("shows DNS on the live score when the head judge marks the run did-not-start", async () => {
@@ -195,15 +271,6 @@ describe("Arena", () => {
 		})
 
 		it("keeps the operator's phase in the phase results", async () => {
-			server.use(
-				http.get("/api/phase/:id", ({ params }) =>
-					HttpResponse.json({
-						id: params.id,
-						name: `Phase detail ${String(params.id)}`,
-						number_of_runs: 2
-					})
-				)
-			)
 			await renderFollowingArena({
 				selectedPhase: "operator-phase",
 				showPhaseResults: true
