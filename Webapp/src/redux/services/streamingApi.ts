@@ -67,15 +67,16 @@ const emitViaTemporarySocket = (
 		}
 	})
 
-// Reuse activeSocket while it is still connected, otherwise fall back to a
-// temporary socket.
+// Reuse activeSocket until it is deliberately disconnected: Socket.IO buffers
+// emits while it (re)connects, so a mount-time emit needs no throwaway socket.
+// Fall back to a temporary socket only when no stream holds one.
 const emitWithSocketReuse = async (
 	activeSocket: Socket | null,
 	connect: () => Socket,
 	event: string,
 	payload: unknown
 ): Promise<EmitQueryResult> => {
-	if (activeSocket?.connected) {
+	if (activeSocket?.active) {
 		activeSocket.emit(event, payload)
 
 		return { data: null }

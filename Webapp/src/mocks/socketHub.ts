@@ -17,6 +17,7 @@ export interface MockSocket {
 	emit: jest.Mock<void, [string, ...unknown[]]>
 	disconnect: jest.Mock
 	connected: boolean
+	active: boolean
 	trigger: (event: string, ...args: unknown[]) => void
 }
 
@@ -30,6 +31,8 @@ class SocketHub {
 	}
 
 	private readonly echoing = new Set<SocketChannel>()
+
+	private connectsImmediately = true
 
 	public connect(channel: SocketChannel): MockSocket {
 		const listeners: Record<string, ((...args: unknown[]) => void)[]> = {}
@@ -45,14 +48,23 @@ class SocketHub {
 					this.emit(channel, event, ...args)
 				}
 			}),
-			disconnect: jest.fn(),
-			connected: true,
+			disconnect: jest.fn(() => {
+				socket.connected = false
+				socket.active = false
+			}),
+			connected: this.connectsImmediately,
+			active: true,
 			trigger: (event, ...args) =>
 				(listeners[event] ?? []).forEach((handler) => handler(...args))
 		}
 		this.sockets[channel].push(socket)
 
 		return socket
+	}
+
+	/** Sockets opened from now on stay mid-handshake: active but not connected. */
+	public holdHandshakes(): void {
+		this.connectsImmediately = false
 	}
 
 	/**
@@ -105,10 +117,12 @@ class SocketHub {
 			// socket; marking it dead makes the next emit open a tracked one.
 			this.sockets[channel].forEach((socket) => {
 				socket.connected = false
+				socket.active = false
 			})
 			this.sockets[channel] = []
 		})
 		this.echoing.clear()
+		this.connectsImmediately = true
 	}
 }
 
