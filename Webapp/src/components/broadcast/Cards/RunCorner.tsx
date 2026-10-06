@@ -141,7 +141,7 @@ export const RunCorner = ({
 				</Box>
 				<Box
 					className="AemsRunCorner-clock"
-					sx={{ display: "grid", gridTemplateColumns: "1fr auto" }}
+					sx={{ display: "grid", gridTemplateColumns: "1fr 240px" }}
 				>
 					<RideClock />
 					<Box
