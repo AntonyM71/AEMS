@@ -65,7 +65,7 @@ export const useAthleteRunScores = (
 	)
 	const total = phaseTotal(
 		finalRuns,
-		runs.map((run) => run.label),
+		runs,
 		athleteHeat?.number_of_runs_for_score ?? 0
 	)
 
@@ -74,13 +74,13 @@ export const useAthleteRunScores = (
 
 const phaseTotal = (
 	finalRuns: { did_not_start: boolean; mean_run_score: number }[],
-	labels: string[],
+	runs: AthleteRunLabel[],
 	scoringRuns: number
 ): string | undefined => {
 	if (finalRuns.length === 0) {
 		return undefined
 	}
-	if (labels.every((label) => label === "DNS")) {
+	if (runs.every((run) => run.label === "DNS")) {
 		return "DNS"
 	}
 

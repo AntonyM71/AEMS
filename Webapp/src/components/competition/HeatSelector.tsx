@@ -1,4 +1,3 @@
-import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
@@ -26,6 +25,7 @@ import {
 	usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { IdNameAutocomplete } from "./IdNameAutocomplete"
 import { SelectorPanel } from "./SelectorPanel"
 
 const HeatSelector = ({ showDetailed = false }: { showDetailed?: boolean }) => {
@@ -150,44 +150,6 @@ const EditHeatDialog = ({
 	)
 }
 
-const CompetitionAutocomplete = ({
-	competitionId,
-	onChange
-}: {
-	competitionId: string
-	onChange: (competitionId: string) => void
-}) => {
-	const { data } = useGetManyCompetitionGetQuery({})
-	const options: CompetitionOptions[] | undefined = data
-		?.filter((d) => !!d.id && !!d.name)
-		.map((d) => ({ value: d.id, label: d.name }))
-	if (!options) {
-		return <></>
-	}
-	const selected = options.find((s) => s.value === competitionId)
-
-	return (
-		<Autocomplete
-			options={options}
-			value={selected ?? null}
-			inputValue={selected?.label ?? ""}
-			fullWidth
-			renderInput={(params) => (
-				<TextField
-					{...params}
-					label="Competition"
-					data-testid="competition-input"
-				/>
-			)}
-			onChange={(event, newValue) => {
-				if (newValue) {
-					onChange(newValue.value)
-				}
-			}}
-		/>
-	)
-}
-
 const AddHeat = ({
 	refetch,
 	existingHeatData
@@ -202,6 +164,7 @@ const AddHeat = ({
 	const [competitionId, setCompetitionId] = useState<string>(
 		existingHeatData?.competition_id ?? selectedCompetition
 	)
+	const { data: competitions } = useGetManyCompetitionGetQuery({})
 	const [postNewHeat] = useInsertManyHeatPostMutation()
 	const [updateExistingHeat] =
 		usePartialUpdateOneByPrimaryKeyHeatIdPatchMutation()
@@ -271,9 +234,12 @@ const AddHeat = ({
 				/>
 			</Grid>
 			<Grid size={12}>
-				<CompetitionAutocomplete
-					competitionId={competitionId}
+				<IdNameAutocomplete
+					items={competitions}
+					value={competitionId}
 					onChange={setCompetitionId}
+					label="Competition"
+					testId="competition-input"
 				/>
 			</Grid>
 			<Grid size={12}>
@@ -292,11 +258,6 @@ const AddHeat = ({
 }
 
 export default HeatSelector
-
-interface CompetitionOptions {
-	value: string
-	label: string
-}
 
 interface ExistingHeatData {
 	id: string

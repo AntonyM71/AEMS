@@ -1,6 +1,5 @@
 import EditNoteIcon from "@mui/icons-material/EditNote"
 
-import Autocomplete from "@mui/material/Autocomplete"
 import Button from "@mui/material/Button"
 import Dialog from "@mui/material/Dialog"
 import Divider from "@mui/material/Divider"
@@ -28,6 +27,7 @@ import {
 	usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation
 } from "../../redux/services/aemsApi"
 import { HandlePostResponse } from "../../utils/rtkQueryHelper"
+import { IdNameAutocomplete } from "./IdNameAutocomplete"
 import { SelectorPanel } from "./SelectorPanel"
 import { SelectScoresheet } from "./ScoresheetSelector"
 
@@ -202,43 +202,6 @@ const NumberField = ({
 	/>
 )
 
-const EventAutocomplete = ({
-	eventId,
-	onChange
-}: {
-	eventId: string
-	onChange: (eventId: string) => void
-}) => {
-	const selectedCompetition = useSelector(getSelectedCompetition)
-	const { data } =
-		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
-			competitionPkId: selectedCompetition,
-			joinForeignTable: ["competition"]
-		})
-	const options: CompetitionOptions[] | undefined = data
-		?.filter((d) => !!d.id && !!d.name)
-		.map((d) => ({ value: d.id ?? "", label: d.name ?? "" }))
-	if (!options) {
-		return <> </>
-	}
-	const selected = options.find((s) => s.value === eventId)
-
-	return (
-		<Autocomplete
-			options={options}
-			value={selected}
-			inputValue={selected?.label ?? ""}
-			fullWidth
-			renderInput={(params) => <TextField {...params} label="Event" />}
-			onChange={(event, newValue) => {
-				if (newValue) {
-					onChange(newValue.value)
-				}
-			}}
-		/>
-	)
-}
-
 const AddPhase = ({
 	refetch,
 	existingPhaseData
@@ -263,6 +226,11 @@ const AddPhase = ({
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const selectedEvent = useSelector(getSelectedEvent)
 	const [eventId, setEventId] = useState<string>(selectedEvent || "")
+	const { data: events } =
+		useGetManyByPkFromEventCompetitionCompetitionPkIdEventGetQuery({
+			competitionPkId: selectedCompetition,
+			joinForeignTable: ["competition"]
+		})
 	const [postNewPhase] = useInsertManyPhasePostMutation()
 	const [updateExistingPhase] =
 		usePartialUpdateOneByPrimaryKeyPhaseIdPatchMutation()
@@ -326,7 +294,12 @@ const AddPhase = ({
 				/>
 			</Grid>
 			<Grid size={12}>
-				<EventAutocomplete eventId={eventId} onChange={setEventId} />
+				<IdNameAutocomplete
+					items={events}
+					value={eventId}
+					onChange={setEventId}
+					label="Event"
+				/>
 			</Grid>
 			<Grid size="grow">
 				<SelectScoresheet
@@ -383,9 +356,5 @@ interface ExistingPhaseData {
 	number_of_runs_for_score?: number
 	scoresheet?: string
 	number_of_judges?: number
-}
-interface CompetitionOptions {
-	value: string
-	label: string
 }
 export default PhasesSelector

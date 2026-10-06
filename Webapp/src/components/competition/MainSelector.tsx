@@ -32,10 +32,14 @@ export const SelectorDisplay = (props: SelectorDisplayProps) => {
 		vertical
 	} = { ...DEFAULT_PROPS, ...props }
 	const selectors = [
-		{ show: showCompetition, Selector: CompetitionSelector },
-		{ show: showEvent, Selector: EventSelector },
-		{ show: showPhase, Selector: PhaseSelector },
-		{ show: showHeat, Selector: HeatsSelector }
+		{
+			key: "competition",
+			show: showCompetition,
+			Selector: CompetitionSelector
+		},
+		{ key: "event", show: showEvent, Selector: EventSelector },
+		{ key: "phase", show: showPhase, Selector: PhaseSelector },
+		{ key: "heat", show: showHeat, Selector: HeatsSelector }
 	]
 
 	return (
@@ -47,8 +51,8 @@ export const SelectorDisplay = (props: SelectorDisplayProps) => {
 		>
 			{selectors
 				.filter(({ show }) => show)
-				.map(({ Selector }, index) => (
-					<Grid size="grow" key={index}>
+				.map(({ key, Selector }) => (
+					<Grid size="grow" key={key}>
 						<Selector showDetailed={showDetailed} />
 					</Grid>
 				))}

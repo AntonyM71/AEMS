@@ -147,25 +147,15 @@ const useJudgeScores = (
 	return { allJudgeScores, allJudgeMoveAndBonusData }
 }
 
-interface RunStatusTarget {
-	runNumber: number
-	phaseId: string
-	heatId: string
-	athleteId: string
-}
-
 // An unspecified flag keeps the current status's value.
 const buildRunStatusUpdate = (
-	target: RunStatusTarget,
+	run: Pick<RunStatus, "run_number" | "phase_id" | "heat_id" | "athlete_id">,
 	current: RunStatus | undefined,
 	locked?: boolean,
 	did_not_start?: boolean
 ) => ({
+	...run,
 	id: current?.id ?? v4(),
-	run_number: target.runNumber,
-	phase_id: target.phaseId,
-	heat_id: target.heatId,
-	athlete_id: target.athleteId,
 	locked: locked ?? current?.locked ?? false,
 	did_not_start: did_not_start ?? current?.did_not_start ?? false
 })
@@ -255,18 +245,11 @@ const useRunStatus = (
 	heatId: string,
 	athleteId: string | undefined,
 	runNumber: number
-): RunStatus | undefined => {
-	const [runStatus, setRunStatus] = useState<RunStatus | undefined>(undefined)
-	const httpRunStatus = useRunStatusStreamQuery(
+): RunStatus | undefined =>
+	useRunStatusStreamQuery(
 		{ heatId, athleteId: athleteId ?? "", runNumber },
 		{ skip: !heatId || !athleteId }
-	)
-	useEffect(() => {
-		setRunStatus(httpRunStatus.data ? httpRunStatus.data : undefined)
-	}, [httpRunStatus])
-
-	return runStatus
-}
+	).data
 
 const useHeadJudgePublishing = (
 	isHeadJudge: boolean,
@@ -481,10 +464,10 @@ export default ({
 		void emitRunStatus(
 			buildRunStatusUpdate(
 				{
-					runNumber: selectedRun,
-					phaseId: athleteData?.[currentPaddlerIndex].phase_id ?? "",
-					heatId: selectedHeat,
-					athleteId: selectedAthlete.id
+					run_number: selectedRun,
+					phase_id: athleteData?.[currentPaddlerIndex].phase_id ?? "",
+					heat_id: selectedHeat,
+					athlete_id: selectedAthlete.id
 				},
 				runStatus,
 				locked,
