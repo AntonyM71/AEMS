@@ -1,37 +1,10 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import { randomUUID } from "node:crypto"
 import { BACKEND_URL, proxyFrontendAPIToBackend } from "./helpers/apiProxy"
 import { fetchTwoMoves } from "./helpers/moves"
+import { selectCompetitionAndHeat } from "./helpers/selection"
 import { setupTestData } from "./helpers/testData"
 import { makeUuid7, nextUuid7 } from "./helpers/uuid7"
-
-/**
- * Selects a competition then a heat via the MUI Select dropdowns present on
- * both the head-judge and scribe pages before a heat is chosen.
- *
- * The competition combobox does not have an aria-label or aria-labelledby
- * attribute (MUI FormControl without explicit labelId), so we use `.first()`
- * to target it — it is the only combobox visible before a competition is
- * chosen.  The heat combobox uses `inputProps={{ "aria-label": "Select Heat" }}`
- * in HeatSelector.tsx so it can be matched by accessible name.
- */
-async function selectCompetitionAndHeat(
-	page: Page,
-	competitionName: string,
-	heatName: string
-) {
-	// Competition selector has no aria-label; it is the only combobox before
-	// a competition is picked.
-	await page.getByRole("combobox").first().click()
-	await page.getByRole("option", { name: competitionName }).click()
-
-	// The heat dropdown is replaced by a Skeleton while heats are loading after
-	// competition selection; wait for the combobox to appear before clicking.
-	await page
-		.getByRole("combobox", { name: "Select Heat" })
-		.click({ timeout: 15000 })
-	await page.getByRole("option", { name: heatName }).click()
-}
 
 test.describe("WebSocket Streaming Updates", () => {
 	test("a judge submitting a move updates the head judge page via websocket", async ({

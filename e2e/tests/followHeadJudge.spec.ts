@@ -1,22 +1,8 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import { randomUUID } from "node:crypto"
 import { BACKEND_URL, proxyFrontendAPIToBackend } from "./helpers/apiProxy"
+import { selectCompetitionAndHeat } from "./helpers/selection"
 import { setupTestData } from "./helpers/testData"
-
-async function selectCompetitionAndHeat(
-	page: Page,
-	competitionName: string,
-	heatName: string
-) {
-	// The competition combobox has no accessible name; it is the only one
-	// shown before a competition is picked.
-	await page.getByRole("combobox").first().click()
-	await page.getByRole("option", { name: competitionName }).click()
-	await page
-		.getByRole("combobox", { name: "Select Heat" })
-		.click({ timeout: 15000 })
-	await page.getByRole("option", { name: heatName }).click()
-}
 
 test("the arena follows the head judge, including after a reload", async ({
 	browser,
