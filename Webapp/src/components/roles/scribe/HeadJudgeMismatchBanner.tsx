@@ -14,50 +14,26 @@ import {
 } from "../../../redux/atoms/scoring"
 import { useGetHeatInfoGetHeatInfoHeatIdGetQuery } from "../../../redux/services/aemsApi"
 import { useHeadJudgePositionStreamQuery } from "../../../redux/services/streamingApi"
+import { HeadJudgePosition } from "../../Interfaces"
 
-/**
- * Warns the scribe when their heat, athlete or run differs from the head
- * judge's, and offers a one-tap jump to the head judge's position.
- */
-export const HeadJudgeMismatchBanner = () => {
+interface Named {
+	first_name: string
+	last_name: string
+}
+
+const useJumpToHeadJudge = (
+	headJudge: HeadJudgePosition,
+	isDifferentHeat: boolean
+) => {
 	const dispatch = useDispatch()
-	const { data: headJudge } = useHeadJudgePositionStreamQuery()
-	const selectedHeat = useSelector(getSelectedHeat)
-	const selectedRun = useSelector(getSelectedRun)
-	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
-	// currentData, not data: data keeps the previous heat's roster while a new
-	// heat loads, which would pair the new heat with the wrong athletes.
-	const { currentData: athletes } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{ heatId: selectedHeat },
-		{ skip: !selectedHeat }
-	)
 	const { currentData: headJudgeHeatAthletes } =
-		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-			{ heatId: headJudge?.heatId ?? "" },
-			{ skip: !headJudge?.heatId }
-		)
-
-	if (!headJudge || !athletes) {
-		return null
-	}
-
-	const isDifferentHeat = headJudge.heatId !== selectedHeat
-	const myAthlete = athletes[currentPaddlerIndex]
-	const isDifferentAthlete = myAthlete?.athlete_id !== headJudge.athlete.id
-	const isDifferentRun = selectedRun !== headJudge.runNumber
-
-	if (!isDifferentHeat && !isDifferentAthlete && !isDifferentRun) {
-		return null
-	}
-
-	const headJudgeAthleteName = `${headJudge.athlete.first_name} ${headJudge.athlete.last_name}`
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery({ heatId: headJudge.heatId })
 	const headJudgeAthleteIndex =
 		headJudgeHeatAthletes?.findIndex(
 			(a) => a.athlete_id === headJudge.athlete.id
 		) ?? -1
-	const canJumpToHeadJudge = headJudgeAthleteIndex >= 0
 
-	const jumpToHeadJudge = () => {
+	const jump = () => {
 		if (isDifferentHeat) {
 			dispatch(updateSelectedCompetition(headJudge.competitionId))
 			dispatch(updateSelectedHeat(headJudge.heatId))
@@ -68,6 +44,65 @@ export const HeadJudgeMismatchBanner = () => {
 				run: headJudge.runNumber
 			})
 		)
+	}
+
+	return { canJump: headJudgeAthleteIndex >= 0, jump }
+}
+
+const fullName = (athlete: Named) =>
+	`${athlete.first_name} ${athlete.last_name}`
+
+const MismatchText = ({
+	headJudge,
+	isDifferentHeat,
+	myAthlete,
+	selectedRun
+}: {
+	headJudge: HeadJudgePosition
+	isDifferentHeat: boolean
+	myAthlete: Named | undefined
+	selectedRun: number
+}) => {
+	if (isDifferentHeat) {
+		return <AlertTitle>Head judge is scoring a different heat</AlertTitle>
+	}
+
+	return (
+		<>
+			<AlertTitle>
+				{`Head judge is on ${fullName(headJudge.athlete)}, run ${
+					headJudge.runNumber + 1
+				}`}
+			</AlertTitle>
+			{myAthlete &&
+				`You are scoring ${fullName(myAthlete)}, run ${
+					selectedRun + 1
+				}`}
+		</>
+	)
+}
+
+const MismatchAlert = ({ headJudge }: { headJudge: HeadJudgePosition }) => {
+	const selectedHeat = useSelector(getSelectedHeat)
+	const selectedRun = useSelector(getSelectedRun)
+	const currentPaddlerIndex = useSelector(getCurrentPaddlerIndex)
+	// currentData, not data: data keeps the previous heat's roster while a new
+	// heat loads, which would pair the new heat with the wrong athletes.
+	const { currentData: athletes } = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+		{ heatId: selectedHeat },
+		{ skip: !selectedHeat }
+	)
+	const isDifferentHeat = headJudge.heatId !== selectedHeat
+	const { canJump, jump } = useJumpToHeadJudge(headJudge, isDifferentHeat)
+
+	const myAthlete = athletes?.[currentPaddlerIndex]
+	const isMismatched =
+		isDifferentHeat ||
+		myAthlete?.athlete_id !== headJudge.athlete.id ||
+		selectedRun !== headJudge.runNumber
+
+	if (!athletes || !isMismatched) {
+		return null
 	}
 
 	return (
@@ -81,25 +116,29 @@ export const HeadJudgeMismatchBanner = () => {
 					color="inherit"
 					variant="outlined"
 					size="small"
-					disabled={!canJumpToHeadJudge}
-					onClick={jumpToHeadJudge}
+					disabled={!canJump}
+					onClick={jump}
 				>
 					{isDifferentHeat ? "Switch heat" : "Go to head judge's run"}
 				</Button>
 			}
 		>
-			<AlertTitle>
-				{isDifferentHeat
-					? "Head judge is scoring a different heat"
-					: `Head judge is on ${headJudgeAthleteName}, run ${
-							headJudge.runNumber + 1
-					  }`}
-			</AlertTitle>
-			{!isDifferentHeat &&
-				myAthlete &&
-				`You are scoring ${myAthlete.first_name} ${
-					myAthlete.last_name
-				}, run ${selectedRun + 1}`}
+			<MismatchText
+				headJudge={headJudge}
+				isDifferentHeat={isDifferentHeat}
+				myAthlete={myAthlete}
+				selectedRun={selectedRun}
+			/>
 		</Alert>
 	)
+}
+
+/**
+ * Warns the scribe when their heat, athlete or run differs from the head
+ * judge's, and offers a one-tap jump to the head judge's position.
+ */
+export const HeadJudgeMismatchBanner = () => {
+	const { data: headJudge } = useHeadJudgePositionStreamQuery()
+
+	return headJudge ? <MismatchAlert headJudge={headJudge} /> : null
 }
