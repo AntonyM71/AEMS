@@ -1,14 +1,11 @@
 import { ThemeProvider } from "@mui/material/styles"
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
-import { competitionInitialState } from "../../../redux/atoms/competitions"
-import { setupStore } from "../../../redux/store"
+import { screen } from "@testing-library/react"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import { EventTitle } from "../Cards/EventTitle"
 import { HeatSummaryTable } from "../Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../Cards/PhaseResultsTable"
 import { lightTheme } from "../overlayTheme"
-import { closestPaper } from "../../../testUtils"
+import { closestPaper, renderWithProviders } from "../../../testUtils"
 
 // Characterization tests for the BROADCAST OVERLAY.
 //
@@ -21,20 +18,18 @@ import { closestPaper } from "../../../testUtils"
 // so the value comes back, never "update" the expectation to match.
 
 const renderOverlay = (ui: React.ReactElement) =>
-	render(
-		<Provider
-			store={setupStore({
+	renderWithProviders(
+		<ThemeProvider theme={lightTheme}>{ui}</ThemeProvider>,
+		{
+			preloadedState: {
 				competitions: {
-					...competitionInitialState,
 					selectedCompetition: "1",
 					selectedEvent: "1",
 					selectedPhase: "1",
 					selectedHeat: "1"
 				}
-			})}
-		>
-			<ThemeProvider theme={lightTheme}>{ui}</ThemeProvider>
-		</Provider>
+			}
+		}
 	)
 
 describe("broadcast overlay card styling (characterization)", () => {

@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { Provider } from "react-redux"
 import { server } from "../../../../mocks/server"
 import { scoringReducer } from "../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../redux/services/aemsApi"
 import { AvailableMoveDirections } from "../Interfaces"
 import { MoveCard } from "../MoveCard"
+import { renderWithProviders } from "../../../../testUtils"
 
 // Need to ensure MSW intercepts requests
 beforeAll(() => server.listen())
@@ -76,10 +76,9 @@ describe("MoveCard", () => {
 		const store = createTestStore()
 		const singleMove = testMoves[0] // Using the Single Test move
 
-		render(
-			<Provider store={store}>
-				<MoveCard move={singleMove} isRunLocked={false} />
-			</Provider>
+		renderWithProviders(
+			<MoveCard move={singleMove} isRunLocked={false} />,
+			{ store }
 		)
 
 		expect(screen.getByText("Single Test")).toBeInTheDocument()
@@ -91,11 +90,9 @@ describe("MoveCard", () => {
 		const store = createTestStore()
 		const lrMove = testMoves[1] // Using the LR Test move
 
-		render(
-			<Provider store={store}>
-				<MoveCard move={lrMove} isRunLocked={false} />
-			</Provider>
-		)
+		renderWithProviders(<MoveCard move={lrMove} isRunLocked={false} />, {
+			store
+		})
 
 		expect(screen.getByText("LR Test")).toBeInTheDocument()
 		const leftButton = screen.getByText("L")
@@ -120,11 +117,9 @@ describe("MoveCard", () => {
 		const store = createTestStore()
 		const fbMove = testMoves[2] // Using the FB Test move
 
-		render(
-			<Provider store={store}>
-				<MoveCard move={fbMove} isRunLocked={false} />
-			</Provider>
-		)
+		renderWithProviders(<MoveCard move={fbMove} isRunLocked={false} />, {
+			store
+		})
 
 		expect(screen.getByText("FB Test")).toBeInTheDocument()
 		const frontButton = screen.getByText("F")
@@ -164,10 +159,9 @@ describe("MoveCard", () => {
 			testMoves[2] // FB
 		]
 
-		const { unmount } = render(
-			<Provider store={store}>
-				<MoveCard move={moves[0]} isRunLocked={true} />
-			</Provider>
+		const { unmount } = renderWithProviders(
+			<MoveCard move={moves[0]} isRunLocked={true} />,
+			{ store }
 		)
 
 		// Get all buttons and verify they're disabled
@@ -178,10 +172,9 @@ describe("MoveCard", () => {
 		unmount()
 
 		// Test LR move
-		const { unmount: unmountLR } = render(
-			<Provider store={store}>
-				<MoveCard move={moves[1]} isRunLocked={true} />
-			</Provider>
+		const { unmount: unmountLR } = renderWithProviders(
+			<MoveCard move={moves[1]} isRunLocked={true} />,
+			{ store }
 		)
 		buttons = screen.getAllByRole("button")
 		buttons.forEach((button) => {
@@ -190,11 +183,9 @@ describe("MoveCard", () => {
 		unmountLR()
 
 		// Test FB move
-		render(
-			<Provider store={store}>
-				<MoveCard move={moves[2]} isRunLocked={true} />
-			</Provider>
-		)
+		renderWithProviders(<MoveCard move={moves[2]} isRunLocked={true} />, {
+			store
+		})
 		buttons = screen.getAllByRole("button")
 		buttons.forEach((button) => {
 			expect(button).toBeDisabled()

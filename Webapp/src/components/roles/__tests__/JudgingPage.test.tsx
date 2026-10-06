@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import JudgingPage from "../JudgingPage"
+import { renderWithProviders } from "../../../testUtils"
 
 const createTestStore = () =>
 	configureStore({
@@ -58,11 +58,7 @@ describe("JudgingPage", () => {
 	})
 
 	it("should render selector display when no heat is selected", async () => {
-		render(
-			<Provider store={store}>
-				<JudgingPage />
-			</Provider>
-		)
+		renderWithProviders(<JudgingPage />, { store })
 
 		// Should not show judging page content
 		expect(
@@ -112,11 +108,7 @@ describe("JudgingPage", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<JudgingPage />
-			</Provider>
-		)
+		renderWithProviders(<JudgingPage />, { store })
 
 		// Wait for loading state to finish
 		await screen.findByTestId("judging-page-content")
@@ -178,11 +170,7 @@ describe("JudgingPage", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<JudgingPage />
-			</Provider>
-		)
+		renderWithProviders(<JudgingPage />, { store })
 
 		// Wait for loading state to finish
 		await screen.findByTestId("judging-page-content")

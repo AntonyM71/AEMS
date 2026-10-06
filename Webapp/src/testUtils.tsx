@@ -1,4 +1,4 @@
-import { configureStore, EnhancedStore } from "@reduxjs/toolkit"
+import { configureStore, EnhancedStore, Store } from "@reduxjs/toolkit"
 
 import { render, RenderOptions } from "@testing-library/react"
 
@@ -8,7 +8,7 @@ import { competitionInitialState } from "./redux/atoms/competitions"
 import { scoringInitialState } from "./redux/atoms/scoring"
 import { utilitiesInitialState } from "./redux/atoms/utilities"
 import { aemsApi } from "./redux/services/aemsApi"
-import { AppStore, rootReducer, RootState } from "./redux/store"
+import { rootReducer, RootState } from "./redux/store"
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
 type DeepPartial<T> = {
@@ -17,7 +17,7 @@ type DeepPartial<T> = {
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
 	preloadedState?: DeepPartial<RootState>
-	store?: AppStore
+	store?: Store
 }
 const baseState: Partial<RootState> = {
 	competitions: competitionInitialState,
@@ -60,14 +60,17 @@ export const renderWithProviders = (
 	}: ExtendedRenderOptions = {}
 ): { store: EnhancedStore<RootState> } & Pick<
 	ReturnType<typeof render>,
-	"rerender"
+	"container" | "rerender" | "unmount"
 > => {
 	const Wrapper = ({ children }: PropsWithChildren<unknown>): JSX.Element => (
 		<Provider store={store}>{children}</Provider>
 	)
 
 	// Return an object with the store and all of RTL's query functions
-	return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) }
+	return {
+		store: store as EnhancedStore<RootState>,
+		...render(ui, { wrapper: Wrapper, ...renderOptions })
+	}
 }
 
 export const closestPaper = (el: HTMLElement): Element | null =>

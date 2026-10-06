@@ -1,15 +1,10 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import Admin from "../pages/Admin"
-import { setupStore } from "../redux/store"
+import { renderWithProviders } from "../testUtils"
 
 describe("Admin Page", () => {
 	it("renders main components", () => {
-		render(
-			<Provider store={setupStore()}>
-				<Admin />
-			</Provider>
-		)
+		renderWithProviders(<Admin />)
 
 		// Check for main accordion sections
 		expect(

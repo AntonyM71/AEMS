@@ -176,6 +176,46 @@ export const HeatSummaryTable = ({
 	return <h4>Something went wrong</h4>
 }
 
+interface HeatAthleteRow {
+	id?: string
+	athlete_heat_id?: string
+	first_name?: string
+	last_name?: string
+	bib?: number
+	affiliation?: string
+	phase_id?: string
+	athlete_id?: string
+	event_name?: string
+	last_phase_rank?: number
+}
+
+const editColumn = (onEdit: (row: HeatAthleteRow) => void): GridColDef => ({
+	field: "action",
+	headerName: "Admin",
+	sortable: false,
+	renderCell: (
+		params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
+	) => (
+		<Button
+			onClick={() => onEdit(params.api.getRow(params.id) ?? {})}
+			data-testid="edit-athlete-button"
+		>
+			Edit
+		</Button>
+	)
+})
+
+const editDialogProps = (row: HeatAthleteRow) => ({
+	athlete_id: row.athlete_id ?? "",
+	first_name: row.first_name ?? "",
+	last_name: row.last_name ?? "",
+	affiliation: row.affiliation ?? "",
+	bib: row.bib ?? 1,
+	phase_id: row.phase_id ?? "",
+	athlete_heat_id: row.athlete_heat_id ?? "",
+	last_phase_rank: row.last_phase_rank
+})
+
 export const HeatAthleteTable = ({
 	showAdmin = false
 }: {
@@ -184,49 +224,12 @@ export const HeatAthleteTable = ({
 	const selectedHeat = useSelector(getSelectedHeat)
 	const [open, setOpen] = useState<boolean>(false)
 	const handleClose = () => setOpen(false)
-	const [rowData, setRowData] = useState<{
-		id?: string
-		athlete_heat_id?: string
-		first_name?: string
-		last_name?: string
-		bib?: number
-		affiliation?: string
-		phase_id?: string
-		athlete_id?: string
-		event_name?: string
-		last_phase_rank?: number
-	}>({})
-	const editCol = showAdmin
-		? [
-				{
-					field: "action",
-					headerName: "Admin",
-					sortable: false,
-					renderCell: (
-						params: GridRenderCellParams<
-							any,
-							any,
-							any,
-							GridTreeNodeWithRender
-						>
-					) => {
-						const onClick = () => {
-							setRowData(params.api.getRow(params.id) ?? {})
-							setOpen(true)
-						}
-
-						return (
-							<Button
-								onClick={onClick}
-								data-testid="edit-athlete-button"
-							>
-								Edit
-							</Button>
-						)
-					}
-				}
-		  ]
-		: []
+	const [rowData, setRowData] = useState<HeatAthleteRow>({})
+	const onEditRow = (row: HeatAthleteRow) => {
+		setRowData(row)
+		setOpen(true)
+	}
+	const editCol = showAdmin ? [editColumn(onEditRow)] : []
 	const columns: GridColDef[] = [
 		// { field: "id", headerName: "ID"},
 		{ field: "first_name", headerName: "First Name" },
@@ -244,9 +247,10 @@ export const HeatAthleteTable = ({
 		{ skip: !selectedHeat }
 	)
 
-	const rows: GridRowsProp = athletes?.data
-		? athletes.data.map((a) => ({ id: v4(), ...a }))
-		: []
+	const rows: GridRowsProp = (athletes.data ?? []).map((a) => ({
+		id: v4(),
+		...a
+	}))
 
 	if (athletes.isLoading) {
 		return <Skeleton variant="rectangular" />
@@ -256,14 +260,7 @@ export const HeatAthleteTable = ({
 				<EditAthleteDialog
 					open={open}
 					handleClose={handleClose}
-					athlete_id={rowData.athlete_id ?? ""}
-					first_name={rowData.first_name ?? ""}
-					last_name={rowData.last_name ?? ""}
-					affiliation={rowData.affiliation ?? ""}
-					bib={rowData.bib ?? 1}
-					phase_id={rowData.phase_id ?? ""}
-					athlete_heat_id={rowData.athlete_heat_id ?? ""}
-					last_phase_rank={rowData.last_phase_rank}
+					{...editDialogProps(rowData)}
 				/>
 				<DataGrid
 					sx={{ height: "50vh" }}
@@ -372,6 +369,97 @@ const describeScoresOutcome = (
 	return "Updated Athlete Competition Information"
 }
 
+const initialAthleteFields = (props: {
+	first_name?: string
+	last_name?: string
+	affiliation?: string
+	bib?: number
+	phase_id?: string
+}) => ({
+	firstName: props.first_name ?? "",
+	lastName: props.last_name ?? "",
+	affiliation: props.affiliation ?? "",
+	phaseId: props.phase_id ?? "",
+	bib: Number(props.bib ?? 1)
+})
+
+const flattenPhases = (
+	events:
+		| {
+				name?: string | null
+				phase_foreign?: { id: string; name?: string | null }[] | null
+		  }[]
+		| undefined
+) =>
+	(events ?? []).flatMap(
+		(e) => e.phase_foreign?.map((p) => ({ ...p, eventName: e.name })) ?? []
+	)
+
+const ServerError = ({
+	events,
+	heats
+}: {
+	events: boolean
+	heats: boolean
+}) => (
+	<h4 data-testid="server-error">
+		Failed to get data from server
+		{events && " (events)"}
+		{heats && " (heats)"}
+	</h4>
+)
+
+const HeatSelect = ({
+	heats,
+	value,
+	onChange
+}: {
+	heats: { id: string; name: string }[]
+	value: string
+	onChange: (event: SelectChangeEvent<string>) => void
+}) => (
+	<FormControl fullWidth={true}>
+		<InputLabel id="heat-select-label">Select Heat</InputLabel>
+		<Select
+			labelId="heat-select-label"
+			id="heat-select"
+			value={value}
+			onChange={onChange}
+			variant="outlined"
+			fullWidth
+			autoWidth
+			data-testid="heat-select"
+		>
+			{heats.map((heat) => (
+				<MenuItem key={heat.id} value={heat.id}>
+					{heat.name}
+				</MenuItem>
+			))}
+		</Select>
+	</FormControl>
+)
+
+const isEditingAthlete = (props: {
+	athlete_id?: string
+	athlete_heat_id?: string
+}): boolean => Boolean(props.athlete_id && props.athlete_heat_id)
+
+const parseOptionalRank = (value: string): number | undefined =>
+	value ? (value as unknown as number) : undefined
+
+const MoveScoresAlert = ({ preserved }: { preserved: boolean }) =>
+	preserved ? (
+		<Alert severity="info">
+			Moving this athlete will keep their previously scored moves, since
+			the selected phase uses the same scoresheet.
+		</Alert>
+	) : (
+		<Alert severity="warning">
+			Warning: Moving this athlete to the selected phase will delete their
+			previously scored moves, since it uses a different scoresheet.
+		</Alert>
+	)
+
 export const AddAthletesToHeat = (props: {
 	athlete_id?: string
 	first_name?: string
@@ -388,12 +476,12 @@ export const AddAthletesToHeat = (props: {
 		process.env.NEXT_PUBLIC_ALLOW_SET_LAST_PHASE_RANK === "true"
 	const selectedHeat = useSelector(getSelectedHeat)
 	const selectedCompetition = useSelector(getSelectedCompetition)
+	const initial = initialAthleteFields(props)
+	const isEditing = isEditingAthlete(props)
 	const [athleteFirstName, setAthleteFirstName] = useState<string>(
-		props.first_name ?? ""
+		initial.firstName
 	)
-	const [selectedPhase, setSelectedPhase] = useState<string>(
-		props.phase_id ?? ""
-	)
+	const [selectedPhase, setSelectedPhase] = useState<string>(initial.phaseId)
 	const [newHeat, setNewHeat] = useState<string>(selectedHeat ?? "")
 	useEffect(() => {
 		setNewHeat(selectedHeat)
@@ -405,12 +493,12 @@ export const AddAthletesToHeat = (props: {
 		{ skip: !selectedHeat }
 	)
 	const [athleteLastName, setAthleteLastName] = useState<string>(
-		props.last_name ?? ""
+		initial.lastName
 	)
 	const [athleteAffiliation, setAthleteAffiliation] = useState<string>(
-		props.affiliation ?? ""
+		initial.affiliation
 	)
-	const [bibNumber, setBibNumber] = useState<number>(Number(props.bib ?? 1))
+	const [bibNumber, setBibNumber] = useState<number>(initial.bib)
 
 	const [lastPhaseRank, setLastPhaseRank] = useState<number | undefined>(
 		props.last_phase_rank
@@ -519,26 +607,10 @@ export const AddAthletesToHeat = (props: {
 		}
 	}
 	if (!isSuccess || !heatIsSuccess) {
-		return (
-			<h4 data-testid="server-error">
-				Failed to get data from server
-				{!isSuccess && " (events)"}
-				{!heatIsSuccess && " (heats)"}
-			</h4>
-		)
+		return <ServerError events={!isSuccess} heats={!heatIsSuccess} />
 	}
-	const colWidth = props.athlete_id && props.athlete_heat_id ? 12 : 2
-	const phases = data
-		? data
-				.map(
-					(e) =>
-						e.phase_foreign?.map((p) => ({
-							...p,
-							eventName: e.name
-						})) || []
-				)
-				.flat()
-		: []
+	const colWidth = isEditing ? 12 : 2
+	const phases = flattenPhases(data)
 
 	const scoresWillBePreserved = willPreserveScoresOnMove(
 		phases,
@@ -548,22 +620,9 @@ export const AddAthletesToHeat = (props: {
 
 	return (
 		<Grid container spacing={1} alignItems="stretch">
-			{props.athlete_id && props.athlete_heat_id && (
+			{isEditing && (
 				<Grid size={colWidth}>
-					{" "}
-					{scoresWillBePreserved ? (
-						<Alert severity="info">
-							Moving this athlete will keep their previously
-							scored moves, since the selected phase uses the same
-							scoresheet.
-						</Alert>
-					) : (
-						<Alert severity="warning">
-							Warning: Moving this athlete to the selected phase
-							will delete their previously scored moves, since it
-							uses a different scoresheet.
-						</Alert>
-					)}
+					<MoveScoresAlert preserved={scoresWillBePreserved} />
 				</Grid>
 			)}
 			<Grid size={colWidth}>
@@ -601,9 +660,9 @@ export const AddAthletesToHeat = (props: {
 					>
 						{phases.map((phase) => (
 							<MenuItem key={phase.id} value={phase.id}>
-								{(phase.eventName ?? "") +
-									" - " +
-									(phase.name ?? "")}
+								{`${phase.eventName ?? ""} - ${
+									phase.name ?? ""
+								}`}
 							</MenuItem>
 						))}
 					</Select>
@@ -611,29 +670,11 @@ export const AddAthletesToHeat = (props: {
 			</Grid>
 			{props.showHeat && (
 				<Grid size={colWidth}>
-					<FormControl fullWidth={true}>
-						<InputLabel id="heat-select-label">
-							Select Heat
-						</InputLabel>
-						<Select
-							labelId="heat-select-label"
-							id="heat-select"
-							value={newHeat}
-							onChange={onSelectHeat}
-							variant="outlined"
-							fullWidth
-							autoWidth
-							data-testid="heat-select"
-						>
-							{heatData
-								? heatData.map((heat) => (
-										<MenuItem key={heat.id} value={heat.id}>
-											{heat.name}
-										</MenuItem>
-								  ))
-								: null}
-						</Select>
-					</FormControl>
+					<HeatSelect
+						heats={heatData ?? []}
+						value={newHeat}
+						onChange={onSelectHeat}
+					/>
 				</Grid>
 			)}
 			<Grid size={colWidth}>
@@ -661,9 +702,7 @@ export const AddAthletesToHeat = (props: {
 							event: React.ChangeEvent<HTMLInputElement>
 						): void =>
 							setLastPhaseRank(
-								event.target.value
-									? (event.target.value as unknown as number)
-									: undefined
+								parseOptionalRank(event.target.value)
 							)
 						}
 						value={lastPhaseRank}
@@ -677,9 +716,7 @@ export const AddAthletesToHeat = (props: {
 					fullWidth
 					sx={{ height: "100%" }}
 				>
-					{props.athlete_id && props.athlete_heat_id
-						? "Edit Athlete"
-						: "Add Athlete"}
+					{isEditing ? "Edit Athlete" : "Add Athlete"}
 				</Button>
 			</Grid>
 		</Grid>

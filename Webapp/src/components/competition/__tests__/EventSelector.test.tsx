@@ -1,8 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import {
 	competitionsReducer,
@@ -10,6 +9,7 @@ import {
 } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import EventSelector from "../EventSelector"
+import { renderWithProviders } from "../../../testUtils"
 
 interface EventPostBody {
 	name: string
@@ -40,11 +40,7 @@ describe("EventSelector", () => {
 	})
 
 	it("renders nothing when no competition is selected", () => {
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		expect(screen.queryByLabelText("Select Event")).not.toBeInTheDocument()
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
@@ -53,11 +49,7 @@ describe("EventSelector", () => {
 	it("shows loading state when fetching events", async () => {
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		// Wait for the loading state to be rendered
 		const skeleton = await screen.findByTestId("skeleton")
@@ -68,11 +60,7 @@ describe("EventSelector", () => {
 		const user = userEvent.setup()
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		// Wait for loading state to finish and component to be ready
 		await screen.findByText("Select Event")
@@ -97,11 +85,7 @@ describe("EventSelector", () => {
 
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		// Wait for loading to finish and check for no events message
 		expect(
@@ -119,11 +103,7 @@ describe("EventSelector", () => {
 
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		expect(
 			await screen.findByText("Failed to get data from the server")
@@ -137,11 +117,7 @@ describe("EventSelector", () => {
 		const user = userEvent.setup()
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector />, { store })
 
 		// Wait for loading state to finish and component to be ready
 		await screen.findByText("Select Event")
@@ -180,11 +156,9 @@ describe("EventSelector", () => {
 
 		store.dispatch(updateSelectedCompetition("1"))
 
-		render(
-			<Provider store={store}>
-				<EventSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<EventSelector showDetailed={true} />, {
+			store
+		})
 
 		await screen.findByText("Add New Event")
 

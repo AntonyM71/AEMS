@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import ScribePage from "../../pages/scribe/[id]"
-import { setupStore } from "../../redux/store"
+import { renderWithProviders } from "../../testUtils"
 
 // Mock the Next.js router
 jest.mock("next/router", () => ({
@@ -18,11 +17,7 @@ jest.mock("../../components/roles/scribe/ScribePage", () => ({
 
 describe("Scribe Page", () => {
 	it("renders scribe component", () => {
-		render(
-			<Provider store={setupStore()}>
-				<ScribePage />
-			</Provider>
-		)
+		renderWithProviders(<ScribePage />)
 
 		expect(screen.getByTestId("scribe-page")).toBeInTheDocument()
 	})

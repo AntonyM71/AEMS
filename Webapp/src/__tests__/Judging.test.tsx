@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react"
-import { Provider } from "react-redux"
+import { screen } from "@testing-library/react"
 import JudgingPage from "../pages/Judging"
-import { setupStore } from "../redux/store"
+import { renderWithProviders } from "../testUtils"
 
 // Mock the dynamic import
 jest.mock("next/dynamic", () => () => () => (
@@ -10,11 +9,7 @@ jest.mock("next/dynamic", () => () => () => (
 
 describe("Judging Page", () => {
 	it("renders judging page component", () => {
-		render(
-			<Provider store={setupStore()}>
-				<JudgingPage />
-			</Provider>
-		)
+		renderWithProviders(<JudgingPage />)
 
 		expect(screen.getByTestId("judging-page")).toBeInTheDocument()
 	})

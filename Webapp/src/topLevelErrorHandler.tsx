@@ -8,6 +8,7 @@ export const registerRejectedPromise = () => {
 	}
 }
 
+// eslint-disable-next-line complexity
 const extractErrorMessage = (error: any): string => {
 	if (typeof error === "string") {
 		return error

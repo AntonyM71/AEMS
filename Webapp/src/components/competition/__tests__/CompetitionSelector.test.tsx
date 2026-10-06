@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse, delay } from "msw"
 import { Toaster, toast } from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { competitionsReducer } from "../../../redux/atoms/competitions"
 import { aemsApi } from "../../../redux/services/aemsApi"
 import CompetitionSelector from "../CompetitionSelector"
+import { renderWithProviders } from "../../../testUtils"
 
 interface Competition {
 	id: string
@@ -72,11 +72,12 @@ describe("CompetitionSelector", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
+		renderWithProviders(
+			<>
 				<Toaster />
 				<CompetitionSelector />
-			</Provider>
+			</>,
+			{ store }
 		)
 
 		expect(screen.getByTestId("loading-skeleton")).toBeInTheDocument()
@@ -95,11 +96,7 @@ describe("CompetitionSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector />, { store })
 
 		// Wait for loading state to disappear
 		await waitFor(() => !screen.queryByTestId("loading-skeleton"))
@@ -129,11 +126,7 @@ describe("CompetitionSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector />, { store })
 
 		// Wait for loading state to disappear
 		await waitFor(() => !screen.queryByTestId("loading-skeleton"))
@@ -163,11 +156,9 @@ describe("CompetitionSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector showDetailed={true} />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector showDetailed={true} />, {
+			store
+		})
 
 		await waitFor(() => !screen.queryByTestId("loading-skeleton"))
 
@@ -190,11 +181,7 @@ describe("CompetitionSelector", () => {
 			})
 		)
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector />, { store })
 
 		const retryButton = await screen.findByRole("button", {
 			name: /retry/i
@@ -211,11 +198,7 @@ describe("CompetitionSelector", () => {
 	it("shows 'No Competitions' state when data is empty", async () => {
 		server.use(http.get("/api/competition", () => HttpResponse.json([])))
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector />, { store })
 
 		// Wait for loading state to disappear
 		await waitFor(
@@ -241,11 +224,7 @@ describe("CompetitionSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<CompetitionSelector />
-			</Provider>
-		)
+		renderWithProviders(<CompetitionSelector />, { store })
 
 		const errorMessage = await screen.findByText(
 			"Failed to get data from the server"
@@ -260,11 +239,12 @@ describe("CompetitionSelector", () => {
 				http.get("/api/competition", () => HttpResponse.json([]))
 			)
 
-			render(
-				<Provider store={store}>
+			renderWithProviders(
+				<>
 					<Toaster />
 					<CompetitionSelector showDetailed={true} />
-				</Provider>
+				</>,
+				{ store }
 			)
 
 			await waitFor(() => !screen.queryByTestId("loading-skeleton"))
@@ -313,11 +293,12 @@ describe("CompetitionSelector", () => {
 				})
 			)
 
-			render(
-				<Provider store={store}>
+			renderWithProviders(
+				<>
 					<Toaster />
 					<CompetitionSelector showDetailed={true} />
-				</Provider>
+				</>,
+				{ store }
 			)
 
 			await waitFor(() => !screen.queryByTestId("loading-skeleton"))

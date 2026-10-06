@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import toast from "react-hot-toast"
-import { Provider } from "react-redux"
 import { server } from "../../../mocks/server"
 import { setupStore } from "../../../redux/store"
 import { AddScoresheet } from "../AddScoresheet"
+import { renderWithProviders } from "../../../testUtils"
 
 const store = setupStore()
 
@@ -12,12 +12,9 @@ describe("AddScoresheet", () => {
 	const mockSetSelectedScoresheet = jest.fn()
 
 	const renderComponent = () =>
-		render(
-			<Provider store={store}>
-				<AddScoresheet
-					setSelectedScoresheet={mockSetSelectedScoresheet}
-				/>
-			</Provider>
+		renderWithProviders(
+			<AddScoresheet setSelectedScoresheet={mockSetSelectedScoresheet} />,
+			{ store }
 		)
 
 	beforeEach(() => {

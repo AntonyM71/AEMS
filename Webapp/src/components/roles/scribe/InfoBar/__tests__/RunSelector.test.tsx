@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { Provider } from "react-redux"
 import { server } from "../../../../../mocks/server"
 import { competitionsReducer } from "../../../../../redux/atoms/competitions"
 import { scoringReducer } from "../../../../../redux/atoms/scoring"
 import { aemsApi } from "../../../../../redux/services/aemsApi"
 import { waitForHeatInfoData } from "../heatInfoTestHelpers"
 import { RunSelector } from "../Runselector"
+import { renderWithProviders } from "../../../../../testUtils"
 
 const createTestStore = (preloadedState = {}) =>
 	configureStore({
@@ -85,11 +85,7 @@ describe("RunSelector", () => {
 			)
 		)
 
-		render(
-			<Provider store={store}>
-				<RunSelector />
-			</Provider>
-		)
+		renderWithProviders(<RunSelector />, { store })
 	}
 
 	it("renders run information correctly", () => {

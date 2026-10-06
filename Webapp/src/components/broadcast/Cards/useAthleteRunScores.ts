@@ -63,22 +63,31 @@ export const useAthleteRunScores = (
 			label: runLabel(finalRuns.find((r) => r.run_number === runNumber))
 		})
 	)
+	const total = phaseTotal(
+		finalRuns,
+		runs,
+		athleteHeat?.number_of_runs_for_score ?? 0
+	)
+
+	return { runs, total }
+}
+
+const phaseTotal = (
+	finalRuns: { did_not_start: boolean; mean_run_score: number }[],
+	runs: AthleteRunLabel[],
+	scoringRuns: number
+): string | undefined => {
 	if (finalRuns.length === 0) {
-		return { runs, total: undefined }
+		return undefined
 	}
 	if (runs.every((run) => run.label === "DNS")) {
-		return { runs, total: "DNS" }
+		return "DNS"
 	}
 
-	return {
-		runs,
-		total: bestRunsTotal(
-			finalRuns.map((run) =>
-				run.did_not_start ? 0 : run.mean_run_score
-			),
-			athleteHeat?.number_of_runs_for_score ?? 0
-		).toFixed(2)
-	}
+	return bestRunsTotal(
+		finalRuns.map((run) => (run.did_not_start ? 0 : run.mean_run_score)),
+		scoringRuns
+	).toFixed(2)
 }
 
 const runLabel = (run?: { did_not_start: boolean; mean_run_score: number }) => {
