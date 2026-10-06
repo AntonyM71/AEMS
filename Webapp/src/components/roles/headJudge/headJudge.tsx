@@ -100,52 +100,33 @@ const useJudgeScores = (
 	streamMoveData: ScoredMovesAndBonusesResponse | undefined,
 	availableMoves: movesType[],
 	availableBonuses: AvailableBonusType[]
-) => {
-	const [allJudgeScores, setAllJudgeScores] = useState<
-		Record<string, number>
-	>({})
-	const [allJudgeMoveAndBonusData, setAllJudgeMoveAndBonusData] = useState<
-		Record<string, ScoredMovesAndBonusesResponse>
-	>({})
-
-	useEffect(() => {
-		const judgeIds = judgeIdsFor(maxJudges)
-		setAllJudgeScores(Object.fromEntries(judgeIds.map((id) => [id, 0])))
-		setAllJudgeMoveAndBonusData(
-			Object.fromEntries(
-				judgeIds.map((id) => [id, { moves: [], bonuses: [] }])
-			)
-		)
-	}, [maxJudges])
-
-	useEffect(() => {
-		if (!streamMoveData) {
-			return
-		}
-		const newScores: Record<string, number> = {}
-		const newData: Record<string, ScoredMovesAndBonusesResponse> = {}
+) =>
+	useMemo(() => {
+		const allJudgeScores: Record<string, number> = {}
+		const allJudgeMoveAndBonusData: Record<
+			string,
+			ScoredMovesAndBonusesResponse
+		> = {}
 		judgeIdsFor(maxJudges).forEach((jid) => {
-			const filteredData: ScoredMovesAndBonusesResponse = {
+			const judgeData: ScoredMovesAndBonusesResponse = {
 				moves:
-					streamMoveData.moves?.filter((m) => m.judge_id === jid) ??
+					streamMoveData?.moves?.filter((m) => m.judge_id === jid) ??
 					[],
 				bonuses:
-					streamMoveData.bonuses?.filter((b) => b.judge_id === jid) ??
-					[]
+					streamMoveData?.bonuses?.filter(
+						(b) => b.judge_id === jid
+					) ?? []
 			}
-			newScores[jid] = calculateMoveAndBonusScore(
-				filteredData,
+			allJudgeScores[jid] = calculateMoveAndBonusScore(
+				judgeData,
 				availableMoves,
 				availableBonuses
 			)
-			newData[jid] = filteredData
+			allJudgeMoveAndBonusData[jid] = judgeData
 		})
-		setAllJudgeScores(newScores)
-		setAllJudgeMoveAndBonusData(newData)
-	}, [streamMoveData, maxJudges, availableMoves, availableBonuses])
 
-	return { allJudgeScores, allJudgeMoveAndBonusData }
-}
+		return { allJudgeScores, allJudgeMoveAndBonusData }
+	}, [streamMoveData, maxJudges, availableMoves, availableBonuses])
 
 // An unspecified flag keeps the current status's value.
 const buildRunStatusUpdate = (
@@ -279,6 +260,9 @@ const useHeadJudgePublishing = (
 	usePublishHeadJudgePosition(headJudgePosition)
 }
 
+const NO_MOVES: movesType[] = []
+const NO_BONUSES: AvailableBonusType[] = []
+
 const useAvailableScoringItems = (scoresheet: string | undefined) => {
 	const query = { sheetIdList: [scoresheet ?? ""] }
 	const options = { skip: !scoresheet, refetchOnReconnect: true }
@@ -286,8 +270,9 @@ const useAvailableScoringItems = (scoresheet: string | undefined) => {
 	const moves = useGetManyAvailablemovesGetQuery(query, options)
 
 	return {
-		availableMoves: (moves.data ?? []) as movesType[],
-		availableBonuses: (bonuses.data ?? []) as AvailableBonusType[]
+		availableMoves: (moves.data as movesType[] | undefined) ?? NO_MOVES,
+		availableBonuses:
+			(bonuses.data as AvailableBonusType[] | undefined) ?? NO_BONUSES
 	}
 }
 

@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit"
 import { act, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { delay, http, HttpResponse } from "msw"
+import { Profiler } from "react"
 import toast from "react-hot-toast"
 import { server } from "../../../../mocks/server"
 import { socketHub } from "../../../../mocks/socketHub"
@@ -251,6 +252,52 @@ describe("HeadJudge", () => {
 			)
 		)
 		expect(screen.getAllByText("Cartwheel")).toHaveLength(2)
+	})
+
+	it("stops re-rendering when the paddler has no scoresheet to score against", async () => {
+		server.use(
+			http.get("/api/getHeatInfo/:heatId", () =>
+				HttpResponse.json([
+					{
+						athlete_heat_id: "ah-1",
+						heat_id: "heat-1",
+						athlete_id: "athlete-1",
+						phase_id: "phase-1",
+						number_of_runs: 3,
+						number_of_runs_for_score: 2,
+						scoresheet: "",
+						first_name: "John",
+						last_name: "Smith",
+						affiliation: "GBR",
+						bib: "42",
+						event_name: "Test Event"
+					}
+				])
+			)
+		)
+		// A render loop shows nothing on screen but pins the head judge
+		// tablet's CPU, so commits are the only observable symptom.
+		let commits = 0
+		const countCommit = () => {
+			commits += 1
+		}
+
+		renderWithProviders(
+			<Profiler id="head-judge" onRender={countCommit}>
+				<HeadJudge />
+			</Profiler>,
+			{ store: makeStore(competitionsWithHeat) }
+		)
+		await waitFor(() =>
+			expect(socketHub.openCount("current_scores")).toBeGreaterThan(0)
+		)
+		// Plain timers, not act(): act() flushes effects until none remain,
+		// so a loop would hang the suite instead of failing this test.
+		await new Promise((resolve) => setTimeout(resolve, 100))
+		const commitsOnceSettled = commits
+		await new Promise((resolve) => setTimeout(resolve, 100))
+
+		expect(commits).toBe(commitsOnceSettled)
 	})
 
 	it("only shows the run locked once the server confirms it, not on click", async () => {
