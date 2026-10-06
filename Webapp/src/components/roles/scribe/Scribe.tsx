@@ -208,12 +208,20 @@ const Scribe = ({ scribeNumber }: { scribeNumber: string }) => {
 				<Grid size={7}>
 					<HeadJudgeMismatchBanner />
 					{runStatus?.locked && (
-						<Alert severity="info" sx={{ marginBottom: "0.5em" }}>
+						<Alert
+							severity="info"
+							variant="filled"
+							sx={{ marginBottom: "0.5em" }}
+						>
 							Run has been locked by head judge
 						</Alert>
 					)}
 					{isRunOutOfRange && (
-						<Alert severity="error" sx={{ marginBottom: "0.5em" }}>
+						<Alert
+							severity="error"
+							variant="filled"
+							sx={{ marginBottom: "0.5em" }}
+						>
 							Invalid run:{" "}
 							{athleteData[currentPaddlerIndex].first_name}{" "}
 							{athleteData[currentPaddlerIndex].last_name} is only

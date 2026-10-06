@@ -73,6 +73,7 @@ export const HeadJudgeMismatchBanner = () => {
 	return (
 		<Alert
 			severity="error"
+			variant="filled"
 			data-testid="head-judge-mismatch-banner"
 			sx={{ marginBottom: "0.5em" }}
 			action={
