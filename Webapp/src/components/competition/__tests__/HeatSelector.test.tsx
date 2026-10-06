@@ -14,16 +14,17 @@ interface HeatUpdateBody {
 describe("HeatSelector", () => {
 	// Temporarily commenting out other tests to focus on fixing the error test
 	it("shows nothing when no competition is selected", () => {
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "",
-				numberOfRuns: 2
+		renderWithProviders(<HeatSelector />, {
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "",
+					numberOfRuns: 2
+				}
 			}
 		})
-		renderWithProviders(<HeatSelector />, { store })
 		// The component should render an empty fragment
 		expect(document.body).toHaveTextContent("")
 	})
@@ -36,16 +37,18 @@ describe("HeatSelector", () => {
 				return HttpResponse.json([])
 			})
 		)
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "1",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "",
-				numberOfRuns: 2
+
+		renderWithProviders(<HeatSelector />, {
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "1",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "",
+					numberOfRuns: 2
+				}
 			}
 		})
-		renderWithProviders(<HeatSelector />, { store })
 		// Wait for the skeleton to appear
 		const skeleton = await screen.findByTestId("skeleton")
 		expect(skeleton).toBeInTheDocument()
@@ -55,16 +58,18 @@ describe("HeatSelector", () => {
 		server.use(
 			http.get("/api/heat", () => new HttpResponse(null, { status: 500 }))
 		)
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "1",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "",
-				numberOfRuns: 2
+
+		renderWithProviders(<HeatSelector />, {
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "1",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "",
+					numberOfRuns: 2
+				}
 			}
 		})
-		renderWithProviders(<HeatSelector />, { store })
 
 		expect(
 			await screen.findByText("Failed to get data from the server")
@@ -86,17 +91,17 @@ describe("HeatSelector", () => {
 				])
 			)
 		)
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "comp1",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "",
-				numberOfRuns: 2
-			}
-		})
+
 		renderWithProviders(<HeatSelector showDetailed={true} />, {
-			store
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "comp1",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "",
+					numberOfRuns: 2
+				}
+			}
 		})
 		// Check for "No Heats" message
 		expect(
@@ -208,17 +213,17 @@ describe("HeatSelector", () => {
 				return HttpResponse.json(body)
 			})
 		)
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "comp1",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "",
-				numberOfRuns: 2
-			}
-		})
+
 		renderWithProviders(<HeatSelector showDetailed={true} />, {
-			store
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "comp1",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "",
+					numberOfRuns: 2
+				}
+			}
 		})
 		// Wait for form to load and get input element
 		const input = await screen.findByRole("textbox", { name: /new heat/i })
@@ -283,18 +288,16 @@ describe("HeatSelector", () => {
 			})
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedCompetition: "comp1",
-				selectedEvent: "",
-				selectedPhase: "",
-				selectedHeat: "heat-1",
-				numberOfRuns: 2
-			}
-		})
-
 		renderWithProviders(<HeatSelector showDetailed={true} />, {
-			store
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "comp1",
+					selectedEvent: "",
+					selectedPhase: "",
+					selectedHeat: "heat-1",
+					numberOfRuns: 2
+				}
+			}
 		})
 
 		// Wait for component to load

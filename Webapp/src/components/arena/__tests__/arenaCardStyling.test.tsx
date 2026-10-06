@@ -1,7 +1,5 @@
 import { ThemeProvider } from "@mui/material/styles"
 import { screen } from "@testing-library/react"
-import { competitionInitialState } from "../../../redux/atoms/competitions"
-import { setupStore } from "../../../redux/store"
 import { EventTitle } from "../../broadcast/Cards/EventTitle"
 import { HeatSummaryTable } from "../../broadcast/Cards/HeatSummaryTable"
 import { PhaseScoreTable } from "../../broadcast/Cards/PhaseResultsTable"
@@ -16,15 +14,14 @@ import { closestPaper, renderWithProviders } from "../../../testUtils"
 
 const renderArena = (ui: React.ReactElement) =>
 	renderWithProviders(<ThemeProvider theme={darkTheme}>{ui}</ThemeProvider>, {
-		store: setupStore({
+		preloadedState: {
 			competitions: {
-				...competitionInitialState,
 				selectedCompetition: "1",
 				selectedEvent: "1",
 				selectedPhase: "1",
 				selectedHeat: "1"
 			}
-		})
+		}
 	})
 
 describe("arena card styling", () => {

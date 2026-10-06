@@ -1,7 +1,6 @@
 import { screen } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "../../../mocks/server"
-import { setupStore } from "../../../redux/store"
 import { HeatScoreTable } from "../HeatScoreTable"
 import { renderWithProviders } from "../../../testUtils"
 
@@ -90,33 +89,33 @@ describe("HeatScoreTable", () => {
 	})
 
 	it("shows loading skeleton when data is being fetched", () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		expect(screen.getByTestId("skeleton")).toBeInTheDocument()
 	})
 
 	it("displays heat data when loaded", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for heat name and grid to appear
 		expect(await screen.findByText("Heat: Test Heat")).toBeInTheDocument()
@@ -158,17 +157,17 @@ describe("HeatScoreTable", () => {
 	})
 
 	it("toggles judge scores visibility when switch is clicked", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -197,17 +196,17 @@ describe("HeatScoreTable", () => {
 	})
 
 	it("shows error message when no heat is selected", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		expect(
 			await screen.findByText("Something went wrong")
@@ -215,17 +214,17 @@ describe("HeatScoreTable", () => {
 	})
 
 	it("displays DNS for did not start runs", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -279,17 +278,17 @@ describe("HeatScoreTable", () => {
 			)
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Wait for data to load
 		await screen.findByText("Heat: Test Heat")
@@ -322,17 +321,17 @@ describe("HeatScoreTable", () => {
 			)
 		)
 
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
+		renderWithProviders(<HeatScoreTable />, {
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
 			}
 		})
-
-		renderWithProviders(<HeatScoreTable />, { store })
 
 		// Get grid props and verify empty rows
 		const grid = await screen.findByTestId("mock-data-grid")
@@ -343,18 +342,16 @@ describe("HeatScoreTable", () => {
 	})
 
 	it("shows judge scores by default when defaultShowJudgeScores is true", async () => {
-		const store = setupStore({
-			competitions: {
-				selectedHeat: "1",
-				selectedCompetition: "1",
-				selectedEvent: "1",
-				selectedPhase: "1",
-				numberOfRuns: 2
-			}
-		})
-
 		renderWithProviders(<HeatScoreTable defaultShowJudgeScores={true} />, {
-			store
+			preloadedState: {
+				competitions: {
+					selectedHeat: "1",
+					selectedCompetition: "1",
+					selectedEvent: "1",
+					selectedPhase: "1",
+					numberOfRuns: 2
+				}
+			}
 		})
 
 		// Wait for data to load

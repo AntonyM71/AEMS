@@ -1,7 +1,5 @@
 import { ThemeProvider } from "@mui/material/styles"
 import { screen } from "@testing-library/react"
-import { competitionInitialState } from "../../../redux/atoms/competitions"
-import { setupStore } from "../../../redux/store"
 import { defaultOverlayControllerState } from "../../Interfaces"
 import { EventTitle } from "../Cards/EventTitle"
 import { HeatSummaryTable } from "../Cards/HeatSummaryTable"
@@ -23,15 +21,14 @@ const renderOverlay = (ui: React.ReactElement) =>
 	renderWithProviders(
 		<ThemeProvider theme={lightTheme}>{ui}</ThemeProvider>,
 		{
-			store: setupStore({
+			preloadedState: {
 				competitions: {
-					...competitionInitialState,
 					selectedCompetition: "1",
 					selectedEvent: "1",
 					selectedPhase: "1",
 					selectedHeat: "1"
 				}
-			})
+			}
 		}
 	)
 

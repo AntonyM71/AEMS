@@ -48,14 +48,13 @@ describe("OverlayController", () => {
 
 	it("carries the pre-selected competition, event and heat into the first broadcast", async () => {
 		renderWithProviders(<OverlayController />, {
-			store: setupStore({
+			preloadedState: {
 				competitions: {
-					...competitionInitialState,
 					selectedCompetition: "comp-1",
 					selectedEvent: "event-1",
 					selectedHeat: "heat-1"
 				}
-			})
+			}
 		})
 
 		await waitFor(() =>
@@ -102,9 +101,10 @@ describe("OverlayController", () => {
 	it("pushes the operator's changes through to the arena screen", async () => {
 		socketHub.enableEcho("broadcast_control")
 		const user = userEvent.setup({ delay: null })
-		const controllerStore = setupStore()
 
-		renderWithProviders(<OverlayController />, { store: controllerStore })
+		const { store: controllerStore } = renderWithProviders(
+			<OverlayController />
+		)
 		renderWithProviders(<Arena />)
 
 		await waitFor(() =>
@@ -252,12 +252,11 @@ describe("OverlayController", () => {
 
 		const mountController = () => {
 			renderWithProviders(<OverlayController />, {
-				store: setupStore({
+				preloadedState: {
 					competitions: {
-						...competitionInitialState,
 						selectedCompetition: "comp-1"
 					}
-				})
+				}
 			})
 
 			return userEvent.setup({ delay: null })
