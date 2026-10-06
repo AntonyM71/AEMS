@@ -101,6 +101,21 @@ describe("Arena", () => {
 	})
 
 	it("slides the event title in and out as the broadcast operator toggles it", async () => {
+		server.use(
+			http.get("/api/competition", ({ request }) => {
+				const id = new URL(request.url).searchParams.get("id____list")
+
+				return HttpResponse.json([
+					{ id, name: `Competition detail ${String(id)}` }
+				])
+			}),
+			http.get("/api/event/:id", ({ params }) =>
+				HttpResponse.json({
+					id: params.id,
+					name: `Event detail ${String(params.id)}`
+				})
+			)
+		)
 		renderWithProviders(<Arena />)
 		await waitFor(() =>
 			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
@@ -113,8 +128,12 @@ describe("Arena", () => {
 
 		broadcast({ ...titleState, showEventTitle: true })
 
-		expect(await screen.findByText("Competition 1")).toBeInTheDocument()
-		expect(screen.getByText("Event : Test Event")).toBeInTheDocument()
+		expect(
+			await screen.findByText("Competition detail 1")
+		).toBeInTheDocument()
+		expect(
+			screen.getByText("Event : Event detail event-1")
+		).toBeInTheDocument()
 		expect(
 			screen.getByText("Phase : Phase detail phase-1")
 		).toBeInTheDocument()
@@ -122,7 +141,9 @@ describe("Arena", () => {
 		broadcast({ ...titleState, showEventTitle: false })
 
 		await waitFor(() =>
-			expect(screen.queryByText("Competition 1")).not.toBeInTheDocument()
+			expect(
+				screen.queryByText("Competition detail 1")
+			).not.toBeInTheDocument()
 		)
 	})
 
