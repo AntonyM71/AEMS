@@ -67,14 +67,15 @@ const OverlayController: React.FC = () => {
 		AthleteInfo | undefined
 	>(undefined)
 	useEffect(() => {
-		if (athleteData) {
+		const athlete = athleteData?.[currentPaddlerIndex]
+		if (athlete) {
 			setSelectedAthlete({
-				id: athleteData[currentPaddlerIndex].athlete_id,
-				first_name: athleteData[currentPaddlerIndex].first_name,
-				last_name: athleteData[currentPaddlerIndex].last_name,
-				bib: athleteData[currentPaddlerIndex].bib,
-				scoresheet: athleteData[currentPaddlerIndex].scoresheet,
-				affiliation: athleteData[currentPaddlerIndex].affiliation
+				id: athlete.athlete_id,
+				first_name: athlete.first_name,
+				last_name: athlete.last_name,
+				bib: athlete.bib,
+				scoresheet: athlete.scoresheet,
+				affiliation: athlete.affiliation
 			})
 		} else {
 			setSelectedAthlete(undefined)
@@ -112,6 +113,7 @@ const OverlayController: React.FC = () => {
 		undefined,
 		{ skip: !followHeadJudge }
 	)
+	const heatHasNoAthletes = athleteData?.length === 0
 	const displayedHeat =
 		followHeadJudge && headJudgePosition
 			? headJudgePosition.heatId
@@ -220,6 +222,15 @@ const OverlayController: React.FC = () => {
 					<Grid size={12}>
 						<SelectorDisplay />
 					</Grid>
+					{heatHasNoAthletes && (
+						<Grid size={12}>
+							<Alert severity="warning">
+								This heat has no athletes. Add athletes to the
+								heat or select a different heat to use athlete
+								overlays.
+							</Alert>
+						</Grid>
+					)}
 					{athletePickers}
 				</>
 			)}

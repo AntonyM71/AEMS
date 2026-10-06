@@ -31,6 +31,25 @@ beforeEach(() => {
 })
 
 describe("OverlayController", () => {
+	it("explains that a heat has no athletes instead of crashing", async () => {
+		server.use(
+			http.get("/api/getHeatInfo/:id", () => HttpResponse.json([]))
+		)
+		renderWithProviders(<OverlayController />, {
+			preloadedState: {
+				competitions: {
+					selectedCompetition: "comp-1",
+					selectedEvent: "event-1",
+					selectedHeat: "heat-1"
+				}
+			}
+		})
+
+		expect(
+			await screen.findByText(/This heat has no athletes/)
+		).toBeInTheDocument()
+	})
+
 	it("closes its broadcast socket when it unmounts", async () => {
 		const { unmount } = renderWithProviders(<OverlayController />)
 
