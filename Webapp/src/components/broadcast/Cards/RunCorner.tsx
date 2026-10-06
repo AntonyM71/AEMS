@@ -107,7 +107,7 @@ export const RunCorner = ({
 				className="AemsRunCorner-root"
 				sx={{
 					display: "grid",
-					width: 500,
+					width: 620,
 					gridTemplateRows: "58px 96px 48px",
 					fontVariantNumeric: "tabular-nums"
 				}}
@@ -141,7 +141,7 @@ export const RunCorner = ({
 				</Box>
 				<Box
 					className="AemsRunCorner-clock"
-					sx={{ display: "grid", gridTemplateColumns: "1fr 240px" }}
+					sx={{ display: "grid", gridTemplateColumns: "1fr 250px" }}
 				>
 					<RideClock />
 					<Box
