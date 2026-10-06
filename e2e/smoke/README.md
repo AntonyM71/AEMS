@@ -33,14 +33,15 @@ Screenshots and an HTML report land in `e2e/smoke/report/`.
 
 ## Cleaning up
 
-There is deliberately no API for deleting a competition. Remove the smoke
-competition from the server's database with:
+There is deliberately no API for deleting a competition. The check prints the
+exact command to remove its competition as soon as it creates it, for example:
 
 ```bash
 docker exec -i aems-db-1 psql -U postgres \
   -v name='ZZ Smoke Test 2026-10-05' < e2e/smoke/cleanup.sql
 ```
 
-The script only deletes a competition whose name starts with `ZZ Smoke Test`, and
-stops unless exactly one competition matches. The check refuses to start while a
-smoke competition from the same day still exists.
+The name uses the server's local date. The script only deletes a competition
+whose name starts with `ZZ Smoke Test`, and exits non-zero without deleting
+anything unless exactly one competition matches. The check refuses to start while
+a smoke competition from the same day still exists.

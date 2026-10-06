@@ -1,7 +1,15 @@
 import { expect, test, type Browser, type Page } from "@playwright/test"
 import { selectCompetitionAndHeat } from "../tests/helpers/selection"
 
-const COMPETITION_NAME = `ZZ Smoke Test ${new Date().toISOString().slice(0, 10)}`
+// The local date, not UTC, so the name matches the day the operator sees.
+const localDate = (date: Date) =>
+	[
+		date.getFullYear(),
+		String(date.getMonth() + 1).padStart(2, "0"),
+		String(date.getDate()).padStart(2, "0")
+	].join("-")
+const COMPETITION_NAME = `ZZ Smoke Test ${localDate(new Date())}`
+const CLEANUP_COMMAND = `docker exec -i aems-db-1 psql -U postgres -v name='${COMPETITION_NAME}' < e2e/smoke/cleanup.sql`
 const START_LIST = [
 	"first_name,last_name,bib,Event,Heat",
 	"Smoke,Alpha,901,Smoke K1,1",
@@ -69,7 +77,7 @@ test("a deployed AEMS server runs a competition end to end", async ({
 		const competitions = await getJson<{ name: string }[]>("/competition/")
 		expect(
 			competitions.map((c) => c.name),
-			"delete the earlier smoke competition with cleanup.sql first"
+			`delete the earlier smoke competition first: ${CLEANUP_COMMAND}`
 		).not.toContain(COMPETITION_NAME)
 	})
 
@@ -94,6 +102,11 @@ test("a deployed AEMS server runs a competition end to end", async ({
 		await expect(page.getByText("Competition uploaded")).toBeVisible({
 			timeout: 60000
 		})
+		// Printed as soon as the competition exists, so a later failure still
+		// says how to remove it.
+		console.log(
+			`Remove the smoke competition afterwards with:\n  ${CLEANUP_COMMAND}`
+		)
 	})
 
 	const competition = (
