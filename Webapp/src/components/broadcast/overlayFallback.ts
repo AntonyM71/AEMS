@@ -124,8 +124,8 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		borderRadius: "4px",
 		backgroundColor: pwBlack,
 		backgroundImage: [
-			`linear-gradient(90deg, ${pwOrange} 0%, ${pwOrange} 28%, rgba(255, 90, 0, 0) 75%)`,
-			`linear-gradient(160deg, ${pwBlack75} 0%, ${pwBlack} 45%, ${pwBlack} 100%)`
+			`linear-gradient(90deg, ${pwOrange} 0%, ${pwOrange} 28%, transparent 75%)`,
+			`linear-gradient(160deg, ${pwBlack75} 0%, ${pwBlack} 45%)`
 		].join(", "),
 		backgroundSize: "100% 5px, 100% 100%",
 		backgroundRepeat: "no-repeat",
@@ -138,29 +138,29 @@ export const overlayFallbackSx: SxProps<Theme> = {
 	},
 	[`${fallback} .MuiTableBody-root`]: {
 		backgroundColor: pwWhite,
-		backgroundImage: `linear-gradient(180deg, ${pwWhite} 0%, ${pwWhite} 35%, ${pwPaleGrey} 100%)`
+		backgroundImage: `linear-gradient(180deg, ${pwWhite} 35%, ${pwPaleGrey} 100%)`
 	},
 	[`${fallback} .MuiTableCell-root:first-of-type`]: { paddingLeft: "20px" },
 
 	[each(titleHeadings)]: {
 		...titleBand,
 		backgroundColor: pwBlack,
-		backgroundImage: `linear-gradient(90deg, ${pwBlack75} 0%, ${pwBlack} 70%, rgba(0, 0, 0, 0) 100%)`
+		backgroundImage: `linear-gradient(90deg, ${pwBlack75} 0%, ${pwBlack} 70%, transparent 100%)`
 	},
 	[each(titleSecondBands)]: {
 		...titleBand,
 		backgroundColor: pwWhite,
-		backgroundImage: `linear-gradient(90deg, ${pwWhite} 0%, ${pwPaleGrey} 70%, rgba(242, 242, 242, 0) 100%)`
+		backgroundImage: `linear-gradient(90deg, ${pwWhite} 0%, ${pwPaleGrey} 70%, transparent 100%)`
 	},
 
 	[each(blackBands)]: {
 		backgroundColor: pwBlack,
-		backgroundImage: `linear-gradient(100deg, ${pwBlack75} 0%, ${pwBlack} 55%, ${pwBlack} 100%)`,
+		backgroundImage: `linear-gradient(100deg, ${pwBlack75} 0%, ${pwBlack} 55%)`,
 		color: "white"
 	},
 	[each(lightBands)]: {
 		backgroundColor: pwWhite,
-		backgroundImage: `linear-gradient(180deg, ${pwWhite} 0%, ${pwWhite} 40%, ${pwPaleGrey} 100%)`,
+		backgroundImage: `linear-gradient(180deg, ${pwWhite} 40%, ${pwPaleGrey} 100%)`,
 		color: pwBlack
 	},
 	[each([...scoreBoxes, ".AemsRunCorner-score"])]: altBox,

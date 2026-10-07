@@ -7,6 +7,7 @@ import { AppProps } from "next/dist/shared/lib/router/router"
 import { useEffect, useMemo } from "react"
 import { Toaster } from "react-hot-toast"
 import { Provider, useDispatch, useSelector } from "react-redux"
+import { pwBrightBlue, pwOrange } from "../components/broadcast/overlayTheme"
 import Header from "../components/header/Header"
 import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 import { setupStore } from "../redux/store"
@@ -29,13 +30,13 @@ const App = ({ children, noLayout }: { children: any; noLayout?: boolean }) => {
 				palette: {
 					mode: preferDark ? "dark" : "light",
 					primary: {
-						main: "#FF5A00",
+						main: pwOrange,
 						// MUI's contrast threshold would pick white, which is only
 						// 3.1:1 on this orange.
 						contrastText: "#000"
 					},
 					secondary: {
-						main: preferDark ? "#00DCFF" : "#00145A"
+						main: preferDark ? pwBrightBlue : "#00145A"
 					},
 					error: {
 						main: preferDark ? "#ff4ab3" : "#fc0085"
