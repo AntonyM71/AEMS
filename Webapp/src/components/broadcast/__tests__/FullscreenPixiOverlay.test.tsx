@@ -89,14 +89,14 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 			</ThemeProvider>
 		)
 
-		const name = await screen.findByText("Robert GEARY")
-		await waitFor(() =>
+		await waitFor(() => {
+			const name = screen.getByText("Robert GEARY")
 			// eslint-disable-next-line testing-library/no-node-access
 			expect(name.closest(".AemsOverlay-fallback")).toHaveAttribute(
 				"data-visible",
 				"true"
 			)
-		)
+		})
 		// eslint-disable-next-line testing-library/no-node-access
 		expect(document.querySelector(".AemsAthleteOverview-runs")).toHaveStyle(
 			{
