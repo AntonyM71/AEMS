@@ -47,11 +47,47 @@ const staggeredTitleSecondBands = [
 const navyBands = [
 	".AemsAthleteOverview-name",
 	".AemsRunCorner-name",
-	".AemsRunCorner-event"
+	".AemsRunCorner-event",
+	".AemsEventSlate-event",
+	".AemsHeatGrid-heat",
+	".AemsHeatGrid-onWater",
+	".AemsHeatGrid-page",
+	".AemsLeaderboard-event",
+	".AemsLeaderboard-rank",
+	".AemsLeaderboard-page"
 ]
-const lightBands = [".AemsAthleteOverview-runs", ".AemsRunCorner-clock"]
-const scoreBoxes = [".AemsAthleteOverview-bib", ".AemsAthleteOverview-total"]
-const lowerThirdPanels = [...navyBands, ...lightBands, ...scoreBoxes]
+const lightBands = [
+	".AemsAthleteOverview-runs",
+	".AemsRunCorner-clock",
+	".AemsEventSlate-format",
+	".AemsHeatGrid-context",
+	".AemsHeatGrid-athlete",
+	".AemsLeaderboard-format",
+	".AemsLeaderboard-athlete",
+	".AemsLeaderboard-run"
+]
+const scoreBoxes = [
+	".AemsAthleteOverview-bib",
+	".AemsAthleteOverview-total",
+	".AemsEventSlate-phase",
+	".AemsHeatGrid-bib",
+	".AemsLeaderboard-phase",
+	".AemsLeaderboard-total"
+]
+// Strips of small context text: the competition name and column headings.
+const deepStrips = [".AemsEventSlate-competition", ".AemsLeaderboard-columns"]
+const lowerThirdPanels = [
+	...navyBands,
+	...lightBands,
+	...scoreBoxes,
+	...deepStrips
+]
+// These panels carry an inline --i, their order on screen, and wipe in one
+// after another. They all leave together, so the exit time is unchanged.
+const staggeredPanels = lowerThirdPanels.filter((panel) =>
+	/AemsEventSlate|AemsHeatGrid|AemsLeaderboard/.test(panel)
+)
+const STAGGER_MS = 70
 
 const panels = (root: string, suffix = ""): string =>
 	[card, ...titleHeadings, ...titleSecondBands, ...lowerThirdPanels]
@@ -126,6 +162,14 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		color: icfDarkBlue
 	},
 	[each([...scoreBoxes, ".AemsRunCorner-score"])]: altBox,
+	[each(deepStrips)]: {
+		backgroundColor: icfNavyDeep,
+		color: icfTint
+	},
+	[`${fallback} .AemsHeatGrid-onWaterLabel`]: { color: "#49b3e6" },
+	[`${fallback} .AemsLeaderboard-run`]: {
+		borderLeft: `2px solid ${icfTint}`
+	},
 	[each(navyBands.map((band) => `${band} .AemsAffiliationPill`))]: {
 		color: icfTint
 	},
@@ -142,7 +186,11 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		...altBox,
 		borderRightColor: "transparent"
 	},
-	[each([".AemsAthleteOverview-muted", ".AemsCompetitionOverview-past"])]: {
+	[each([
+		".AemsAthleteOverview-muted",
+		".AemsCompetitionOverview-past",
+		".AemsLeaderboard-dropped"
+	])]: {
 		color: "#7a8aa3"
 	},
 
@@ -160,6 +208,9 @@ export const overlayFallbackSx: SxProps<Theme> = {
 	[each(staggeredTitleSecondBands, shown)]: {
 		transitionDelay: "90ms"
 	},
+	[each(staggeredPanels, shown)]: {
+		transitionDelay: `calc(var(--i, 0) * ${STAGGER_MS}ms)`
+	},
 	[panels(fallback, " > *")]: {
 		opacity: 0,
 		transition: "opacity 160ms ease-in"
@@ -167,6 +218,13 @@ export const overlayFallbackSx: SxProps<Theme> = {
 	[panels(shown, " > *")]: {
 		opacity: 1,
 		transition: `opacity ${TEXT_IN_MS}ms ease-out ${TEXT_IN_DELAY_MS}ms`
+	},
+
+	[each(
+		staggeredPanels.map((panel) => `${panel} > *`),
+		shown
+	)]: {
+		transitionDelay: `calc(${TEXT_IN_DELAY_MS}ms + var(--i, 0) * ${STAGGER_MS}ms)`
 	},
 
 	"@media (prefers-reduced-motion: reduce)": {

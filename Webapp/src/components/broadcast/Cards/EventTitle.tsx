@@ -17,25 +17,21 @@ import {
 } from "../../../redux/services/aemsApi"
 import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
 import { AemsEventTitleThemeProps } from "../themeAugmentation"
+import { EventTitleSlate } from "./EventTitleSlate"
 
 export const EventTitleModal = ({ isVisible }: { isVisible: boolean }) => (
-	<FullscreenPixiOverlay configName="eventTitle" isVisible={isVisible}>
+	<FullscreenPixiOverlay
+		configName="eventTitle"
+		isVisible={isVisible}
+		fallbackContent={<EventTitleSlate />}
+	>
 		<EventTitle />
 	</FullscreenPixiOverlay>
 )
 
-// One layout for both surfaces. The overlay's theme positions the two text
-// groups absolutely over its background art and picks the smaller type scale;
-// the arena's theme leaves them in normal flow inside a dark panel.
-export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
-	const {
-		titleVariant = "h1",
-		detailVariant = "h4",
-		headingSx = {},
-		runsSx = {},
-		stackSpacing = 2
-	} = useThemeProps({ props: inProps, name: "AemsEventTitle" })
-
+/** The selected competition, event and phase, or undefined until all three
+ * have loaded. */
+export const useEventTitle = () => {
 	const selectedCompetition = useSelector(getSelectedCompetition)
 	const { data: competitionData } = useGetManyCompetitionGetQuery(
 		{
@@ -58,6 +54,32 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
 	)
 	if (!competitionData || !phaseData || !eventData) {
+		return undefined
+	}
+
+	return {
+		competitionName: competitionData[0].name,
+		eventName: eventData.name,
+		phaseName: phaseData.name,
+		runs: phaseData.number_of_runs,
+		scoringRuns: phaseData.number_of_runs_for_score
+	}
+}
+
+// One layout for both surfaces. The overlay's theme positions the two text
+// groups absolutely over its background art and picks the smaller type scale;
+// the arena's theme leaves them in normal flow inside a dark panel.
+export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
+	const {
+		titleVariant = "h1",
+		detailVariant = "h4",
+		headingSx = {},
+		runsSx = {},
+		stackSpacing = 2
+	} = useThemeProps({ props: inProps, name: "AemsEventTitle" })
+
+	const title = useEventTitle()
+	if (!title) {
 		return null
 	}
 
@@ -76,7 +98,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 						variant={titleVariant}
 						sx={{ color: "text.primary" }}
 					>
-						{competitionData[0].name}
+						{title.competitionName}
 					</Typography>
 					<Box
 						sx={{
@@ -93,7 +115,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 								color: "text.primary"
 							}}
 						>
-							{`Event : ${eventData.name}`}
+							{`Event : ${title.eventName}`}
 						</Typography>
 						<Typography
 							variant={detailVariant}
@@ -102,7 +124,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 								color: "text.primary"
 							}}
 						>
-							{`Phase : ${phaseData.name}`}
+							{`Phase : ${title.phaseName}`}
 						</Typography>
 					</Box>
 				</Box>
@@ -123,7 +145,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 							color: "text.secondary"
 						}}
 					>
-						{`Runs : ${phaseData.number_of_runs}`}
+						{`Runs : ${title.runs}`}
 					</Typography>
 					<Typography
 						variant={detailVariant}
@@ -132,7 +154,7 @@ export const EventTitle = (inProps: AemsEventTitleThemeProps = {}) => {
 							color: "text.secondary"
 						}}
 					>
-						{`Scoring Runs : ${phaseData.number_of_runs_for_score}`}
+						{`Scoring Runs : ${title.scoringRuns}`}
 					</Typography>
 				</Box>
 			</Stack>

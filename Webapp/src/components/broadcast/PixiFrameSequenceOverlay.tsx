@@ -31,6 +31,8 @@ export interface PixiFrameSequenceOverlayProps {
 	holdImage?: number | string
 	isVisible: boolean
 	children?: ReactNode
+	/** Shown in place of `children` while the overlay is in fallback mode. */
+	fallbackContent?: ReactNode
 	fps?: number
 	fileNamePrefix?: string
 	fileNamePadding?: number
@@ -111,6 +113,7 @@ const PixiFrameSequenceOverlay = ({
 	holdImage,
 	isVisible,
 	children,
+	fallbackContent,
 	fps,
 	fileNamePrefix,
 	fileNamePadding,
@@ -655,7 +658,9 @@ const PixiFrameSequenceOverlay = ({
 					pointerEvents: "none"
 				}}
 			>
-				{children}
+				{isFallback && fallbackContent !== undefined
+					? fallbackContent
+					: children}
 			</div>
 		</div>
 	)

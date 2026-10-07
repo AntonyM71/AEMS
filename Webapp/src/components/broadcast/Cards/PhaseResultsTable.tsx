@@ -11,6 +11,7 @@ import {
 } from "../../../redux/atoms/competitions"
 import {
 	AthleteScoresWithAthleteInfo,
+	PhaseResponse,
 	useGetOneByPrimaryKeyEventIdGetQuery,
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
@@ -24,17 +25,13 @@ interface PhaseScoreTableProps extends AemsPhaseResultsThemeProps {
 	isVisible?: boolean
 }
 
-export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
-	const {
-		overlayControlState,
-		isVisible = true,
-		titleAlign = "space-between",
-		spacerHeight,
-		detailRows = "single"
-	} = useThemeProps({ props: inProps, name: "AemsPhaseResults" })
-
+/** The selected phase, its event's name and its athletes' scores. Scores
+ * refetch each time phase results are switched on. */
+export const usePhaseLeaderboard = (
+	overlayControlState: OverlayControlState
+) => {
 	const selectedPhase = useSelector(getSelectedPhase)
-	const { data, refetch: refetchPhase } =
+	const { data: phase, refetch: refetchPhase } =
 		useGetOneByPrimaryKeyPhaseIdGetQuery(
 			{
 				id: selectedPhase
@@ -48,13 +45,33 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 			},
 			{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
 		)
+	const selectedEvent = useSelector(getSelectedEvent)
+	const { data: eventData } = useGetOneByPrimaryKeyEventIdGetQuery(
+		{ id: selectedEvent },
+		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
+	)
 	useEffect(() => {
 		if (overlayControlState.showPhaseResults) {
 			void refetchPhase()
 			void refetchScores()
 		}
 	}, [overlayControlState.showPhaseResults])
-	if (!isVisible || !data || !scoreData) {
+
+	return { phase, eventName: eventData?.name, scores: scoreData?.scores }
+}
+
+export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
+	const {
+		overlayControlState,
+		isVisible = true,
+		titleAlign = "space-between",
+		spacerHeight,
+		detailRows = "single"
+	} = useThemeProps({ props: inProps, name: "AemsPhaseResults" })
+
+	const { phase, eventName, scores } =
+		usePhaseLeaderboard(overlayControlState)
+	if (!isVisible || !phase || !scores) {
 		return <></>
 	}
 
@@ -64,18 +81,18 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 			sx={{ margin: "16px auto", position: "relative" }}
 		>
 			<Stack spacing={2}>
-				<PhaseDetails titleAlign={titleAlign} detailRows={detailRows} />
+				<PhaseDetails
+					titleAlign={titleAlign}
+					detailRows={detailRows}
+					phase={phase}
+					eventName={eventName}
+				/>
 				{/* A rule on the arena; invisible artwork clearance on the
 				    overlay, where the theme zeroes dividers and the height
 				    comes from AemsPhaseResults.spacerHeight. */}
 				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
-					data={
-						processScoresData(
-							scoreData.scores,
-							data?.number_of_runs ?? 3
-						) ?? []
-					}
+					data={processScoresData(scores, phase.number_of_runs)}
 					pageChangeTime={5}
 				/>
 			</Stack>
@@ -84,26 +101,20 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 }
 const PhaseDetails = ({
 	titleAlign,
-	detailRows
-}: Required<Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">>) => {
-	const selectedPhase = useSelector(getSelectedPhase)
-	const { data: phaseData } = useGetOneByPrimaryKeyPhaseIdGetQuery(
-		{ id: selectedPhase },
-		{ refetchOnMountOrArgChange: true, skip: !selectedPhase }
-	)
-	const selectedEvent = useSelector(getSelectedEvent)
-	const { data: eventData } = useGetOneByPrimaryKeyEventIdGetQuery(
-		{ id: selectedEvent },
-		{ refetchOnMountOrArgChange: true, skip: !selectedEvent }
-	)
-
+	detailRows,
+	phase,
+	eventName
+}: Required<Pick<AemsPhaseResultsThemeProps, "titleAlign" | "detailRows">> & {
+	phase: PhaseResponse
+	eventName?: string
+}) => {
 	const eventPhase = (
 		<>
 			<Typography variant="h5" sx={{ color: "text.primary" }}>
-				{eventData?.name}
+				{eventName}
 			</Typography>
 			<Typography variant="h5" sx={{ color: "text.primary" }}>
-				{phaseData?.name}
+				{phase.name}
 			</Typography>
 		</>
 	)
@@ -112,9 +123,7 @@ const PhaseDetails = ({
 			variant="h5"
 			sx={{ color: "text.primary", fontWeight: 400 }}
 		>
-			{phaseData?.number_of_runs
-				? `Runs: ${phaseData.number_of_runs}`
-				: null}
+			{phase.number_of_runs ? `Runs: ${phase.number_of_runs}` : null}
 		</Typography>
 	)
 	const row = (children: React.ReactNode, className: string) => (

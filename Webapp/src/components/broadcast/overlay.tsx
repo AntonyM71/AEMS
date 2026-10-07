@@ -32,6 +32,7 @@ const Overlay: OverlayComponent = () => {
 				/>
 				<HeatListModal
 					isVisible={overlayControlState.showHeatSummary}
+					selectedAthleteId={overlayControlState.selectedAthlete?.id}
 				/>
 				<PhaseResultsModal
 					isVisible={overlayControlState.showPhaseResults}

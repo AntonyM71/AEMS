@@ -33,7 +33,7 @@ const hexToRgb = (hex: string): string => {
 // The fallback backdrop targets card class names; if a card refactor renames
 // them, the panels silently vanish on air. This test renders a real card to catch it.
 describe("FullscreenPixiOverlay fallback backdrop", () => {
-	it("puts the heat summary's rows on a light ICF panel when the graphics server is down", async () => {
+	it("puts the heat summary's athletes on light ICF bands when the graphics server is down", async () => {
 		server.use(
 			http.get(
 				"/componentInfo/startList",
@@ -55,11 +55,8 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 			expect(fallbackRoot).toHaveAttribute("data-visible", "true")
 		)
 
-		// Only the table body is asserted: jsdom resolves styles by source order,
-		// not specificity, so the card's navy loses to MUI's later Paper rule here
-		// even though it wins in a browser.
 		// eslint-disable-next-line testing-library/no-node-access
-		expect(athleteCell.closest("tbody")).toHaveStyle({
+		expect(athleteCell.closest(".AemsHeatGrid-athlete")).toHaveStyle({
 			backgroundColor: hexToRgb(icfWhite)
 		})
 	})
