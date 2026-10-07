@@ -26,5 +26,5 @@
 
 - [x] 5.1 Update the heat-summary case in `FullscreenPixiOverlay.test.tsx` and any `Overlay.test.tsx` lookups that relied on the fallback table; verify `npm test` passes in `Webapp/`
 - [x] 5.2 Check the arena and pack-art overlays are unchanged: `overlayCardStyling.test.tsx` and the arena tests pass without edits
-- [ ] 5.3 Run `npm run precommit` in `Webapp/` (tsc, lint, prettier) and fix any issues
+- [x] 5.3 Run `npm run precommit` in `Webapp/` (tsc, lint, prettier) and fix any issues
 - [x] 5.4 With the graphics server stopped, show each of the three overlays from the controller at 1920×1080 and compare against the mockup (https://claude.ai/artifact/GTgzaYTgUE1iZg6toYDaDb), including the entrance and exit wipe
