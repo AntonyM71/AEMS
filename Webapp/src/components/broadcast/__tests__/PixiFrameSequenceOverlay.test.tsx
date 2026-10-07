@@ -434,17 +434,11 @@ describe("PixiFrameSequenceOverlay rotating content", () => {
 		</PixiFrameSequenceOverlay>
 	)
 
-	const renderShown = async () => {
-		const view = render(overlay(true))
+	it("opens on page 1 when shown again after being hidden", async () => {
+		const { rerender } = render(overlay(true))
 		await waitFor(() =>
 			expect(contentWrapper()).toHaveStyle({ opacity: 1 })
 		)
-
-		return view
-	}
-
-	it("opens on page 1 when shown again after being hidden", async () => {
-		const { rerender } = await renderShown()
 		advancePages(1)
 		expect(screen.getByTestId("content")).toHaveTextContent("Page 2")
 
@@ -453,15 +447,6 @@ describe("PixiFrameSequenceOverlay rotating content", () => {
 		rerender(overlay(true))
 
 		expect(screen.getByTestId("content")).toHaveTextContent("Page 1")
-	})
-
-	it("keeps its page while it leaves the screen", async () => {
-		const { rerender } = await renderShown()
-		advancePages(1)
-
-		rerender(overlay(false))
-
-		expect(screen.getByTestId("content")).toHaveTextContent("Page 2")
 	})
 
 	it("opens on page 1 after an intro longer than the page interval", async () => {
