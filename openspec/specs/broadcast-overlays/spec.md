@@ -148,32 +148,36 @@ A `PixiFrameSequenceOverlay` SHALL enter fallback mode when its graphics cannot 
 - **WHEN** `isVisible` changes from true to false while the overlay is in fallback mode
 - **THEN** the wrapped content is hidden
 
-### Requirement: Fullscreen overlays draw ICF-coloured fallback backdrops that contrast with their text
-In fallback mode, the fullscreen broadcast overlays (event title, heat summary, phase results, athlete overview, run corner, competition overview) SHALL draw their own backdrops with plain page styling and no external assets. The backdrops SHALL use ICF colours with simple gradients. Every line of overlay text SHALL sit on a panel it contrasts with over any live video: white text on a dark ICF-blue panel, and dark-blue text on a light panel or on a box in the alternate colour.
+### Requirement: Fullscreen overlays draw Paddle Worldwide-coloured fallback backdrops that contrast with their text
+In fallback mode, the fullscreen broadcast overlays (event title, heat summary, phase results, athlete overview, run corner, competition overview) SHALL draw their own backdrops with plain page styling and no external assets. The backdrops SHALL use the Paddle Worldwide primary colours, orange and black, with simple gradients and the brand's tints. The alternate colour SHALL be Paddle Worldwide orange. Every line of overlay text SHALL sit on a panel it contrasts with over any live video: white text on a black panel, and black text on a light panel or on a box in the alternate colour.
 
 #### Scenario: Scoreboard overlay in fallback mode
 - **WHEN** the heat summary or phase results overlay is visible in fallback mode
-- **THEN** its heading is drawn on a dark ICF-blue band, its page count (when it has more than one page) on a dark ICF-blue panel, and each athlete's name on a light panel unless they are the athlete on the water
+- **THEN** its heading is drawn on a black band, its page count (when it has more than one page) on a black panel, and each athlete's name on a light panel unless they are the athlete on the water
 
 #### Scenario: Heat summary in fallback mode
 - **WHEN** the heat summary overlay is visible in fallback mode
-- **THEN** the heat name is drawn on a dark ICF-blue band and the event and phase names on a light band beside it; each athlete's bib is drawn in a tile of the alternate colour, and their name and affiliation on a light band, or on a dark ICF-blue band for the athlete on the water
+- **THEN** the heat name is drawn on a black band and the event and phase names on a light band beside it; each athlete's bib is drawn in a tile of the alternate colour, and their name and affiliation on a light band, or on a black band for the athlete on the water
 
 #### Scenario: Phase results in fallback mode
 - **WHEN** the phase results overlay is visible in fallback mode
-- **THEN** the event name is drawn on a dark ICF-blue band, the phase name in a tile of the alternate colour and the run format on a light band; each row's rank is drawn on a dark ICF-blue tile, its name, affiliation and run scores on a light panel, and its total in a box of the alternate colour
+- **THEN** the event name is drawn on a black band, the phase name in a tile of the alternate colour and the run format on a light band; each row's rank is drawn on a black tile, its name, affiliation and run scores on a light panel, and its total in a box of the alternate colour
 
 #### Scenario: Event title in fallback mode
 - **WHEN** the event title overlay is visible in fallback mode
-- **THEN** the competition name is drawn on a dark strip, the event name on a dark ICF-blue band, the phase name in a tile of the alternate colour, and the run format on a light band
+- **THEN** the competition name is drawn on a dark strip, the event name on a black band, the phase name in a tile of the alternate colour, and the run format on a light band
 
 #### Scenario: Lower third in fallback mode
 - **WHEN** the athlete overview or run corner is visible in fallback mode
-- **THEN** its name and event rows are drawn on a dark ICF-blue panel, its run or clock row on a light panel, and its bib tile and score box in the alternate colour
+- **THEN** its name and event rows are drawn on a black panel, its run or clock row on a light panel, and its bib tile and score box in the alternate colour
 
 #### Scenario: Competition overview in fallback mode
 - **WHEN** the competition overview is visible in fallback mode
-- **THEN** the competition name is drawn on a dark ICF-blue band, the rail of events or heats on a light band, and the current entry in the alternate colour
+- **THEN** the competition name is drawn on a black band, the rail of events or heats on a light band, and the current entry in the alternate colour
+
+#### Scenario: Text on the alternate colour
+- **WHEN** a bib tile, phase tile, total or live-score box is drawn in the alternate colour
+- **THEN** its text is black, not white
 
 ### Requirement: Fallback layouts apply only in fallback mode
 The event title, heat summary and phase results SHALL use the fallback layouts described in this spec only while their overlay is in fallback mode. When the overlay plays its graphics-pack frame sequence, and on the arena, they SHALL keep their existing layout and text.
@@ -235,11 +239,11 @@ In fallback mode, the heat summary SHALL show a header with the heat name, and t
 - **THEN** the first page shows the first 10 athletes with "Page 1/2", and after the page interval the last 2 with "Page 2/2"
 
 ### Requirement: The fallback heat summary marks the athlete on the water
-In fallback mode, when the overlay's selected athlete is in the heat being shown, the heat summary SHALL draw that athlete's tile on a dark ICF-blue band labelled "On the water". No other tile SHALL carry the label.
+In fallback mode, when the overlay's selected athlete is in the heat being shown, the heat summary SHALL draw that athlete's tile on a black band labelled "On the water", with the label in Paddle Worldwide Bright Blue. No other tile SHALL carry the label.
 
 #### Scenario: Selected athlete in this heat
 - **WHEN** the selected athlete is in the heat and the heat summary is visible in fallback mode
-- **THEN** only that athlete's tile is drawn on a dark ICF-blue band and labelled "On the water"
+- **THEN** only that athlete's tile is drawn on a black band and labelled "On the water" in Bright Blue
 
 #### Scenario: No athlete selected
 - **WHEN** no athlete is selected, or the selected athlete is in another heat
@@ -416,7 +420,7 @@ When the competition overview's list has more than 8 entries, the rail SHALL sho
 - **THEN** the rail shows "Heat 5" to "Heat 12" and the note "5–12 of 12"
 
 ### Requirement: The competition overview uses frame-sequence graphics with a fallback backdrop
-The competition overview SHALL be presented through a fullscreen frame-sequence overlay with the graphics-pack config `competitionOverview`, and in fallback mode SHALL draw its own ICF-coloured backdrop with no external assets.
+The competition overview SHALL be presented through a fullscreen frame-sequence overlay with the graphics-pack config `competitionOverview`, and in fallback mode SHALL draw its own Paddle Worldwide-coloured backdrop with no external assets.
 
 #### Scenario: No graphics pack for the competition overview
 - **WHEN** the graphics server has no `competitionOverview` config and the operator shows the competition overview
@@ -495,7 +499,7 @@ The time remaining, the bar and the live run score SHALL update as the timer and
 - **THEN** the seconds and the bar are drawn in the warning colour
 
 ### Requirement: The athlete overview and run corner use frame-sequence graphics with fallback backdrops
-The athlete overview and run corner SHALL each be presented through a fullscreen frame-sequence overlay, with graphics-pack configs named `athleteOverview` and `runCorner` respectively. In fallback mode, each SHALL draw ICF-coloured backdrops with no external assets: the name rows and the run corner's event row on a dark ICF-blue panel, the overview's run row and the corner's clock row on a light panel, and the bib tile and the total and live-score boxes in the alternate colour.
+The athlete overview and run corner SHALL each be presented through a fullscreen frame-sequence overlay, with graphics-pack configs named `athleteOverview` and `runCorner` respectively. In fallback mode, each SHALL draw Paddle Worldwide-coloured backdrops with no external assets: the name rows and the run corner's event row on a black panel, the overview's run row and the corner's clock row on a light panel, and the bib tile and the total and live-score boxes in the alternate colour.
 
 #### Scenario: No graphics pack for the athlete overview
 - **WHEN** the graphics server has no `athleteOverview` config and the operator shows the athlete overview
