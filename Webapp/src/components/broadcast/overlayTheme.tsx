@@ -1,9 +1,10 @@
 import { createTheme } from "@mui/material/styles"
 import "@mui/x-data-grid/themeAugmentation"
 import "./themeAugmentation"
-export const icfLightBlue = "rgb(28, 154, 215)"
-export const icfDarkBlue = "rgb(12, 40, 80)"
-export const icfWhite = "#f8f9fc"
+export const pwOrange = "#FF5A00"
+export const pwBlack = "#000000"
+export const pwWhite = "#FFFFFF"
+export const pwBrightBlue = "#00DCFF"
 // Shared by the table and its card so they stay registered with the same
 // width of background artwork.
 const scoreboardCardMaxWidth = 1150
@@ -12,10 +13,10 @@ export const lightTheme = createTheme({
 	palette: {
 		mode: "dark", // Aero Glass had a translucent dark aesthetic
 		primary: {
-			main: "#d88225" // Soft glowing blue from Windows Vista's highlights
+			main: pwOrange
 		},
 		secondary: {
-			main: "#008a73" // A lighter cyan for accents
+			main: pwBrightBlue
 		},
 
 		background: {
@@ -27,13 +28,13 @@ export const lightTheme = createTheme({
 			// Card headings sit on dark artwork; body copy and table rows sit
 			// on the light scoreboard panels.
 			primary: "white",
-			secondary: icfDarkBlue
+			secondary: pwBlack
 		}
 	},
 	typography: {
 		fontFamily: "'Roboto', sans-serif",
 		allVariants: {
-			color: icfDarkBlue
+			color: pwBlack
 		},
 		h1: {
 			fontSize: "3.5rem", // Largest for TV
@@ -172,9 +173,9 @@ export const lightTheme = createTheme({
 		MuiTableCell: {
 			styleOverrides: {
 				root: {
-					// The blue rule under each row is part of the overlay's
+					// The rule under each row is part of the overlay's
 					// scoreboard artwork; head and footer opt out below.
-					borderBottom: "1px solid #1976d2",
+					borderBottom: "1px solid #BFBFBF",
 					height: 61,
 					padding: 0,
 					margin: 0,
@@ -184,7 +185,7 @@ export const lightTheme = createTheme({
 					// gone. Head and footer raise this to bold below.
 					fontWeight: 500,
 					lineHeight: "61px",
-					color: icfDarkBlue
+					color: pwBlack
 				}
 			}
 		},
@@ -302,7 +303,7 @@ export const lightTheme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
-					color: icfDarkBlue,
+					color: pwBlack,
 					// The heat name sits inside the frame's top-right title box.
 					"&.AemsHeatSummary-title": {
 						fontWeight: 700,

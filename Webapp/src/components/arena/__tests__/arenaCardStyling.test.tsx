@@ -26,12 +26,12 @@ const renderArena = (ui: React.ReactElement) =>
 
 describe("arena card styling", () => {
 	describe("HeatSummaryTable", () => {
-		it("renders an opaque dark card, not a transparent overlay card", async () => {
+		it("renders an opaque dark grey card, not a transparent overlay card", async () => {
 			renderArena(<HeatSummaryTable />)
 			const heading = await screen.findByText("Test Heat")
 
 			expect(closestPaper(heading)).toHaveStyle({
-				backgroundColor: "rgb(34, 34, 34)",
+				backgroundColor: "rgb(64, 64, 64)",
 				borderRadius: "8px"
 			})
 		})
@@ -88,7 +88,7 @@ describe("arena card styling", () => {
 
 			expect(cell).not.toHaveStyle({ height: "61px" })
 			expect(cell).not.toHaveStyle({
-				borderBottom: "1px solid #1976d2"
+				borderBottom: "1px solid #BFBFBF"
 			})
 			expect(cell).toHaveStyle({ fontSize: "2rem" })
 		})

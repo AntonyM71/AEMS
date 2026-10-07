@@ -29,10 +29,13 @@ const App = ({ children, noLayout }: { children: any; noLayout?: boolean }) => {
 				palette: {
 					mode: preferDark ? "dark" : "light",
 					primary: {
-						main: preferDark ? "#fd9d50" : "#f77b00"
+						main: "#FF5A00",
+						// MUI's contrast threshold would pick white, which is only
+						// 3.1:1 on this orange.
+						contrastText: "#000"
 					},
 					secondary: {
-						main: preferDark ? "#4db7fe" : "#08a7fd"
+						main: preferDark ? "#00DCFF" : "#00145A"
 					},
 					error: {
 						main: preferDark ? "#ff4ab3" : "#fc0085"

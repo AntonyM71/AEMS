@@ -7,7 +7,7 @@ import { AthleteOverviewModal } from "../Cards/AthleteOverview"
 import { CompetitionOverviewModal } from "../Cards/CompetitionOverview"
 import { HeatListModal } from "../Cards/HeatListModal"
 import { defaultOverlayControllerState } from "../../Interfaces"
-import { icfWhite, lightTheme } from "../overlayTheme"
+import { lightTheme, pwBlack, pwOrange, pwWhite } from "../overlayTheme"
 
 jest.mock(
 	"next/dynamic",
@@ -33,7 +33,7 @@ const hexToRgb = (hex: string): string => {
 // The fallback backdrop targets card class names; if a card refactor renames
 // them, the panels silently vanish on air. This test renders a real card to catch it.
 describe("FullscreenPixiOverlay fallback backdrop", () => {
-	it("puts the heat summary's athletes on light ICF bands when the graphics server is down", async () => {
+	it("puts the heat summary's athletes on light bands when the graphics server is down", async () => {
 		server.use(
 			http.get(
 				"/componentInfo/startList",
@@ -57,11 +57,11 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 
 		// eslint-disable-next-line testing-library/no-node-access
 		expect(athleteCell.closest(".AemsHeatGrid-athlete")).toHaveStyle({
-			backgroundColor: hexToRgb(icfWhite)
+			backgroundColor: hexToRgb(pwWhite)
 		})
 	})
 
-	it("puts the athlete overview's runs on a light ICF panel when the graphics server is down", async () => {
+	it("puts the athlete overview's runs on a light panel and its total on orange in fallback", async () => {
 		server.use(
 			http.get(
 				"/componentInfo/athleteOverview",
@@ -100,12 +100,19 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 		// eslint-disable-next-line testing-library/no-node-access
 		expect(document.querySelector(".AemsAthleteOverview-runs")).toHaveStyle(
 			{
-				backgroundColor: hexToRgb(icfWhite)
+				backgroundColor: hexToRgb(pwWhite)
 			}
 		)
+		// eslint-disable-next-line testing-library/no-node-access
+		expect(
+			document.querySelector(".AemsAthleteOverview-total")
+		).toHaveStyle({
+			backgroundColor: hexToRgb(pwOrange),
+			color: hexToRgb(pwBlack)
+		})
 	})
 
-	it("puts the competition overview's rail on a light ICF band when the graphics server is down", async () => {
+	it("puts the competition overview's rail on a light band when the graphics server is down", async () => {
 		server.use(
 			http.get(
 				"/componentInfo/competitionOverview",
@@ -144,6 +151,6 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 
 		// eslint-disable-next-line testing-library/no-node-access
 		const rail = document.querySelector(".AemsCompetitionOverview-rail")
-		expect(rail).toHaveStyle({ backgroundColor: hexToRgb(icfWhite) })
+		expect(rail).toHaveStyle({ backgroundColor: hexToRgb(pwWhite) })
 	})
 })

@@ -1,15 +1,17 @@
 import { SxProps, Theme } from "@mui/material/styles"
-import { icfDarkBlue, icfLightBlue, icfWhite } from "./overlayTheme"
+import { pwBlack, pwBrightBlue, pwOrange, pwWhite } from "./overlayTheme"
 
 // Backdrops the fullscreen overlays draw in place of their artwork when the
 // graphics server is unavailable. They style the existing card elements, so
 // they follow the overlay theme's two text tones: white headings and footer on
-// navy, dark-blue rows and run counts on a light panel.
+// black, black rows and run counts on a light panel.
 
-const icfNavyLift = "#143f75"
-const icfNavyDeep = "#071830"
-const icfMist = "#e3eef7"
-const icfTint = "#cfe6f5"
+const pwBlack75 = "#404040"
+const pwBlack50 = "#808080"
+const pwBlack25 = "#BFBFBF"
+const pwOrange75 = "#FF8340"
+const pwOrange25 = "#FFD6BF"
+const pwPaleGrey = "#F2F2F2"
 
 const WIPE_MS = 420
 const WIPE_OUT_DELAY_MS = 140
@@ -29,7 +31,7 @@ const CLIP_SHOWN = "polygon(-8% -12%, 116% -12%, 108% 112%, -8% 112%)"
 const fallback = "& .AemsOverlay-fallback"
 const shown = '& .AemsOverlay-fallback[data-visible="true"]'
 const card = ".AemsTableCard-root"
-// Title graphics: a navy heading band with a light band beneath that wipes in
+// Title graphics: a black heading band with a light band beneath that wipes in
 // just after it.
 const titleHeadings = [
 	".AemsEventTitle-heading",
@@ -44,7 +46,7 @@ const staggeredTitleSecondBands = [
 	".AemsEventTitle-root .AemsEventTitle-runs",
 	".AemsCompetitionOverview-root .AemsCompetitionOverview-rail"
 ]
-const navyBands = [
+const blackBands = [
 	".AemsAthleteOverview-name",
 	".AemsRunCorner-name",
 	".AemsRunCorner-event",
@@ -77,7 +79,7 @@ const scoreBoxes = [
 // Strips of small context text: the competition name and column headings.
 const deepStrips = [".AemsEventSlate-competition", ".AemsLeaderboard-columns"]
 const lowerThirdPanels = [
-	...navyBands,
+	...blackBands,
 	...lightBands,
 	...scoreBoxes,
 	...deepStrips
@@ -97,15 +99,15 @@ const each = (selectors: string[], root = fallback): string =>
 	selectors.map((selector) => `${root} ${selector}`).join(", ")
 
 const altBox = {
-	backgroundColor: icfLightBlue,
-	backgroundImage: `linear-gradient(180deg, #49b3e6 0%, ${icfLightBlue} 100%)`,
-	color: icfDarkBlue
+	backgroundColor: pwOrange,
+	backgroundImage: `linear-gradient(180deg, ${pwOrange75} 0%, ${pwOrange} 100%)`,
+	color: pwBlack
 }
 
 const titleBand = {
 	marginLeft: "-1.5rem",
 	padding: "0.9rem 9rem 0.9rem 1.5rem",
-	boxShadow: `inset 8px 0 0 ${icfLightBlue}`
+	boxShadow: `inset 8px 0 0 ${pwOrange}`
 }
 
 export const overlayFallbackSx: SxProps<Theme> = {
@@ -120,61 +122,61 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		width: "100%",
 		padding: "1.25em 1.5em 0",
 		borderRadius: "4px",
-		backgroundColor: icfDarkBlue,
+		backgroundColor: pwBlack,
 		backgroundImage: [
-			`linear-gradient(90deg, ${icfLightBlue} 0%, ${icfLightBlue} 28%, rgba(28, 154, 215, 0) 75%)`,
-			`linear-gradient(160deg, ${icfNavyLift} 0%, ${icfDarkBlue} 45%, ${icfNavyDeep} 100%)`
+			`linear-gradient(90deg, ${pwOrange} 0%, ${pwOrange} 28%, rgba(255, 90, 0, 0) 75%)`,
+			`linear-gradient(160deg, ${pwBlack75} 0%, ${pwBlack} 45%, ${pwBlack} 100%)`
 		].join(", "),
 		backgroundSize: "100% 5px, 100% 100%",
 		backgroundRepeat: "no-repeat",
-		boxShadow: "0 18px 48px rgba(4, 14, 30, 0.45)"
+		boxShadow: "0 18px 48px rgba(0, 0, 0, 0.45)"
 	},
 	[`${fallback} .MuiDivider-root`]: { height: "4px" },
 	[`${fallback} .MuiTableHead-root`]: {
-		backgroundColor: icfTint,
-		backgroundImage: `linear-gradient(90deg, ${icfTint} 0%, ${icfMist} 100%)`
+		backgroundColor: pwOrange25,
+		backgroundImage: `linear-gradient(90deg, ${pwOrange25} 0%, ${pwPaleGrey} 100%)`
 	},
 	[`${fallback} .MuiTableBody-root`]: {
-		backgroundColor: icfWhite,
-		backgroundImage: `linear-gradient(180deg, #ffffff 0%, ${icfWhite} 35%, ${icfMist} 100%)`
+		backgroundColor: pwWhite,
+		backgroundImage: `linear-gradient(180deg, ${pwWhite} 0%, ${pwWhite} 35%, ${pwPaleGrey} 100%)`
 	},
 	[`${fallback} .MuiTableCell-root:first-of-type`]: { paddingLeft: "20px" },
 
 	[each(titleHeadings)]: {
 		...titleBand,
-		backgroundColor: icfDarkBlue,
-		backgroundImage: `linear-gradient(90deg, ${icfNavyLift} 0%, ${icfDarkBlue} 70%, rgba(12, 40, 80, 0) 100%)`
+		backgroundColor: pwBlack,
+		backgroundImage: `linear-gradient(90deg, ${pwBlack75} 0%, ${pwBlack} 70%, rgba(0, 0, 0, 0) 100%)`
 	},
 	[each(titleSecondBands)]: {
 		...titleBand,
-		backgroundColor: icfWhite,
-		backgroundImage: `linear-gradient(90deg, ${icfWhite} 0%, ${icfMist} 70%, rgba(227, 238, 247, 0) 100%)`
+		backgroundColor: pwWhite,
+		backgroundImage: `linear-gradient(90deg, ${pwWhite} 0%, ${pwPaleGrey} 70%, rgba(242, 242, 242, 0) 100%)`
 	},
 
-	[each(navyBands)]: {
-		backgroundColor: icfDarkBlue,
-		backgroundImage: `linear-gradient(100deg, ${icfNavyLift} 0%, ${icfDarkBlue} 55%, ${icfNavyDeep} 100%)`,
+	[each(blackBands)]: {
+		backgroundColor: pwBlack,
+		backgroundImage: `linear-gradient(100deg, ${pwBlack75} 0%, ${pwBlack} 55%, ${pwBlack} 100%)`,
 		color: "white"
 	},
 	[each(lightBands)]: {
-		backgroundColor: icfWhite,
-		backgroundImage: `linear-gradient(180deg, #ffffff 0%, ${icfWhite} 40%, ${icfMist} 100%)`,
-		color: icfDarkBlue
+		backgroundColor: pwWhite,
+		backgroundImage: `linear-gradient(180deg, ${pwWhite} 0%, ${pwWhite} 40%, ${pwPaleGrey} 100%)`,
+		color: pwBlack
 	},
 	[each([...scoreBoxes, ".AemsRunCorner-score"])]: altBox,
 	[each(deepStrips)]: {
-		backgroundColor: icfNavyDeep,
-		color: icfTint
+		backgroundColor: pwBlack,
+		color: pwBlack25
 	},
-	[`${fallback} .AemsHeatGrid-onWaterLabel`]: { color: "#49b3e6" },
+	[`${fallback} .AemsHeatGrid-onWaterLabel`]: { color: pwBrightBlue },
 	[`${fallback} .AemsLeaderboard-run`]: {
-		borderLeft: `2px solid ${icfTint}`
+		borderLeft: `2px solid ${pwBlack25}`
 	},
-	[each(navyBands.map((band) => `${band} .AemsAffiliationPill`))]: {
-		color: icfTint
+	[each(blackBands.map((band) => `${band} .AemsAffiliationPill`))]: {
+		color: pwBlack25
 	},
 	[`${fallback} .AemsAthleteOverview-runs > *`]: {
-		borderRight: `2px solid ${icfTint}`
+		borderRight: `2px solid ${pwBlack25}`
 	},
 	// The backups stack down the left edge: logo, competition overview, then
 	// the event title slate below it.
@@ -183,7 +185,7 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		padding: "0 4rem 0 1.5rem"
 	},
 	[`${fallback} .AemsCompetitionOverview-step`]: {
-		borderRight: `2px solid ${icfTint}`
+		borderRight: `2px solid ${pwBlack25}`
 	},
 	[`${fallback} .AemsCompetitionOverview-current`]: {
 		...altBox,
@@ -194,7 +196,7 @@ export const overlayFallbackSx: SxProps<Theme> = {
 		".AemsCompetitionOverview-past",
 		".AemsLeaderboard-dropped"
 	])]: {
-		color: "#7a8aa3"
+		color: pwBlack50
 	},
 
 	[panels(fallback)]: {

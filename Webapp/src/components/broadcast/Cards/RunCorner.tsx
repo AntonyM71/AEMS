@@ -53,7 +53,7 @@ const RideClock = () => {
 					height: 8,
 					borderRadius: 4,
 					overflow: "hidden",
-					bgcolor: "rgba(12, 40, 80, 0.15)"
+					bgcolor: "rgba(0, 0, 0, 0.15)"
 				}}
 			>
 				<Box
