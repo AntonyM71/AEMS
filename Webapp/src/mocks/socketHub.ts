@@ -13,6 +13,7 @@ export type SocketChannel =
 
 export interface MockSocket {
 	on: jest.Mock
+	once: jest.Mock
 	off: jest.Mock
 	emit: jest.Mock<void, [string, ...unknown[]]>
 	disconnect: jest.Mock
@@ -32,12 +33,17 @@ class SocketHub {
 
 	private readonly echoing = new Set<SocketChannel>()
 
-	private connectsImmediately = true
+	private readonly refusing = new Set<SocketChannel>()
 
 	public connect(channel: SocketChannel): MockSocket {
 		const listeners: Record<string, ((...args: unknown[]) => void)[]> = {}
 		const socket: MockSocket = {
 			on: jest.fn(
+				(event: string, handler: (...args: unknown[]) => void) => {
+					listeners[event] = [...(listeners[event] ?? []), handler]
+				}
+			),
+			once: jest.fn(
 				(event: string, handler: (...args: unknown[]) => void) => {
 					listeners[event] = [...(listeners[event] ?? []), handler]
 				}
@@ -52,7 +58,7 @@ class SocketHub {
 				socket.connected = false
 				socket.active = false
 			}),
-			connected: this.connectsImmediately,
+			connected: !this.refusing.has(channel),
 			active: true,
 			trigger: (event, ...args) =>
 				(listeners[event] ?? []).forEach((handler) => handler(...args))
@@ -62,11 +68,6 @@ class SocketHub {
 		return socket
 	}
 
-	/** Sockets opened from now on stay mid-handshake: active but not connected. */
-	public holdHandshakes(): void {
-		this.connectsImmediately = false
-	}
-
 	/**
 	 * Model the real server: an outbound emit on this channel is broadcast back
 	 * to every subscriber. Opt-in, because most tests assert the client does
@@ -74,6 +75,14 @@ class SocketHub {
 	 */
 	public enableEcho(channel: SocketChannel): void {
 		this.echoing.add(channel)
+	}
+
+	/**
+	 * Model an unreachable server: new sockets on this channel start
+	 * disconnected, so an emit waits for a `connect_error` the test triggers.
+	 */
+	public refuseConnections(channel: SocketChannel): void {
+		this.refusing.add(channel)
 	}
 
 	/** Push an inbound event to every open socket on a channel. */
@@ -122,7 +131,7 @@ class SocketHub {
 			this.sockets[channel] = []
 		})
 		this.echoing.clear()
-		this.connectsImmediately = true
+		this.refusing.clear()
 	}
 }
 
