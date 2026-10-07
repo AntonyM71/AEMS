@@ -5,7 +5,7 @@ import { runFormatText } from "./runFormat"
 const bandSx = { display: "flex", alignItems: "center", whiteSpace: "nowrap" }
 
 /** The event title's backup layout: competition, event and phase, and the run
- * format, in the upper left on the lower third's left edge. */
+ * format, on the left below the competition overview. */
 export const EventTitleSlate = () => {
 	const title = useEventTitle()
 	if (!title) {
@@ -18,7 +18,7 @@ export const EventTitleSlate = () => {
 			sx={{
 				position: "absolute",
 				left: 96,
-				top: 240,
+				top: 460,
 				maxWidth: 1728,
 				display: "grid",
 				justifyItems: "start"

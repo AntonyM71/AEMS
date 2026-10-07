@@ -176,6 +176,9 @@ export const overlayFallbackSx: SxProps<Theme> = {
 	[`${fallback} .AemsAthleteOverview-runs > *`]: {
 		borderRight: `2px solid ${icfTint}`
 	},
+	// The backups stack down the left edge: logo, competition overview, then
+	// the event title slate below it.
+	[`${fallback} .AemsCompetitionOverview-position`]: { top: 200 },
 	[`${fallback} .AemsCompetitionOverview-rail`]: {
 		padding: "0 4rem 0 1.5rem"
 	},

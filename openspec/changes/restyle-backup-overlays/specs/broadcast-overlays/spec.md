@@ -66,12 +66,18 @@ A phase with a single run SHALL use "1 run" in place of "<runs> runs".
 - **WHEN** a phase has 3 runs and 1 scoring run
 - **THEN** the run format reads "3 runs, the best one counts toward the total"
 
-### Requirement: The fallback event title is a slate in the upper left
-In fallback mode, the event title SHALL be placed in the upper left of the frame, on the same left edge as the athlete overview lower third, so the two never overlap. From top to bottom it SHALL show the competition name in a small strip; the event name as the largest text, with the phase name in a tile beside it; and the run-format sentence. It SHALL NOT show "Event :" or "Phase :" labels.
+### Requirement: The fallback event title and competition overview stack down the left edge
+In fallback mode, the competition overview and the event title SHALL be placed down the left edge of the frame, on the same left edge as the athlete overview lower third: the competition overview below the space reserved for the ICF logo, and the event title slate below the competition overview. None of the three, nor the lower third, SHALL overlap another.
+
+From top to bottom, the slate SHALL show the competition name in a small strip; the event name as the largest text, with the phase name in a tile beside it; and the run-format sentence. It SHALL NOT show "Event :" or "Phase :" labels.
 
 #### Scenario: Selected event and phase
 - **WHEN** the event title is visible in fallback mode for the K1 Men semi-final of a 3-run phase with 2 scoring runs
 - **THEN** it shows the competition name, "K1 Men" with "Semi-final" in the tile beside it, and "3 runs, best 2 count toward the total"
+
+#### Scenario: Overview and title shown together
+- **WHEN** the competition overview and the event title are both visible in fallback mode
+- **THEN** the competition overview sits above the event title on the same left edge and neither overlaps the other
 
 ### Requirement: The fallback heat summary lists the heat's athletes in two columns
 In fallback mode, the heat summary SHALL show a header with the heat name, and the event and phase names of the heat's own phase. Below it, the heat's athletes SHALL be shown as tiles in two columns, in the same bib order the heat list uses, filling the first column top to bottom before the second. Each tile SHALL show the athlete's bib, first name, upper-cased last name and affiliation. A page SHALL hold up to 10 athletes; a heat with more SHALL rotate through pages on the same interval as the broadcast table and show the current page and page count.

@@ -275,9 +275,9 @@ const OverlayController: React.FC = () => {
 					},
 					gridTemplateAreas: {
 						xs: `"logo" "overview" "title" "heat" "phase" "athlete" "run"`,
-						md: `"logo . . ." ". . . ." "overview title heat phase" ". . . ." "athlete . . run"`
+						md: `"logo . . ." "overview . heat phase" "title . . ." ". . . ." "athlete . . run"`
 					},
-					gridTemplateRows: { md: "auto 1fr auto 1fr auto" },
+					gridTemplateRows: { md: "auto auto auto 1fr auto" },
 					alignItems: "start",
 					// Tiles sit where their graphic appears on the programme
 					// output, in a frame much squatter than 16:9 to save height.
