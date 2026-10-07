@@ -1,23 +1,14 @@
 import Box from "@mui/material/Box"
 import { dataFontFamily } from "../../../fonts"
-import { RunScores } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
 import { AffiliationPill } from "./AffiliationPill"
 import { usePhaseLeaderboard } from "./PhaseResultsTable"
-import { countingRunNumbers, runFormatText } from "./runFormat"
+import { countingRunNumbers, runFormatText, runLabel } from "./runFormat"
 import { useRotatingPage } from "./useRotatingPage"
 
 const ROWS_PER_PAGE = 8
 const PAGE_CHANGE_SECONDS = 5
 const HEADER_PANELS = 4
-
-const runLabel = (run?: RunScores) => {
-	if (!run) {
-		return "-"
-	}
-
-	return run.did_not_start ? "DNS" : run.mean_run_score.toFixed(2)
-}
 
 const centred = { display: "grid", placeItems: "center" }
 

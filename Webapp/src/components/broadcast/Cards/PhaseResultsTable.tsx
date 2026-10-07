@@ -19,6 +19,7 @@ import {
 import { OverlayControlState } from "../../Interfaces"
 import { AemsPhaseResultsThemeProps } from "../themeAugmentation"
 import { BasicTable } from "./BasicBroadcastTable"
+import { runLabel } from "./runFormat"
 
 interface PhaseScoreTableProps extends AemsPhaseResultsThemeProps {
 	overlayControlState: OverlayControlState
@@ -173,9 +174,7 @@ const processScoresData = (
 
 	return data.map((d) => {
 		const runScores = runNumbers.reduce((acc, rn) => {
-			acc[runColumn(rn)] = d.run_scores[rn - 1]?.did_not_start
-				? "DNS"
-				: d.run_scores[rn - 1]?.mean_run_score.toFixed(2) ?? "-"
+			acc[runColumn(rn)] = runLabel(d.run_scores[rn - 1])
 
 			return acc
 		}, {} as Record<string, string | number>)

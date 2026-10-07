@@ -105,6 +105,12 @@ const run = (runNumber: number, meanRunScore: number, didNotStart = false) => ({
 	judge_scores: []
 })
 
+const unriddenRun = (runNumber: number) => ({
+	...run(runNumber, 0),
+	locked: false,
+	judge_scores: []
+})
+
 const scoredAthlete = (
 	rank: number,
 	lastName: string,
@@ -257,7 +263,12 @@ describe("phase results backup layout", () => {
 				[run(0, 890), run(1, 905.5), run(2, 0, true)],
 				1795.5
 			),
-			scoredAthlete(3, "Lang", [run(0, 640)], 640)
+			scoredAthlete(
+				3,
+				"Lang",
+				[run(0, 640), unriddenRun(1), unriddenRun(2)],
+				640
+			)
 		])
 
 		renderLeaderboard()
