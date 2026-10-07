@@ -5,12 +5,15 @@ import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import { useThemeProps } from "@mui/material/styles"
+import { dataFontFamily } from "../../../fonts"
 import { AemsBasicTableThemeProps } from "../themeAugmentation"
 import { useRotatingPage } from "./useRotatingPage"
 
 interface BasicTableProps extends AemsBasicTableThemeProps {
 	data: Record<string, any>[]
 	pageChangeTime: number
+	/** Columns holding scores or times, set in the data font. */
+	dataColumns?: string[]
 }
 
 // Sizing, colour and borders all come from the active theme (MuiTable*), and the
@@ -21,6 +24,7 @@ export const BasicTable = (inProps: BasicTableProps) => {
 	const {
 		data,
 		pageChangeTime,
+		dataColumns = [],
 		pageLimit = 10,
 		padEmptyRows = false
 	} = useThemeProps({ props: inProps, name: "AemsBasicTable" })
@@ -58,7 +62,14 @@ export const BasicTable = (inProps: BasicTableProps) => {
 				{paginatedData.map((row) => (
 					<TableRow key={`${Object.values(row).join("-")}`}>
 						{Object.keys(row).map((d) => (
-							<TableCell key={d}>
+							<TableCell
+								key={d}
+								sx={
+									dataColumns.includes(d)
+										? { fontFamily: dataFontFamily }
+										: undefined
+								}
+							>
 								{String(row[d] ?? "")}
 							</TableCell>
 						))}

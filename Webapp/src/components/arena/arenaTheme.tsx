@@ -1,5 +1,6 @@
 import { createTheme } from "@mui/material/styles"
 import type {} from "@mui/x-data-grid/themeAugmentation"
+import { brandFontFamily, dataClassName, dataFontFamily } from "../../fonts"
 import "../broadcast/themeAugmentation"
 
 export const darkTheme = createTheme({
@@ -18,7 +19,7 @@ export const darkTheme = createTheme({
 		}
 	},
 	typography: {
-		fontFamily: "'Roboto', 'Arial', sans-serif",
+		fontFamily: brandFontFamily,
 		h1: {
 			fontSize: "8rem",
 			fontWeight: 900,
@@ -132,6 +133,7 @@ export const darkTheme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
+					[`&.${dataClassName}`]: { fontFamily: dataFontFamily },
 					textShadow: "0 2px 8px #000"
 				}
 			}

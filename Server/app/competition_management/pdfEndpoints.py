@@ -25,37 +25,27 @@ FIRST_NAME_HEADER = "First Name"
 LAST_NAME_HEADER = "Last Name"
 
 font_directory = Path("./fonts/")
+BRAND_FONT = "inter-tight"
 _FOOTER_Y_FROM_BOTTOM_MM = -15
 
 
-class HelveticaNeuePDF(FPDF):
+class BrandPDF(FPDF):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.add_fonts()
 
     def add_fonts(self) -> None:
         if "PYTEST_CURRENT_TEST" not in os.environ:
-            self.add_font(
-                "helvetica-neue",
-                style="",
-                fname=Path(font_directory, "HelveticaNeueLight.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="B",
-                fname=Path(font_directory, "HelveticaNeueMedium.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="I",
-                fname=Path(font_directory, "HelveticaNeueLightItalic.otf").as_posix(),
-            )
-            self.add_font(
-                "helvetica-neue",
-                style="BI",
-                fname=Path(font_directory, "HelveticaNeueMediumItalic.otf").as_posix(),
-            )
-            self.set_font(family="helvetica-neue", style="", size=12)
+            for style, file in [
+                ("", "InterTight-Light.ttf"),
+                ("B", "InterTight-Medium.ttf"),
+                ("I", "InterTight-LightItalic.ttf"),
+                ("BI", "InterTight-MediumItalic.ttf"),
+            ]:
+                self.add_font(
+                    BRAND_FONT, style=style, fname=Path(font_directory, file).as_posix()
+                )
+            self.set_font(family=BRAND_FONT, style="", size=12)
         else:
             self.set_font(family="Helvetica", style="", size=12)
 
@@ -158,9 +148,9 @@ def setup_pdf_footer(
         if (
             "PYTEST_CURRENT_TEST" not in os.environ
             and hasattr(self, "font_family")
-            and self.font_family == "helvetica-neue"
+            and self.font_family == BRAND_FONT
         ):
-            self.set_font("helvetica-neue", "", 10)
+            self.set_font(BRAND_FONT, "", 10)
         else:
             self.set_font("Helvetica", "", 10)
 
@@ -376,7 +366,7 @@ def phase_pdf(
             .one()
         )
 
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        pdf = BrandPDF(orientation="L", format="A4")
         phase_pdf_header(pdf, competition_metadata, event_metadata, phase_metadata)
         setup_pdf_footer(pdf, text=None, include_page_numbers=True)
         build_phase_pdf_content(pdf, phase_metadata, phase_scores)
@@ -410,7 +400,7 @@ def heat_pdf(
                 content="Could not find any heat Info corresponding to provided IDs",
             )
 
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        pdf = BrandPDF(orientation="L", format="A4")
         setup_pdf_footer(pdf, None, include_page_numbers=True)
 
         for heat_info in heat_info_list:
@@ -462,7 +452,7 @@ def heat_results_pdf(
             .one()
         )
 
-        pdf = HelveticaNeuePDF(orientation="L", format="A4")
+        pdf = BrandPDF(orientation="L", format="A4")
         setup_pdf_footer(pdf, None, include_page_numbers=True)
         build_heat_results_pdf_content(
             pdf, competition, heat_info, heat_scores, max_runs

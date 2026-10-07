@@ -1,4 +1,5 @@
 import Box from "@mui/material/Box"
+import { dataFontFamily } from "../../../fonts"
 import { RunScores } from "../../../redux/services/aemsApi"
 import { OverlayControlState } from "../../Interfaces"
 import { AffiliationPill } from "./AffiliationPill"
@@ -206,6 +207,7 @@ export const PhaseLeaderboard = ({
 									sx={{
 										...centred,
 										fontSize: 30,
+										fontFamily: dataFontFamily,
 										fontWeight: counts ? 700 : 400
 									}}
 								>
@@ -228,7 +230,8 @@ export const PhaseLeaderboard = ({
 								justifyContent: "flex-end",
 								padding: "0 30px",
 								fontSize: 40,
-								fontWeight: 900
+								fontWeight: 900,
+								fontFamily: dataFontFamily
 							}}
 						>
 							<span>
