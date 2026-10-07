@@ -1,9 +1,12 @@
 import Alert from "@mui/material/Alert"
-import Button from "@mui/material/Button"
+import Box from "@mui/material/Box"
+import ButtonBase from "@mui/material/ButtonBase"
 import Grid from "@mui/material/Grid2"
+import Stack from "@mui/material/Stack"
 import ToggleButton from "@mui/material/ToggleButton"
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import Typography from "@mui/material/Typography"
+import { alpha, darken, lighten } from "@mui/material/styles"
 import React, { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useSelector } from "react-redux"
@@ -24,7 +27,10 @@ import {
 	useEmitBroadcastControlMutation,
 	useHeadJudgePositionStreamQuery
 } from "../../redux/services/streamingApi"
-import { SelectorDisplay } from "../competition/MainSelector"
+import CompetitionSelector from "../competition/CompetitionSelector"
+import EventSelector from "../competition/EventSelector"
+import HeatsSelector from "../competition/HeatSelector"
+import PhaseSelector from "../competition/PhaseSelector"
 import {
 	defaultOverlayControllerState,
 	HeadJudgePosition,
@@ -43,6 +49,35 @@ const describeFollowedPosition = (position?: HeadJudgePosition | null) => {
 	return `Currently on ${first_name} ${last_name}, run ${
 		position.runNumber + 1
 	}.`
+}
+
+const AthletePickers = ({
+	athlete,
+	heatHasNoAthletes
+}: {
+	athlete?: AthleteInfo
+	heatHasNoAthletes: boolean
+}) => {
+	if (athlete) {
+		return (
+			<Grid container spacing={2}>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<PaddlerSelector paddlerInfo={athlete} />
+				</Grid>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<RunSelector />
+				</Grid>
+			</Grid>
+		)
+	}
+
+	return (
+		<Typography color="text.secondary">
+			{heatHasNoAthletes
+				? "Add athletes to this heat to choose a paddler."
+				: "Select a heat to choose the paddler and run."}
+		</Typography>
+	)
 }
 
 const OverlayController: React.FC = () => {
@@ -103,7 +138,8 @@ const OverlayController: React.FC = () => {
 		selectedAthlete,
 		selectedRun
 	])
-	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
+	const [emitBroadcastControl, { isError: emitFailed }] =
+		useEmitBroadcastControlMutation()
 	// Subscribe to the broadcast control stream to maintain a persistent socket
 	// connection. The emitBroadcastControl mutation reuses this socket.
 	useBroadcastControlStreamQuery()
@@ -137,38 +173,47 @@ const OverlayController: React.FC = () => {
 		void emitBroadcastControl(overlayControlState)
 	}, [overlayControlState, stateRequestCount, emitBroadcastControl])
 
-	const athletePickers = selectedAthlete ? (
-		<Grid size={6}>
-			<Grid container direction="row" spacing={2}>
-				<Grid size={6}>
-					<PaddlerSelector paddlerInfo={selectedAthlete} />
-				</Grid>
-				<Grid size={6}>
-					<RunSelector />
-				</Grid>
-			</Grid>
-		</Grid>
-	) : (
-		<Grid size={12}>
-			<Typography>Please Select a heat to get started</Typography>{" "}
-		</Grid>
-	)
+	const followed = followHeadJudge
+		? {
+				inert: true,
+				"data-testid": "followed-picker",
+				sx: { opacity: 0.5 }
+		  }
+		: {}
 
 	return (
-		<Grid
-			container
-			justifyContent="center"
-			alignItems="center"
-			style={{ height: "100%" }}
-			spacing={2}
+		<Stack
+			component="section"
+			aria-label="Overlay controller"
+			spacing={3}
+			sx={{ py: 3 }}
 		>
-			<Grid size={12}>
-				<Typography variant="h4">Overlay Controller</Typography>
-			</Grid>
-			<Grid size={12}>
+			{emitFailed && (
+				<Alert severity="error">
+					Not connected to the server: the displays may not be showing
+					these graphics.
+				</Alert>
+			)}
+			<Box
+				sx={{
+					display: "flex",
+					flexWrap: "wrap",
+					alignItems: "center",
+					justifyContent: "space-between",
+					gap: 2
+				}}
+			>
+				{followHeadJudge && (
+					<Alert severity="info" sx={{ flex: "1 1 400px" }}>
+						Competition, heat, paddler and run are disabled: the
+						displays are following the head judge.{" "}
+						{describeFollowedPosition(headJudgePosition)}
+					</Alert>
+				)}
 				<ToggleButtonGroup
 					exclusive
 					color="primary"
+					sx={{ ml: "auto" }}
 					value={followHeadJudge ? "follow" : "manual"}
 					onChange={(_, mode: string | null) => {
 						if (mode) {
@@ -184,185 +229,242 @@ const OverlayController: React.FC = () => {
 						Follow head judge
 					</ToggleButton>
 				</ToggleButtonGroup>
-			</Grid>
-			{followHeadJudge ? (
-				<>
-					<Grid size={12}>
-						<Alert severity="info">
-							Competition, heat, paddler and run are disabled: the
-							displays are following the head judge.{" "}
-							{describeFollowedPosition(headJudgePosition)}
-						</Alert>
+			</Box>
+			<Stack spacing={2}>
+				<Grid container spacing={1}>
+					<Grid size="grow" {...followed}>
+						<CompetitionSelector />
 					</Grid>
-					<Grid size={12}>
-						<SelectorDisplay
-							showCompetition={false}
-							showHeat={false}
-						/>
+					<Grid size="grow">
+						<EventSelector />
 					</Grid>
-					<Grid
-						size={12}
-						container
-						spacing={2}
-						inert
-						data-testid="followed-pickers"
-						sx={{ opacity: 0.5 }}
+					<Grid size="grow">
+						<PhaseSelector />
+					</Grid>
+					<Grid size="grow" {...followed}>
+						<HeatsSelector />
+					</Grid>
+				</Grid>
+				{!followHeadJudge && heatHasNoAthletes && (
+					<Alert severity="warning">
+						This heat has no athletes. Add athletes to the heat or
+						select a different heat to use athlete overlays.
+					</Alert>
+				)}
+				<Box {...followed}>
+					<AthletePickers
+						athlete={selectedAthlete}
+						heatHasNoAthletes={heatHasNoAthletes}
+					/>
+				</Box>
+			</Stack>
+			<Box
+				aria-label="Broadcast screen"
+				role="group"
+				sx={{
+					display: "grid",
+					gap: 1.5,
+					p: 1.5,
+					border: "2px solid",
+					borderColor: "divider",
+					borderRadius: 2,
+					bgcolor: "action.hover",
+					gridTemplateColumns: {
+						xs: "minmax(0, 1fr)",
+						md: "repeat(4, minmax(0, 1fr))"
+					},
+					gridTemplateAreas: {
+						xs: `"logo" "overview" "title" "heat" "phase" "athlete" "run"`,
+						md: `"logo . . ." ". . . ." "overview title heat phase" ". . . ." "athlete . . run"`
+					},
+					gridTemplateRows: { md: "auto 1fr auto 1fr auto" },
+					alignItems: "start",
+					// Tiles sit where their graphic appears on the programme
+					// output, in a frame much squatter than 16:9 to save height.
+					aspectRatio: { md: "4 / 1" }
+				}}
+			>
+				<Box sx={{ gridArea: "logo" }}>
+					<GraphicTile
+						label="ICF logo"
+						onAir={overlayControlState.showImageCard}
+						onClick={() => toggleKey("showImageCard")}
+					/>
+				</Box>
+				<Stack spacing={1} sx={{ gridArea: "overview" }}>
+					<GraphicTile
+						label="Competition overview"
+						onAir={overlayControlState.showCompetitionOverview}
+						onClick={() => {
+							if (overlayControlState.selectedCompetition) {
+								toggleKey("showCompetitionOverview")
+							} else {
+								toast.error(
+									"Please select a competition to use this feature"
+								)
+							}
+						}}
+					/>
+					<ToggleButtonGroup
+						exclusive
+						fullWidth
+						size="small"
+						aria-label="Competition overview lists"
+						value={overlayControlState.competitionOverviewList}
+						onChange={(_, list: "events" | "heats" | null) => {
+							// Clicking the selected option again would clear it.
+							if (list) {
+								setOverlayControlState((prevState) => ({
+									...prevState,
+									competitionOverviewList: list
+								}))
+							}
+						}}
+						sx={{ bgcolor: "background.paper" }}
 					>
-						<Grid size={12}>
-							<SelectorDisplay
-								showEvent={false}
-								showPhase={false}
-							/>
-						</Grid>
-						{athletePickers}
-					</Grid>
-				</>
-			) : (
-				<>
-					<Grid size={12}>
-						<SelectorDisplay />
-					</Grid>
-					{heatHasNoAthletes && (
-						<Grid size={12}>
-							<Alert severity="warning">
-								This heat has no athletes. Add athletes to the
-								heat or select a different heat to use athlete
-								overlays.
-							</Alert>
-						</Grid>
-					)}
-					{athletePickers}
-				</>
-			)}
-			<Grid size={12}>
-				<ConfigurableButton
-					label="Show ICF Logo"
-					active={overlayControlState.showImageCard}
-					onClick={() => toggleKey("showImageCard")}
-					activeColor="green"
-					inactiveColor="red"
-					textColor="white"
-				/>
-			</Grid>
-			<Grid size={12}>
-				<ConfigurableButton
-					label="Show Heat Event Title"
-					active={overlayControlState.showEventTitle}
-					onClick={() => {
-						if (overlayControlState.selectedEvent) {
-							toggleKey("showEventTitle")
-						} else {
-							toast.error(
-								"Please select an event to use this feature"
-							)
+						<ToggleButton value="events">Events</ToggleButton>
+						<ToggleButton value="heats">Heats</ToggleButton>
+					</ToggleButtonGroup>
+				</Stack>
+				<Box sx={{ gridArea: "title" }}>
+					<GraphicTile
+						label="Event title"
+						onAir={overlayControlState.showEventTitle}
+						onClick={() => {
+							if (overlayControlState.selectedEvent) {
+								toggleKey("showEventTitle")
+							} else {
+								toast.error(
+									"Please select an event to use this feature"
+								)
+							}
+						}}
+					/>
+				</Box>
+				<Box sx={{ gridArea: "heat" }}>
+					<GraphicTile
+						label="Heat summary"
+						onAir={overlayControlState.showHeatSummary}
+						onClick={() => {
+							if (displayedHeat) {
+								toggleKey("showHeatSummary")
+							} else {
+								toast.error(
+									"Please select a competition and heat to use this feature"
+								)
+							}
+						}}
+					/>
+				</Box>
+				<Box sx={{ gridArea: "phase" }}>
+					<GraphicTile
+						label="Phase results"
+						onAir={overlayControlState.showPhaseResults}
+						onClick={() => {
+							if (overlayControlState.selectedPhase) {
+								toggleKey("showPhaseResults")
+							} else {
+								toast.error(
+									"Please select a phase to use this feature"
+								)
+							}
+						}}
+					/>
+				</Box>
+				<Box sx={{ gridArea: "athlete", alignSelf: "end" }}>
+					<GraphicTile
+						label="Athlete overview"
+						onAir={overlayControlState.showAthleteOverview}
+						onClick={() =>
+							toggleIfAthleteSelected("showAthleteOverview")
 						}
-					}}
-				/>
-				<ConfigurableButton
-					label="Show Heat Summary Modal"
-					active={overlayControlState.showHeatSummary}
-					onClick={() => {
-						if (displayedHeat) {
-							toggleKey("showHeatSummary")
-						} else {
-							toast.error(
-								"Please select a competition and heat to use this feature"
-							)
+					/>
+				</Box>
+				<Box sx={{ gridArea: "run", alignSelf: "end" }}>
+					<GraphicTile
+						label="Live run score"
+						onAir={overlayControlState.showLiveRunScore}
+						onClick={() =>
+							toggleIfAthleteSelected("showLiveRunScore")
 						}
-					}}
-				/>
-				<ConfigurableButton
-					label="Show Phase Results Modal"
-					active={overlayControlState.showPhaseResults}
-					onClick={() => {
-						if (overlayControlState.selectedPhase) {
-							toggleKey("showPhaseResults")
-						} else {
-							toast.error(
-								"Please select a phase to use this feature"
-							)
-						}
-					}}
-				/>
-			</Grid>
-			<Grid size={12}>
-				<ConfigurableButton
-					label="Show Live Run Score"
-					active={overlayControlState.showLiveRunScore}
-					onClick={() => toggleIfAthleteSelected("showLiveRunScore")}
-				/>
-				<ConfigurableButton
-					label="Show Athlete Overview"
-					active={overlayControlState.showAthleteOverview}
-					onClick={() =>
-						toggleIfAthleteSelected("showAthleteOverview")
-					}
-				/>
-			</Grid>
-			<Grid size={12}>
-				<ConfigurableButton
-					label="Show Competition Overview"
-					active={overlayControlState.showCompetitionOverview}
-					onClick={() => {
-						if (overlayControlState.selectedCompetition) {
-							toggleKey("showCompetitionOverview")
-						} else {
-							toast.error(
-								"Please select a competition to use this feature"
-							)
-						}
-					}}
-				/>
-				<ToggleButtonGroup
-					exclusive
-					size="small"
-					aria-label="Competition overview lists"
-					value={overlayControlState.competitionOverviewList}
-					onChange={(_, list: "events" | "heats" | null) => {
-						// Clicking the selected option again would clear it.
-						if (list) {
-							setOverlayControlState((prevState) => ({
-								...prevState,
-								competitionOverviewList: list
-							}))
-						}
-					}}
-				>
-					<ToggleButton value="events">Events</ToggleButton>
-					<ToggleButton value="heats">Heats</ToggleButton>
-				</ToggleButtonGroup>
-			</Grid>
-		</Grid>
+					/>
+				</Box>
+			</Box>
+		</Stack>
 	)
 }
 
-interface ConfigurableButtonProps {
-	label: string // Text to display on the button
-	active: boolean // Whether the button is active
-	onClick: () => void // Function to call when the button is clicked
-	activeColor?: string // Background color when active
-	inactiveColor?: string // Background color when inactive
-	textColor?: string // Text color
-}
+// The red of a camera's on-air tally lamp, not the theme's error colour: an
+// on-air graphic is the normal working state, not a fault.
+const tallyRed = "#e5231b"
 
-const ConfigurableButton: React.FC<ConfigurableButtonProps> = ({
+const readableTallyRed = (mode: "light" | "dark") =>
+	mode === "dark" ? lighten(tallyRed, 0.35) : darken(tallyRed, 0.2)
+
+/** A toggle for one overlay graphic, lit like a tally lamp while on air. */
+const GraphicTile = ({
 	label,
-	active,
-	onClick,
-	activeColor = "green", // Default active color
-	inactiveColor = "red", // Default inactive color
-	textColor = "white" // Default text color
+	onAir,
+	onClick
+}: {
+	label: string
+	onAir: boolean
+	onClick: () => void
 }) => (
-	<Button
-		variant="contained"
+	<ButtonBase
+		aria-pressed={onAir}
 		onClick={onClick}
-		style={{
-			backgroundColor: active ? activeColor : inactiveColor,
-			color: textColor
-		}}
+		sx={(theme) => ({
+			display: "grid",
+			gridTemplateColumns: "8px 1fr",
+			alignItems: "stretch",
+			width: "100%",
+			minHeight: 64,
+			textAlign: "left",
+			borderRadius: 2,
+			overflow: "hidden",
+			border: "1px solid",
+			borderColor: onAir ? tallyRed : theme.palette.divider,
+			bgcolor: onAir
+				? alpha(tallyRed, 0.08)
+				: theme.palette.background.paper,
+			transition: "background-color 150ms, border-color 150ms",
+			"@media (prefers-reduced-motion: reduce)": { transition: "none" },
+			"&:hover": {
+				bgcolor: onAir
+					? alpha(tallyRed, 0.14)
+					: theme.palette.action.hover
+			},
+			"&.Mui-focusVisible": {
+				outline: `3px solid ${theme.palette.primary.main}`,
+				outlineOffset: 2
+			}
+		})}
 	>
-		{label}
-	</Button>
+		<Box
+			aria-hidden
+			sx={{
+				bgcolor: onAir ? tallyRed : "action.disabledBackground",
+				boxShadow: onAir ? `0 0 12px ${alpha(tallyRed, 0.7)}` : "none"
+			}}
+		/>
+		<Box sx={{ display: "grid", alignContent: "center", px: 1.5, py: 1 }}>
+			<Typography sx={{ fontWeight: 600 }}>{label}</Typography>
+			<Typography
+				aria-hidden
+				variant="body2"
+				sx={(theme) => ({
+					fontWeight: onAir ? 700 : 400,
+					// Pure tally red is under 4.5:1 against either theme's tile.
+					color: onAir
+						? readableTallyRed(theme.palette.mode)
+						: "text.secondary"
+				})}
+			>
+				{onAir ? "On air" : "Off"}
+			</Typography>
+		</Box>
+	</ButtonBase>
 )
 
 export default OverlayController

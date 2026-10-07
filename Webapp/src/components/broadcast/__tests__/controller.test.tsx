@@ -50,6 +50,26 @@ describe("OverlayController", () => {
 		).toBeInTheDocument()
 	})
 
+	it("warns the operator when the server can't be reached", async () => {
+		socketHub.refuseConnections("broadcast_control")
+		renderWithProviders(<OverlayController />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+
+		act(() =>
+			socketHub.emit(
+				"broadcast_control",
+				"connect_error",
+				new Error("unreachable")
+			)
+		)
+
+		expect(await screen.findByRole("alert")).toHaveTextContent(
+			"Not connected to the server"
+		)
+	})
+
 	it("closes its broadcast socket when it unmounts", async () => {
 		const { unmount } = renderWithProviders(<OverlayController />)
 
@@ -104,7 +124,14 @@ describe("OverlayController", () => {
 			])
 		)
 
-		await user.click(screen.getByRole("button", { name: "Show ICF Logo" }))
+		const logoTile = screen.getByRole("button", { name: "ICF logo" })
+		expect(logoTile).toHaveAttribute("aria-pressed", "true")
+		expect(within(logoTile).getByText("On air")).toBeInTheDocument()
+
+		await user.click(logoTile)
+
+		expect(logoTile).toHaveAttribute("aria-pressed", "false")
+		expect(within(logoTile).getByText("Off")).toBeInTheDocument()
 
 		await waitFor(() =>
 			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
@@ -139,7 +166,7 @@ describe("OverlayController", () => {
 		// Held as a ref: opening the modal marks the rest of the DOM
 		// aria-hidden, so a role query can't find the button a second time.
 		const summaryButton = screen.getByRole("button", {
-			name: "Show Heat Summary Modal"
+			name: "Heat summary"
 		})
 		await user.click(summaryButton)
 
@@ -157,7 +184,7 @@ describe("OverlayController", () => {
 		renderWithProviders(<OverlayController />)
 
 		await user.click(
-			screen.getByRole("button", { name: "Show Athlete Overview" })
+			screen.getByRole("button", { name: "Athlete overview" })
 		)
 
 		expect(toast.error).toHaveBeenCalledWith(
@@ -186,7 +213,7 @@ describe("OverlayController", () => {
 		)
 
 		await user.click(
-			screen.getByRole("button", { name: "Show Athlete Overview" })
+			screen.getByRole("button", { name: "Athlete overview" })
 		)
 
 		await waitFor(() =>
@@ -214,7 +241,7 @@ describe("OverlayController", () => {
 		renderWithProviders(<OverlayController />)
 
 		await user.click(
-			screen.getByRole("button", { name: "Show Competition Overview" })
+			screen.getByRole("button", { name: "Competition overview" })
 		)
 
 		expect(toast.error).toHaveBeenCalledWith(
@@ -234,7 +261,7 @@ describe("OverlayController", () => {
 
 		await user.click(screen.getByRole("button", { name: "Heats" }))
 		await user.click(
-			screen.getByRole("button", { name: "Show Competition Overview" })
+			screen.getByRole("button", { name: "Competition overview" })
 		)
 
 		await waitFor(() =>
@@ -315,16 +342,19 @@ describe("OverlayController", () => {
 				screen.getByRole("button", { name: "Follow head judge" })
 			)
 
-			const followedPickers = await screen.findByTestId(
-				"followed-pickers"
+			const followedPickers = await screen.findAllByTestId(
+				"followed-picker"
 			)
-			expect(followedPickers).toHaveAttribute("inert")
-			expect(
-				within(followedPickers).getByText("Select Competition")
-			).toBeInTheDocument()
-			expect(
-				within(followedPickers).queryByText("Select Event")
-			).not.toBeInTheDocument()
+			const followedText = followedPickers
+				.map((picker) => picker.textContent)
+				.join(" ")
+			followedPickers.forEach((picker) =>
+				expect(picker).toHaveAttribute("inert")
+			)
+			expect(followedText).toContain("Select Competition")
+			expect(followedText).toContain("No Heats in Competition")
+			expect(followedText).not.toContain("Select Event")
+			expect(followedText).not.toContain("Select Phase")
 			expect(screen.getByText("Select Event")).toBeInTheDocument()
 			expect(screen.getByRole("alert")).toHaveTextContent(
 				"Waiting for head judge"
@@ -370,10 +400,10 @@ describe("OverlayController", () => {
 			await user.click(
 				screen.getByRole("button", { name: "Follow head judge" })
 			)
-			await screen.findByTestId("followed-pickers")
+			await screen.findAllByTestId("followed-picker")
 
 			await user.click(
-				screen.getByRole("button", { name: "Show Heat Summary Modal" })
+				screen.getByRole("button", { name: "Heat summary" })
 			)
 
 			await waitFor(() =>
@@ -391,7 +421,7 @@ describe("OverlayController", () => {
 			await user.click(
 				screen.getByRole("button", { name: "Follow head judge" })
 			)
-			await screen.findByTestId("followed-pickers")
+			await screen.findAllByTestId("followed-picker")
 
 			await user.click(screen.getByRole("button", { name: "Manual" }))
 
@@ -400,9 +430,7 @@ describe("OverlayController", () => {
 					expect.objectContaining({ followHeadJudge: false })
 				)
 			)
-			expect(
-				screen.queryByTestId("followed-pickers")
-			).not.toBeInTheDocument()
+			expect(screen.queryAllByTestId("followed-picker")).toHaveLength(0)
 			expect(screen.queryByRole("alert")).not.toBeInTheDocument()
 			expect(screen.getByText("Select Competition")).toBeInTheDocument()
 		})

@@ -13,6 +13,7 @@ export type SocketChannel =
 
 export interface MockSocket {
 	on: jest.Mock
+	once: jest.Mock
 	off: jest.Mock
 	emit: jest.Mock<void, [string, ...unknown[]]>
 	disconnect: jest.Mock
@@ -31,10 +32,17 @@ class SocketHub {
 
 	private readonly echoing = new Set<SocketChannel>()
 
+	private readonly refusing = new Set<SocketChannel>()
+
 	public connect(channel: SocketChannel): MockSocket {
 		const listeners: Record<string, ((...args: unknown[]) => void)[]> = {}
 		const socket: MockSocket = {
 			on: jest.fn(
+				(event: string, handler: (...args: unknown[]) => void) => {
+					listeners[event] = [...(listeners[event] ?? []), handler]
+				}
+			),
+			once: jest.fn(
 				(event: string, handler: (...args: unknown[]) => void) => {
 					listeners[event] = [...(listeners[event] ?? []), handler]
 				}
@@ -46,7 +54,7 @@ class SocketHub {
 				}
 			}),
 			disconnect: jest.fn(),
-			connected: true,
+			connected: !this.refusing.has(channel),
 			trigger: (event, ...args) =>
 				(listeners[event] ?? []).forEach((handler) => handler(...args))
 		}
@@ -62,6 +70,14 @@ class SocketHub {
 	 */
 	public enableEcho(channel: SocketChannel): void {
 		this.echoing.add(channel)
+	}
+
+	/**
+	 * Model an unreachable server: new sockets on this channel start
+	 * disconnected, so an emit waits for a `connect_error` the test triggers.
+	 */
+	public refuseConnections(channel: SocketChannel): void {
+		this.refusing.add(channel)
 	}
 
 	/** Push an inbound event to every open socket on a channel. */
@@ -109,6 +125,7 @@ class SocketHub {
 			this.sockets[channel] = []
 		})
 		this.echoing.clear()
+		this.refusing.clear()
 	}
 }
 
