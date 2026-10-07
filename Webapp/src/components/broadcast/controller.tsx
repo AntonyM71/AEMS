@@ -51,6 +51,35 @@ const describeFollowedPosition = (position?: HeadJudgePosition | null) => {
 	}.`
 }
 
+const AthletePickers = ({
+	athlete,
+	heatHasNoAthletes
+}: {
+	athlete?: AthleteInfo
+	heatHasNoAthletes: boolean
+}) => {
+	if (athlete) {
+		return (
+			<Grid container spacing={2}>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<PaddlerSelector paddlerInfo={athlete} />
+				</Grid>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<RunSelector />
+				</Grid>
+			</Grid>
+		)
+	}
+
+	return (
+		<Typography color="text.secondary">
+			{heatHasNoAthletes
+				? "Add athletes to this heat to choose a paddler."
+				: "Select a heat to choose the paddler and run."}
+		</Typography>
+	)
+}
+
 const OverlayController: React.FC = () => {
 	const [overlayControlState, setOverlayControlState] = React.useState(
 		defaultOverlayControllerState
@@ -109,7 +138,8 @@ const OverlayController: React.FC = () => {
 		selectedAthlete,
 		selectedRun
 	])
-	const [emitBroadcastControl] = useEmitBroadcastControlMutation()
+	const [emitBroadcastControl, { isError: emitFailed }] =
+		useEmitBroadcastControlMutation()
 	// Subscribe to the broadcast control stream to maintain a persistent socket
 	// connection. The emitBroadcastControl mutation reuses this socket.
 	useBroadcastControlStreamQuery()
@@ -150,20 +180,6 @@ const OverlayController: React.FC = () => {
 				sx: { opacity: 0.5 }
 		  }
 		: {}
-	const athletePickers = selectedAthlete ? (
-		<Grid container spacing={2}>
-			<Grid size={{ xs: 12, md: 6 }}>
-				<PaddlerSelector paddlerInfo={selectedAthlete} />
-			</Grid>
-			<Grid size={{ xs: 12, md: 6 }}>
-				<RunSelector />
-			</Grid>
-		</Grid>
-	) : (
-		<Typography color="text.secondary">
-			Select a heat to choose the paddler and run.
-		</Typography>
-	)
 
 	return (
 		<Stack
@@ -172,6 +188,12 @@ const OverlayController: React.FC = () => {
 			spacing={3}
 			sx={{ py: 3 }}
 		>
+			{emitFailed && (
+				<Alert severity="error">
+					Not connected to the server: the displays may not be showing
+					these graphics.
+				</Alert>
+			)}
 			<Box
 				sx={{
 					display: "flex",
@@ -229,7 +251,12 @@ const OverlayController: React.FC = () => {
 						select a different heat to use athlete overlays.
 					</Alert>
 				)}
-				<Box {...followed}>{athletePickers}</Box>
+				<Box {...followed}>
+					<AthletePickers
+						athlete={selectedAthlete}
+						heatHasNoAthletes={heatHasNoAthletes}
+					/>
+				</Box>
 			</Stack>
 			<Box
 				aria-label="Broadcast screen"
@@ -371,6 +398,9 @@ const OverlayController: React.FC = () => {
 // on-air graphic is the normal working state, not a fault.
 const tallyRed = "#e5231b"
 
+const readableTallyRed = (mode: "light" | "dark") =>
+	mode === "dark" ? lighten(tallyRed, 0.35) : darken(tallyRed, 0.2)
+
 /** A toggle for one overlay graphic, lit like a tally lamp while on air. */
 const GraphicTile = ({
 	label,
@@ -427,9 +457,7 @@ const GraphicTile = ({
 					fontWeight: onAir ? 700 : 400,
 					// Pure tally red is under 4.5:1 against either theme's tile.
 					color: onAir
-						? theme.palette.mode === "dark"
-							? lighten(tallyRed, 0.35)
-							: darken(tallyRed, 0.2)
+						? readableTallyRed(theme.palette.mode)
 						: "text.secondary"
 				})}
 			>

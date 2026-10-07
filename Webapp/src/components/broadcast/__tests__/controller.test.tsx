@@ -50,6 +50,26 @@ describe("OverlayController", () => {
 		).toBeInTheDocument()
 	})
 
+	it("warns the operator when the server can't be reached", async () => {
+		socketHub.refuseConnections("broadcast_control")
+		renderWithProviders(<OverlayController />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+
+		act(() =>
+			socketHub.emit(
+				"broadcast_control",
+				"connect_error",
+				new Error("unreachable")
+			)
+		)
+
+		expect(await screen.findByRole("alert")).toHaveTextContent(
+			"Not connected to the server"
+		)
+	})
+
 	it("closes its broadcast socket when it unmounts", async () => {
 		const { unmount } = renderWithProviders(<OverlayController />)
 
