@@ -24,7 +24,7 @@ const Arena = () => {
 			<CssBaseline />
 			{/* On the arena each of these takes over the whole screen: the
 			    modal fills the viewport and arenaTheme paints its backdrop an
-			    opaque #181818, hiding the live grid behind it. The broadcast
+			    opaque black, hiding the live grid behind it. The broadcast
 			    overlay composes the same cards over Pixi artwork instead. */}
 			<SlidingModal
 				direction="down"
@@ -49,7 +49,7 @@ const Arena = () => {
 			</SlidingModal>
 			<GlobalStyles
 				styles={{
-					body: { backgroundColor: "#181818", height: "100%" }
+					body: { backgroundColor: "#000000", height: "100%" }
 				}}
 			/>
 			<Grid2

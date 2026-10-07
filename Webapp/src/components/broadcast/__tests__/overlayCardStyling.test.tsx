@@ -110,14 +110,14 @@ describe("broadcast overlay card styling (characterization)", () => {
 			})
 		})
 
-		it("gives table body cells the blue underline and fixed row height", async () => {
+		it("gives table body cells the grey underline and fixed row height", async () => {
 			renderPhase()
 			const nameCell = await screen.findByText("John DOE")
 			// eslint-disable-next-line testing-library/no-node-access
 			const cell = nameCell.closest("td")
 
 			expect(cell).toHaveStyle({
-				borderBottom: "1px solid #1976d2",
+				borderBottom: "1px solid #BFBFBF",
 				height: "61px",
 				padding: "0px"
 			})
@@ -182,11 +182,11 @@ describe("broadcast overlay card styling (characterization)", () => {
 			expect(eventLine.tagName).toBe("H5")
 		})
 
-		it("leaves the run counts on the theme's ICF dark blue", async () => {
+		it("leaves the run counts on the theme's black", async () => {
 			renderOverlay(<EventTitle />)
 
 			expect(await screen.findByText("Runs : 2")).toHaveStyle({
-				color: "rgb(12, 40, 80)"
+				color: "rgb(0, 0, 0)"
 			})
 		})
 	})

@@ -6,8 +6,8 @@ export const darkTheme = createTheme({
 	palette: {
 		mode: "dark",
 		background: {
-			default: "#181818",
-			paper: "#222"
+			default: "#000000",
+			paper: "#404040"
 		},
 		text: {
 			// The arena is a single dark surface, so headings and body copy are
@@ -100,7 +100,7 @@ export const darkTheme = createTheme({
 				root: {
 					"& .MuiTableRow-root": {
 						backgroundImage:
-							"linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(40, 40, 40, 0.5) 100%)",
+							"linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.45) 100%)",
 						borderBottom: "2px solid rgba(255, 255, 255, 0.2)"
 					}
 				}
@@ -119,7 +119,7 @@ export const darkTheme = createTheme({
 			styleOverrides: {
 				root: {
 					"& .MuiTableRow-root": {
-						background: "rgba(40, 40, 40, 0.6)",
+						background: "rgba(0, 0, 0, 0.45)",
 						borderTop: "2px solid rgba(255, 255, 255, 0.2)"
 					},
 					"& .MuiTableCell-root": {
@@ -149,7 +149,7 @@ export const darkTheme = createTheme({
 		MuiPaper: {
 			styleOverrides: {
 				root: {
-					backgroundColor: "#222",
+					backgroundColor: "#404040",
 					borderRadius: "8px",
 					boxShadow: "none",
 					padding: "1em", // Add some margin for spacing
@@ -171,7 +171,7 @@ export const darkTheme = createTheme({
 		MuiBackdrop: {
 			styleOverrides: {
 				root: {
-					backgroundColor: "#181818", // Remove the shadow and background
+					backgroundColor: "#000000", // Remove the shadow and background
 					boxShadow: "none" // No shadow// Remove drop shadow from the modal
 				}
 			}
