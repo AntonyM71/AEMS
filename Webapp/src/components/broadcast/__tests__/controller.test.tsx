@@ -106,10 +106,12 @@ describe("OverlayController", () => {
 
 		const logoTile = screen.getByRole("button", { name: "ICF logo" })
 		expect(logoTile).toHaveAttribute("aria-pressed", "true")
+		expect(within(logoTile).getByText("On air")).toBeInTheDocument()
 
 		await user.click(logoTile)
 
 		expect(logoTile).toHaveAttribute("aria-pressed", "false")
+		expect(within(logoTile).getByText("Off")).toBeInTheDocument()
 
 		await waitFor(() =>
 			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
