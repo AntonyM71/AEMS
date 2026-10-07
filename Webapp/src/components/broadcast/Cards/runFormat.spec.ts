@@ -25,11 +25,14 @@ describe("runFormatText", () => {
 const run = (
 	run_number: number,
 	mean_run_score: number,
-	did_not_start = false
+	did_not_start = false,
+	scored = true
 ) => ({
 	run_number,
 	mean_run_score,
-	did_not_start
+	did_not_start,
+	locked: scored,
+	judge_scores: []
 })
 
 describe("countingRunNumbers", () => {
@@ -46,7 +49,9 @@ describe("countingRunNumbers", () => {
 	})
 
 	it("counts only the runs that have been scored", () => {
-		expect(countingRunNumbers([run(1, 700)], 2)).toEqual(new Set([1]))
+		expect(
+			countingRunNumbers([run(1, 700), run(2, 0, false, false)], 2)
+		).toEqual(new Set([1]))
 	})
 
 	it("gives a tie for the last counting place to the earlier run", () => {
