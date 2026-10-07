@@ -104,9 +104,8 @@ describe("FullscreenPixiOverlay fallback backdrop", () => {
 			}
 		)
 		// eslint-disable-next-line testing-library/no-node-access
-		expect(
-			document.querySelector(".AemsAthleteOverview-total")
-		).toHaveStyle({
+		const total = document.querySelector(".AemsAthleteOverview-total")
+		expect(total).toHaveStyle({
 			backgroundColor: hexToRgb(pwOrange),
 			color: hexToRgb(pwBlack)
 		})
