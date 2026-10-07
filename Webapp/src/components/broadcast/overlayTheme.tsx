@@ -1,5 +1,6 @@
 import { createTheme } from "@mui/material/styles"
 import "@mui/x-data-grid/themeAugmentation"
+import { brandFontFamily, dataClassName, dataFontFamily } from "../../fonts"
 import "./themeAugmentation"
 export const pwOrange = "#FF5A00"
 export const pwBlack = "#000000"
@@ -32,7 +33,7 @@ export const lightTheme = createTheme({
 		}
 	},
 	typography: {
-		fontFamily: "'Roboto', sans-serif",
+		fontFamily: brandFontFamily,
 		allVariants: {
 			color: pwBlack
 		},
@@ -303,6 +304,7 @@ export const lightTheme = createTheme({
 		MuiTypography: {
 			styleOverrides: {
 				root: {
+					[`&.${dataClassName}`]: { fontFamily: dataFontFamily },
 					color: pwBlack,
 					// The heat name sits inside the frame's top-right title box.
 					"&.AemsHeatSummary-title": {

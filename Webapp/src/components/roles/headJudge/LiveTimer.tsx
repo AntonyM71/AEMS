@@ -2,13 +2,14 @@ import Paper from "@mui/material/Paper"
 import { Variant } from "@mui/material/styles/createTypography"
 import Typography from "@mui/material/Typography"
 import React from "react"
+import { dataClassName } from "../../../fonts"
 import { useTimerStreamQuery } from "../../../redux/services/streamingApi"
 
 export const LiveTimerLogic = ({ textSize = "h5" }: { textSize?: Variant }) => {
 	const { data } = useTimerStreamQuery()
 
 	return (
-		<Typography variant={textSize}>
+		<Typography variant={textSize} className={dataClassName}>
 			{data?.status === "cancelled"
 				? "Cancelled"
 				: Math.round(data?.time_remaining ?? 0)}

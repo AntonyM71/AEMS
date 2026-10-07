@@ -1,6 +1,9 @@
 import { act, render, screen } from "@testing-library/react"
 import { BasicTable } from "./BasicBroadcastTable"
 
+// next/font's jest mock returns a family name jsdom rejects as invalid CSS.
+jest.mock("../../../fonts", () => ({ dataFontFamily: '"DM Mono"' }))
+
 describe("BasicTable", () => {
 	const mockData = [
 		{ id: 1, name: "Test 1" },
@@ -26,6 +29,23 @@ describe("BasicTable", () => {
 		expect(screen.getByText("Test 1")).toBeInTheDocument()
 		expect(screen.getByText("Test 2")).toBeInTheDocument()
 		expect(screen.getByText("Page: 1/2")).toBeInTheDocument()
+	})
+
+	it("sets only the score columns in the data font", () => {
+		render(
+			<BasicTable
+				data={[{ Name: "Ada LOVELACE", "Total Score": "88.50" }]}
+				dataColumns={["Total Score"]}
+				pageChangeTime={5}
+			/>
+		)
+
+		expect(getComputedStyle(screen.getByText("88.50")).fontFamily).toBe(
+			'"DM Mono"'
+		)
+		expect(
+			getComputedStyle(screen.getByText("Ada LOVELACE")).fontFamily
+		).not.toBe('"DM Mono"')
 	})
 
 	it("changes page automatically after specified time", () => {
