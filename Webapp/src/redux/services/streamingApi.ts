@@ -39,50 +39,61 @@ type EmitQueryResult =
 	| { data: null }
 	| { error: { status: "CUSTOM_ERROR"; error: string } }
 
-// Emit `event` on a short-lived socket opened only for this call and
-// disconnected as soon as the payload is sent (or the connection fails).
-const emitViaTemporarySocket = (
-	connect: () => Socket,
-	event: string,
-	payload: unknown
-): Promise<void> =>
+// Resolves on the socket's next connect, or at once if it is connected;
+// rejects on the next failed connection attempt.
+const whenConnected = (socket: Socket): Promise<void> =>
 	new Promise<void>((resolve, reject) => {
-		const socket = connect()
-		function doEmit() {
+		if (socket.connected) {
+			resolve()
+
+			return
+		}
+		function onConnect() {
 			socket.off("connect_error", onConnectError)
-			socket.emit(event, payload)
-			socket.disconnect()
 			resolve()
 		}
 		function onConnectError(err: Error) {
-			socket.off("connect", doEmit)
-			socket.disconnect()
+			socket.off("connect", onConnect)
 			reject(err)
 		}
-		if (socket.connected) {
-			doEmit()
-		} else {
-			socket.once("connect", doEmit)
-			socket.once("connect_error", onConnectError)
-		}
+		socket.once("connect", onConnect)
+		socket.once("connect_error", onConnectError)
 	})
 
-// Reuse activeSocket while it is still connected, otherwise fall back to a
-// temporary socket.
+// Emit `event` on a short-lived socket opened only for this call and
+// disconnected as soon as the payload is sent (or the connection fails).
+const emitViaTemporarySocket = async (
+	connect: () => Socket,
+	event: string,
+	payload: unknown
+): Promise<void> => {
+	const socket = connect()
+	try {
+		await whenConnected(socket)
+		socket.emit(event, payload)
+	} finally {
+		socket.disconnect()
+	}
+}
+
+// Reuse activeSocket while it is connecting or connected: Socket.IO buffers
+// emits while it (re)connects, so a mount-time emit needs no throwaway socket.
+// A failed connection attempt still fails the emit, so callers can warn that
+// the server is unreachable. Fall back to a temporary socket when no stream
+// holds an active one.
 const emitWithSocketReuse = async (
 	activeSocket: Socket | null,
 	connect: () => Socket,
 	event: string,
 	payload: unknown
 ): Promise<EmitQueryResult> => {
-	if (activeSocket?.connected) {
-		activeSocket.emit(event, payload)
-
-		return { data: null }
-	}
-
 	try {
-		await emitViaTemporarySocket(connect, event, payload)
+		if (activeSocket?.active) {
+			activeSocket.emit(event, payload)
+			await whenConnected(activeSocket)
+		} else {
+			await emitViaTemporarySocket(connect, event, payload)
+		}
 
 		return { data: null }
 	} catch (error) {

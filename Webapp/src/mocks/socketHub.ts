@@ -18,6 +18,7 @@ export interface MockSocket {
 	emit: jest.Mock<void, [string, ...unknown[]]>
 	disconnect: jest.Mock
 	connected: boolean
+	active: boolean
 	trigger: (event: string, ...args: unknown[]) => void
 }
 
@@ -53,8 +54,12 @@ class SocketHub {
 					this.emit(channel, event, ...args)
 				}
 			}),
-			disconnect: jest.fn(),
+			disconnect: jest.fn(() => {
+				socket.connected = false
+				socket.active = false
+			}),
 			connected: !this.refusing.has(channel),
+			active: true,
 			trigger: (event, ...args) =>
 				(listeners[event] ?? []).forEach((handler) => handler(...args))
 		}
@@ -121,6 +126,7 @@ class SocketHub {
 			// socket; marking it dead makes the next emit open a tracked one.
 			this.sockets[channel].forEach((socket) => {
 				socket.connected = false
+				socket.active = false
 			})
 			this.sockets[channel] = []
 		})

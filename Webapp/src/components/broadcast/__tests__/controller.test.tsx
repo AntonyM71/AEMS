@@ -85,6 +85,26 @@ describe("OverlayController", () => {
 		)
 	})
 
+	it("queues broadcasts on its own socket while that socket is still connecting", async () => {
+		socketHub.refuseConnections("broadcast_control")
+		const user = userEvent.setup({ delay: null })
+		renderWithProviders(<OverlayController />)
+		await waitFor(() =>
+			expect(socketHub.openCount("broadcast_control")).toBeGreaterThan(0)
+		)
+		const openBeforeToggle = socketHub.openCount("broadcast_control")
+
+		await user.click(screen.getByRole("button", { name: "ICF logo" }))
+
+		await waitFor(() =>
+			expect(socketHub.emittedOn("broadcast_control")).toContainEqual([
+				"broadcast_control",
+				expect.objectContaining({ showImageCard: false })
+			])
+		)
+		expect(socketHub.openCount("broadcast_control")).toBe(openBeforeToggle)
+	})
+
 	it("carries the pre-selected competition, event and heat into the first broadcast", async () => {
 		renderWithProviders(<OverlayController />, {
 			preloadedState: {
