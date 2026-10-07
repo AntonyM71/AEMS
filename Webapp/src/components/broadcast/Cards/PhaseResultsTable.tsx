@@ -93,6 +93,7 @@ export const PhaseScoreTable = (inProps: PhaseScoreTableProps) => {
 				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
 					data={processScoresData(scores, phase.number_of_runs)}
+					dataColumns={scoreColumns(phase.number_of_runs)}
 					pageChangeTime={5}
 				/>
 			</Stack>
@@ -157,6 +158,13 @@ const PhaseDetails = ({
 		)
 	)
 }
+const runColumn = (runNumber: number) => `Run ${runNumber}`
+
+const scoreColumns = (numberOfRuns: number) => [
+	...Array.from({ length: numberOfRuns }, (_, i) => runColumn(i + 1)),
+	"Total Score"
+]
+
 const processScoresData = (
 	data: AthleteScoresWithAthleteInfo[],
 	numberOfRuns: number
@@ -165,7 +173,7 @@ const processScoresData = (
 
 	return data.map((d) => {
 		const runScores = runNumbers.reduce((acc, rn) => {
-			acc[`Run ${rn}`] = d.run_scores[rn - 1]?.did_not_start
+			acc[runColumn(rn)] = d.run_scores[rn - 1]?.did_not_start
 				? "DNS"
 				: d.run_scores[rn - 1]?.mean_run_score.toFixed(2) ?? "-"
 

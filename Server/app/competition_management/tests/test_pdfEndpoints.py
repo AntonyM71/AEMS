@@ -410,11 +410,11 @@ def test_phase_pdf_notes_use_compact_line_height(mock_phase: MagicMock) -> None:
     from fpdf.table import Table
 
     from app.competition_management.pdfEndpoints import (
-        HelveticaNeuePDF,
+        BrandPDF,
         build_phase_pdf_content,
     )
 
-    pdf = HelveticaNeuePDF()
+    pdf = BrandPDF()
     captured: dict[str, Any] = {}
     original_init = Table.__init__
 

@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box"
 import { useThemeProps } from "@mui/material/styles"
+import { dataFontFamily } from "../../../fonts"
 import { OverlayControlState } from "../../Interfaces"
 import { AemsPositionedThemeProps } from "../themeAugmentation"
 import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
@@ -105,7 +106,13 @@ export const AthleteOverview = ({
 							<Box
 								sx={smallLabelSx}
 							>{`Run ${run.runNumber}`}</Box>
-							<Box sx={{ fontSize: 28, fontWeight: 700 }}>
+							<Box
+								sx={{
+									fontSize: 28,
+									fontWeight: 700,
+									fontFamily: dataFontFamily
+								}}
+							>
 								{run.label}
 							</Box>
 						</Box>
@@ -125,7 +132,13 @@ export const AthleteOverview = ({
 					}}
 				>
 					<Box sx={{ ...smallLabelSx, fontSize: 16 }}>Total</Box>
-					<Box sx={{ fontSize: 42, fontWeight: 900 }}>
+					<Box
+						sx={{
+							fontSize: 42,
+							fontWeight: 900,
+							fontFamily: dataFontFamily
+						}}
+					>
 						{total ?? "-"}
 					</Box>
 				</Box>

@@ -7,6 +7,7 @@ import {
 import { OverlayControlState } from "../../Interfaces"
 import { FinalScoreLogic } from "../../roles/headJudge/FinalScore"
 import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
+import { dataFontFamily } from "../../../fonts"
 import { AemsPositionedThemeProps } from "../themeAugmentation"
 import { AffiliationPill } from "./AffiliationPill"
 import { useLiveRunScore } from "./LiveRunScore"
@@ -34,6 +35,7 @@ const RideClock = () => {
 				fontSize: 58,
 				lineHeight: 1,
 				fontWeight: 900,
+				fontFamily: dataFontFamily,
 				color: clockColor
 			}}
 		>

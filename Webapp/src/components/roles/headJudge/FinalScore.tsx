@@ -2,6 +2,7 @@ import Paper from "@mui/material/Paper"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { Variant } from "@mui/material/styles/createTypography"
+import { dataClassName } from "../../../fonts"
 import { makeLockedScoreStyle } from "../../competition/HeatScoreTable"
 const calculateAverage = (numbers: number[]): number =>
 	numbers.length
@@ -21,6 +22,7 @@ export const FinalScoreLogic = ({
 }) => (
 	<Typography
 		variant={textSize}
+		className={dataClassName}
 		data-testid="final-score-value"
 		color={locked ? "success" : "textPrimary"}
 		sx={makeLockedScoreStyle(locked)}

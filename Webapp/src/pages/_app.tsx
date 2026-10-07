@@ -8,6 +8,7 @@ import { useEffect, useMemo } from "react"
 import { Toaster } from "react-hot-toast"
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { pwBrightBlue, pwOrange } from "../components/broadcast/overlayTheme"
+import { brandFontFamily } from "../fonts"
 import Header from "../components/header/Header"
 import { getPreferDark, updatePreferDark } from "../redux/atoms/utilities"
 import { setupStore } from "../redux/store"
@@ -27,6 +28,7 @@ const App = ({ children, noLayout }: { children: any; noLayout?: boolean }) => {
 	const theme = useMemo(
 		() =>
 			createTheme({
+				typography: { fontFamily: brandFontFamily },
 				palette: {
 					mode: preferDark ? "dark" : "light",
 					primary: {
