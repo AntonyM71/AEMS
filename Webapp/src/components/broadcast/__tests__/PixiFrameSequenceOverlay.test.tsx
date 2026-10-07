@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "../../../mocks/server"
+import { useRotatingPage } from "../Cards/useRotatingPage"
 import PixiFrameSequenceOverlay from "../PixiFrameSequenceOverlay"
 
 jest.mock("pixi.js", () => {
@@ -396,5 +397,102 @@ describe("PixiFrameSequenceOverlay fallback mode", () => {
 		)
 		expect(contentWrapper()).not.toHaveClass("AemsOverlay-fallback")
 		expect(contentWrapper()).not.toHaveAttribute("data-visible")
+	})
+})
+
+const PAGE_CHANGE_SECONDS = 1
+
+const PagedContent = () => {
+	const { currentPage } = useRotatingPage(
+		Array.from({ length: 10 }, (_, index) => index),
+		1,
+		PAGE_CHANGE_SECONDS
+	)
+
+	return <div data-testid="content">Page {currentPage + 1}</div>
+}
+
+const advancePages = (pages: number) => {
+	act(() => {
+		jest.advanceTimersByTime(pages * PAGE_CHANGE_SECONDS * 1000)
+	})
+}
+
+describe("PixiFrameSequenceOverlay rotating content", () => {
+	beforeEach(() => {
+		jest.useFakeTimers()
+	})
+
+	afterEach(() => {
+		jest.clearAllMocks()
+		jest.useRealTimers()
+	})
+
+	const overlay = (isVisible: boolean) => (
+		<PixiFrameSequenceOverlay isVisible={isVisible}>
+			<PagedContent />
+		</PixiFrameSequenceOverlay>
+	)
+
+	it("opens on page 1 when shown again after being hidden", async () => {
+		const { rerender } = render(overlay(true))
+		await waitFor(() =>
+			expect(contentWrapper()).toHaveStyle({ opacity: 1 })
+		)
+		advancePages(1)
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 2")
+
+		rerender(overlay(false))
+		advancePages(3)
+		rerender(overlay(true))
+
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 1")
+	})
+
+	it("opens on page 1 after an intro longer than the page interval", async () => {
+		render(
+			<PixiFrameSequenceOverlay
+				frameUrls={["a.png", "b.png", "c.png", "d.png", "e.png"]}
+				holdImage={3}
+				fps={1}
+				isVisible
+			>
+				<PagedContent />
+			</PixiFrameSequenceOverlay>
+		)
+
+		await waitFor(
+			() => expect(contentWrapper()).toHaveStyle({ opacity: 1 }),
+			{ timeout: 5000 }
+		)
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 1")
+	})
+
+	it("keeps its page through the fallback exit hold and opens on page 1 when shown again", async () => {
+		failPixiInit()
+		const fallbackOverlay = (isVisible: boolean) => (
+			<PixiFrameSequenceOverlay
+				frameUrls={["a.png", "b.png"]}
+				fallbackExitMs={640}
+				isVisible={isVisible}
+			>
+				<PagedContent />
+			</PixiFrameSequenceOverlay>
+		)
+		const { rerender } = render(fallbackOverlay(true))
+		await expectFallbackShown()
+
+		advancePages(1)
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 2")
+
+		rerender(fallbackOverlay(false))
+		act(() => {
+			jest.advanceTimersByTime(639)
+		})
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 2")
+
+		advancePages(3)
+		rerender(fallbackOverlay(true))
+		expect(screen.getByTestId("content")).toHaveTextContent("Page 1")
 	})
 })

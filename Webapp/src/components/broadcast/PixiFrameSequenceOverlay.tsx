@@ -615,6 +615,17 @@ const PixiFrameSequenceOverlay = ({
 		phase === "loading" || phase === "intro" || phase === "outro"
 	// A fallback overlay keeps its content up while a retry reloads frames.
 	const shouldShowChildren = isVisible && (isFallback || !isAnimationActive)
+	// Remount the content on every show, so a rotating table opens on its first
+	// page instead of wherever its timer got to while the content was hidden.
+	const [showCount, setShowCount] = useState(0)
+	const [wasShowingChildren, setWasShowingChildren] =
+		useState(shouldShowChildren)
+	if (shouldShowChildren !== wasShowingChildren) {
+		setWasShowingChildren(shouldShowChildren)
+		if (shouldShowChildren) {
+			setShowCount((count) => count + 1)
+		}
+	}
 	// Hold fallback content at full opacity while the caller's own exit
 	// transition plays, then cut it; a plain fade would dim that transition.
 	const fallbackHideDelayMs = isVisible ? 0 : fallbackExitMs
@@ -658,9 +669,11 @@ const PixiFrameSequenceOverlay = ({
 					pointerEvents: "none"
 				}}
 			>
-				{isFallback && fallbackContent !== undefined
-					? fallbackContent
-					: children}
+				<React.Fragment key={showCount}>
+					{isFallback && fallbackContent !== undefined
+						? fallbackContent
+						: children}
+				</React.Fragment>
 			</div>
 		</div>
 	)
