@@ -34,7 +34,7 @@ export const CompetitionOverview = ({
 	}
 
 	return (
-		<Box sx={rootSx}>
+		<Box className="AemsCompetitionOverview-position" sx={rootSx}>
 			<Box
 				className="AemsCompetitionOverview-root"
 				sx={{ display: "grid", justifyItems: "start", gap: "14px" }}

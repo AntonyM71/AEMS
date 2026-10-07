@@ -8,6 +8,7 @@ import { getSelectedHeat } from "../../../redux/atoms/competitions"
 import {
 	HeatInfoResponse,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
+	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { AemsCardHeaderThemeProps } from "../themeAugmentation"
@@ -26,12 +27,7 @@ export const HeatSummaryTable = (inProps: HeatSummaryTableProps = {}) => {
 	} = useThemeProps({ props: inProps, name: "AemsHeatSummary" })
 
 	const selectedHeat = useSelector(getSelectedHeat)
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: selectedHeat
-		},
-		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
-	)
+	const { athletes, heatName } = useHeatStartList(selectedHeat)
 
 	if (!isVisible) {
 		return null
@@ -43,13 +39,13 @@ export const HeatSummaryTable = (inProps: HeatSummaryTableProps = {}) => {
 			sx={{ margin: "16px auto", position: "relative" }}
 		>
 			<Stack spacing={2}>
-				<HeatDetails titleAlign={titleAlign} />
+				<HeatDetails titleAlign={titleAlign} heatName={heatName} />
 				{/* A rule on the arena; invisible artwork clearance on the
 				    overlay, where the theme zeroes dividers and the height
 				    comes from AemsHeatSummary.spacerHeight. */}
 				<Divider sx={{ height: spacerHeight }} />
 				<BasicTable
-					data={processAthleteData(athletes?.currentData ?? []) ?? []}
+					data={processAthleteData(athletes)}
 					pageChangeTime={5}
 				/>
 			</Stack>
@@ -57,31 +53,54 @@ export const HeatSummaryTable = (inProps: HeatSummaryTableProps = {}) => {
 	)
 }
 const HeatDetails = ({
-	titleAlign
-}: Required<Pick<AemsCardHeaderThemeProps, "titleAlign">>) => {
-	const selectedHeat = useSelector(getSelectedHeat)
-	// currentData, not data: a skipped query still reports the last heat's data.
-	const { currentData: heatData } = useGetOneByPrimaryKeyHeatIdGetQuery(
-		{ id: selectedHeat },
-		{ refetchOnMountOrArgChange: true, skip: !selectedHeat }
-	)
-
-	return (
-		<Stack
-			direction="row"
-			justifyContent={titleAlign}
-			alignItems="flex-start"
-			sx={{ position: "relative", width: "100%" }}
+	titleAlign,
+	heatName
+}: Required<Pick<AemsCardHeaderThemeProps, "titleAlign">> & {
+	heatName?: string
+}) => (
+	<Stack
+		direction="row"
+		justifyContent={titleAlign}
+		alignItems="flex-start"
+		sx={{ position: "relative", width: "100%" }}
+	>
+		<Typography
+			variant="h4"
+			className="AemsHeatSummary-title"
+			sx={{ color: "text.primary" }}
 		>
-			<Typography
-				variant="h4"
-				className="AemsHeatSummary-title"
-				sx={{ color: "text.primary" }}
-			>
-				{heatData?.name}
-			</Typography>
-		</Stack>
+			{heatName}
+		</Typography>
+	</Stack>
+)
+
+/** The heat's athletes in bib order, with the heat's name and the event and
+ * phase it belongs to. */
+export const useHeatStartList = (heatId: string) => {
+	// currentData, not data: a skipped query still reports the last heat's data.
+	const { currentData: athletes = [] } =
+		useGetHeatInfoGetHeatInfoHeatIdGetQuery(
+			{ heatId },
+			{ refetchOnMountOrArgChange: true, skip: !heatId }
+		)
+	const { currentData: heatData } = useGetOneByPrimaryKeyHeatIdGetQuery(
+		{ id: heatId },
+		{ refetchOnMountOrArgChange: true, skip: !heatId }
 	)
+	const { currentData: phases } =
+		useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery(
+			{ heatId },
+			{ skip: !heatId }
+		)
+	const phase =
+		phases?.find((p) => p.id === athletes[0]?.phase_id) ?? phases?.[0]
+
+	return {
+		athletes,
+		heatName: heatData?.name,
+		eventName: athletes[0]?.event_name,
+		phaseName: phase?.name
+	}
 }
 const processAthleteData = (data: HeatInfoResponse[]) =>
 	data.map((d) => ({

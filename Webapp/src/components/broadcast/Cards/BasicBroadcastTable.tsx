@@ -5,8 +5,8 @@ import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import { useThemeProps } from "@mui/material/styles"
-import { useEffect, useState } from "react"
 import { AemsBasicTableThemeProps } from "../themeAugmentation"
+import { useRotatingPage } from "./useRotatingPage"
 
 interface BasicTableProps extends AemsBasicTableThemeProps {
 	data: Record<string, any>[]
@@ -25,27 +25,11 @@ export const BasicTable = (inProps: BasicTableProps) => {
 		padEmptyRows = false
 	} = useThemeProps({ props: inProps, name: "AemsBasicTable" })
 
-	const [currentPage, setCurrentPage] = useState(0)
-
-	// Calculate the total number of pages
-	const totalPages = Math.ceil(data.length / pageLimit)
-
-	// Automatically rotate pages based on pageChangeTime
-	useEffect(() => {
-		if (totalPages > 1) {
-			const interval = setInterval(() => {
-				setCurrentPage((prevPage) => (prevPage + 1) % totalPages)
-			}, pageChangeTime * 1000) // Convert seconds to milliseconds
-
-			return () => clearInterval(interval) // Cleanup on unmount
-		}
-	}, [totalPages, pageChangeTime])
-
-	// Get the data for the current page
-	const paginatedData = data.slice(
-		currentPage * pageLimit,
-		(currentPage + 1) * pageLimit
-	)
+	const {
+		pageItems: paginatedData,
+		currentPage,
+		totalPages
+	} = useRotatingPage(data, pageLimit, pageChangeTime)
 	if (!data || data.length === 0) {
 		return <></>
 	}

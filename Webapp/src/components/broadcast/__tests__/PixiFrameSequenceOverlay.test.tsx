@@ -351,6 +351,39 @@ describe("PixiFrameSequenceOverlay fallback mode", () => {
 		)
 	})
 
+	it("shows its fallback content while the graphics are down and its children once they load", async () => {
+		let configRequests = 0
+		server.use(
+			http.get("/componentInfo/pack1", () => {
+				configRequests += 1
+
+				return configRequests === 1
+					? new HttpResponse(null, { status: 503 })
+					: HttpResponse.json(pack1Config)
+			})
+		)
+		const overlay = (isVisible: boolean) => (
+			<PixiFrameSequenceOverlay
+				configName="pack1"
+				isVisible={isVisible}
+				fps={1000}
+				fallbackContent={<div>Backup layout</div>}
+			>
+				<div data-testid="content">Content</div>
+			</PixiFrameSequenceOverlay>
+		)
+
+		const { rerender } = render(overlay(true))
+		expect(await screen.findByText("Backup layout")).toBeInTheDocument()
+		expect(screen.queryByTestId("content")).not.toBeInTheDocument()
+
+		rerender(overlay(false))
+		rerender(overlay(true))
+
+		expect(await screen.findByTestId("content")).toBeInTheDocument()
+		expect(screen.queryByText("Backup layout")).not.toBeInTheDocument()
+	})
+
 	it("shows content without fallback mode when no frame source is given", async () => {
 		render(
 			<PixiFrameSequenceOverlay isVisible>
