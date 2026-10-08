@@ -1,7 +1,7 @@
-"""The /health endpoint must fail the container when Redis is gone.
+"""/health reports the server's dependencies; /livez reports only the process.
 
-Compose routes every broadcast through Redis, so a server that cannot reach it
-is not serving judges even though its database answers.
+The container healthcheck uses /livez so that autoheal restarts the server only
+for faults a restart can fix: restarting the server never brings Redis back.
 """
 
 from unittest.mock import patch
@@ -23,3 +23,11 @@ def test_unhealthy_when_redis_is_unreachable(client: TestClient) -> None:
 
     assert response.status_code == 503
     assert response.json() == {"status": "unhealthy"}
+
+
+def test_alive_even_when_redis_is_unreachable(client: TestClient) -> None:
+    with patch("main.redis_is_reachable", return_value=False):
+        response = client.get("/livez")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "alive"}

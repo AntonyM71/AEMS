@@ -142,6 +142,16 @@ def _check_database(db: Session) -> str:
     return "healthy" if result.scalar() == 1 else "unknown"
 
 
+@app.get("/livez", tags=["health"])
+async def liveness_check() -> dict[str, str]:
+    """Answers whenever this worker's event loop runs, without touching the DB or Redis.
+
+    The container healthcheck uses this so that restarting the server only
+    happens for faults a restart can fix; /health reports its dependencies.
+    """
+    return {"status": "alive"}
+
+
 @app.get("/health", tags=["health"])
 async def health_check(db: Session = Depends(get_transaction_session)) -> JSONResponse:
     db_status = await anyio.to_thread.run_sync(_check_database, db)
