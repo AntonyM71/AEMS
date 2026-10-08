@@ -500,3 +500,27 @@ class TestMakeRandomHeats:
         result = make_random_heats(100)
         expected = [f"{i}" for i in range(1, 101)]
         assert result == expected
+
+
+def test_rows_sharing_an_athlete_key_create_one_athlete_in_each_phase(
+    adapters: SimpleNamespace,
+) -> None:
+    start_list = pd.DataFrame(
+        columns=["first_name", "last_name", "bib", "Event", "Heat", "athlete_key"],
+        data=[
+            ["Carl", "Brook", 6, "K1 Men (Senior)", "10", 0],
+            ["Carl", "Brook", 6, "Squirt Men", "SQH2", 0],
+        ],
+    )
+
+    paddler_count, skipped_rows = process_competitors_df(start_list, "test_comp")
+
+    assert (paddler_count, skipped_rows) == (1, [])
+    adapters.post_athlete.assert_called_once()
+    athlete_id = adapters.post_athlete.call_args.args[0][0]["id"]
+    athlete_heats = [
+        recorded.args[0][0] for recorded in adapters.post_athlete_heat.call_args_list
+    ]
+    assert [entry["athlete_id"] for entry in athlete_heats] == [athlete_id] * 2
+    assert len({entry["phase_id"] for entry in athlete_heats}) == 2
+    assert len({entry["heat_id"] for entry in athlete_heats}) == 2

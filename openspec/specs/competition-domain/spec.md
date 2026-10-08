@@ -1,7 +1,7 @@
 # competition-domain Specification
 
 ## Purpose
-Defines the structural hierarchy (Competition -> Event -> Phase -> Heat -> Athlete) and per-phase configuration that scoring and every other capability operates on.
+Defines the structure (Competition -> Event -> Phase, with heats belonging to the competition and an athlete-heat entry placing an athlete in one heat for one phase) and per-phase configuration that scoring and every other capability operates on.
 
 ## Requirements
 

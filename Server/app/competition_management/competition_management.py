@@ -26,6 +26,8 @@ from app.competition_management.create_competition_from_xlsx import (
     InvalidFileTypeError,
     MissingColumnError,
     NoHeatInfoForNonRandomHeatError,
+    is_paddleuk_export,
+    paddleuk_to_start_list,
     process_competitors_df,
     read_start_list,
     validate_columns_and_data_types,
@@ -84,7 +86,13 @@ def upload(
         raise HTTPException(status_code=422, detail=msg)
     try:
         competitors_df = read_start_list(file.filename, file.file.read())
-        validate_columns_and_data_types(competitors_df, random_heats=random_heats)
+        if is_paddleuk_export(competitors_df):
+            competitors_df, conversion_skips = paddleuk_to_start_list(
+                competitors_df, random_heats=random_heats
+            )
+        else:
+            validate_columns_and_data_types(competitors_df, random_heats=random_heats)
+            conversion_skips = []
     except (
         InvalidFileTypeError,
         MissingColumnError,
@@ -107,7 +115,7 @@ def upload(
 
     content: dict[str, object] = {
         "message": f"Succesfully made competition {competition_name} with {number_of_paddlers_added} athletes.",
-        "skipped_rows": skipped_rows,
+        "skipped_rows": conversion_skips + skipped_rows,
     }
     return JSONResponse(status_code=201, content=content)
 

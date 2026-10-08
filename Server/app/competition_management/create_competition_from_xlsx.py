@@ -81,6 +81,193 @@ def _drop_blank_rows(competitors_df: pd.DataFrame) -> pd.DataFrame:
     return competitors_df
 
 
+PADDLEUK_MARKER_COLUMN = "heat number cat 1"
+PADDLEUK_BOAT_TYPES_IN_RUNNING_ORDER = ("Squirt", "C1", "OC1", "K1")
+PADDLEUK_HEAT_PREFIX_BOAT_TYPES = {
+    "K1H": "K1",
+    "C1H": "C1",
+    "SQH": "Squirt",
+    "OCH": "OC1",
+}
+
+
+def _normalised_header(column: object) -> str:
+    return str(column).strip().lower()
+
+
+def is_paddleuk_export(competitors_df: pd.DataFrame) -> bool:
+    return PADDLEUK_MARKER_COLUMN in map(_normalised_header, competitors_df.columns)
+
+
+def paddleuk_to_start_list(
+    competitors_df: pd.DataFrame, *, random_heats: bool
+) -> tuple[pd.DataFrame, list[dict[str, str]]]:
+    """Returns one row per athlete-event, keyed by `athlete_key` so each source
+    row stays one athlete, plus the entries that could not be paired to a heat.
+    """
+    first_name_column, last_name_column, bib_column = (
+        _paddleuk_column(competitors_df, name)
+        for name in ("First Name", "Last Name", "Bib number")
+    )
+    for column in (first_name_column, last_name_column):
+        if competitors_df[column].isna().any():
+            msg = f"Column '{column}' has a blank value"
+            raise ColumnTypeError(msg)
+    bibs = _paddleuk_bibs(competitors_df[bib_column])
+    event_boat_types = {
+        column: boat_type
+        for column in competitors_df.columns
+        if (boat_type := _event_boat_type(column))
+    }
+    heat_columns = [
+        column
+        for column in competitors_df.columns
+        if _normalised_header(column).startswith("heat")
+    ]
+
+    entries: list[dict] = []
+    skipped_rows: list[dict[str, str]] = []
+    for athlete_key, (index, row) in enumerate(competitors_df.iterrows()):
+        athlete = {
+            "first_name": row[first_name_column],
+            "last_name": row[last_name_column],
+            "bib": bibs[index],
+        }
+        entered = [column for column in event_boat_types if _is_yes(row[column])]
+        if random_heats:
+            pairs = dict.fromkeys(entered)
+            reasons = []
+        else:
+            heats = [
+                name for column in heat_columns if (name := _heat_name(row[column]))
+            ]
+            pairs, reasons = _pair_heats_to_events(
+                {column: event_boat_types[column] for column in entered}, heats
+            )
+        if not entered:
+            reasons = ["Not entered in any event"]
+        skipped_rows += [
+            {
+                "first_name": athlete["first_name"],
+                "last_name": athlete["last_name"],
+                "bib": str(athlete["bib"]),
+                "reason": reason,
+            }
+            for reason in reasons
+        ]
+        entries += [
+            {
+                **athlete,
+                "Event": str(event).strip(),
+                "Heat": pairs[event],
+                "athlete_key": athlete_key,
+            }
+            for event in entered
+            if event in pairs
+        ]
+
+    columns = ["first_name", "last_name", "bib", "Event", "Heat", "athlete_key"]
+    start_list = pd.DataFrame(entries, columns=columns)
+    if random_heats:
+        start_list = start_list.drop(columns="Heat")
+    return start_list, skipped_rows
+
+
+def _paddleuk_column(competitors_df: pd.DataFrame, name: str) -> str:
+    for column in competitors_df.columns:
+        if _normalised_header(column) == name.lower():
+            return column
+    msg = f"Column '{name}' is missing from the file"
+    raise MissingColumnError(msg)
+
+
+def _paddleuk_bibs(bib_cells: pd.Series) -> pd.Series:
+    if bib_cells.isna().any():
+        msg = f"Column '{bib_cells.name}' has a blank value"
+        raise ColumnTypeError(msg)
+    bibs = pd.to_numeric(bib_cells, errors="coerce")
+    if bibs.isna().any() or (bibs % 1 != 0).any():
+        msg = f"Column '{bib_cells.name}' must contain only whole numbers"
+        raise ColumnTypeError(msg)
+    return bibs.astype(int)
+
+
+def _event_boat_type(column: object) -> str | None:
+    header = _normalised_header(column)
+    return next(
+        (
+            boat_type
+            for boat_type in PADDLEUK_BOAT_TYPES_IN_RUNNING_ORDER
+            if header.startswith(boat_type.lower())
+        ),
+        None,
+    )
+
+
+def _heat_boat_type(heat: str) -> str | None:
+    return next(
+        (
+            boat_type
+            for prefix, boat_type in PADDLEUK_HEAT_PREFIX_BOAT_TYPES.items()
+            if heat.upper().startswith(prefix)
+        ),
+        None,
+    )
+
+
+def _is_yes(cell: object) -> bool:
+    return isinstance(cell, str) and cell.strip().upper() == "YES"
+
+
+def _heat_name(cell: object) -> str | None:
+    if pd.isna(cell):
+        return None
+    # A heat column holding only numbers and blanks is read as float.
+    if isinstance(cell, float) and cell.is_integer():
+        return str(int(cell))
+    return str(cell).strip()
+
+
+def _pair_heats_to_events(
+    event_boat_types: dict[str, str], heats: list[str]
+) -> tuple[dict[str, str], list[str]]:
+    """The heat columns list an athlete's events in running order, so once each
+    prefixed heat claims its boat type's event, unprefixed heats take the
+    remaining events in that order.
+    """
+    unpaired_events = sorted(
+        event_boat_types,
+        key=lambda event: PADDLEUK_BOAT_TYPES_IN_RUNNING_ORDER.index(
+            event_boat_types[event]
+        ),
+    )
+    pairs: dict[str, str] = {}
+    reasons: list[str] = []
+    prefixed_heats = [heat for heat in heats if _heat_boat_type(heat)]
+    unprefixed_heats = [heat for heat in heats if not _heat_boat_type(heat)]
+    for heat in prefixed_heats + unprefixed_heats:
+        boat_type = _heat_boat_type(heat)
+        event = next(
+            (
+                event
+                for event in unpaired_events
+                if boat_type in (None, event_boat_types[event])
+            ),
+            None,
+        )
+        if event is None:
+            reasons.append(
+                f"Heat '{heat}' has no matching {boat_type or 'remaining'} event"
+            )
+            continue
+        pairs[event] = heat
+        unpaired_events.remove(event)
+    reasons += [
+        f"No heat for event '{str(event).strip()}'" for event in unpaired_events
+    ]
+    return pairs, reasons
+
+
 def generate_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -233,7 +420,8 @@ def process_competitors_df(
 
         if random_heats:
             competitors_df = competitors_df.sample(frac=1)
-        for i, (_index, row) in enumerate(competitors_df.iterrows()):
+        athlete_ids: dict[object, str] = {}
+        for i, (index, row) in enumerate(competitors_df.iterrows()):
             phase_id = event_phase_map.get(row["Event"].strip(), None)
 
             if phase_id is None:
@@ -263,19 +451,23 @@ def process_competitors_df(
                 )
                 continue
 
-            athlete_id = generate_uuid()
-            athlete_data = [
-                {
-                    "id": athlete_id,
-                    "first_name": row["first_name"],
-                    "last_name": row["last_name"],
-                    "affiliation": row.get("affiliation", default=None),
-                    "bib": str(row["bib"]),
-                }
-            ]
+            athlete_key = row.get("athlete_key", default=index)
+            athlete_id = athlete_ids.get(athlete_key)
+            if athlete_id is None:
+                athlete_id = generate_uuid()
+                athlete_data = [
+                    {
+                        "id": athlete_id,
+                        "first_name": row["first_name"],
+                        "last_name": row["last_name"],
+                        "affiliation": row.get("affiliation", default=None),
+                        "bib": str(row["bib"]),
+                    }
+                ]
 
-            post_athlete(athlete_data, db=db)
-            paddler_count += 1
+                post_athlete(athlete_data, db=db)
+                paddler_count += 1
+                athlete_ids[athlete_key] = athlete_id
 
             athlete_heat_id = generate_uuid()
             athlete_heat_data = [

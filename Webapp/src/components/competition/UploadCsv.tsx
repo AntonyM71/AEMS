@@ -81,6 +81,18 @@ const CSVFormatTable = () => {
 							</Alert>
 						</TableCell>
 					</TableRow>
+					<TableRow>
+						<TableCell colSpan={2}>
+							<Alert severity="info">
+								Paddle UK entry exports can be uploaded as they
+								are. Prefix each heat with K1H, C1H, SQH or OCH
+								to match it to that boat's event; heat numbers
+								with no prefix are matched to the athlete's
+								remaining events in running order: Squirt, C1,
+								OC1, K1.
+							</Alert>
+						</TableCell>
+					</TableRow>
 				</TableBody>
 			</Table>
 		</TableContainer>
