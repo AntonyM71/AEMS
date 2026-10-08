@@ -1,6 +1,13 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   server:
     build: ./Server
+    logging: *default-logging
 
     environment:
       - CONNECTION_STRING=postgresql://postgres:postgres@db:5432/postgres
@@ -31,6 +38,7 @@ services:
 
   frontend:
     build: ./Webapp
+    logging: *default-logging
     ports:
       - "0.0.0.0:3000:3000"
     depends_on:
@@ -39,6 +47,7 @@ services:
 
   nginx:
     image: nginx:latest
+    logging: *default-logging
     ports:
       - "81:80"
     volumes:
@@ -57,6 +66,7 @@ services:
       - aems_shared
   db:
     image: postgres:17
+    logging: *default-logging
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
@@ -74,6 +84,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    logging: *default-logging
     restart: always
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

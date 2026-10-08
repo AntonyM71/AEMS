@@ -37,6 +37,7 @@ class TestLoggingMiddleware:
 
         with (
             patch("custom_logging.RotatingFileHandler") as mock_file_handler,
+            patch.dict("os.environ", {"WORKER_INDEX": "2"}),
             patch(
                 "custom_logging.structlog.stdlib.ProcessorFormatter",
                 return_value=mock_formatter,
@@ -46,7 +47,7 @@ class TestLoggingMiddleware:
             setup_logging(json_logs=True, log_name="server")
 
             mock_file_handler.assert_called_once_with(
-                "../logs/server.log", maxBytes=100000
+                "../logs/server-2.log", maxBytes=10_000_000, backupCount=5
             )
             mock_handler.setFormatter.assert_called_once_with(mock_formatter)
 

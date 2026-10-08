@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from logging.handlers import RotatingFileHandler
 from types import TracebackType
@@ -65,9 +66,14 @@ def setup_logging(
     root_logger.addHandler(handler)
     root_logger.setLevel(log_level.upper())
     if json_logs:
+        # Each gunicorn worker gets its own file: RotatingFileHandler does not
+        # coordinate rollover between processes sharing one file.
+        worker_index = os.environ.get("WORKER_INDEX")
+        log_file_stem = f"{log_name}-{worker_index}" if worker_index else log_name
         rotating_file_handler = RotatingFileHandler(
-            f"../logs/{log_name}.log",
-            maxBytes=100000,
+            f"../logs/{log_file_stem}.log",
+            maxBytes=10_000_000,
+            backupCount=5,
         )
         rotating_file_handler.setFormatter(json_formatter)
         root_logger.addHandler(rotating_file_handler)
