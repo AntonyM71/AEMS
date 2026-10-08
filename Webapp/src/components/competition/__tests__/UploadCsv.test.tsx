@@ -32,6 +32,16 @@ const fillCompleteForm = async (user: ReturnType<typeof userEvent.setup>) => {
 }
 
 describe("UploadCsv", () => {
+	it("tells operators that Paddle UK entry exports are accepted and how heats are matched", () => {
+		renderWithProviders(<UploadCsv />)
+
+		expect(
+			screen.getByText(
+				/Paddle UK entry exports can be uploaded as they are/
+			)
+		).toHaveTextContent("K1H, C1H, SQH or OCH")
+	})
+
 	it("keeps the submit button disabled until the form is complete", async () => {
 		renderWithProviders(<UploadCsv />)
 
