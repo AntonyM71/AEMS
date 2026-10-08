@@ -18,8 +18,9 @@ context: |
     Timer/ (Raspberry Pi timing box), GraphicsServer/ (static overlay host), e2e/
     (Playwright). A capability's spec may span services when a feature does
     (e.g. an API change plus the UI that uses it) - don't split by service alone.
-  - Domain model: Competition -> Events -> Phases -> Heats -> Athletes, with runs,
-    scored moves, and bonuses. Scoring aggregates multiple judges per athlete/run.
+  - Domain model: Competition -> Events -> Phases. Heats belong to the competition,
+    not an event or phase; an athlete-heat entry places an athlete in one heat for
+    one phase. Runs, scored moves, and bonuses hang off that. Scoring aggregates multiple judges per athlete/run.
   - Requirements and scenarios should reflect what the existing tests and code
     actually assert, not aspirational behavior - see Server/app/*/tests/ and
     Webapp/src/**/__tests__/ before writing a spec for existing behavior.
