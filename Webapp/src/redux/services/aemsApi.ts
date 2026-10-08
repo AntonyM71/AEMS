@@ -445,6 +445,12 @@ const injectedRtkApi = api.injectEndpoints({
 		rootGet: build.query<RootGetApiResponse, RootGetApiArg>({
 			query: () => ({ url: `/` })
 		}),
+		livenessCheckLivezGet: build.query<
+			LivenessCheckLivezGetApiResponse,
+			LivenessCheckLivezGetApiArg
+		>({
+			query: () => ({ url: `/livez` })
+		}),
 		healthCheckHealthGet: build.query<
 			HealthCheckHealthGetApiResponse,
 			HealthCheckHealthGetApiArg
@@ -746,6 +752,11 @@ export type RootGetApiResponse = /** status 200 Successful Response */ {
 	[key: string]: string
 }
 export type RootGetApiArg = void
+export type LivenessCheckLivezGetApiResponse =
+	/** status 200 Successful Response */ {
+		[key: string]: string
+	}
+export type LivenessCheckLivezGetApiArg = void
 export type HealthCheckHealthGetApiResponse =
 	/** status 200 Successful Response */ any
 export type HealthCheckHealthGetApiArg = void
@@ -1088,5 +1099,6 @@ export const {
 	usePartialUpdateOneByPrimaryKeyAthleteheatIdPatchMutation,
 	useGetManyRunStatusGetQuery,
 	useRootGetQuery,
+	useLivenessCheckLivezGetQuery,
 	useHealthCheckHealthGetQuery
 } = injectedRtkApi

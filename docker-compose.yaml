@@ -6,7 +6,7 @@ services:
       - CONNECTION_STRING=postgresql://postgres:postgres@db:5432/postgres
       - REDIS_URL=redis://redis:6379/0
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/livez || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -14,6 +14,8 @@ services:
     ports:
       - "0.0.0.0:8000:8000"
     restart: always
+    labels:
+      - autoheal=true
     volumes:
       - ~/logs:/logs
     command:
@@ -36,6 +38,14 @@ services:
     depends_on:
       - server
     restart: always
+    labels:
+      - autoheal=true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   nginx:
     image: nginx:latest
@@ -47,8 +57,10 @@ services:
       - frontend
       - server
     restart: always
+    labels:
+      - autoheal=true
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost/nginx-health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -58,6 +70,8 @@ services:
   db:
     image: postgres:17
     restart: always
+    labels:
+      - autoheal=true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 30s
@@ -75,6 +89,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
+    labels:
+      - autoheal=true
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -82,6 +98,18 @@ services:
       retries: 5
     expose:
       - 6379
+
+  # Docker Engine restarts a container only when its process exits; this
+  # restarts the ones labelled autoheal=true whose healthcheck fails. Each
+  # labelled service's healthcheck must test only that container, or autoheal
+  # restarts a healthy service for another's fault.
+  autoheal:
+    image: willfarrell/autoheal:1.2.0
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   postgres-prod-data:

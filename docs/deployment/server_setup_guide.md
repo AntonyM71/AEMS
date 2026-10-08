@@ -122,6 +122,32 @@ docker compose -f docker-compose.yaml up --build
 
 If you also want to run the broadcast graphics stack, follow [Running AEMS With the Graphics Server](/docs/deployment/aems-with-graphics-server.md).
 
+### Automatic restarts and health checks
+
+The stack includes an `autoheal` container that restarts any AEMS service whose healthcheck fails, such as a server that has stopped responding or a frozen Redis. Docker alone restarts a container only when its process exits. The venue has no internet, so pull the autoheal image along with the others before you travel:
+
+```bash
+docker compose -f docker-compose.yaml pull
+docker compose -f docker-compose.yaml build
+```
+
+To check the stack by hand, run:
+
+```bash
+docker compose -f docker-compose.yaml ps
+```
+
+Every service should show `(healthy)`. A service that shows `(unhealthy)` for more than a minute or two is one autoheal could not fix by restarting it. Use this table to find the cause:
+
+| Symptom | Check | Fix |
+| --- | --- | --- |
+| Live scores, run status, timer or overlays stop updating, but submitting scores still works | `redis` is unhealthy, or `curl http://localhost:8000/health` returns 503 | `docker compose -f docker-compose.yaml restart redis` |
+| Every page or request fails | `server` is unhealthy or restarting | `docker compose -f docker-compose.yaml logs server`, then `restart server` |
+| Score requests fail but `server` is healthy | `db` is unhealthy | `docker compose -f docker-compose.yaml logs db`. Restarting the database does not lose data, which lives in `~/postgres-prod-data` |
+| The webapp does not load, but `http://<server-ip>:8000/docs` does | `frontend` or `nginx` is unhealthy | `restart frontend` or `restart nginx` |
+
+`http://<server-ip>:8000/health` reports whether the server can reach the database and Redis. `/livez` reports only whether the server process is responding, and that is what its container healthcheck uses, so that autoheal doesn't restart the server for a database or Redis fault that a server restart can't fix.
+
 ## Setting Up the Timing Box (Raspberry Pi)
 
 To configure the timing box, you'll need to:
