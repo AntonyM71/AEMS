@@ -241,22 +241,22 @@ The server SHALL treat an uploaded CSV or XLSX file as a Paddle UK entry export 
 
 - Each row SHALL be one athlete, taking `First Name`, `Last Name`, and `Bib number`. The server SHALL ignore the other personal columns (ticket type, dates of birth, age, gender, age category).
 - Every column whose header starts with `K1`, `C1`, `Squirt`, or `OC1` SHALL be an event column, and that prefix is the event's boat type. An athlete is entered in an event when that cell holds `YES`, compared case-insensitively; any other value, including blank, means not entered.
-- The server SHALL create one event, named by its column header, with one "Prelim" phase, for each event column in which at least one athlete is entered.
+- The server SHALL create one event, named by its column header, with one "Prelim" phase, for each event column in which at least one athlete is entered and paired into a heat (see "Paddle UK heats are paired to events by boat-type prefix and running order").
 - Every column whose header starts with `Heat` SHALL be a heat column. Each non-blank heat cell names a heat. Heats are shared across the competition, so one heat SHALL be created per distinct heat name, as with the AEMS layout.
 - Each athlete SHALL be created once, with an athlete-heat entry for every event they are paired into.
 - Required columns, and blank or non-numeric values in them, SHALL be rejected with a 422 as for the AEMS layout. The `detail` names the Paddle UK column.
 
 #### Scenario: A Paddle UK export is recognised and imported without any form change
 - **WHEN** an operator uploads a Paddle UK entry export through the normal start-list upload, with random heat allocation off
-- **THEN** the upload succeeds, creating one event and Prelim phase for each event column with at least one `YES`, named by its header, plus one heat per distinct heat name, and the response's message counts one athlete per row
+- **THEN** the upload succeeds, creating one event and Prelim phase, named by its header, for each event column with at least one `YES` paired into a heat, plus one heat per distinct heat name, and the response's message counts each imported athlete once, however many events they entered
 
 #### Scenario: A single-event athlete goes into their heat
 - **WHEN** a Paddle UK row has `YES` only under `K1 Men (Senior)` and `9` under `Heat number Cat 1`
 - **THEN** the athlete is placed in heat `9` within the `K1 Men (Senior)` Prelim phase
 
 #### Scenario: A multi-event athlete is one athlete in several phases
-- **WHEN** a Paddle UK row for Charlie Brackpool, bib 6, has `YES` under `K1 Men (Senior)` and `Squirt Men`, `SQH2` under `Heat number Cat 1`, and `10` under `Heat Cat 2`
-- **THEN** exactly one athlete record is created for Charlie Brackpool with bib 6, placed in heat `SQH2` within the `Squirt Men` Prelim phase and in heat `10` within the `K1 Men (Senior)` Prelim phase
+- **WHEN** a Paddle UK row for Carl Brook, bib 6, has `YES` under `K1 Men (Senior)` and `Squirt Men`, `SQH2` under `Heat number Cat 1`, and `10` under `Heat Cat 2`
+- **THEN** exactly one athlete record is created for Carl Brook with bib 6, placed in heat `SQH2` within the `Squirt Men` Prelim phase and in heat `10` within the `K1 Men (Senior)` Prelim phase
 
 #### Scenario: A required Paddle UK column is missing
 - **WHEN** a Paddle UK export has no `First Name`, `Last Name`, or `Bib number` column

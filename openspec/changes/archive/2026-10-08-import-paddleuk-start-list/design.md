@@ -44,7 +44,7 @@ skipped_rows = conversion_skips + skipped_rows
 *Alternative considered:* letting the operator pick a format on the form. The user chose auto-detection, and it needs no API or UI field.
 
 ### One athlete per source row via `athlete_key`
-`process_competitors_df` keeps a dict `athlete_key → athlete_id`. It creates the Athlete only when it first sees a key, and creates an athlete-heat for every row. When the column is absent (AEMS layout), the key is the DataFrame index, which is unique per row, so behaviour is unchanged. `paddler_count` counts athletes created, not rows. That matches the existing "N athletes" message and the spec's "one athlete per row".
+`process_competitors_df` keeps a dict `athlete_key → athlete_id`. It creates the Athlete only when it first sees a key, and creates an athlete-heat for every row. When the column is absent (AEMS layout), the key is the DataFrame index, which is unique per row, so behaviour is unchanged. `paddler_count` counts athletes created, not rows. That matches the existing "N athletes" message, which counts each imported athlete once.
 
 ### Pairing algorithm (per athlete row)
 ```

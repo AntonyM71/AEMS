@@ -102,9 +102,7 @@ def is_paddleuk_export(competitors_df: pd.DataFrame) -> bool:
 def paddleuk_to_start_list(
     competitors_df: pd.DataFrame, *, random_heats: bool
 ) -> tuple[pd.DataFrame, list[dict[str, str]]]:
-    """Converts a Paddle UK entry export to the AEMS start-list layout.
-
-    Returns one row per athlete-event, keyed by `athlete_key` so each source
+    """Returns one row per athlete-event, keyed by `athlete_key` so each source
     row stays one athlete, plus the entries that could not be paired to a heat.
     """
     first_name_column, last_name_column, bib_column = (
@@ -235,7 +233,7 @@ def _pair_heats_to_events(
 ) -> tuple[dict[str, str], list[str]]:
     """The heat columns list an athlete's events in running order, so once each
     prefixed heat claims its boat type's event, unprefixed heats take the
-    remaining events in that order. Returns event→heat pairs and skip reasons.
+    remaining events in that order.
     """
     unpaired_events = sorted(
         event_boat_types,
