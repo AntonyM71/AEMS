@@ -153,6 +153,7 @@ export const LeaderboardTower = ({
 			</Box>
 			{climb ? (
 				<TowerClimb
+					key={climb.id}
 					climb={climb}
 					placesThrough={towerPlacesThrough}
 					onFinished={finishClimb}
@@ -193,7 +194,12 @@ export const LeaderboardTowerModal = ({
 				zIndex: 1400
 			}}
 		>
-			<LeaderboardTower overlayControlState={overlayControlState} />
+			{/* Keyed by phase, so a phase change starts the tower afresh: no
+			    pending reload, queued climb or rotation carries over. */}
+			<LeaderboardTower
+				key={overlayControlState.selectedPhase}
+				overlayControlState={overlayControlState}
+			/>
 		</Box>
 	)
 

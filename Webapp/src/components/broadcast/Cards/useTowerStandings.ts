@@ -114,7 +114,7 @@ const useReloadOnRunStatus = (
 	standings: TowerStanding[],
 	refetch: () => PromiseLike<unknown>
 ): LandedLock | null => {
-	const { data: stream } = usePhaseRunStatusStreamQuery(
+	const { currentData: stream } = usePhaseRunStatusStreamQuery(
 		{ phaseId },
 		{ skip: !phaseId }
 	)
@@ -128,7 +128,7 @@ const useReloadOnRunStatus = (
 	const [landedLock, setLandedLock] = useState<LandedLock | null>(null)
 
 	useEffect(() => {
-		if (!latest) {
+		if (!latest || latest.phase_id !== phaseId) {
 			return
 		}
 		if (latest.locked && !latest.did_not_start) {
@@ -146,7 +146,7 @@ const useReloadOnRunStatus = (
 		}, RUN_STATUS_BURST_MS)
 
 		return () => clearTimeout(timer)
-	}, [latest])
+	}, [latest, phaseId])
 
 	// The first connection needs no catch-up: the scores were just fetched.
 	useEffect(() => {

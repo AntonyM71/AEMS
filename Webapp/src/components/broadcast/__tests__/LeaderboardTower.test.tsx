@@ -17,7 +17,10 @@ import {
 	defaultOverlayControllerState,
 	OverlayControlState
 } from "../../Interfaces"
-import { LeaderboardTower } from "../Cards/LeaderboardTower"
+import {
+	LeaderboardTower,
+	LeaderboardTowerModal
+} from "../Cards/LeaderboardTower"
 import Overlay from "../overlay"
 
 jest.mock("../../roles/headJudge/WebSocketConnections")
@@ -274,6 +277,82 @@ describe("Leaderboard tower climbs", () => {
 		expect(rowAtPlace(2)).toHaveTextContent("ATHLETE20")
 		await elapse(14000)
 		expect(climber()).toBeNull()
+	})
+
+	it("starts the next queued climb from that climber's own place", async () => {
+		await renderTower()
+		// Every place the climbing row is drawn at, in order, per athlete.
+		const drawnAt: Record<string, string[]> = {}
+		const observer = new MutationObserver(() => {
+			const row = climber()
+			const name = row?.querySelector(".AemsTower-name")?.textContent
+			const place = climberPlace()
+			if (name && place && drawnAt[name]?.at(-1) !== place) {
+				drawnAt[name] = [...(drawnAt[name] ?? []), place]
+			}
+		})
+		observer.observe(document.body, {
+			subtree: true,
+			childList: true,
+			characterData: true,
+			attributes: true
+		})
+		field = [...field, newcomerScoring(925)]
+		lock("athlete-Newcomer")
+		await elapse(1500)
+		field = field.map((athlete, i) =>
+			i === 19
+				? { ...athlete, run_scores: [run(0, 815), run(1, 995)] }
+				: athlete
+		)
+		lock("athlete-Athlete20", 1)
+		await elapse(14000)
+		observer.disconnect()
+
+		// 21st, not 20th: the newcomer has joined above Athlete20 by then.
+		expect(drawnAt.ATHLETE20?.[0]).toBe("21")
+	})
+
+	it("drops a lock from the previous phase when the operator changes phase", async () => {
+		const phaseTwo = fieldOf(5).map((athlete) => ({
+			...athlete,
+			last_name: `Semi${athlete.last_name}`
+		}))
+		const scoreRequests: Record<string, number> = {}
+		server.use(
+			http.get("/api/getPhaseScores/:phaseId", ({ params }) => {
+				const phaseId = String(params.phaseId)
+				scoreRequests[phaseId] = (scoreRequests[phaseId] ?? 0) + 1
+
+				return HttpResponse.json({
+					phase_id: phaseId,
+					scores: phaseId === "phase-2" ? phaseTwo : field
+				})
+			})
+		)
+		const { rerender } = renderWithProviders(
+			<LeaderboardTowerModal
+				overlayControlState={towerState({ towerPlacesThrough: 10 })}
+			/>
+		)
+		await screen.findByText("ATHLETE1")
+		field = [...field, newcomerScoring(925)]
+		lock("athlete-Newcomer")
+		await elapse(300)
+
+		rerender(
+			<LeaderboardTowerModal
+				overlayControlState={towerState({
+					towerPlacesThrough: 10,
+					selectedPhase: "phase-2"
+				})}
+			/>
+		)
+		expect(await screen.findByText("SEMIATHLETE1")).toBeInTheDocument()
+		await elapse(3000)
+
+		expect(climber()).toBeNull()
+		expect(scoreRequests["phase-2"]).toBe(1)
 	})
 })
 

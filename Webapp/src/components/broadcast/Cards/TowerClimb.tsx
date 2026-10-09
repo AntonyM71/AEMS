@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { dataFontFamily } from "../../../fonts"
 import { pwBlack, pwBrightBlue, pwOrange, pwWhite } from "../overlayTheme"
 import { climbPlan, ClimbPlan } from "./climbPlan"
@@ -20,6 +20,8 @@ const JUST_CLIMBED_MS = 3000
 const MAX_WAITING_CLIMBS = 3
 
 export interface ClimbScene {
+	/** Unique per queued climb, so each one mounts its own TowerClimb. */
+	id: number
 	plan: ClimbPlan
 	before: TowerStanding[]
 	after: TowerStanding[]
@@ -106,6 +108,7 @@ export const useClimbQueue = ({
 	enabled: boolean
 }) => {
 	const [queue, setQueue] = useState<ClimbScene[]>([])
+	const scenesQueued = useRef(0)
 
 	useEffect(() => {
 		if (!landedLock || !enabled) {
@@ -119,7 +122,9 @@ export const useClimbQueue = ({
 			placesThrough
 		)
 		if (plan) {
+			scenesQueued.current += 1
 			const scene = {
+				id: scenesQueued.current,
 				plan,
 				before: landedLock.before,
 				after: standings,
