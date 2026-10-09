@@ -128,7 +128,7 @@ const useReloadOnRunStatus = (
 	const [landedLock, setLandedLock] = useState<LandedLock | null>(null)
 
 	useEffect(() => {
-		if (!latest || latest.phase_id !== phaseId) {
+		if (latest?.phase_id !== phaseId) {
 			return
 		}
 		if (latest.locked && !latest.did_not_start) {

@@ -40,7 +40,7 @@ export const towerLayout = (
 		: []
 	const between = range(MEDAL_PLACES, bubble[0] ?? count)
 	const below = range(
-		bubble.length ? bubble[bubble.length - 1] + 1 : count,
+		bubble.length ? (bubble.at(-1) ?? 0) + 1 : count,
 		count
 	)
 	const spare = TOWER_MAX_ROWS - medals.length - bubble.length

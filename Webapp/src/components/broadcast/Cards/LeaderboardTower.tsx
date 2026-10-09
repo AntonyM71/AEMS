@@ -87,7 +87,7 @@ const Standings = ({
 	return (
 		<Box className="AemsTower-standings">
 			{sections.map((section, k) => (
-				<Box key={k} className="AemsTower-section">
+				<Box key={section.places[0]} className="AemsTower-section">
 					{k > 0 && (rotates(k) || rotates(k - 1)) && (
 						<Box className="AemsTower-break" aria-hidden />
 					)}
