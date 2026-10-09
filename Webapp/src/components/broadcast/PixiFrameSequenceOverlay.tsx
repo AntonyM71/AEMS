@@ -626,6 +626,26 @@ const PixiFrameSequenceOverlay = ({
 			setShowCount((count) => count + 1)
 		}
 	}
+	// A fallback panel wipes in by transitioning from its hidden style, so the
+	// remounted content must paint once as hidden before data-visible is true.
+	const [revealedShow, setRevealedShow] = useState(showCount)
+	const isRevealed = revealedShow === showCount
+	useEffect(() => {
+		if (isRevealed) {
+			return
+		}
+		let secondFrame = 0
+		const firstFrame = requestAnimationFrame(() => {
+			secondFrame = requestAnimationFrame(() =>
+				setRevealedShow(showCount)
+			)
+		})
+
+		return () => {
+			cancelAnimationFrame(firstFrame)
+			cancelAnimationFrame(secondFrame)
+		}
+	}, [isRevealed, showCount])
 	// Hold fallback content at full opacity while the caller's own exit
 	// transition plays, then cut it; a plain fade would dim that transition.
 	const fallbackHideDelayMs = isVisible ? 0 : fallbackExitMs
@@ -657,7 +677,9 @@ const PixiFrameSequenceOverlay = ({
 			/>
 			<div
 				className={isFallback ? "AemsOverlay-fallback" : undefined}
-				data-visible={isFallback ? String(isVisible) : undefined}
+				data-visible={
+					isFallback ? String(isVisible && isRevealed) : undefined
+				}
 				style={{
 					position: "relative",
 					zIndex: 1,
