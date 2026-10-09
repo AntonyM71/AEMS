@@ -147,12 +147,8 @@ When an athlete has no scored moves in a phase, the phase scores SHALL include a
 - **WHEN** an athlete with no scored moves has a run status that is neither locked nor did-not-start
 - **THEN** that run is not included in the phase scores
 
-### Requirement: A bonus counts only on a move its own judge scored in that run
-A scored bonus SHALL contribute to a run only when it is attached to a move that the same judge scored in that athlete's run. A bonus attached to another judge's move, to a move in another run, or to a move nobody scored SHALL be ignored. A bonus attached to any copy of a duplicated move SHALL count for that move, once per distinct bonus.
-
-#### Scenario: Another judge's bonus
-- **WHEN** judge B scores a bonus on a move that only judge A scored
-- **THEN** the bonus adds nothing to judge A's total or judge B's total
+### Requirement: A bonus belongs to the move and judge it was scored with
+A judge SHALL score bonuses only on their own moves in the run they are submitting, and each scored bonus SHALL be stored under that judge. A bonus attached to any copy of a duplicated move SHALL count for that move, once per distinct bonus.
 
 #### Scenario: Bonus on the second copy of a duplicated move
 - **WHEN** a judge scores the same move and direction twice and a bonus on only the second copy

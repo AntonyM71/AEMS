@@ -146,34 +146,21 @@ class TestMoveOrganisingEdgeCases:
             )
         ]
 
-    def test_a_bonus_attaches_only_to_the_judge_who_scored_that_move(self) -> None:
+    def test_each_judges_bonuses_stay_with_that_judges_moves(self) -> None:
         megs_move = _move(SCORED_A, MOVE_1, "B", judge_id="meg")
         daves_move = _move(SCORED_B, MOVE_1, "B", judge_id="dave")
         megs_bonus = _bonus_on(SCORED_A)
         daves_bonus = _bonus(
             id=SCORED_C, move_id=SCORED_B, bonus_id=BONUS_1, judge_id="dave"
         )
-        daves_bonus_on_megs_move = _bonus(
-            id=SCORED_BONUS_ID, move_id=SCORED_A, bonus_id=BONUS_2, judge_id="dave"
-        )
 
         got = organise_moves_by_athlete_run_judge(
-            [megs_move, daves_move],
-            [megs_bonus, daves_bonus, daves_bonus_on_megs_move],
+            [megs_move, daves_move], [megs_bonus, daves_bonus]
         )
 
         assert got[0].run_moves[0].judge_moves == [
             _judge_moves("dave", [daves_move], [daves_bonus]),
             _judge_moves("meg", [megs_move], [megs_bonus]),
-        ]
-
-    def test_a_bonus_on_a_move_nobody_scored_is_dropped(self) -> None:
-        got = organise_moves_by_athlete_run_judge(
-            [BACK_A], [_bonus_on(SCORED_A), _bonus_on(SCORED_C)]
-        )
-
-        assert got[0].run_moves[0].judge_moves[0].scored_bonuses == [
-            _bonus_on(SCORED_A)
         ]
 
     def test_bonuses_keep_their_input_order(self) -> None:

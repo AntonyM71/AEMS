@@ -27,7 +27,7 @@ sig Heat { phase: one Phase }
 sig Athlete {}
 sig Judge {}
 
--- A MoveKey is one "make_move_string" identity: every ScoredMove row sharing
+-- A MoveKey is one dedup identity: every ScoredMove row sharing
 -- (moveDef, direction, athlete, judge, runNumber, heat) collapses onto it.
 sig MoveKey {
 	moveDef: one MoveDef,
