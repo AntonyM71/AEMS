@@ -27,6 +27,7 @@ kanban
         Athlete Card
         ICF/Event Logo
         Themes
+        Leaderboard Tower
     Polished
 
 ```
@@ -91,6 +92,10 @@ When `configName` is provided, the component fetches `{configEndpointBase}/{conf
 -   ~~**Athlete Run Scores**: Athlete Card Plus: individual run scores, final score~~ (Athlete Overview, `Cards/AthleteOverview.tsx`; current ranking not shown)
 -   **Custom Text**: Overlay displaying custom text for delays etc.
 -   **Cut off Score**: Show the score needed to make the "cut" to the next round.
+
+### Sidebar
+
+-   ~~**Leaderboard Tower**: F1-style standings down the right edge for the selected phase, ranked on locked runs: medal places, the qualifying bubble around a "Top N through" cut line, and windows that rotate through the rest. Timing tower or Waterline style; an athlete whose locked run moves them up climbs the board place by place. The run corner moves inwards while it is on air.~~ (`Cards/LeaderboardTower.tsx`; drawn in CSS, no graphics-pack artwork)
 
 ### Upper Third Overlay
 

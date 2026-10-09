@@ -6,6 +6,7 @@ export const pwOrange = "#FF5A00"
 export const pwBlack = "#000000"
 export const pwWhite = "#FFFFFF"
 export const pwBrightBlue = "#00DCFF"
+export const runCornerRight = 72
 // Shared by the table and its card so they stay registered with the same
 // width of background artwork.
 const scoreboardCardMaxWidth = 1150
@@ -154,7 +155,11 @@ export const lightTheme = createTheme({
 		},
 		AemsRunCorner: {
 			defaultProps: {
-				rootSx: { position: "absolute", right: 72, bottom: 72 }
+				rootSx: {
+					position: "absolute",
+					right: runCornerRight,
+					bottom: 72
+				}
 			}
 		},
 		MuiTable: {

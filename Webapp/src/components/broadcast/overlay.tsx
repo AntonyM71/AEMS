@@ -5,6 +5,7 @@ import { AthleteOverviewModal } from "./Cards/AthleteOverview"
 import { CompetitionOverviewModal } from "./Cards/CompetitionOverview"
 import { EventTitleModal } from "./Cards/EventTitle"
 import { HeatListModal } from "./Cards/HeatListModal"
+import { LeaderboardTowerModal } from "./Cards/LeaderboardTower"
 import { PhaseResultsModal } from "./Cards/PhaseResultsModal"
 import { RunCornerModal } from "./Cards/RunCorner"
 import { lightTheme } from "./overlayTheme"
@@ -42,6 +43,9 @@ const Overlay: OverlayComponent = () => {
 					overlayControlState={overlayControlState}
 				/>
 				<RunCornerModal overlayControlState={overlayControlState} />
+				<LeaderboardTowerModal
+					overlayControlState={overlayControlState}
+				/>
 				<CompetitionOverviewModal
 					overlayControlState={overlayControlState}
 				/>

@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box"
 import { useThemeProps } from "@mui/material/styles"
+import useMediaQuery from "@mui/material/useMediaQuery"
 import {
 	useGetOneByPrimaryKeyEventIdGetQuery,
 	useGetOneByPrimaryKeyHeatIdGetQuery
@@ -8,10 +9,12 @@ import { OverlayControlState } from "../../Interfaces"
 import { FinalScoreLogic } from "../../roles/headJudge/FinalScore"
 import FullscreenPixiOverlay from "../FullscreenPixiOverlay"
 import { dataFontFamily } from "../../../fonts"
+import { runCornerRight } from "../overlayTheme"
 import { AemsPositionedThemeProps } from "../themeAugmentation"
 import { AffiliationPill } from "./AffiliationPill"
 import { useLiveRunScore } from "./LiveRunScore"
 import { useRunCount } from "./RunCard"
+import { TOWER_RIGHT, TOWER_WIDTH } from "./towerParts"
 import { useRideClock } from "./useRideClock"
 
 const RideClock = () => {
@@ -198,15 +201,44 @@ export const RunCorner = ({
 	)
 }
 
+const TOWER_CLEARANCE_PX = 24
+// Far enough left that the run corner's right edge clears the tower.
+const SHIFT_FOR_TOWER_PX =
+	TOWER_RIGHT + TOWER_WIDTH + TOWER_CLEARANCE_PX - runCornerRight
+
+/** Moves inwards, artwork and all, while the leaderboard tower is on air. */
 export const RunCornerModal = ({
 	overlayControlState
 }: {
 	overlayControlState: OverlayControlState
-}) => (
-	<FullscreenPixiOverlay
-		configName="runCorner"
-		isVisible={overlayControlState.showLiveRunScore}
-	>
-		<RunCorner overlayControlState={overlayControlState} />
-	</FullscreenPixiOverlay>
-)
+}) => {
+	const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)", {
+		noSsr: true
+	})
+
+	// Fixed and full-viewport itself: a transformed ancestor becomes the
+	// containing block of the fixed Pixi canvas inside.
+	return (
+		<Box
+			className="AemsRunCorner-layer"
+			sx={{
+				position: "fixed",
+				inset: 0,
+				zIndex: 1400,
+				transform: overlayControlState.showLeaderboardTower
+					? `translateX(-${SHIFT_FOR_TOWER_PX}px)`
+					: "none",
+				transition: reducedMotion
+					? "none"
+					: "transform 500ms cubic-bezier(.4,0,.2,1)"
+			}}
+		>
+			<FullscreenPixiOverlay
+				configName="runCorner"
+				isVisible={overlayControlState.showLiveRunScore}
+			>
+				<RunCorner overlayControlState={overlayControlState} />
+			</FullscreenPixiOverlay>
+		</Box>
+	)
+}

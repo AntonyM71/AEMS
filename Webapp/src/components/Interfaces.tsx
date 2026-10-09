@@ -10,6 +10,13 @@ export interface OverlayControlState {
 	showAthleteOverview: boolean
 	showCompetitionOverview: boolean
 	competitionOverviewList: "events" | "heats"
+	showLeaderboardTower: boolean
+	towerStyle: "timing" | "waterline"
+	// Null draws no cut line.
+	towerPlacesThrough: number | null
+	// Most rows for the qualifiers above the bubble; null shows all that fit.
+	towerQualifierRows: number | null
+	towerClimb: boolean
 	// When true, displays take competition, heat, athlete and run from the
 	// head judge's position instead of the selections below.
 	followHeadJudge: boolean
@@ -32,6 +39,11 @@ export const defaultOverlayControllerState: OverlayControlState = {
 	showAthleteOverview: false,
 	showCompetitionOverview: false,
 	competitionOverviewList: "events",
+	showLeaderboardTower: false,
+	towerStyle: "timing",
+	towerPlacesThrough: null,
+	towerQualifierRows: null,
+	towerClimb: true,
 	followHeadJudge: false,
 	selectedCompetition: "",
 	selectedEvent: "",

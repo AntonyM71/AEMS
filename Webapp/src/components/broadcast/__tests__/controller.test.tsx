@@ -273,6 +273,136 @@ describe("OverlayController", () => {
 		])
 	})
 
+	describe("Leaderboard tower", () => {
+		const lastEmitted = () => {
+			const emits = socketHub.emittedOn("broadcast_control")
+
+			return emits[emits.length - 1][1] as Record<string, unknown>
+		}
+
+		it("refuses to show the tower until a phase is selected", async () => {
+			const user = userEvent.setup({ delay: null })
+			renderWithProviders(<OverlayController />)
+
+			await user.click(
+				screen.getByRole("button", { name: "Leaderboard tower" })
+			)
+
+			expect(toast.error).toHaveBeenCalledWith(
+				"Please select a phase to use this feature"
+			)
+			expect(socketHub.emittedOn("broadcast_control")).not.toContainEqual(
+				[
+					"broadcast_control",
+					expect.objectContaining({ showLeaderboardTower: true })
+				]
+			)
+		})
+
+		it("turns only the tower on", async () => {
+			const user = userEvent.setup({ delay: null })
+			renderWithProviders(<OverlayController />, {
+				preloadedState: { competitions: { selectedPhase: "phase-1" } }
+			})
+			await waitFor(() =>
+				expect(lastEmitted()).toMatchObject({
+					selectedPhase: "phase-1"
+				})
+			)
+			const before = lastEmitted()
+
+			await user.click(
+				screen.getByRole("button", { name: "Leaderboard tower" })
+			)
+
+			await waitFor(() =>
+				expect(lastEmitted()).toEqual({
+					...before,
+					showLeaderboardTower: true
+				})
+			)
+		})
+
+		it("starts with the default tower settings", async () => {
+			renderWithProviders(<OverlayController />)
+
+			await waitFor(() =>
+				expect(lastEmitted()).toMatchObject({
+					towerStyle: "timing",
+					towerPlacesThrough: null,
+					towerQualifierRows: null,
+					towerClimb: true
+				})
+			)
+			expect(
+				screen.getByRole("button", { name: "Timing tower" })
+			).toHaveAttribute("aria-pressed", "true")
+			expect(
+				screen.getByRole("combobox", {
+					name: "Qualifiers above the bubble"
+				})
+			).toHaveTextContent("Show all that fit")
+			expect(
+				screen.getByRole("checkbox", { name: "Climb on new scores" })
+			).toBeChecked()
+		})
+
+		it("carries places through, and an empty field as no cut line", async () => {
+			const user = userEvent.setup({ delay: null })
+			renderWithProviders(<OverlayController />)
+			const placesThrough = screen.getByRole("spinbutton", {
+				name: "Places through"
+			})
+
+			await user.type(placesThrough, "10")
+			await waitFor(() =>
+				expect(lastEmitted()).toMatchObject({ towerPlacesThrough: 10 })
+			)
+
+			await user.clear(placesThrough)
+			await waitFor(() =>
+				expect(lastEmitted()).toMatchObject({
+					towerPlacesThrough: null
+				})
+			)
+		})
+
+		it("changes settings without touching any visibility flag", async () => {
+			const user = userEvent.setup({ delay: null })
+			renderWithProviders(<OverlayController />)
+			await waitFor(() => expect(lastEmitted()).toBeDefined())
+			const visibility = (state: Record<string, unknown>) =>
+				Object.fromEntries(
+					Object.entries(state).filter(([key]) =>
+						key.startsWith("show")
+					)
+				)
+			const before = visibility(lastEmitted())
+
+			await user.click(screen.getByRole("button", { name: "Waterline" }))
+			await user.click(
+				screen.getByRole("combobox", {
+					name: "Qualifiers above the bubble"
+				})
+			)
+			await user.click(
+				screen.getByRole("option", { name: "Cycle 3 at a time" })
+			)
+			await user.click(
+				screen.getByRole("checkbox", { name: "Climb on new scores" })
+			)
+
+			await waitFor(() =>
+				expect(lastEmitted()).toMatchObject({
+					towerStyle: "waterline",
+					towerQualifierRows: 3,
+					towerClimb: false
+				})
+			)
+			expect(visibility(lastEmitted())).toEqual(before)
+		})
+	})
+
 	it("relays the operator's choice to list heats in the competition overview", async () => {
 		const user = userEvent.setup({ delay: null })
 		renderWithProviders(<OverlayController />, {
