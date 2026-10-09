@@ -418,7 +418,8 @@ def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresRespo
     )
     athlete_moves_with_judges = [
         AthleteMovesWithJudgeInfo(
-            **a.model_dump(),
+            athlete_id=a.athlete_id,
+            run_moves=a.run_moves,
             number_of_judges=next(
                 ath.phases.number_of_judges
                 for ath in athlete_heat
@@ -625,7 +626,9 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
     )
     athlete_moves_with_judges = [
         AthleteMovesWithJudgeInfo(
-            **a.model_dump(), number_of_judges=phase.number_of_judges
+            athlete_id=a.athlete_id,
+            run_moves=a.run_moves,
+            number_of_judges=phase.number_of_judges,
         )
         for a in athlete_moves_list
     ]
