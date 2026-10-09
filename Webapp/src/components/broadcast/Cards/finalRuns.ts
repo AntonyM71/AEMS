@@ -2,11 +2,7 @@ import { RunScores } from "../../../redux/services/aemsApi"
 
 /** The runs the head judge has locked or marked did-not-start, in run order.
  * Only these go to air, so a half-scored run never shows. */
-export const lockedOrDnsOnly = <
-	T extends Pick<RunScores, "run_number" | "locked" | "did_not_start">
->(
-	runScores: T[]
-): T[] =>
+export const lockedOrDnsOnly = (runScores: RunScores[]): RunScores[] =>
 	runScores
 		.filter((run) => run.did_not_start || run.locked)
 		.sort((a, b) => a.run_number - b.run_number)

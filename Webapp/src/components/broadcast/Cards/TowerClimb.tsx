@@ -16,14 +16,11 @@ const BEFORE_RETURN_MS = 500
 const HOLD_MS = 3600
 // How long the climber's row stays marked once the normal layout is back.
 const JUST_CLIMBED_MS = 3000
-// Climbs waiting behind the one on screen; older ones redraw in place.
-const MAX_WAITING_CLIMBS = 3
 
 export interface ClimbScene {
 	/** Unique per queued climb, so each one mounts its own TowerClimb. */
 	id: number
 	plan: ClimbPlan
-	before: TowerStanding[]
 	after: TowerStanding[]
 	runNumber: number
 }
@@ -92,7 +89,7 @@ export const climbTimeline = (
 		crossedCut
 	})
 
-	return { frames, holdMs: HOLD_MS }
+	return frames
 }
 
 /** Climbs earned by landed locks, played one at a time. */
@@ -126,19 +123,10 @@ export const useClimbQueue = ({
 			const scene = {
 				id: scenesQueued.current,
 				plan,
-				before: landedLock.before,
 				after: standings,
 				runNumber: landedLock.lock.run_number
 			}
-			setQueue((current) =>
-				current.length > MAX_WAITING_CLIMBS
-					? [
-							current[0],
-							...current.slice(-MAX_WAITING_CLIMBS + 1),
-							scene
-					  ]
-					: [...current, scene]
-			)
+			setQueue((current) => [...current, scene])
 		}
 		// Only a newly landed lock starts a climb, not a later redraw.
 	}, [landedLock])
@@ -187,7 +175,7 @@ export const TowerClimb = ({
 	placesThrough: number | null
 	onFinished: () => void
 }) => {
-	const { frames, holdMs } = useMemo(
+	const frames = useMemo(
 		() => climbTimeline(climb.plan, placesThrough),
 		[climb, placesThrough]
 	)
@@ -200,7 +188,7 @@ export const TowerClimb = ({
 			at += next.delay
 			timers.push(setTimeout(() => setFrame(next), at))
 		})
-		timers.push(setTimeout(onFinished, at + holdMs))
+		timers.push(setTimeout(onFinished, at + HOLD_MS))
 
 		return () => timers.forEach(clearTimeout)
 		// A new climb mounts a new TowerClimb, so this runs once per climb.

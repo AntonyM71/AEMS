@@ -16,7 +16,6 @@ export interface TowerLayoutOptions {
 	/** Most rows for the qualifiers between the medals and the bubble; null
 	 * gives them every row that fits. */
 	qualifierRows: number | null
-	maxRows?: number
 }
 
 const range = (from: number, to: number) =>
@@ -26,14 +25,10 @@ const range = (from: number, to: number) =>
  * is left of the tower between the athletes above and below the bubble. */
 export const towerLayout = (
 	count: number,
-	{
-		placesThrough,
-		qualifierRows,
-		maxRows = TOWER_MAX_ROWS
-	}: TowerLayoutOptions
+	{ placesThrough, qualifierRows }: TowerLayoutOptions
 ): TowerSection[] => {
 	const capsQualifiers = placesThrough !== null && qualifierRows !== null
-	if (count <= maxRows && !capsQualifiers) {
+	if (count <= TOWER_MAX_ROWS && !capsQualifiers) {
 		return [{ places: range(0, count), rows: count }]
 	}
 	const medals = range(0, Math.min(MEDAL_PLACES, count))
@@ -48,7 +43,7 @@ export const towerLayout = (
 		bubble.length ? bubble[bubble.length - 1] + 1 : count,
 		count
 	)
-	const spare = maxRows - medals.length - bubble.length
+	const spare = TOWER_MAX_ROWS - medals.length - bubble.length
 	const betweenRows = Math.min(
 		between.length,
 		capsQualifiers ? qualifierRows : Infinity,

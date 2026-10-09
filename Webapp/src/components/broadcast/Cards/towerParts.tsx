@@ -46,11 +46,7 @@ export const TowerRow = ({
 	]
 
 	return (
-		<Box
-			className={classes.filter(Boolean).join(" ")}
-			data-athlete-id={standing.athleteId}
-			sx={sx}
-		>
+		<Box className={classes.filter(Boolean).join(" ")} sx={sx}>
 			<span className="AemsTower-place">{place}</span>
 			<span className="AemsTower-bib">{standing.bib}</span>
 			<span className="AemsTower-name">
