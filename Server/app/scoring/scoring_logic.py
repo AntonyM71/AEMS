@@ -1,13 +1,10 @@
 from collections import defaultdict
 from collections.abc import Callable
+from operator import attrgetter
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
-
-
-def all_equal(iterable: list) -> bool:
-    return len({*iterable}) <= 1
 
 
 class PydanticScoredMoves(BaseModel):
@@ -142,18 +139,21 @@ def _score_judge_run(
     )
 
 
+_SAME_RIDE_FIELDS = [
+    (attrgetter("judge_id"), "different judges"),
+    (attrgetter("run_number"), "different run_numbers"),
+    # UUID.__hash__ runs in Python; hashing the underlying int stays in C.
+    (attrgetter("athlete_id.int"), "different athlete_ids"),
+    (attrgetter("heat_id.int"), "different heat_ids"),
+    (attrgetter("phase_id.int"), "different phase_ids"),
+]
+
+
 def validate_all_moves_from_same_judge_run_athlete(
     scored_moves: list[PydanticScoredMovesResponse],
 ) -> None:
-    fields = [
-        ("judge_id", "different judges"),
-        ("run_number", "different run_numbers"),
-        ("athlete_id", "different athlete_ids"),
-        ("heat_id", "different heat_ids"),
-        ("phase_id", "different phase_ids"),
-    ]
-    for attr, label in fields:
-        if not all_equal([getattr(sm, attr) for sm in scored_moves]):
+    for value_of, label in _SAME_RIDE_FIELDS:
+        if len(set(map(value_of, scored_moves))) > 1:
             msg = f"Move List contains moves from {label}"
             raise MixedUpScoresheetExceptionError(msg)
 

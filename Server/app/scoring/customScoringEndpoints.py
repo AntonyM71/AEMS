@@ -11,8 +11,9 @@ from fastapi import (
     status,
 )
 from pydantic import BaseModel, ConfigDict, TypeAdapter
+from sqlalchemy import ColumnElement, Text, cast, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from app.common.socket_manager import sio
 from app.scoresheetEndpoints import (
@@ -385,14 +386,66 @@ def get_heat_scores(
     return calculate_heat_scores_response(heat_id=heat_id, db=db)
 
 
-def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresResponse:
-    moves = db.query(ScoredMoves).filter(ScoredMoves.heat_id == heat_id).all()
-    run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
-        moves
+_SCORED_MOVES = TypeAdapter(list[PydanticScoredMovesResponse])
+_SCORED_BONUSES = TypeAdapter(list[PydanticScoredBonusesResponse])
+
+
+def _as_json_array(*columns: InstrumentedAttribute) -> ColumnElement[str]:
+    """All selected rows as one JSON array of objects keyed by column name.
+
+    Pydantic parses the array in Rust; on a large phase that is several times
+    faster than building a Python row or ORM entity per scored move.
+    """
+    pairs = [part for column in columns for part in (column.key, column)]
+    return cast(
+        func.coalesce(func.json_agg(func.json_build_object(*pairs)), "[]"), Text
     )
+
+
+def _load_scored_moves(
+    db: Session, scope: ColumnElement[bool]
+) -> list[PydanticScoredMovesResponse]:
+    payload = db.execute(
+        select(
+            _as_json_array(
+                ScoredMoves.id,
+                ScoredMoves.move_id,
+                ScoredMoves.heat_id,
+                ScoredMoves.run_number,
+                ScoredMoves.phase_id,
+                ScoredMoves.judge_id,
+                ScoredMoves.athlete_id,
+                ScoredMoves.direction,
+            )
+        ).where(scope)
+    ).scalar_one()
+    return _SCORED_MOVES.validate_json(payload)
+
+
+def _load_scored_bonuses(
+    db: Session, scope: ColumnElement[bool]
+) -> list[PydanticScoredBonusesResponse]:
+    """Bonuses on the scored moves selected by ``scope``."""
+    payload = db.execute(
+        select(
+            _as_json_array(
+                ScoredBonuses.id,
+                ScoredBonuses.move_id,
+                ScoredBonuses.bonus_id,
+                ScoredBonuses.judge_id,
+            )
+        )
+        .select_from(ScoredBonuses)
+        .join(ScoredMoves, ScoredBonuses.move_id == ScoredMoves.id)
+        .where(scope)
+    ).scalar_one()
+    return _SCORED_BONUSES.validate_json(payload)
+
+
+def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresResponse:
+    pydantic_moves = _load_scored_moves(db, ScoredMoves.heat_id == heat_id)
+    run_statuses = db.query(RunStatus).filter(RunStatus.heat_id == heat_id).all()
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.heat_id == heat_id).all()
-    move_ids = [m.id for m in pydantic_moves]
     athletes = db.query(Athlete).filter(
         Athlete.id.in_([a.athlete_id for a in athlete_heat])
     )
@@ -407,11 +460,7 @@ def calculate_heat_scores_response(heat_id: str, db: Session) -> HeatScoresRespo
         .filter(AvailableBonuses.sheet_id.in_(scoresheets))
         .all()
     )
-    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
-
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
-        bonuses
-    )
+    pydantic_bonuses = _load_scored_bonuses(db, ScoredMoves.heat_id == heat_id)
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves, bonuses=pydantic_bonuses
@@ -587,17 +636,13 @@ def assemble_phase_scores(
 
 
 def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
-    moves = db.query(ScoredMoves).filter(ScoredMoves.phase_id == phase_id).all()
+    pydantic_moves = _load_scored_moves(db, ScoredMoves.phase_id == phase_id)
     run_statuses = db.query(RunStatus).filter(RunStatus.phase_id == phase_id).all()
     phase = db.query(Phase).filter(Phase.id == phase_id).one_or_none()
     if phase is None:
         msg = f"Phase with id : {phase_id} does not exist "
         raise ValueError(msg)
-    pydantic_moves = TypeAdapter(list[PydanticScoredMovesResponse]).validate_python(
-        moves
-    )
     athlete_heat = db.query(AthleteHeat).filter(AthleteHeat.phase_id == phase_id).all()
-    move_ids = [m.id for m in pydantic_moves]
     athletes: list[Athlete] = (
         db.query(Athlete)
         .filter(Athlete.id.in_([a.athlete_id for a in athlete_heat]))
@@ -613,11 +658,7 @@ def calculate_phase_scores(phase_id: str, db: Session) -> PhaseScoresResponse:
         .filter(AvailableBonuses.sheet_id.in_(scoresheets))
         .all()
     )
-    bonuses = db.query(ScoredBonuses).filter(ScoredBonuses.move_id.in_(move_ids)).all()
-
-    pydantic_bonuses = TypeAdapter(list[PydanticScoredBonusesResponse]).validate_python(
-        bonuses
-    )
+    pydantic_bonuses = _load_scored_bonuses(db, ScoredMoves.phase_id == phase_id)
 
     athlete_moves_list = organise_moves_by_athlete_run_judge(
         moves=pydantic_moves,
