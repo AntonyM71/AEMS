@@ -154,7 +154,9 @@ const expectFallbackShown = async () => {
 	await waitFor(() =>
 		expect(contentWrapper()).toHaveClass("AemsOverlay-fallback")
 	)
-	expect(contentWrapper()).toHaveAttribute("data-visible", "true")
+	await waitFor(() =>
+		expect(contentWrapper()).toHaveAttribute("data-visible", "true")
+	)
 	expect(contentWrapper()).toHaveStyle({ opacity: 1 })
 }
 
@@ -494,5 +496,32 @@ describe("PixiFrameSequenceOverlay rotating content", () => {
 		advancePages(3)
 		rerender(fallbackOverlay(true))
 		expect(screen.getByTestId("content")).toHaveTextContent("Page 1")
+	})
+
+	it("mounts shown fallback content hidden for two frames so its wipe can transition", async () => {
+		failPixiInit()
+		const fallbackOverlay = (isVisible: boolean) => (
+			<PixiFrameSequenceOverlay
+				frameUrls={["a.png", "b.png"]}
+				fallbackExitMs={640}
+				isVisible={isVisible}
+			>
+				<PagedContent />
+			</PixiFrameSequenceOverlay>
+		)
+		const { rerender } = render(fallbackOverlay(true))
+		await expectFallbackShown()
+		rerender(fallbackOverlay(false))
+		act(() => {
+			jest.advanceTimersByTime(640)
+		})
+
+		rerender(fallbackOverlay(true))
+		expect(contentWrapper()).toHaveAttribute("data-visible", "false")
+
+		act(() => {
+			jest.advanceTimersByTime(40)
+		})
+		expect(contentWrapper()).toHaveAttribute("data-visible", "true")
 	})
 })
