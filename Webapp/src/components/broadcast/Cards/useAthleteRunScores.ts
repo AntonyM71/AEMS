@@ -5,6 +5,7 @@ import {
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
 import { useAthleteRunStatusStreamQuery } from "../../../redux/services/streamingApi"
+import { bestRunsTotal, lockedOrDnsOnly } from "./finalRuns"
 
 export interface AthleteRunLabel {
 	runNumber: number
@@ -102,14 +103,6 @@ const lockedOrDnsRuns = (
 	data: PhaseScoresResponse | undefined,
 	athleteId: string | undefined
 ) =>
-	(data?.scores.find((s) => s.athlete_id === athleteId)?.run_scores ?? [])
-		.filter((run) => run.did_not_start || run.locked)
-		.sort((a, b) => a.run_number - b.run_number)
-
-// Mirrors the server's phase total (calculate_heat_scores), restricted to
-// locked runs: the server's own total also counts runs still being judged.
-const bestRunsTotal = (scores: number[], scoringRuns: number): number =>
-	[...scores]
-		.sort((x, y) => y - x)
-		.slice(0, scoringRuns)
-		.reduce((sum, score) => sum + score, 0)
+	lockedOrDnsOnly(
+		data?.scores.find((s) => s.athlete_id === athleteId)?.run_scores ?? []
+	)

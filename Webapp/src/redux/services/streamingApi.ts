@@ -193,6 +193,35 @@ export const streamingApi = emptySplitApi.injectEndpoints({
 				socket.disconnect()
 			}
 		}),
+		/** The latest run-status message for any athlete in a phase, and how
+		 * many times the socket has connected, so a listener can catch up on
+		 * whatever it missed while disconnected. Listen-only, as above. */
+		phaseRunStatusStream: build.query<
+			{ latest: RunStatus | null; connects: number },
+			{ phaseId: string }
+		>({
+			queryFn: () => ({ data: { latest: null, connects: 0 } }),
+			async onCacheEntryAdded(
+				{ phaseId },
+				{ updateCachedData, cacheEntryRemoved }
+			) {
+				const socket = connectWebRunStatusSocket()
+				socket.on("connect", () => {
+					updateCachedData((draft) => {
+						draft.connects += 1
+					})
+				})
+				socket.on("run_status", (data: RunStatus) => {
+					if (data?.phase_id === phaseId) {
+						updateCachedData((draft) => {
+							draft.latest = data
+						})
+					}
+				})
+				await cacheEntryRemoved
+				socket.disconnect()
+			}
+		}),
 		runStatusStream: build.query<
 			RunStatus | undefined,
 			{ heatId: string; athleteId: string; runNumber: number }
@@ -420,6 +449,7 @@ export const {
 	useTimerStreamQuery,
 	useRunStatusStreamQuery,
 	useAthleteRunStatusStreamQuery,
+	usePhaseRunStatusStreamQuery,
 	useAthleteMovesAndBonusesStreamQuery,
 	useBroadcastControlStreamQuery,
 	useBroadcastControlRequestStreamQuery,

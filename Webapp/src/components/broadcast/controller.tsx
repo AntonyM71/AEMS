@@ -39,6 +39,7 @@ import {
 import { AthleteInfo } from "../roles/scribe/InfoBar"
 import { PaddlerSelector } from "../roles/scribe/InfoBar/PaddlerSelector"
 import { RunSelector } from "../roles/scribe/InfoBar/Runselector"
+import { TowerSettings } from "./TowerSettings"
 
 const describeFollowedPosition = (position?: HeadJudgePosition | null) => {
 	if (!position) {
@@ -274,8 +275,8 @@ const OverlayController: React.FC = () => {
 						md: "repeat(4, minmax(0, 1fr))"
 					},
 					gridTemplateAreas: {
-						xs: `"logo" "overview" "title" "heat" "phase" "athlete" "run"`,
-						md: `"logo . . ." "overview . heat phase" "title . . ." ". . . ." "athlete . . run"`
+						xs: `"logo" "overview" "title" "heat" "phase" "tower" "athlete" "run"`,
+						md: `"logo . . ." "overview . heat phase" "title . . tower" ". . . tower" "athlete . . run"`
 					},
 					gridTemplateRows: { md: "auto auto auto 1fr auto" },
 					alignItems: "start",
@@ -371,6 +372,33 @@ const OverlayController: React.FC = () => {
 						}}
 					/>
 				</Box>
+				<Stack spacing={1} sx={{ gridArea: "tower" }}>
+					<GraphicTile
+						label="Leaderboard tower"
+						onAir={overlayControlState.showLeaderboardTower}
+						onClick={() => {
+							if (
+								overlayControlState.showLeaderboardTower ||
+								overlayControlState.selectedPhase
+							) {
+								toggleKey("showLeaderboardTower")
+							} else {
+								toast.error(
+									"Please select a phase to use this feature"
+								)
+							}
+						}}
+					/>
+					<TowerSettings
+						settings={overlayControlState}
+						onChange={(change) =>
+							setOverlayControlState((prevState) => ({
+								...prevState,
+								...change
+							}))
+						}
+					/>
+				</Stack>
 				<Box sx={{ gridArea: "athlete", alignSelf: "end" }}>
 					<GraphicTile
 						label="Athlete overview"
