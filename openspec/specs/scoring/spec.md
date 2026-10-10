@@ -146,3 +146,47 @@ When an athlete has no scored moves in a phase, the phase scores SHALL include a
 #### Scenario: Run still in progress
 - **WHEN** an athlete with no scored moves has a run status that is neither locked nor did-not-start
 - **THEN** that run is not included in the phase scores
+
+### Requirement: A bonus belongs to the move and judge it was scored with
+A judge SHALL score bonuses only on their own moves in the run they are submitting, and each scored bonus SHALL be stored under that judge. A bonus attached to any copy of a duplicated move SHALL count for that move, once per distinct bonus.
+
+#### Scenario: Bonus on the second copy of a duplicated move
+- **WHEN** a judge scores the same move and direction twice and a bonus on only the second copy
+- **THEN** the move counts once, with the bonus added
+
+#### Scenario: Same bonus on both copies
+- **WHEN** a judge scores the same bonus on both copies of a duplicated move
+- **THEN** the bonus is added once
+
+### Requirement: The run mean divides by the configured judge count
+A run's mean score SHALL be the sum of the judges' totals divided by the phase's configured number of judges, or by the number of judges who actually scored the run when that is larger. The mean SHALL be rounded to two decimal places.
+
+#### Scenario: Fewer judges scored than configured
+- **WHEN** a phase has three judges and one has scored a run worth 25
+- **THEN** the run's score is 8.33
+
+#### Scenario: More judges scored than configured
+- **WHEN** four judges each score a run worth 25 in a phase configured for three
+- **THEN** the run's score is 25
+
+### Requirement: A run status applies to its own athlete and run only
+A run's status SHALL be the first status record for that athlete and run number. Status records for other athletes or other runs SHALL have no effect on it.
+
+#### Scenario: Status for another athlete
+- **WHEN** only a different athlete's run is marked did-not-start
+- **THEN** this athlete's run is scored normally
+
+#### Scenario: Duplicate status records
+- **WHEN** two status records exist for the same athlete and run
+- **THEN** the first one decides whether the run is locked or did-not-start
+
+### Requirement: Phase results list every configured run for an athlete with scored moves
+In a phase configured for N runs, an athlete with at least one scored move SHALL be reported with runs numbered 0 to N-1 in ascending order. A run with no scored moves SHALL appear with no judge scores and a score of zero. Scored moves recorded against a run number outside that range SHALL NOT be reported. Within a run, judges SHALL be listed in ascending order of judge id.
+
+#### Scenario: Athlete rode only one of two runs
+- **WHEN** an athlete in a two-run phase has scored moves only in run 0
+- **THEN** the results report run 0 with its score and run 1 with no judge scores and a score of zero
+
+#### Scenario: Move beyond the configured runs
+- **WHEN** a scored move carries a run number of N or higher in a phase configured for N runs
+- **THEN** that move does not appear in the athlete's results

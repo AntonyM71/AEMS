@@ -1,12 +1,10 @@
+from collections import defaultdict
 from collections.abc import Callable
+from operator import attrgetter
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
-
-
-def all_equal(iterable: list) -> bool:
-    return len({*iterable}) <= 1
 
 
 class PydanticScoredMoves(BaseModel):
@@ -44,18 +42,6 @@ class MixedUpScoresheetExceptionError(Exception):
 class AthleteScoreInfo(BaseModel):
     score: float
     highest_scoring_move: float
-
-
-class PydanticScoredMoveWithBonus(BaseModel):
-    id: UUID
-    move_id: UUID
-    heat_id: UUID
-    run_number: int
-    phase_id: UUID
-    judge_id: str
-    athlete_id: UUID
-    direction: str
-    total_score_with_bonuses: float
 
 
 class PydanticScoredMovesResponse(BaseModel):
@@ -105,102 +91,85 @@ def calculate_run_score(
 ) -> AthleteScoreInfo:
     """Expects moves from a single paddler, run, and judge.
 
-    Raises MixedUpScoresheetExceptionError if that doesn't hold. Entries
-    sharing a make_move_string identity are deduplicated before summing.
+    Raises MixedUpScoresheetExceptionError if that doesn't hold. Moves sharing
+    a move and direction are deduplicated before summing.
     """
-    validate_all_moves_from_same_judge_run_athlete(scored_moves=scored_moves)
-    filtered_move_scores: dict[str, float] = {}
-
-    scored_move_list_with_scores = calculate_individual_move_scores(
+    return _score_judge_run(
         scored_moves=scored_moves,
         scored_bonuses=scored_bonuses,
-        available_moves=available_moves,
-        available_bonuses=available_bonuses,
+        available_moves_by_id={m.id: m for m in available_moves},
+        bonus_scores_by_id={b.id: b.score for b in available_bonuses},
     )
 
-    for scored_move in scored_move_list_with_scores:
-        move_metahash = make_move_string(scored_move)
 
-        if not filtered_move_scores.get(move_metahash):
-            filtered_move_scores[move_metahash] = scored_move.total_score_with_bonuses
+def _score_judge_run(
+    scored_moves: list[PydanticScoredMovesResponse],
+    scored_bonuses: list[PydanticScoredBonusesResponse],
+    available_moves_by_id: dict[UUID, AvailableMoves],
+    bonus_scores_by_id: dict[UUID, int],
+) -> AthleteScoreInfo:
+    validate_all_moves_from_same_judge_run_athlete(scored_moves=scored_moves)
+    bonuses_by_move_id: dict[UUID, list[PydanticScoredBonusesResponse]] = defaultdict(
+        list
+    )
+    for bonus in scored_bonuses:
+        bonuses_by_move_id[bonus.move_id].append(bonus)
+    ids_by_move_and_direction: dict[tuple[UUID, str], list[UUID]] = defaultdict(list)
+    for move in scored_moves:
+        ids_by_move_and_direction[move.move_id, move.direction].append(move.id)
+
+    move_totals: list[int] = []
+    for (move_id, direction), same_move_ids in ids_by_move_and_direction.items():
+        move_data = available_moves_by_id[move_id]
+        move_score = (
+            move_data.fl_score if direction in ("F", "L", "S") else move_data.rb_score
+        )
+        move_totals.append(
+            move_score
+            + calculate_bonus_total(
+                move_ids=same_move_ids,
+                bonuses_by_move_id=bonuses_by_move_id,
+                bonus_scores_by_id=bonus_scores_by_id,
+            )
+        )
 
     return AthleteScoreInfo(
-        score=sum(filtered_move_scores.values()),
-        highest_scoring_move=max([*filtered_move_scores.values(), 0]),
+        score=sum(move_totals),
+        highest_scoring_move=max([*move_totals, 0]),
     )
+
+
+_SAME_RIDE_FIELDS = [
+    (attrgetter("judge_id"), "different judges"),
+    (attrgetter("run_number"), "different run_numbers"),
+    # UUID.__hash__ runs in Python; hashing the underlying int stays in C.
+    (attrgetter("athlete_id.int"), "different athlete_ids"),
+    (attrgetter("heat_id.int"), "different heat_ids"),
+    (attrgetter("phase_id.int"), "different phase_ids"),
+]
 
 
 def validate_all_moves_from_same_judge_run_athlete(
     scored_moves: list[PydanticScoredMovesResponse],
 ) -> None:
-    fields = [
-        ("judge_id", "different judges"),
-        ("run_number", "different run_numbers"),
-        ("athlete_id", "different athlete_ids"),
-        ("heat_id", "different heat_ids"),
-        ("phase_id", "different phase_ids"),
-    ]
-    for attr, label in fields:
-        if not all_equal([getattr(sm, attr) for sm in scored_moves]):
+    for value_of, label in _SAME_RIDE_FIELDS:
+        if len(set(map(value_of, scored_moves))) > 1:
             msg = f"Move List contains moves from {label}"
             raise MixedUpScoresheetExceptionError(msg)
 
 
-def make_move_string(move: PydanticScoredMoveWithBonus) -> str:
-    return f"{move.move_id}{move.direction}{move.athlete_id}{move.judge_id}{move.run_number}"
-
-
-def calculate_individual_move_scores(
-    scored_moves: list[PydanticScoredMovesResponse],
-    scored_bonuses: list[PydanticScoredBonusesResponse],
-    available_moves: list[AvailableMoves],
-    available_bonuses: list[AvailableBonuses],
-) -> list[PydanticScoredMoveWithBonus]:
-    scored_move_scores: list[PydanticScoredMoveWithBonus] = []
-
-    for move in scored_moves:
-        same_move_ids = [
-            m.id
-            for m in scored_moves
-            if m.move_id == move.move_id and m.direction == move.direction
-        ]
-        this_move_scoredata = next(
-            sd for sd in available_moves if sd.id == move.move_id
-        )
-        this_scored_move_score = (
-            this_move_scoredata.fl_score
-            if move.direction in (["F", "L", "S"])
-            else this_move_scoredata.rb_score
-        )
-        bonus_total = calculate_bonus_total(
-            move_ids=same_move_ids,
-            scored_bonuses=scored_bonuses,
-            available_bonuses=available_bonuses,
-        )
-        scored_move_scores.append(
-            PydanticScoredMoveWithBonus(
-                **move.model_dump(),
-                total_score_with_bonuses=this_scored_move_score + bonus_total,
-            )
-        )
-    return scored_move_scores
-
-
 def calculate_bonus_total(
     move_ids: list[UUID],
-    scored_bonuses: list[PydanticScoredBonusesResponse],
-    available_bonuses: list[AvailableBonuses],
+    bonuses_by_move_id: dict[UUID, list[PydanticScoredBonusesResponse]],
+    bonus_scores_by_id: dict[UUID, int],
 ) -> int:
-    associated_bonuses = [ab for ab in scored_bonuses if ab.move_id in move_ids]
-    bonus_scores: list[int] = []
-    already_scored_bonuses = []
-    for bonus in associated_bonuses:
-        bonus_info = [bi for bi in available_bonuses if bi.id == bonus.bonus_id]
-        if bonus_info[0].id not in already_scored_bonuses:
-            bonus_scores.append(bonus_info[0].score)
-            already_scored_bonuses.append(bonus_info[0].id)
-
-    return sum(bonus_scores)
+    """Sums each distinct bonus scored on any of ``move_ids`` once."""
+    distinct_bonus_ids = {
+        bonus.bonus_id
+        for move_id in move_ids
+        for bonus in bonuses_by_move_id.get(move_id, [])
+    }
+    return sum(bonus_scores_by_id[bonus_id] for bonus_id in distinct_bonus_ids)
 
 
 class JudgeMoves(BaseModel):
@@ -261,35 +230,40 @@ def organise_moves_by_athlete_run_judge(
 ) -> list[AthleteMoves]:
     resp: list[AthleteMoves] = []
 
-    unique_athletes = list({move.athlete_id for move in moves})
-    unique_athletes.sort()
-    for athlete in unique_athletes:
-        this_athlete_moves = [m for m in moves if m.athlete_id == athlete]
-        if number_of_runs:
-            unique_runs = list(range(0, number_of_runs))
-        else:
-            unique_runs = list({m.run_number for m in this_athlete_moves})
-        unique_runs.sort()
+    moves_by_athlete_run_judge: dict[
+        UUID, dict[int, dict[str, list[PydanticScoredMovesResponse]]]
+    ] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for m in moves:
+        moves_by_athlete_run_judge[m.athlete_id][m.run_number][m.judge_id].append(m)
+
+    bonuses_by_judge_and_move: dict[
+        tuple[str, UUID], list[tuple[int, PydanticScoredBonusesResponse]]
+    ] = defaultdict(list)
+    for position, b in enumerate(bonuses):
+        bonuses_by_judge_and_move[b.judge_id, b.move_id].append((position, b))
+
+    for athlete in sorted(moves_by_athlete_run_judge):
+        this_athlete_runs = moves_by_athlete_run_judge[athlete]
+        unique_runs = (
+            range(0, number_of_runs) if number_of_runs else sorted(this_athlete_runs)
+        )
         run_moves_list: list[RunMoves] = []
         for run in unique_runs:
-            this_run_noves = [m for m in this_athlete_moves if m.run_number == run]
-
-            unique_judges = list({m.judge_id for m in this_run_noves})
-            unique_judges.sort()
+            this_run_moves = this_athlete_runs.get(run, {})
             judge_moves_list: list[JudgeMoves] = []
-            for judge in unique_judges:
-                this_judge_moves = [m for m in this_run_noves if m.judge_id == judge]
-                this_judge_move_ids = [m.id for m in this_judge_moves]
-                this_judge_bonuses = [b for b in bonuses if b.judge_id == judge]
+            for judge in sorted(this_run_moves):
+                this_judge_moves = this_run_moves[judge]
+                # Input order is kept so the output matches a filter over `bonuses`.
+                this_judge_bonuses = sorted(
+                    entry
+                    for move_id in {m.id for m in this_judge_moves}
+                    for entry in bonuses_by_judge_and_move.get((judge, move_id), [])
+                )
                 judge_moves_list.append(
                     JudgeMoves(
                         judge_id=judge,
                         scored_moves=this_judge_moves,
-                        scored_bonuses=[
-                            b
-                            for b in this_judge_bonuses
-                            if b.move_id in this_judge_move_ids
-                        ],
+                        scored_bonuses=[b for _, b in this_judge_bonuses],
                     )
                 )
             run_moves_list.append(RunMoves(run=run, judge_moves=judge_moves_list))
@@ -316,60 +290,77 @@ def calculate_heat_scores(
     run_statuses: list[PydanticRunStatus],
     scoring_runs: int | None = None,
 ) -> list[AthleteScores]:
+    first_run_status: dict[tuple[UUID, int], PydanticRunStatus] = {}
+    for rs in run_statuses:
+        first_run_status.setdefault((rs.athlete_id, rs.run_number), rs)
+
+    available_moves_by_id = {m.id: m for m in available_moves}
+    bonus_scores_by_id = {b.id: b.score for b in available_bonuses}
+
     scores: list[AthleteScores] = []
     for athlete in athlete_moves_list:
-        runs: list[RunScores] = []
-        for run in athlete.run_moves:
-            matching_run_statuses = [
-                rs
-                for rs in run_statuses
-                if rs.athlete_id == athlete.athlete_id and rs.run_number == run.run
-            ]
-            run_status = (
-                matching_run_statuses[0] if len(matching_run_statuses) > 0 else None
+        runs = [
+            _score_run(
+                run,
+                number_of_judges=athlete.number_of_judges,
+                run_status=first_run_status.get((athlete.athlete_id, run.run)),
+                available_moves_by_id=available_moves_by_id,
+                bonus_scores_by_id=bonus_scores_by_id,
             )
-            judges: list[JudgeScores] = []
-            for judge in run.judge_moves:
-                score = calculate_run_score(
-                    scored_moves=judge.scored_moves,
-                    scored_bonuses=judge.scored_bonuses,
-                    available_moves=available_moves,
-                    available_bonuses=available_bonuses,
-                )
-                judges.append(JudgeScores(score_info=score, judge_id=judge.judge_id))
-            runs.append(
-                RunScores(
-                    judge_scores=judges,
-                    run_number=run.run,
-                    mean_run_score=0
-                    if run_status and run_status.did_not_start
-                    else round(
-                        sum([j.score_info.score for j in judges])
-                        / max([athlete.number_of_judges, len(judges)]),
-                        2,
-                    ),
-                    highest_scoring_move=0
-                    if run_status and run_status.did_not_start
-                    else max(
-                        [j.score_info.highest_scoring_move for j in judges], default=0
-                    ),
-                    did_not_start=run_status.did_not_start if run_status else False,
-                    locked=run_status.locked if run_status else False,
-                )
-            )
-        run_scores: list[float] = [r.mean_run_score for r in runs]
-        run_scores.sort()
-
-        total_score = sum(run_scores[-scoring_runs:]) if scoring_runs else 0
+            for run in athlete.run_moves
+        ]
+        best_run_scores = sorted(r.mean_run_score for r in runs)
         scores.append(
             AthleteScores(
                 run_scores=runs,
                 athlete_id=athlete.athlete_id,
                 highest_scoring_move=max(r.highest_scoring_move for r in runs),
-                total_score=total_score,
+                total_score=sum(best_run_scores[-scoring_runs:]) if scoring_runs else 0,
             )
         )
     return scores
+
+
+def _score_run(
+    run: RunMoves,
+    number_of_judges: int,
+    run_status: PydanticRunStatus | None,
+    available_moves_by_id: dict[UUID, AvailableMoves],
+    bonus_scores_by_id: dict[UUID, int],
+) -> RunScores:
+    judges = [
+        JudgeScores(
+            judge_id=judge.judge_id,
+            score_info=_score_judge_run(
+                scored_moves=judge.scored_moves,
+                scored_bonuses=judge.scored_bonuses,
+                available_moves_by_id=available_moves_by_id,
+                bonus_scores_by_id=bonus_scores_by_id,
+            ),
+        )
+        for judge in run.judge_moves
+    ]
+    did_not_start = run_status.did_not_start if run_status else False
+    if did_not_start:
+        mean_run_score = 0
+        highest_scoring_move = 0
+    else:
+        mean_run_score = round(
+            sum(j.score_info.score for j in judges)
+            / max(number_of_judges, len(judges)),
+            2,
+        )
+        highest_scoring_move = max(
+            (j.score_info.highest_scoring_move for j in judges), default=0
+        )
+    return RunScores(
+        judge_scores=judges,
+        run_number=run.run,
+        mean_run_score=mean_run_score,
+        highest_scoring_move=highest_scoring_move,
+        did_not_start=did_not_start,
+        locked=run_status.locked if run_status else False,
+    )
 
 
 class RankInfo(BaseModel):
