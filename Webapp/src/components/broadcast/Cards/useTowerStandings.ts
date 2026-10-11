@@ -124,23 +124,25 @@ const useReloadOnRunStatus = (
 	standingsRef.current = standings
 	const refetchRef = useRef(refetch)
 	refetchRef.current = refetch
-	const pendingLock = useRef<RunStatus | null>(null)
+	const pendingLock = useRef<LandedLock | null>(null)
 	const [landedLock, setLandedLock] = useState<LandedLock | null>(null)
 
 	useEffect(() => {
 		if (latest?.phase_id !== phaseId) {
 			return
 		}
+		// Taken on arrival: other overlay cards share this query and refetch
+		// it at once, so by the time the burst settles the standings may
+		// already be the new ones.
 		if (latest.locked && !latest.did_not_start) {
-			pendingLock.current = latest
+			pendingLock.current = { lock: latest, before: standingsRef.current }
 		}
 		const timer = setTimeout(() => {
-			const lock = pendingLock.current
+			const landed = pendingLock.current
 			pendingLock.current = null
-			const before = standingsRef.current
 			void refetchRef.current().then(() => {
-				if (lock) {
-					setLandedLock({ lock, before })
+				if (landed) {
+					setLandedLock(landed)
 				}
 			})
 		}, RUN_STATUS_BURST_MS)
