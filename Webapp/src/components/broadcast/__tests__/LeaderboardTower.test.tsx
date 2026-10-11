@@ -1,9 +1,8 @@
 /* eslint-disable testing-library/no-node-access -- the tower's rows are
    located by their class names, as the other broadcast card tests do. */
 import { act, screen, waitFor, within } from "@testing-library/react"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import { useEffect } from "react"
-import { useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery } from "../../../redux/services/aemsApi"
 import { usePhaseRunStatusStreamQuery } from "../../../redux/services/streamingApi"
 import { modernTimers } from "../../../mocks/modernTimers"
 import { server } from "../../../mocks/server"
@@ -15,6 +14,7 @@ import {
 	run,
 	servePhase
 } from "../../../mocks/towerPhase"
+import { useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery } from "../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../testUtils"
 import {
 	defaultOverlayControllerState,
@@ -259,6 +259,46 @@ describe("Leaderboard tower climbs", () => {
 		expect(climberPlace()).toBe("15")
 		await elapse(8000)
 		expect(climberPlace()).toBe("4")
+	})
+
+	it("reloads again when the reload joined a request that predates the lock", async () => {
+		let pollRefetch: (() => void) | undefined
+		const Poller = () => {
+			const { refetch } = useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery({
+				phaseId: "phase-1"
+			})
+			pollRefetch = () => void refetch()
+
+			return null
+		}
+		renderWithProviders(
+			<>
+				<Poller />
+				<LeaderboardTower
+					overlayControlState={towerState({ towerPlacesThrough: 10 })}
+				/>
+			</>
+		)
+		await screen.findByText("ATHLETE1")
+		// The poll's request starts before the lock is saved, so it answers
+		// with the field as it was.
+		const scoresBeforeLock = field
+		let calls = 0
+		server.use(
+			http.get("/api/getPhaseScores/:phaseId", async () => {
+				calls += 1
+				const scores = calls === 1 ? scoresBeforeLock : field
+				await delay(2000)
+
+				return HttpResponse.json({ phase_id: "phase-1", scores })
+			})
+		)
+		pollRefetch?.()
+		field = [...field, newcomerScoring(925)]
+		lock("athlete-Newcomer")
+		await elapse(5500)
+
+		expect(climber()).toHaveTextContent("NEWCOMER")
 	})
 
 	it("climbs from the old place on a second-run improvement", async () => {

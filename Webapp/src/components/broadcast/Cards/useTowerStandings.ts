@@ -118,6 +118,15 @@ export const useTowerStandings = (phaseId: string) => {
 
 type PendingLock = Omit<LandedLock, "after">
 
+const includesLockedRun = (data: PhaseScoresResponse, lock: RunStatus) =>
+	data.scores.some(
+		(athlete) =>
+			athlete.athlete_id === lock.athlete_id &&
+			athlete.run_scores.some(
+				(run) => run.run_number === lock.run_number && run.locked
+			)
+	)
+
 /** Other overlay cards share the phase scores query and refetch it as soon as
  * a lock is broadcast, so the cache may already hold the new standings before
  * this hook reloads. The standings on air are held from the lock's arrival
@@ -162,7 +171,12 @@ const useReloadOnRunStatus = ({
 		const reload = async () => {
 			const pending = pendingLock.current
 			pendingLock.current = null
-			const { data } = await current.current.refetch()
+			let { data } = await current.current.refetch()
+			// A refetch joins any request already in flight, and one that
+			// started before the lock was saved returns scores without it.
+			if (pending && data && !includesLockedRun(data, pending.lock)) {
+				;({ data } = await current.current.refetch())
+			}
 			const runs = current.current.scoringRuns
 			if (pending && data && runs !== undefined) {
 				setLandedLock({
