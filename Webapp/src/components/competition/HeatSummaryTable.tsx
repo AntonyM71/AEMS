@@ -486,12 +486,6 @@ export const AddAthletesToHeat = (props: {
 	useEffect(() => {
 		setNewHeat(selectedHeat)
 	}, [selectedHeat])
-	const athletes = useGetHeatInfoGetHeatInfoHeatIdGetQuery(
-		{
-			heatId: selectedHeat
-		},
-		{ skip: !selectedHeat }
-	)
 	const [athleteLastName, setAthleteLastName] = useState<string>(
 		initial.lastName
 	)
@@ -594,7 +588,6 @@ export const AddAthletesToHeat = (props: {
 					"Added Athlete to Heat"
 				)
 			}
-			await athletes.refetch()
 			if (props.handleClose) {
 				props.handleClose()
 			}
