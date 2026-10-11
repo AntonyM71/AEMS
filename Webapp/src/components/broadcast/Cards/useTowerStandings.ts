@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
 	AthleteScoresWithAthleteInfo,
+	PhaseScoresResponse,
 	useGetOneByPrimaryKeyPhaseIdGetQuery,
 	useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery
 } from "../../../redux/services/aemsApi"
@@ -24,11 +25,12 @@ export interface TowerStanding {
 	runScores: Record<number, number>
 }
 
-/** The last lock in a burst of run broadcasts, with the standings from before
- * the reload it caused. */
+/** The last lock in a burst of run broadcasts, with the standings on air when
+ * the burst began and the standings the reload it caused returned. */
 export interface LandedLock {
 	lock: RunStatus
 	before: TowerStanding[]
+	after: TowerStanding[]
 }
 
 const toHundredths = (score: number) => Math.round(score * 100) / 100
@@ -92,14 +94,19 @@ export const useTowerStandings = (phaseId: string) => {
 			{ phaseId },
 			{ skip: !phaseId }
 		)
-	const standings = useMemo(
+	const latest = useMemo(
 		() =>
 			phase && scores
 				? rankOnFinalRuns(scores.scores, phase.number_of_runs_for_score)
 				: [],
 		[phase, scores]
 	)
-	const landedLock = useReloadOnRunStatus(phaseId, standings, refetch)
+	const { standings, landedLock } = useReloadOnRunStatus({
+		phaseId,
+		latest,
+		scoringRuns: phase?.number_of_runs_for_score,
+		refetch
+	})
 
 	return {
 		phase,
@@ -109,53 +116,73 @@ export const useTowerStandings = (phaseId: string) => {
 	}
 }
 
-const useReloadOnRunStatus = (
-	phaseId: string,
-	standings: TowerStanding[],
-	refetch: () => PromiseLike<unknown>
-): LandedLock | null => {
+type PendingLock = Omit<LandedLock, "after">
+
+/** Other overlay cards share the phase scores query and refetch it as soon as
+ * a lock is broadcast, so the cache may already hold the new standings before
+ * this hook reloads. The standings on air are held from the lock's arrival
+ * until the reload returns, so a climb starts from what viewers saw. */
+const useReloadOnRunStatus = ({
+	phaseId,
+	latest,
+	scoringRuns,
+	refetch
+}: {
+	phaseId: string
+	latest: TowerStanding[]
+	scoringRuns: number | undefined
+	refetch: () => PromiseLike<{ data?: PhaseScoresResponse }>
+}) => {
 	const { currentData: stream } = usePhaseRunStatusStreamQuery(
 		{ phaseId },
 		{ skip: !phaseId }
 	)
-	const latest = stream?.latest
+	const latestStatus = stream?.latest
 	const connects = stream?.connects ?? 0
-	const standingsRef = useRef(standings)
-	standingsRef.current = standings
-	const refetchRef = useRef(refetch)
-	refetchRef.current = refetch
-	const pendingLock = useRef<LandedLock | null>(null)
+	const [held, setHeld] = useState<TowerStanding[] | null>(null)
+	const standings = held ?? latest
+	const current = useRef({ standings, scoringRuns, refetch })
+	useEffect(() => {
+		current.current = { standings, scoringRuns, refetch }
+	})
+	const pendingLock = useRef<PendingLock | null>(null)
 	const [landedLock, setLandedLock] = useState<LandedLock | null>(null)
 
 	useEffect(() => {
-		if (latest?.phase_id !== phaseId) {
+		if (latestStatus?.phase_id !== phaseId) {
 			return
 		}
-		// Taken on arrival: other overlay cards share this query and refetch
-		// it at once, so by the time the burst settles the standings may
-		// already be the new ones.
-		if (latest.locked && !latest.did_not_start) {
-			pendingLock.current = { lock: latest, before: standingsRef.current }
+		if (latestStatus.locked && !latestStatus.did_not_start) {
+			// A second lock in the burst keeps the first one's standings.
+			const before =
+				pendingLock.current?.before ?? current.current.standings
+			pendingLock.current = { lock: latestStatus, before }
+			setHeld(before)
 		}
-		const timer = setTimeout(() => {
-			const landed = pendingLock.current
+		const reload = async () => {
+			const pending = pendingLock.current
 			pendingLock.current = null
-			void refetchRef.current().then(() => {
-				if (landed) {
-					setLandedLock(landed)
-				}
-			})
-		}, RUN_STATUS_BURST_MS)
+			const { data } = await current.current.refetch()
+			const runs = current.current.scoringRuns
+			if (pending && data && runs !== undefined) {
+				setLandedLock({
+					...pending,
+					after: rankOnFinalRuns(data.scores, runs)
+				})
+			}
+			setHeld(null)
+		}
+		const timer = setTimeout(() => void reload(), RUN_STATUS_BURST_MS)
 
 		return () => clearTimeout(timer)
-	}, [latest, phaseId])
+	}, [latestStatus, phaseId])
 
 	// The first connection needs no catch-up: the scores were just fetched.
 	useEffect(() => {
 		if (connects > 1) {
-			void refetchRef.current()
+			void current.current.refetch()
 		}
 	}, [connects])
 
-	return landedLock
+	return { standings, landedLock }
 }

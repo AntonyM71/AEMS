@@ -95,12 +95,10 @@ export const climbTimeline = (
 /** Climbs earned by landed locks, played one at a time. */
 export const useClimbQueue = ({
 	landedLock,
-	standings,
 	placesThrough,
 	enabled
 }: {
 	landedLock: LandedLock | null
-	standings: TowerStanding[]
 	placesThrough: number | null
 	enabled: boolean
 }) => {
@@ -114,7 +112,7 @@ export const useClimbQueue = ({
 		const ids = (list: TowerStanding[]) => list.map((s) => s.athleteId)
 		const plan = climbPlan(
 			ids(landedLock.before),
-			ids(standings),
+			ids(landedLock.after),
 			landedLock.lock.athlete_id,
 			placesThrough
 		)
@@ -123,7 +121,7 @@ export const useClimbQueue = ({
 			const scene = {
 				id: scenesQueued.current,
 				plan,
-				after: standings,
+				after: landedLock.after,
 				runNumber: landedLock.lock.run_number
 			}
 			setQueue((current) => [...current, scene])
