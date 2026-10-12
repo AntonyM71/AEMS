@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
 import { server } from "../../../mocks/server"
 import { renderWithProviders } from "../../../testUtils"
 import { CompetitionImages } from "../CompetitionImages"
@@ -97,6 +97,42 @@ describe("CompetitionImages", () => {
 			).not.toBeInTheDocument()
 		})
 		expect(stored).toEqual({})
+	})
+
+	it("keeps the newer preview when an older load finishes last", async () => {
+		const stored: Record<string, string> = { logo: "old" }
+		useImageServer(stored)
+		let logoLoads = 0
+		server.use(
+			http.get(IMAGE_URL, async ({ params }) => {
+				const isFirstLogoLoad =
+					params.kind === "logo" && logoLoads++ === 0
+				const body = stored[params.kind as string]
+				if (isFirstLogoLoad) {
+					await delay(300)
+				}
+
+				return body
+					? new HttpResponse(body, {
+							headers: { "Content-Type": "image/png" }
+					  })
+					: new HttpResponse(null, { status: 404 })
+			})
+		)
+		let objectUrls = 0
+		URL.createObjectURL = jest.fn(() => `blob:${++objectUrls}`)
+		renderForCompetition()
+		const user = userEvent.setup()
+
+		await user.upload(
+			screen.getByLabelText("Upload Logo"),
+			new File(["new"], "new-logo.png", { type: "image/png" })
+		)
+		await new Promise((resolve) => setTimeout(resolve, 500))
+
+		// The upload's reload answers first, so the stale first load lands last.
+		expect(screen.getByAltText("Logo")).toHaveAttribute("src", "blob:1")
+		expect(URL.createObjectURL).toHaveBeenCalledTimes(1)
 	})
 
 	it("shows the server's reason when an upload is rejected", async () => {

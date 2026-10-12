@@ -54,16 +54,25 @@ const CompetitionImageCard = ({
 	const [version, setVersion] = useState(0)
 
 	useEffect(() => {
+		let isStale = false
 		let objectUrl: string | undefined
 		axios
 			.get<Blob>(url, { responseType: "blob" })
 			.then((response) => {
+				if (isStale) {
+					return
+				}
 				objectUrl = URL.createObjectURL(response.data)
 				setPreviewUrl(objectUrl)
 			})
-			.catch(() => setPreviewUrl(undefined))
+			.catch(() => {
+				if (!isStale) {
+					setPreviewUrl(undefined)
+				}
+			})
 
 		return () => {
+			isStale = true
 			if (objectUrl) {
 				URL.revokeObjectURL(objectUrl)
 			}
