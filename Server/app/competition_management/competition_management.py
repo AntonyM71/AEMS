@@ -2,6 +2,8 @@ import functools
 import math
 import operator
 import random
+from enum import StrEnum
+from io import BytesIO
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -18,6 +20,8 @@ from fastapi import (
     status,
 )
 from fastapi.responses import JSONResponse
+from fpdf import FPDF
+from PIL import Image
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -38,7 +42,7 @@ from app.scoring.customScoringEndpoints import (
 )
 from app.scoring.scoring_logic import AthleteScoresWithAthleteInfo
 from db.client import get_transaction_session
-from db.models import AthleteHeat, Heat, Phase
+from db.models import AthleteHeat, Competition, CompetitionImage, Heat, Phase
 
 competition_management_router = APIRouter(
     prefix="/competition_management", tags=["competition management"]
@@ -118,6 +122,107 @@ def upload(
         "skipped_rows": conversion_skips + skipped_rows,
     }
     return JSONResponse(status_code=201, content=content)
+
+
+class ImageKind(StrEnum):
+    LOGO = "logo"
+    SIGNATURE = "signature"
+
+
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+IMAGE_CONTENT_TYPES = {"PNG": "image/png", "JPEG": "image/jpeg"}
+
+
+def embeddable_image_content_type(content: bytes) -> str | None:
+    """The image's content type, or None unless it is a PNG or JPEG fpdf2 can embed.
+
+    Trial-embedding catches images Pillow opens but fpdf2 rejects, so a bad
+    upload fails here rather than breaking every PDF for the competition.
+    """
+    try:
+        with Image.open(BytesIO(content)) as image:
+            content_type = IMAGE_CONTENT_TYPES.get(image.format or "")
+        if content_type:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.image(BytesIO(content), w=10)
+    except Exception:
+        return None
+    return content_type
+
+
+def get_competition_image(
+    db: Session, competition_id: UUID, kind: ImageKind
+) -> bytes | None:
+    image = db.get(CompetitionImage, (competition_id, kind.value))
+    return image.content if image else None
+
+
+@competition_management_router.put(
+    "/competition/{competition_id}/image/{kind}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def upload_competition_image(
+    competition_id: UUID,
+    kind: ImageKind,
+    file: Annotated[UploadFile, File()],
+    db: Session = Depends(get_transaction_session),
+) -> None:
+    """Store a PNG or JPEG of at most 10 MB, replacing any image of this kind."""
+    if db.get(Competition, competition_id) is None:
+        msg = "Competition not found"
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
+    content = file.file.read(MAX_IMAGE_BYTES + 1)
+    if len(content) > MAX_IMAGE_BYTES:
+        msg = "Images must be 10 MB or smaller"
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail=msg)
+    content_type = embeddable_image_content_type(content)
+    if content_type is None:
+        msg = "Images must be PNG or JPEG"
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail=msg
+        )
+    db.merge(
+        CompetitionImage(
+            competition_id=competition_id,
+            kind=kind.value,
+            content=content,
+            content_type=content_type,
+        )
+    )
+    db.commit()
+
+
+@competition_management_router.get(
+    "/competition/{competition_id}/image/{kind}",
+    response_class=Response,
+    responses={200: {"content": {"image/png": {}, "image/jpeg": {}}}},
+)
+def get_competition_image_endpoint(
+    competition_id: UUID,
+    kind: ImageKind,
+    db: Session = Depends(get_transaction_session),
+) -> Response:
+    image = db.get(CompetitionImage, (competition_id, kind.value))
+    if image is None:
+        msg = "No image stored"
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
+    return Response(content=image.content, media_type=image.content_type)
+
+
+@competition_management_router.delete(
+    "/competition/{competition_id}/image/{kind}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_competition_image(
+    competition_id: UUID,
+    kind: ImageKind,
+    db: Session = Depends(get_transaction_session),
+) -> None:
+    image = db.get(CompetitionImage, (competition_id, kind.value))
+    if image is not None:
+        db.delete(image)
+        db.commit()
 
 
 class NewPhaseInfo(BaseModel):

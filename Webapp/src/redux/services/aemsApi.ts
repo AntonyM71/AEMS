@@ -1,6 +1,36 @@
 import { emptySplitApi as api } from "./emptyApi"
 const injectedRtkApi = api.injectEndpoints({
 	endpoints: (build) => ({
+		uploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPut:
+			build.mutation<
+				UploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPutApiResponse,
+				UploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPutApiArg
+			>({
+				query: (queryArg) => ({
+					url: `/competition_management/competition/${queryArg.competitionId}/image/${queryArg.kind}`,
+					method: "PUT",
+					body: queryArg.bodyUploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPut
+				})
+			}),
+		getCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGet:
+			build.query<
+				GetCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGetApiResponse,
+				GetCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGetApiArg
+			>({
+				query: (queryArg) => ({
+					url: `/competition_management/competition/${queryArg.competitionId}/image/${queryArg.kind}`
+				})
+			}),
+		deleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDelete:
+			build.mutation<
+				DeleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDeleteApiResponse,
+				DeleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDeleteApiArg
+			>({
+				query: (queryArg) => ({
+					url: `/competition_management/competition/${queryArg.competitionId}/image/${queryArg.kind}`,
+					method: "DELETE"
+				})
+			}),
 		promotePhaseCompetitionManagementPromotePhasePost: build.mutation<
 			PromotePhaseCompetitionManagementPromotePhasePostApiResponse,
 			PromotePhaseCompetitionManagementPromotePhasePostApiArg
@@ -75,7 +105,10 @@ const injectedRtkApi = api.injectEndpoints({
 			PhasePdfPhasePdfPhaseIdGetApiResponse,
 			PhasePdfPhasePdfPhaseIdGetApiArg
 		>({
-			query: (queryArg) => ({ url: `/phase_pdf/${queryArg.phaseId}` })
+			query: (queryArg) => ({
+				url: `/phase_pdf/${queryArg.phaseId}`,
+				params: { signed: queryArg.signed }
+			})
 		}),
 		heatPdfHeatPdfGet: build.query<
 			HeatPdfHeatPdfGetApiResponse,
@@ -461,6 +494,28 @@ const injectedRtkApi = api.injectEndpoints({
 	overrideExisting: false
 })
 export { injectedRtkApi as aemsApi }
+export type UploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPutApiResponse =
+	/** status 204 Successful Response */ void
+export type UploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPutApiArg =
+	{
+		competitionId: string
+		kind: ImageKind
+		bodyUploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPut: BodyUploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPut
+	}
+export type GetCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGetApiResponse =
+	/** status 200 Successful Response */ Blob
+export type GetCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGetApiArg =
+	{
+		competitionId: string
+		kind: ImageKind
+	}
+export type DeleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDeleteApiResponse =
+	/** status 204 Successful Response */ void
+export type DeleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDeleteApiArg =
+	{
+		competitionId: string
+		kind: ImageKind
+	}
 export type PromotePhaseCompetitionManagementPromotePhasePostApiResponse =
 	/** status 200 Successful Response */ any
 export type PromotePhaseCompetitionManagementPromotePhasePostApiArg = {
@@ -516,6 +571,7 @@ export type PhasePdfPhasePdfPhaseIdGetApiResponse =
 	/** status 200 Successful Response */ any
 export type PhasePdfPhasePdfPhaseIdGetApiArg = {
 	phaseId: string
+	signed?: boolean
 }
 export type HeatPdfHeatPdfGetApiResponse =
 	/** status 200 Successful Response */ any
@@ -770,6 +826,11 @@ export type ValidationError = {
 export type HttpValidationError = {
 	detail?: ValidationError[]
 }
+export type ImageKind = "logo" | "signature"
+export type BodyUploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPut =
+	{
+		file: string
+	}
 export type NewPhaseInfo = {
 	new_heat_names: string[]
 	phase_id: string
@@ -1063,6 +1124,9 @@ export type RunStatusResponse = {
 	did_not_start: boolean
 }
 export const {
+	useUploadCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindPutMutation,
+	useGetCompetitionImageEndpointCompetitionManagementCompetitionCompetitionIdImageKindGetQuery,
+	useDeleteCompetitionImageCompetitionManagementCompetitionCompetitionIdImageKindDeleteMutation,
 	usePromotePhaseCompetitionManagementPromotePhasePostMutation,
 	useGetHeatInfoGetHeatInfoHeatIdGetQuery,
 	useGetHeatPhasesGetHeatInfoHeatIdPhaseGetQuery,

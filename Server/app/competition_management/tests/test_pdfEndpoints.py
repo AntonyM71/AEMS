@@ -20,6 +20,11 @@ from app.scoring.scoring_logic import (
 from db.models import Competition, Event, Heat, Phase
 
 
+@pytest.fixture(autouse=True)
+def no_stored_images(mock_db_session: MagicMock) -> None:
+    mock_db_session.get.return_value = None
+
+
 @pytest.fixture
 def sample_phase_id() -> str:
     return str(uuid.uuid4())

@@ -1,7 +1,9 @@
 import Button from "@mui/material/Button"
+import FormControlLabel from "@mui/material/FormControlLabel"
 import Grid from "@mui/material/Grid2"
 import Paper from "@mui/material/Paper"
 import Skeleton from "@mui/material/Skeleton"
+import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
 import {
 	DataGrid,
@@ -10,6 +12,7 @@ import {
 	GridValidRowModel
 } from "@mui/x-data-grid"
 import axios from "axios"
+import { useState } from "react"
 import { useSelector } from "react-redux"
 import { getSelectedPhase } from "../../redux/atoms/competitions"
 import {
@@ -23,6 +26,7 @@ import { SelectorDisplay } from "./MainSelector"
 
 export const PhaseScoreTable = () => {
 	const selectedPhase = useSelector(getSelectedPhase)
+	const [signed, setSigned] = useState(false)
 	const { data, isLoading } = useGetOneByPrimaryKeyPhaseIdGetQuery(
 		{
 			id: selectedPhase
@@ -44,7 +48,8 @@ export const PhaseScoreTable = () => {
 			}phase_pdf/${selectedPhase}`,
 			{
 				method: "GET",
-				responseType: "blob"
+				responseType: "blob",
+				params: signed ? { signed: true } : undefined
 			}
 		)
 		const file = new Blob([response.data], {
@@ -91,6 +96,17 @@ export const PhaseScoreTable = () => {
 							</Grid>
 
 							<Grid sx={{ padding: "0.5em" }}>
+								<FormControlLabel
+									control={
+										<Switch
+											checked={signed}
+											onChange={(event) =>
+												setSigned(event.target.checked)
+											}
+										/>
+									}
+									label="Signed by head judge"
+								/>
 								<Button
 									variant="contained"
 									color="info"

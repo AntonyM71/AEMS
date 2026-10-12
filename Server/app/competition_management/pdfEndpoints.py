@@ -1,13 +1,20 @@
 import logging
 import os
 import types
+from datetime import date
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fpdf import FPDF
+from PIL import Image
 from sqlalchemy.orm import Session
 
+from app.competition_management.competition_management import (
+    ImageKind,
+    get_competition_image,
+)
 from app.scoring.customScoringEndpoints import (
     HeatInfoResponse,
     HeatScoresResponse,
@@ -27,6 +34,14 @@ LAST_NAME_HEADER = "Last Name"
 font_directory = Path("./fonts/")
 BRAND_FONT = "inter-tight"
 _FOOTER_Y_FROM_BOTTOM_MM = -15
+_TITLE_ROW_HEIGHT_MM = 10
+_LOGO_HEIGHT_MM = 7.5
+_LOGO_MAX_WIDTH_MM = 60
+_LOGO_GAP_MM = 2
+_SIGNATURE_BLOCK_WIDTH_MM = 70
+_SIGNATURE_HEIGHT_MM = 20
+_SIGNATURE_GAP_ABOVE_MM = 8
+_SIGNATURE_LABEL_HEIGHT_MM = 6
 
 
 class BrandPDF(FPDF):
@@ -72,21 +87,58 @@ def get_footer_text() -> str:
     return "Athlete Event Management System - Enquiries: kayak.freestyle.app@gmail.com"
 
 
+def fit_image(image: bytes, max_width: float, max_height: float) -> tuple[float, float]:
+    """The largest (width, height) within the bounds that keeps the aspect ratio."""
+    with Image.open(BytesIO(image)) as opened:
+        aspect_ratio = opened.width / opened.height
+    width = min(max_height * aspect_ratio, max_width)
+    return width, width / aspect_ratio
+
+
+def draw_logo(pdf: FPDF, logo: bytes) -> float:
+    """Draw the logo at the top right of the title row; return the width it takes."""
+    width, height = fit_image(logo, _LOGO_MAX_WIDTH_MM, _LOGO_HEIGHT_MM)
+    pdf.image(
+        BytesIO(logo),
+        x=pdf.w - pdf.r_margin - width,
+        y=pdf.t_margin + (_TITLE_ROW_HEIGHT_MM - height) / 2,
+        w=width,
+        h=height,
+    )
+    return width + _LOGO_GAP_MM
+
+
+def draw_title_row(pdf: FPDF, title: str, logo: bytes | None) -> None:
+    """Centre the title on the page, clear of the logo, shrinking it to fit."""
+    logo_width = draw_logo(pdf, logo) if logo else 0
+    title_width = pdf.epw - 2 * logo_width
+    text_width = pdf.get_string_width(title)
+    if text_width > title_width:
+        pdf.set_font(size=pdf.font_size_pt * title_width / text_width)
+    pdf.set_x(pdf.l_margin + logo_width)
+    pdf.cell(
+        title_width,
+        _TITLE_ROW_HEIGHT_MM,
+        text=title,
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+
+
 def phase_pdf_header(
     pdf: FPDF,
     competition_metadata: Competition,
     event_metadata: Event,
     phase_metadata: Phase,
+    logo: bytes | None,
 ) -> None:
     def header(self: FPDF) -> None:
         pdf.set_font(size=24)
-        pdf.cell(
-            0,
-            10,
-            text=f"{competition_metadata.name},{event_metadata.name}, {phase_metadata.name} Scores",
-            align="C",
-            new_x="LMARGIN",
-            new_y="NEXT",
+        draw_title_row(
+            pdf,
+            f"{competition_metadata.name},{event_metadata.name}, {phase_metadata.name} Scores",
+            logo,
         )
         pdf.set_font(size=12)
         pdf.cell(
@@ -130,6 +182,36 @@ def phase_pdf_header(
         )
 
     pdf.header = types.MethodType(header, pdf)
+
+
+def draw_signature_block(pdf: FPDF, signature: bytes | None) -> None:
+    """Right-aligned after the content, moved whole onto a new page rather than split.
+
+    Without a stored signature the line is left blank to sign by hand.
+    """
+    block_height = (
+        _SIGNATURE_GAP_ABOVE_MM + _SIGNATURE_HEIGHT_MM + _SIGNATURE_LABEL_HEIGHT_MM
+    )
+    if pdf.will_page_break(block_height):
+        pdf.add_page()
+    left = pdf.w - pdf.r_margin - _SIGNATURE_BLOCK_WIDTH_MM
+    rule_y = pdf.get_y() + _SIGNATURE_GAP_ABOVE_MM + _SIGNATURE_HEIGHT_MM
+    if signature:
+        width, height = fit_image(
+            signature, _SIGNATURE_BLOCK_WIDTH_MM, _SIGNATURE_HEIGHT_MM
+        )
+        pdf.image(BytesIO(signature), x=left, y=rule_y - height, w=width, h=height)
+    pdf.line(left, rule_y, left + _SIGNATURE_BLOCK_WIDTH_MM, rule_y)
+    pdf.set_xy(left, rule_y)
+    pdf.set_font(style="", size=12)
+    today = date.today()
+    pdf.cell(_SIGNATURE_BLOCK_WIDTH_MM / 2, _SIGNATURE_LABEL_HEIGHT_MM, "Head Judge")
+    pdf.cell(
+        _SIGNATURE_BLOCK_WIDTH_MM / 2,
+        _SIGNATURE_LABEL_HEIGHT_MM,
+        f"{today.day} {today:%b %Y}",
+        align="R",
+    )
 
 
 def setup_pdf_footer(
@@ -242,17 +324,11 @@ def build_heat_pdf_page(
     heat_info: Heat,
     competition_metadata: Competition,
     heat_athlete_info: list[HeatInfoResponse],
+    logo: bytes | None,
 ) -> None:
     pdf.add_page()
     pdf.set_font(size=24)
-    pdf.cell(
-        0,
-        10,
-        text=f"Competition: {competition_metadata.name}",
-        align="C",
-        new_x="LMARGIN",
-        new_y="NEXT",
-    )
+    draw_title_row(pdf, f"Competition: {competition_metadata.name}", logo)
     pdf.set_font(size=20)
     pdf.cell(
         0,
@@ -291,11 +367,12 @@ def build_heat_results_pdf_content(
     heat_info: Heat,
     heat_scores: HeatScoresResponse,
     max_runs: int,
+    logo: bytes | None,
 ) -> None:
     """pdf's footer must already be configured."""
     pdf.add_page()
     pdf.set_font(size=24)
-    pdf.cell(0, 10, text="Heat Results", align="C", new_x="LMARGIN", new_y="NEXT")
+    draw_title_row(pdf, "Heat Results", logo)
     pdf.set_font(size=20)
     pdf.cell(
         0,
@@ -352,8 +429,11 @@ def build_heat_results_pdf_content(
 @pdf_router.get("/phase_pdf/{phase_id}", status_code=status.HTTP_200_OK)
 def phase_pdf(
     phase_id: str,
+    *,
+    signed: bool = False,
     db: Session = Depends(get_transaction_session),
 ) -> Response:
+    """With `signed`, the PDF ends with a head judge signature block."""
     try:
         phase_scores = calculate_phase_scores(phase_id=phase_id, db=db)
         phase_metadata = db.query(Phase).filter(Phase.id == phase_id).one()
@@ -366,10 +446,18 @@ def phase_pdf(
             .one()
         )
 
+        logo = get_competition_image(db, competition_metadata.id, ImageKind.LOGO)
         pdf = BrandPDF(orientation="L", format="A4")
-        phase_pdf_header(pdf, competition_metadata, event_metadata, phase_metadata)
+        phase_pdf_header(
+            pdf, competition_metadata, event_metadata, phase_metadata, logo
+        )
         setup_pdf_footer(pdf, text=None, include_page_numbers=True)
         build_phase_pdf_content(pdf, phase_metadata, phase_scores)
+        if signed:
+            draw_signature_block(
+                pdf,
+                get_competition_image(db, competition_metadata.id, ImageKind.SIGNATURE),
+            )
 
         filename = f"{competition_metadata.name}_{event_metadata.name}_{phase_metadata.name}.pdf"
         return create_pdf_response(pdf, filename)
@@ -410,7 +498,10 @@ def heat_pdf(
                 .one()
             )
             heat_athlete_info = get_heat_info_logic(heat_id=heat_info.id, db=db)
-            build_heat_pdf_page(pdf, heat_info, competition_metadata, heat_athlete_info)
+            logo = get_competition_image(db, competition_metadata.id, ImageKind.LOGO)
+            build_heat_pdf_page(
+                pdf, heat_info, competition_metadata, heat_athlete_info, logo
+            )
 
         first_competition = (
             db.query(Competition)
@@ -455,7 +546,12 @@ def heat_results_pdf(
         pdf = BrandPDF(orientation="L", format="A4")
         setup_pdf_footer(pdf, None, include_page_numbers=True)
         build_heat_results_pdf_content(
-            pdf, competition, heat_info, heat_scores, max_runs
+            pdf,
+            competition,
+            heat_info,
+            heat_scores,
+            max_runs,
+            get_competition_image(db, competition.id, ImageKind.LOGO),
         )
 
         filename = f"{competition.name}_{heat_info.name}_results.pdf"
