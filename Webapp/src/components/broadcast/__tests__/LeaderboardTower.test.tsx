@@ -1,7 +1,9 @@
 /* eslint-disable testing-library/no-node-access -- the tower's rows are
    located by their class names, as the other broadcast card tests do. */
 import { act, screen, waitFor, within } from "@testing-library/react"
-import { http, HttpResponse } from "msw"
+import { delay, http, HttpResponse } from "msw"
+import { useEffect } from "react"
+import { usePhaseRunStatusStreamQuery } from "../../../redux/services/streamingApi"
 import { modernTimers } from "../../../mocks/modernTimers"
 import { server } from "../../../mocks/server"
 import { socketHub } from "../../../mocks/socketHub"
@@ -12,6 +14,7 @@ import {
 	run,
 	servePhase
 } from "../../../mocks/towerPhase"
+import { useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery } from "../../../redux/services/aemsApi"
 import { renderWithProviders } from "../../../testUtils"
 import {
 	defaultOverlayControllerState,
@@ -146,6 +149,24 @@ describe("Leaderboard tower on the overlay", () => {
 	})
 })
 
+// Stands in for the overlay's other cards, which refetch the shared phase
+// scores as soon as a lock is broadcast.
+const EagerRefetcher = () => {
+	const { refetch } = useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery({
+		phaseId: "phase-1"
+	})
+	const { currentData: stream } = usePhaseRunStatusStreamQuery({
+		phaseId: "phase-1"
+	})
+	useEffect(() => {
+		if (stream?.latest) {
+			void refetch()
+		}
+	}, [stream?.latest, refetch])
+
+	return null
+}
+
 describe("Leaderboard tower climbs", () => {
 	// The served field, changed by a test to stand for the head judge's locks.
 	let field: Entrant[]
@@ -212,6 +233,72 @@ describe("Leaderboard tower climbs", () => {
 
 		await elapse(3500)
 		expect(rowAtPlace(9)).not.toHaveClass("AemsTower-justClimbed")
+	})
+
+	it("keeps the old order on air and climbs when another card refetches first", async () => {
+		renderWithProviders(
+			<>
+				<EagerRefetcher />
+				<LeaderboardTower
+					overlayControlState={towerState({ towerPlacesThrough: 10 })}
+				/>
+			</>
+		)
+		await screen.findByText("ATHLETE1")
+		field = field.map((athlete, i) =>
+			i === 14
+				? { ...athlete, run_scores: [run(0, 860), run(1, 975)] }
+				: athlete
+		)
+		lock("athlete-Athlete15", 1)
+		await elapse(500)
+
+		expect(rowAtPlace(4)).toHaveTextContent("ATHLETE4")
+		expect(rowAtPlace(15)).toHaveTextContent("ATHLETE15")
+		await elapse(1000)
+		expect(climberPlace()).toBe("15")
+		await elapse(8000)
+		expect(climberPlace()).toBe("4")
+	})
+
+	it("reloads again when the reload joined a request that predates the lock", async () => {
+		let pollRefetch: (() => void) | undefined
+		const Poller = () => {
+			const { refetch } = useGetPhaseScoresGetPhaseScoresPhaseIdGetQuery({
+				phaseId: "phase-1"
+			})
+			pollRefetch = () => void refetch()
+
+			return null
+		}
+		renderWithProviders(
+			<>
+				<Poller />
+				<LeaderboardTower
+					overlayControlState={towerState({ towerPlacesThrough: 10 })}
+				/>
+			</>
+		)
+		await screen.findByText("ATHLETE1")
+		// The poll's request starts before the lock is saved, so it answers
+		// with the field as it was.
+		const scoresBeforeLock = field
+		let calls = 0
+		server.use(
+			http.get("/api/getPhaseScores/:phaseId", async () => {
+				calls += 1
+				const scores = calls === 1 ? scoresBeforeLock : field
+				await delay(2000)
+
+				return HttpResponse.json({ phase_id: "phase-1", scores })
+			})
+		)
+		pollRefetch?.()
+		field = [...field, newcomerScoring(925)]
+		lock("athlete-Newcomer")
+		await elapse(5500)
+
+		expect(climber()).toHaveTextContent("NEWCOMER")
 	})
 
 	it("climbs from the old place on a second-run improvement", async () => {

@@ -132,7 +132,6 @@ export const LeaderboardTower = ({
 	})
 	const { climb, justClimbedId, finishClimb } = useClimbQueue({
 		landedLock,
-		standings,
 		placesThrough: towerPlacesThrough,
 		enabled: towerClimb && !reducedMotion
 	})
