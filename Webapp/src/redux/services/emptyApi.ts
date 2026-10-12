@@ -22,6 +22,7 @@ const baseQueryWithServerClock: typeof rawBaseQuery = async (
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const emptySplitApi = createApi({
 	reducerPath: "aemsApi",
+	tagTypes: ["HeatInfo"],
 	baseQuery: retry(baseQueryWithServerClock, {
 		maxRetries: process.env.NEXT_PUBLIC_ENV === "prod" ? 5 : 0
 	}),

@@ -7,6 +7,7 @@ import { rtkQueryErrorLogger } from "../utils/rtkQueryHelper"
 import { competitionsReducer } from "./atoms/competitions"
 import { scoringReducer } from "./atoms/scoring"
 import { utilitiesReducer } from "./atoms/utilities"
+import "./services/aemsApiTags"
 import { emptySplitApi } from "./services/emptyApi"
 
 export const rootReducer = combineReducers({
