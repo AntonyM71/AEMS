@@ -6,6 +6,7 @@ import Alert from "@mui/material/Alert"
 import Grid from "@mui/material/Grid2"
 import Typography from "@mui/material/Typography"
 import { useSelector } from "react-redux"
+import { CompetitionImages } from "../components/competition/CompetitionImages"
 import { HeatSummaryTable } from "../components/competition/HeatSummaryTable"
 import { SelectorDisplay } from "../components/competition/MainSelector"
 import { MakeHeatPDFs } from "../components/competition/MakeHeatPDFs"
@@ -78,6 +79,29 @@ export default function Admin() {
 				<AccordionDetails>
 					<PromotePhase />
 				</AccordionDetails>{" "}
+			</Accordion>
+			<Accordion>
+				<AccordionSummary
+					expandIcon={<ExpandMoreIcon />}
+					aria-controls="panel1-content"
+					id="panel1-header"
+				>
+					Competition Logo and Signature
+				</AccordionSummary>
+				<AccordionDetails>
+					<Grid container spacing={2}>
+						<Grid size={12}>
+							<SelectorDisplay
+								showEvent={false}
+								showPhase={false}
+								showHeat={false}
+							/>
+						</Grid>
+						<Grid size={12}>
+							<CompetitionImages />
+						</Grid>
+					</Grid>
+				</AccordionDetails>
 			</Accordion>
 			<Accordion>
 				<AccordionSummary

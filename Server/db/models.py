@@ -6,6 +6,7 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     UniqueConstraint,
     text,
@@ -288,4 +289,15 @@ class RunUpdate(Base):
     run_number = Column(Integer, primary_key=True)
     judge_id = Column(String, primary_key=True)
     request_id = Column(UUID(as_uuid=True), nullable=False)
+    schema = "public"
+
+
+class CompetitionImage(Base):
+    __tablename__ = "competitionImage"
+    competition_id = Column(
+        UUID(as_uuid=True), ForeignKey(FK_COMPETITION_ID), primary_key=True
+    )
+    kind = Column(String, primary_key=True)
+    content = Column(LargeBinary, nullable=False)
+    content_type = Column(String, nullable=False)
     schema = "public"

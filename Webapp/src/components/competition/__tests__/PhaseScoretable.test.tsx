@@ -207,4 +207,49 @@ describe("PhaseScoreTable", () => {
 		expect(window.open).toHaveBeenCalled()
 		expect(mockWindow.location.href).toBe("mock-url")
 	})
+
+	it.each([
+		{ switchedOn: true, expected: "true" },
+		{ switchedOn: false, expected: null }
+	])(
+		"requests a signed PDF only when the switch is on ($switchedOn)",
+		async ({ switchedOn, expected }) => {
+			window.open = jest.fn().mockReturnValue({ location: { href: "" } })
+			URL.createObjectURL = jest.fn().mockReturnValue("mock-url")
+			const requestedSigned: (string | null)[] = []
+			server.use(
+				http.get("/api/phase_pdf/:phaseId", ({ request }) => {
+					requestedSigned.push(
+						new URL(request.url).searchParams.get("signed")
+					)
+
+					return new HttpResponse("mock pdf content", {
+						headers: { "Content-Type": "application/pdf" }
+					})
+				})
+			)
+			store.dispatch({
+				type: "competitions/setSelectedPhase",
+				payload: "1"
+			})
+			renderWithProviders(<PhaseScoreTable />, { store })
+			const user = userEvent.setup()
+
+			const downloadButton = await screen.findByTestId(
+				"download-pdf-button"
+			)
+			if (switchedOn) {
+				await user.click(
+					screen.getByRole("checkbox", {
+						name: "Signed by head judge"
+					})
+				)
+			}
+			await user.click(downloadButton)
+
+			await waitFor(() => {
+				expect(requestedSigned).toEqual([expected])
+			})
+		}
+	)
 })
