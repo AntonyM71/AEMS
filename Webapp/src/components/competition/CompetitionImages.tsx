@@ -50,7 +50,7 @@ const CompetitionImageCard = ({
 		process.env.NEXT_PUBLIC_API_URL_DEV || "/api/"
 	}competition_management/competition/${competitionId}/image/${kind}`
 	const [previewUrl, setPreviewUrl] = useState<string>()
-	const [error, setError] = useState<string>()
+	const [errorMessage, setErrorMessage] = useState<string>()
 	const [version, setVersion] = useState(0)
 
 	useEffect(() => {
@@ -73,11 +73,11 @@ const CompetitionImageCard = ({
 	const refreshAfter = (request: Promise<unknown>) =>
 		request
 			.then(() => {
-				setError(undefined)
+				setErrorMessage(undefined)
 				setVersion((current) => current + 1)
 			})
-			.catch((caught: AxiosError<{ detail?: string }>) =>
-				setError(caught.response?.data?.detail ?? caught.message)
+			.catch((error: AxiosError<{ detail?: string }>) =>
+				setErrorMessage(error.response?.data?.detail ?? error.message)
 			)
 
 	const upload = (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,11 +108,11 @@ const CompetitionImageCard = ({
 						None uploaded
 					</Typography>
 				)}
-				{error && <Alert severity="error">{error}</Alert>}
+				{errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 			</CardContent>
 			<CardActions>
 				<Button component="label" variant="contained">
-					Upload
+					{"Upload"}
 					<input
 						type="file"
 						hidden
